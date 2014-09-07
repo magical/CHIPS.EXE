@@ -214,23 +214,6 @@ func (r byAddress) Len() int           { return len(r) }
 func (r byAddress) Less(i, j int) bool { return r[i].Addr < r[j].Addr }
 func (r byAddress) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
 
-/*
-type byAddress []byte
-
-func (b byAddress) Len() int { return len(b) / 8 }
-func (b byAddress) Swap(i, j int) {
-	s, r := b[i*8:], b[j*8:]
-	for k := 0; k < 8; k++ {
-		s[k], r[k] = r[k], s[k]
-	}
-}
-func (b byAddress) Less(i, j int) bool {
-	addr0 := int(b[i*8+2]) + int(b[i*8+3])<<8
-	addr1 := int(b[j*8+2]) + int(b[j*8+3])<<8
-	return addr0 < addr1
-}
-*/
-
 type NE struct {
 	Sig               [2]byte  // "NE"
 	MajLinkerVersion  uint8    // The major linker version
