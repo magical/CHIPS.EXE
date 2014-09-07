@@ -4,6 +4,7 @@ package main
 // http://wiki.osdev.org/NE
 
 import (
+	"bufio"
 	"encoding/binary"
 	"flag"
 	"fmt"
@@ -58,10 +59,10 @@ func main() {
 		fmt.Printf("  Start: %4x\n", segOffset)
 		fmt.Printf("  Size:  %4x\n", seg.Size)
 		//fmt.Printf("         %4x\n", seg.AllocSize)
-		if seg.Flags&SegData == 0 {
-			fmt.Println("  Type: Code")
-		} else {
+		if seg.Flags&1 == SegData {
 			fmt.Println("  Type: Data")
+		} else {
+			fmt.Println("  Type: Code")
 		}
 		flg := ""
 		if seg.Flags&SegMovable != 0 {
@@ -144,6 +145,13 @@ func main() {
 				}
 				if r[1] == 2 {
 					entry = readStringAt(f, importNameOff+int64(num))
+				} else if r[1] == 1 {
+					if v, ok := modName.(string); ok {
+						name := lookup(v, num)
+						if name != "" {
+							entry = name
+						}
+					}
 				}
 				val = fmt.Sprintf("IMPORT %v.%v", modName, entry)
 			case 3:
@@ -276,10 +284,62 @@ type Segment struct {
 }
 
 const (
-	SegData        = 0
 	SegCode        = 0
+	SegData        = 1
+
 	SegMovable     = 1 << 4
 	SegPreload     = 1 << 6
 	SegHasReloc    = 1 << 8
 	SegDiscardable = 1 << 12
 )
+
+var symbols = make(map[string]map[int]string)
+
+func loadSymbols(module string) (map[int]string, error) {
+	f, err := os.Open(module + ".sym")
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	br := bufio.NewReader(f)
+	var m = make(map[int]string)
+	for {
+		line, err := br.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			continue
+		}
+		var ord int
+		var a, b, name string
+		var c int64
+		n, err := fmt.Sscan(line, &ord, &a, &b, &c)
+		if err != nil && err != io.EOF {
+			fmt.Println(err)
+			continue
+		}
+		switch n {
+		case 2:
+			name = a
+		case 3, 4:
+			name = b
+		default:
+			continue
+		}
+		m[ord] = name
+	}
+	return m, nil
+}
+
+func lookup(module string, ord int) string {
+	if symbols[module] == nil {
+		m, err := loadSymbols(module)
+		if err != nil {
+			fmt.Println(err)
+			m = make(map[int]string)
+		}
+		symbols[module] = m
+	}
+	return symbols[module][ord]
+}
