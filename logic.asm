@@ -1,7 +1,6 @@
 ; SEGMENT 3
 SEGMENT CODE
 BITS 16
-%stacksize small
 
 GameStatePtr    equ 0x1680
 
@@ -25,6 +24,7 @@ FindMonster: ; 3:0x0
     push di
     push si
 
+    %stacksize small
     %arg x:word, y:word
 
     xor cx,cx
@@ -70,6 +70,61 @@ FindMonster: ; 3:0x0
     dec bp
     retf
 
-INCBIN "chips.exe", 0x6200+$, 0x2a70 - 0x58
+; Same as above, but searches a different array.
+FindSomething: ;0x58
+    %stacksize small
+    %arg x:word, y:word
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    mov bp,sp
+    push ds
+    mov ds,ax
+    sub sp,byte +0x2
+    push di
+    push si
+
+    xor cx,cx
+    mov bx,[GameStatePtr]
+    cmp [bx+0x91e],cx
+    jng .notfound
+    mov si,bx
+    mov ax,[si+0x924]
+    mov dx,[si+0x926]
+    inc ax
+    mov bx,ax
+    mov es,dx
+    mov di,[x]
+.loop:
+    cmp [es:bx],di
+    jnz .next
+    mov ax,[y]
+    cmp [es:bx+0x2],ax
+    jz .found
+.next:
+    add bx,byte +0xb
+    inc cx
+    cmp [si+0x91e],cx
+    jg .loop
+    jmp short .notfound
+    nop
+.found:
+    mov ax,cx
+    jmp short .end
+.notfound:
+    mov ax,-1
+.end:
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
+
+;0xB0
+
+INCBIN "chips.exe", 0x6200+$, 0x2a70 - 0xB0
 
 ; vim: syntax=nasm
