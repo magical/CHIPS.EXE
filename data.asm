@@ -263,6 +263,89 @@ db 0,0,1,1,1,0  ; 0x6d
 db 0,0,1,1,1,0  ; 0x6e
 db 0,0,1,1,1,0  ; 0x6f
 
-INCBIN "chips.exe", 0x4800+$, 0x1738-0x90C
+db "You seem to be having trouble with this level.", 10
+db "Would you like to skip to the next level?", 0, 0
+db "Corrupt or inaccessible CHIPS.DAT file.", 0, 0
+db ": ", 0, 0
+db "%s%s%s", 0
+db "Please enter the password for level %d:", 0
+db 'Sorry, "%s" is not the correct password.', 0
+db "You must enter a password.", 0
+db "DLG_PASSWORD", 0, 0
+dw 0, 0, 0
+db "obj32_4", 0
+db "obj32_4E", 0
+db "obj32_1", 0, 0
+dw 0
+db "You must enter a level and/or password.", 0
+db "You must enter a valid password.", 0, 0
+db "That is not a valid level number.", 0
+db "No levels completed.", 0
+db "Level %d:  %d seconds, %li points", 0
+db "Level %d:  not completed", 0
+db "s", 0
+db 0
+db "You have completed %d level%s.", 0
+db "Your total score is %li points.", 0
+db "Yowser! First Try!", 0
+db "Go Bit Buster!", 0
+db "Finished! Good Work!", 0
+db "At last! You did it!", 0
+db "%s", 0
+db "Time Bonus:  %d", 0
+db "Level Bonus:  %li", 0
+db "Level Score:  %li", 0
+db "You have established a time record for this level!", 0
+db "s", 0
+db 0
+db "You beat the previous time record by %d second%s!", 0
+db "s", 0
+db 0
+db "You increased your score on this level by %li point%s!", 0
+db "Total Score:  %li", 0
+db 0, 0xFF, 0
+db "Great Job, Chip!", 10, "You did it!  You finished the challenge!", 0
+db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0
+db 0
+db "You completed %d levels, and your total score for the challenge is %li points.", 10, 10
+db "You can still improve your score, by completing levels that you skipped, and getting better times on each level.  When you replay a level, if your new score is better than your old, your score will be adjusted by the difference.  Select Best Times from the Game menu to see your scores for each level.", 0
+
+; Decade messages
+; 0xEC0
+dw Level50Message
+dw Level60Message
+dw Level70Message
+dw Level80Message
+dw Level90Message
+dw Level100Message
+dw Level110Message
+dw Level120Message
+dw Level130Message
+dw Level140Message
+
+Level50Message db "Picking up chips is what the challenge is all about. But on the ice, Chip gets chapped and feels like a chump instead of a champ.", 0
+Level60Message db "Chip hits the ice and decides to chill out. Then he runs into a fake wall and turns the maze into a thrash-a-thon!", 0
+Level70Message db "Chip is halfway through the world's hardest puzzle. If he succeeds, maybe the kids will stop calling him computer breath!", 0
+Level80Message db "Chip used to spend his time programming computer games and making models. But that was just practice for this brain-buster!", 0
+Level90Message db "'I can do it! I know I can!' Chip thinks as the going gets tougher. Besides, Melinda the Mental Marvel waits at the end!", 0
+Level100Message db "Besides being an angel on earth, Melinda is the top scorer in the Challenge--and the president of the Bit Busters.", 0
+Level110Message db "Chip can't wait to join the Bit Busters! The club's already figured out the school's password and accessed everyone's grades!", 0
+Level120Message db "If Chip's grades aren't as good as Melinda's, maybe she'll come over to his house and help him study!", 0
+Level130Message db "'I've made it this far,' Chip thinks. 'Totally fair, with my mega-brain.' Then he starts the next maze. 'Totally unfair!' he yelps.", 0
+Level140Message db "Groov-u-loids! Chip makes it almost to the end. He's stoked!", 0
+
+db "chipend", 0
+db "chipend", 0
+db "DLG_COMPLETE", 0
+db 0
+db "MIDI Error on file %s: ", 0
+db "None of the MIDI files specified in entpack.ini were found.", 0
+
+dw 0, 1, 1, 0
+dw 0, 0, 0, 0
+dw 0, 0, 0, 0
+dw 0
+
+INCBIN "chips.exe", 0x4800+$, 0x1738-0x13D0
 
 ; vim: syntax=nasm
