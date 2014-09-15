@@ -349,11 +349,11 @@ dw 0, 0, 0, 0
 dw 0, 0, 0, 0
 dw 0
 
-INCBIN "chips.exe", 0x4800+$, 0x1680-0x13D0
+INCBIN "chips.exe", 0x4800+$, 0x1680-0x13DE
 
 ; Near pointer to game state structure
 GameStatePtr dw 0   ; 1680
 
-INCBIN "chips.exe", 0x4800+$, 0x1738-0x1680
+INCBIN "chips.exe", 0x4800+$, 0x1738-0x1682
 
 ; vim: syntax=nasm
