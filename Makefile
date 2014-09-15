@@ -1,4 +1,4 @@
-out.exe: chips.asm data.o Makefile
+out.exe: chips.asm data.o logic.o Makefile
 	nasm -o out.exe chips.asm
 
 check: out.exe chips.exe Makefile
@@ -8,3 +8,4 @@ check: out.exe chips.exe Makefile
 	nasm -o $@ $<
 
 data.o: data.asm Makefile
+logic.o: logic.asm Makefile

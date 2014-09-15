@@ -1,3 +1,6 @@
+; SEGMENT 10
+SEGMENT DATA
+
 INCBIN "chips.exe", 0x4800, 0x68
 
 db "Chip's Challenge", 0, 0
