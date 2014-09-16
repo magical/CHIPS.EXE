@@ -293,7 +293,94 @@ TurnAround:
     retf
 
 ; 1a4
+GrowArray:
+    %stacksize small
+    %arg hMem:word, ptr:word, lenPtr:word, numToAlloc:word, size:word
+    ; ptr is a NEAR*FAR*
 
-INCBIN "chips.exe", 0x6200+$, 0x2a70 - 0x1a4
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    mov bp,sp
+    push ds
+    mov ds,ax
+    sub sp,byte +0x2
+    push si
+
+    ;
+    mov bx,[hMem]
+    cmp word [bx],byte +0x0
+    jz .globalAlloc
+    push word [bx]
+    call word 0x0:0xffff ; 1bc KERNEL.GlobalUnlock
+    mov bx,[hMem]
+    push word [bx]
+    ; Compute (*len + numToAlloc) * size
+    mov bx,[lenPtr]
+    mov ax,[bx]
+    add ax,[numToAlloc]
+    imul word [size]
+    cwd
+    push dx         ; dwBytes
+    push ax
+    push byte +0x2  ; GMEM_MOVABLE
+    call word 0x0:0xffff ; 1d6 KERNEL.GlobalReAlloc
+    jmp short .lock
+    nop
+.globalAlloc: ; 1de
+    push byte +0x42 ; GHND
+    ; size * numToAlloc
+    mov ax,[size]
+    imul word [numToAlloc]
+    cwd
+    push dx         ; dwBytes
+    push ax
+    call word 0x0:0xffff ; 1e9 KERNEL.GlobalAlloc
+
+.lock: ; 1ee
+    ; update hMem
+    ; and call GlobalLock to get a pointer
+    ; to the allocated memory
+    mov si,ax
+    or si,si
+    jz .noupdate
+    mov bx,[hMem]
+    mov [bx],si
+.noupdate: ; 1f9
+    mov bx,[hMem]
+    push word [bx]
+    call word 0x0:0xffff ; 1fe KERNEL.GlobalLock
+    mov bx,[ptr]
+    mov [bx],ax
+    mov [bx+0x2],dx
+
+    or si,si
+    jnz .success
+    ; GlobalAlloc/ReAlloc failed, return 0
+    xor ax,ax
+    jmp short .end
+    nop
+
+.success: ; 214
+    ; lenPtr += numToAlloc
+    ; return 1
+    mov ax,[numToAlloc]
+    mov bx,[lenPtr]
+    add [bx],ax
+    mov ax,1
+
+.end: ; 21f
+    pop si
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
+    nop
+
+; 228
+
+INCBIN "chips.exe", 0x6200+$, 0x2a70 - 0x228
 
 ; vim: syntax=nasm

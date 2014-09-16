@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -26,12 +27,17 @@ type Jump struct {
 }
 
 func main() {
+	start := flag.Uint("start", 0, "start address")
+	single := flag.Bool("one", false, "disassemble a single function")
+	flag.Parse()
+
 	r := bufio.NewReader(os.Stdin)
 	var lines []Line
 	var jumps []Jump
 	var errors int
 	var lastAddr uint32
 
+	breaking := false
 	for number := 1; ; number++ {
 		line, err := r.ReadString('\n')
 		if err == io.EOF {
@@ -72,6 +78,14 @@ func main() {
 			continue
 		}
 		lastAddr = addr
+		if uint(addr) < *start {
+			lines = lines[:0]
+			continue
+		}
+
+		if breaking && mnemonic != "nop" {
+			break
+		}
 
 		//fmt.Print(line[24:])
 		if isJump(mnemonic) {
@@ -108,13 +122,18 @@ func main() {
 				Text:     line[24:],
 			})
 		}
+
+		if *single && mnemonic == "retf" {
+			breaking = true
+		}
 	}
 
 	if errors > 0 {
 		return
 	}
 
-	sort.Sort(ByDest(jumps))
+	//sort.Sort(ByDest(jumps))
+	_ = sort.Sort
 
 	var label int
 	for _, j := range jumps {
@@ -133,16 +152,20 @@ func main() {
 
 	for _, line := range lines {
 		if line.IsTarget {
-			fmt.Printf(".label%d:\t\t\t\t; %x\n", line.Label, line.Addr)
+			fmt.Printf(".label%d: ; %x\n", line.Label, line.Addr)
 		}
 		if line.IsJump {
 			fmt.Printf("%s .label%d\n", line.Text, line.JumpLabel)
 		} else if line.Mnemonic == "call" {
 			s := strings.TrimRight(line.Text, "\n")
-			fmt.Printf("%s\t\t; %x\n", s, line.Addr)
+			fmt.Printf("%s ; %x\n", s, line.Addr)
 		} else {
 			fmt.Print(line.Text)
 		}
+	}
+	if *single {
+		fmt.Println()
+		fmt.Printf("; %x\n", lastAddr)
 	}
 }
 
