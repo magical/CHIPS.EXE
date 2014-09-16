@@ -1,16 +1,16 @@
-out.exe: chips.asm chips.exe data.o logic.o Makefile
-	nasm -o out.exe chips.asm
+chips.exe: chips.asm base.exe data.bin logic.bin Makefile
+	nasm -o $@ $<
 
-check: out.exe chips.exe Makefile
-	cmp out.exe chips.exe
+check: chips.exe Makefile
+	cmp base.exe chips.exe
 
-%.o: %.asm fixmov.awk
+%.bin: %.asm fixmov.awk Makefile
 	awk -f fixmov.awk $< >$<.tmp
 	nasm -O0 -o $@ $<.tmp
 	rm $<.tmp
 
-data.o: data.asm chips.exe Makefile
-logic.o: logic.asm chips.exe Makefile
+data.bin: data.asm base.exe Makefile
+logic.bin: logic.asm base.exe Makefile
 
 bin/label: tools/label/label.go Makefile
 	go build -o bin/label ./tools/label

@@ -1,7 +1,7 @@
 ; SEGMENT 10
 SEGMENT DATA
 
-INCBIN "chips.exe", 0x4800, 0x68
+INCBIN "base.exe", 0x4800, 0x68
 
 db "Chip's Challenge", 0, 0
 db "Not enough system timers are available.", 0
@@ -349,11 +349,11 @@ dw 0, 0, 0, 0
 dw 0, 0, 0, 0
 dw 0
 
-INCBIN "chips.exe", 0x4800+$, 0x1680-0x13DE
+INCBIN "base.exe", 0x4800+$, 0x1680-0x13DE
 
 ; Near pointer to game state structure
 GameStatePtr dw 0   ; 1680
 
-INCBIN "chips.exe", 0x4800+$, 0x1738-0x1682
+INCBIN "base.exe", 0x4800+$, 0x1738-0x1682
 
 ; vim: syntax=nasm

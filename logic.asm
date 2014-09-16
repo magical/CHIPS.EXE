@@ -385,6 +385,6 @@ GrowArray:
 
 ; 228
 
-INCBIN "chips.exe", 0x6200+$, 0x2a70 - 0x228
+INCBIN "base.exe", 0x6200+$, 0x2a70 - 0x228
 
 ; vim: syntax=nasm
