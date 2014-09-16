@@ -4,8 +4,8 @@ out.exe: chips.asm data.o logic.o Makefile
 check: out.exe chips.exe Makefile
 	cmp out.exe chips.exe
 
-%.o: %.asm fixmov.sed
-	sed -f fixmov.sed $< >$<.tmp
+%.o: %.asm fixmov.awk
+	awk -f fixmov.awk $< >$<.tmp
 	nasm -O0 -o $@ $<.tmp
 	rm $<.tmp
 
