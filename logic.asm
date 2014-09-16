@@ -8,9 +8,11 @@ MonsterLen  equ 0x928
 MonsterPtr  equ 0x92e
 MonsterSeg  equ 0x930
 
+; 0
+
 ; FindMonster returns the index of the monster at (x, y),
 ; or -1.
-FindMonster: ; 3:0x0
+FindMonster:
     ; Standard function prologue
     ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
     mov ax,ds
@@ -70,8 +72,10 @@ FindMonster: ; 3:0x0
     dec bp
     retf
 
+; 58
+
 ; Same as above, but searches a different array.
-FindSomething: ;0x58
+FindSomething:
     %stacksize small
     %arg x:word, y:word
     mov ax,ds
@@ -123,7 +127,7 @@ FindSomething: ;0x58
     dec bp
     retf
 
-;0xB0
+; b0
 TurnLeft:
     ;    x  y  ->  x  y
     ; W -1  0  ->  0  1  S
@@ -255,7 +259,7 @@ TurnRight:
     retf
     nop
 
-;17c
+; 17c
 TurnAround:
     ;    x  y  ->  x  y
     ; W -1  0  ->  1  0  E
