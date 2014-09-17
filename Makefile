@@ -10,7 +10,7 @@ check: chips.exe Makefile
 	rm $<.tmp
 
 data.bin: data.asm base.exe Makefile
-logic.bin: logic.asm base.exe Makefile
+logic.bin: logic.asm base.exe constants.asm Makefile
 
 bin/label: tools/label/label.go Makefile
 	go build -o bin/label ./tools/label

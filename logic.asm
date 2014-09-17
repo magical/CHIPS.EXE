@@ -32,14 +32,13 @@ STRUC Monster
     .y resw 1
     .xdir resw 1
     .ydir resw 1
-    .unknown resw 1
+    .slipping resw 1
 ENDSTRUC
 
 %macro  func 1
     global %1
 %1:
     %push func
-    %assign %$localsize 0
     %stacksize small
     ; Standard function prologue
     ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
@@ -477,7 +476,7 @@ func NewMonster
     add si,dx
     les bx,[bx+MonsterListPtr]
     mov [es:bx+si+Monster.ydir],cx
-    ; monster.unknown = 0
+    ; monster.slipping = 0
     mov bx,[GameStatePtr]
     mov si,[bx+MonsterListLen]
     mov cx,si
@@ -486,7 +485,7 @@ func NewMonster
     shl si,1
     add si,cx
     les bx,[bx+MonsterListPtr]
-    mov word [es:bx+si+Monster.unknown],0x0
+    mov word [es:bx+si+Monster.slipping],0x0
 
     ; If tile is not the upper tile at pos...
     mov bx,[pos]
@@ -543,7 +542,195 @@ func NewMonster
 endfunc
 
 ; 3b4
+func DeleteMonster
+    sub sp,byte +0x8
+    push di
+    push si
 
-INCBIN "base.exe", 0x6200+$, 0x2a70 - 0x3b4
+    %arg    idx:word
+    %define offset (bp-4)
+
+    ; Get a pointer to the requested monster
+    mov si,[idx]
+    mov ax,si
+    shl ax,byte 0x2
+    add ax,si
+    shl ax,1
+    add ax,si
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    add bx,ax
+    mov [bp-0x8],bx ; unused
+    mov [bp-0x6],es ; unused
+    ; If monster is slipping, delete from slip list
+    cmp word [es:bx+Monster.slipping],byte +0x0
+    jz .notSlipping
+    push byte +0x2          ; unused
+    push word [es:bx+Monster.y]
+    push word [es:bx+Monster.x]
+    mov al,[es:bx+Monster.tile]
+    push ax                 ; unused
+    call word 0x474:0x12be  ; 3f6 DeleteSlipperAt
+    add sp,byte +0x8
+.notSlipping: ; 3fe
+    ; If we're already at the end of the list, skip the loop.
+    lea ax,[si+0x1]
+    mov bx,[GameStatePtr]
+    cmp [bx+MonsterListLen],ax
+    jng .end
+    ; offset = idx*11
+    mov ax,si
+    shl ax,byte 0x2
+    add ax,si
+    shl ax,1
+    add ax,si
+    mov [offset],ax
+.loop: ; 419
+    ; Move next monster to current index.
+    mov ax,[bx+MonsterListPtr]
+    mov dx,[bx+MonsterListSeg]
+    add ax,[offset]
+    mov cx,ax
+    mov bx,dx
+    add ax,0xb
+    push ds
+    mov di,cx
+    mov si,ax
+    mov es,bx
+    mov ds,dx
+    mov cx,0x5
+    rep movsw
+    movsb
+    pop ds
+    ; Rinse and repeat.
+    add word [offset],byte +0xb
+    mov ax,[idx]
+    inc ax
+    mov [idx],ax
+    inc ax
+    mov bx,[GameStatePtr]
+    cmp ax,[bx+MonsterListLen]
+    jl .loop
+.end: ; 451
+    ; Decrement MonsterListLen
+    dec word [bx+MonsterListLen]
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+endfunc
+
+; 45e
+func DeleteMonsterAt
+    sub sp,byte +0x2
+    %arg dunno:word x:word, y:word
+    push word [y]
+    push word [x]
+    call word 0x47d:0x0 ; 471 FindMonster
+    add sp,byte +0x4
+    push ax
+    call word 0x5c9:0x3b4 ; 47a DeleteMonster
+    lea sp,[bp-0x2]
+endfunc
+
+; 486
+func SetTileDir
+    sub sp,byte +0x4
+    %arg origTile:byte, xdir:word, ydir:word
+    %define tile (bp-3)
+    mov al,[origTile]
+    and al,0xfc
+    mov [tile],al
+    mov ax,[xdir]
+    shl ax,1
+    add ax,[ydir]
+    inc ax
+    inc ax
+    jz .west
+    dec ax
+    jz .north
+    dec ax
+    dec ax
+    jz .south
+    dec ax
+    jz .east
+    mov al,[origTile]
+    jmp short .end
+.west: ; 4b6
+    mov al,[tile]
+    inc al
+    jmp short .end
+    nop
+.north: ; 4be
+    mov al,[tile]
+    jmp short .end
+    nop
+.south: ; 4c4
+    mov al,[tile]
+    add al,0x2
+    jmp short .end
+    nop
+.east: ; 4cc
+    mov al,[tile]
+    add al,0x3
+.end: ; 4d1
+    lea sp,[bp-0x2]
+endfunc
+
+; 4d8
+func GetMonsterDir
+    sub sp,byte +0x2
+    %arg tile:byte, xOut:word, yOut:word
+    cmp byte [tile],FirstMonster
+    jc .notAMonster
+    cmp byte [tile],LastMonster
+    ja .notAMonster
+    mov al,[tile]
+    and ax,0x3
+    jz .north
+    dec ax
+    jz .west
+    dec ax
+    jz .south
+    dec ax
+    jz .east
+    jmp short .ok
+.north: ; 504
+    mov bx,[xOut]
+    mov word [bx],0
+    mov bx,[yOut]
+    mov word [bx],-1
+    jmp short .ok
+.west: ; 514
+    mov bx,[xOut]
+    mov word [bx],-1
+    jmp short .setYToZero
+    nop
+.south: ; 51e
+    mov bx,[xOut]
+    mov word [bx],0
+    mov bx,[yOut]
+    mov word [bx],1
+    jmp short .ok
+.east: ; 52e
+    mov bx,[xOut]
+    mov word [bx],1
+.setYToZero: ; 535
+    mov bx,[yOut]
+    mov word [bx],0
+.ok: ; 53c
+    ; Return 1
+    mov ax,0x1
+    jmp short .end
+    nop
+.notAMonster: ; 542
+    ; Return 0
+    xor ax,ax
+.end: ; 544
+    lea sp,[bp-0x2]
+endfunc
+
+; 54c
+
+INCBIN "base.exe", 0x6200+$, 0x2a70 - 0x54c
 
 ; vim: syntax=nasm
