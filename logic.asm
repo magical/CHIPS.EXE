@@ -2,17 +2,45 @@
 SEGMENT CODE
 BITS 16
 
+%include "constants.asm"
+
 GameStatePtr    equ 0x1680
 
-MonsterLen  equ 0x928
-MonsterPtr  equ 0x92e
-MonsterSeg  equ 0x930
+; Game state offsets
 
-; 0
+Upper               equ 0x0
+Lower               equ 0x400
 
-; FindMonster returns the index of the monster at (x, y),
-; or -1.
-FindMonster:
+Autopsy             equ 0x816
+
+; Probably
+SlipListLen         equ 0x91e
+SlipListCap         equ 0x920
+SlipListHandle      equ 0x922
+SlipListPtr         equ 0x924
+SlipListSeg         equ 0x926
+
+MonsterListLen      equ 0x928
+MonsterListCap      equ 0x92a
+MonsterListHandle   equ 0x92c
+MonsterListPtr      equ 0x92e
+MonsterListSeg      equ 0x930
+
+STRUC Monster
+    .tile resb 1
+    .x resw 1
+    .y resw 1
+    .xdir resw 1
+    .ydir resw 1
+    .unknown resw 1
+ENDSTRUC
+
+%macro  func 1
+    global %1
+%1:
+    %push func
+    %assign %$localsize 0
+    %stacksize small
     ; Standard function prologue
     ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
     mov ax,ds
@@ -22,23 +50,38 @@ FindMonster:
     mov bp,sp
     push ds
     mov ds,ax
+%endmacro
+
+%macro endfunc 0
+    pop ds
+    pop bp
+    dec bp
+    retf
+    align 2
+    %pop func
+%endmacro
+
+; 0
+
+; FindMonster returns the index of the monster at (x, y),
+; or -1.
+func FindMonster
     sub sp,byte +0x2
     push di
     push si
 
-    %stacksize small
     %arg x:word, y:word
 
     xor cx,cx
     mov bx,[GameStatePtr]
-    cmp [bx+MonsterLen],cx
+    cmp [bx+MonsterListLen],cx
     jng .notfound
 
     ; Initialize es:bx to point to the first monster
     ; on the monster list
     mov si,bx
-    mov ax,[si+MonsterPtr]
-    mov dx,[si+MonsterSeg]
+    mov ax,[si+MonsterListPtr]
+    mov dx,[si+MonsterListSeg]
     inc ax
     mov bx,ax
     mov es,dx
@@ -46,15 +89,15 @@ FindMonster:
 .loop:
     ; if monster.x == x and monster.y == y
     ;   goto found
-    cmp [es:bx],di
+    cmp [es:bx+Monster.x-1],di
     jnz .next
     mov ax,[y]
-    cmp [es:bx+0x2],ax
+    cmp [es:bx+Monster.y-1],ax
     jz .found
 .next:
     add bx,byte +0xB
     inc cx
-    cmp [si+MonsterLen],cx
+    cmp [si+MonsterListLen],cx
     jg .loop
     jmp short .notfound
     nop
@@ -67,49 +110,39 @@ FindMonster:
     pop si
     pop di
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 58
 
 ; Same as above, but searches a different array.
-FindSomething:
-    %stacksize small
-    %arg x:word, y:word
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FindSomething
     sub sp,byte +0x2
     push di
     push si
 
+    %arg x:word, y:word
+
     xor cx,cx
     mov bx,[GameStatePtr]
-    cmp [bx+0x91e],cx
+    cmp [bx+SlipListLen],cx
     jng .notfound
     mov si,bx
-    mov ax,[si+0x924]
-    mov dx,[si+0x926]
+    mov ax,[si+SlipListPtr]
+    mov dx,[si+SlipListSeg]
     inc ax
     mov bx,ax
     mov es,dx
     mov di,[x]
 .loop:
-    cmp [es:bx],di
+    cmp [es:bx+Monster.x-1],di
     jnz .next
     mov ax,[y]
-    cmp [es:bx+0x2],ax
+    cmp [es:bx+Monster.y-1],ax
     jz .found
 .next:
     add bx,byte +0xb
     inc cx
-    cmp [si+0x91e],cx
+    cmp [si+SlipListLen],cx
     jg .loop
     jmp short .notfound
     nop
@@ -122,29 +155,19 @@ FindSomething:
     pop si
     pop di
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; b0
-TurnLeft:
+func TurnLeft
+    sub sp,byte +0x2
+
     ;    x  y  ->  x  y
     ; W -1  0  ->  0  1  S
     ; N  0 -1  -> -1  0  W
     ; S  0  1  ->  1  0  E
     ; E  1  0  ->  0 -1  N
 
-    %stacksize small
     %arg x:word, y:word, xOut:word, yOut:word
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
-    sub sp,byte +0x2
 
     ; ax = x<<1 + y
     mov ax,[x]
@@ -188,30 +211,19 @@ TurnLeft:
     mov word [bx],-1
 .end:
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 116
-TurnRight:
+func TurnRight
+    sub sp,byte +0x2
+
     ;    x  y  ->  x  y
     ; W -1  0  ->  0 -1  N
     ; N  0 -1  ->  1  0  E
     ; S  0  1  -> -1  0  W
     ; E  1  0  ->  0  1  S
 
-    %stacksize small
     %arg x:word, y:word, xOut:word, yOut:word
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
-    sub sp,byte +0x2
 
     mov ax,[x]
     shl ax,1
@@ -253,30 +265,19 @@ TurnRight:
     mov word [bx],1
 .end:
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 17c
-TurnAround:
+func TurnAround
+    sub sp,byte +0x2
+
     ;    x  y  ->  x  y
     ; W -1  0  ->  1  0  E
     ; N  0 -1  ->  0  1  S
     ; S  0  1  ->  0 -1  N
     ; E  1  0  -> -1  0  W
 
-    %stacksize small
     %arg x:word, y:word, xOut:word, yOut:word
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
-    sub sp,byte +0x2
 
     ; *xOut = -x
     mov ax,[x]
@@ -291,28 +292,16 @@ TurnAround:
     mov [bx],ax
 
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1a4
-GrowArray:
-    %stacksize small
-    %arg hMem:word, ptr:word, lenPtr:word, numToAlloc:word, size:word
-    ; ptr is a NEAR*FAR*
-
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func GrowArray
     sub sp,byte +0x2
     push si
 
-    ;
+    %arg hMem:word, ptr:word, lenPtr:word, numToAlloc:word, size:word
+    ; ptr is a NEAR*FAR*
+
     mov bx,[hMem]
     cmp word [bx],byte +0x0
     jz .globalAlloc
@@ -377,14 +366,184 @@ GrowArray:
 .end: ; 21f
     pop si
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 228
+func NewMonster
+    %arg tile:byte, x:word, y:word, xdir:word, ydir:word, dunno:word
+    %define pos (bp-6)
+    %define lowerTile (bp-3)
 
-INCBIN "base.exe", 0x6200+$, 0x2a70 - 0x228
+    sub sp,byte +0x6
+    push si
+
+    ; Grow monster list if necessary.
+    mov bx,[GameStatePtr]
+    mov ax,[bx+MonsterListCap]
+    cmp [bx+MonsterListLen],ax
+    jl .longEnough
+    push byte +0xb
+    push byte +0x10
+    mov ax,bx
+    add ax,MonsterListCap
+    push ax
+    mov ax,bx
+    add ax,MonsterListPtr
+    push ax
+    mov ax,bx
+    add ax,MonsterListHandle
+    push ax
+    call word 0x383:0x1a4 ; 25a GrowArray
+    add sp,byte +0xa
+    or ax,ax
+    jnz .growSucceeded
+    jmp word .end
+
+.longEnough: ; 269
+.growSucceeded:
+    ; pos = y*32 + x
+    mov si,[y]
+    shl si,byte 0x5
+    add si,[x]
+    mov [pos],si
+
+    ; Get tile under the monster
+    mov bx,[GameStatePtr]
+    mov al,[bx+si+Lower]
+    mov [lowerTile],al
+
+    ; Return if dunno == 0 and the lower tile is a clone machine
+    cmp word [dunno],byte +0x0
+    jnz .notOnACloneMachine
+    cmp al,CloneMachine
+    jnz .notOnACloneMachine
+    jmp word .end
+
+.notOnACloneMachine: ; 28d
+    ; monster.tile = lowerTile
+    mov al,[tile]
+    les si,[bx+MonsterListPtr]
+    mov bx,[bx+MonsterListLen]
+    mov cx,bx
+    shl bx,byte 0x2
+    add bx,cx
+    shl bx,1
+    add bx,cx
+    mov [es:bx+si+Monster.tile],al
+
+    ; monster.x = x
+    mov cx,[x]
+    mov bx,[GameStatePtr]
+    mov si,[bx+MonsterListLen]
+    mov dx,si
+    shl si,byte 0x2
+    add si,dx
+    shl si,1
+    add si,dx
+    les bx,[bx+MonsterListPtr]
+    mov [es:bx+si+Monster.x],cx
+
+    ; monster.y = y
+    mov cx,[y]
+    mov bx,[GameStatePtr]
+    mov si,[bx+MonsterListLen]
+    mov dx,si
+    shl si,byte 0x2
+    add si,dx
+    shl si,1
+    add si,dx
+    les bx,[bx+MonsterListPtr]
+    mov [es:bx+si+Monster.y],cx
+
+    ; monster.xdir = xdir
+    mov cx,[xdir]
+    mov bx,[GameStatePtr]
+    mov si,[bx+MonsterListLen]
+    mov dx,si
+    shl si,byte 0x2
+    add si,dx
+    shl si,1
+    add si,dx
+    les bx,[bx+MonsterListPtr]
+    mov [es:bx+si+Monster.xdir],cx
+    ; monster.ydir = ydir
+    mov cx,[ydir]
+    mov bx,[GameStatePtr]
+    mov si,[bx+MonsterListLen]
+    mov dx,si
+    shl si,byte 0x2
+    add si,dx
+    shl si,1
+    add si,dx
+    les bx,[bx+MonsterListPtr]
+    mov [es:bx+si+Monster.ydir],cx
+    ; monster.unknown = 0
+    mov bx,[GameStatePtr]
+    mov si,[bx+MonsterListLen]
+    mov cx,si
+    shl si,byte 0x2
+    add si,cx
+    shl si,1
+    add si,cx
+    les bx,[bx+MonsterListPtr]
+    mov word [es:bx+si+Monster.unknown],0x0
+
+    ; If tile is not the upper tile at pos...
+    mov bx,[pos]
+    mov si,[GameStatePtr]
+    cmp [bx+si+Upper],al
+    jz .sameTile
+    ; ...push the upper tile down
+    mov al,[bx+si+Upper]
+    add bx,si
+    mov [bx+Lower],al
+    mov bx,[pos]
+    add bx,[GameStatePtr]
+    mov al,[bx+Lower]
+    mov [lowerTile],al
+.sameTile: ; 35c
+    ; Set the top tile to tile
+    mov al,[tile]
+    mov bx,[pos]
+    mov si,[GameStatePtr]
+    mov [bx+si+Upper],al
+
+    ; If the monster is on a trap...
+    mov bx,[GameStatePtr]
+    inc word [bx+MonsterListLen]
+    cmp byte [lowerTile],Trap
+    jnz .notOnATrap
+    ; ... call a function and return
+    push byte -0x1
+    push byte -0x1
+    push word [y]
+    push word [x]
+    call word 0xffff:0x21aa ; 380
+    add sp,byte +0x8
+    jmp short .end
+
+.notOnATrap: ; 38a
+    cmp byte [lowerTile],ChipN
+    jc .notChip
+    cmp byte [lowerTile],ChipE
+    jna .deathByMonster
+.notChip: ; 396
+    cmp byte [lowerTile],SwimN
+    jc .end
+    cmp byte [lowerTile],SwimE
+    ja .end
+.deathByMonster: ; 3a2
+    ; Monster landed on Chip (or Swimming Chip)
+    ; Set cause of death
+    mov bx,[GameStatePtr]
+    mov word [bx+Autopsy],Eaten
+.end: ; 3ac
+    pop si
+    lea sp,[bp-0x2]
+endfunc
+
+; 3b4
+
+INCBIN "base.exe", 0x6200+$, 0x2a70 - 0x3b4
 
 ; vim: syntax=nasm
