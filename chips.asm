@@ -88,6 +88,45 @@ db "&About Chip's Challenge...", 0
 
 ALIGN 512, db 0
 
+; 3fe00
+
+INCBIN "base.exe", 0x3fe00, 0x40800-0x3fe00
+
+; 40800
+; RT_ACCELERATOR
+%define VIRTKEY 0x1
+%define VK_F1   0x70
+%define VK_F2   0x71
+%define VK_F3   0x72
+
+db 0
+dw 'R'-64   ; Ctrl-R
+dw 0x71     ; Restart
+
+db 0
+dw 'N'-64   ; Ctrl-N
+dw 0x6E     ; Next level
+
+db 0
+dw 'P'-64   ; Ctrl-P
+dw 0x6F     ; Previous level
+
+db VIRTKEY
+dw VK_F1
+dw 0x6B     ; Help
+
+db VIRTKEY
+dw VK_F2
+dw 0x72     ; New Game
+
+db VIRTKEY|0x80
+dw VK_F3
+dw 0x74     ; Pause
+
+ALIGN 512, db 0
+
+; 40a00
+
 INCBIN "base.exe", $
 
 ; vim: syntax=nasm
