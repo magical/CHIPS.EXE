@@ -36,12 +36,12 @@
 36 GetCurrentTask
 37 GetCurrentPDB
 38 SetTaskSignalProc
-39 SetTaskSwitchProc      
-40 SetTaskInterchange     
+39 SetTaskSwitchProc
+40 SetTaskInterchange
 41 EnableDos
 42 DisableDos
-43 IsScreenGrab           
-44 BuildPDB               
+43 IsScreenGrab
+44 BuildPDB
 45 LoadModule
 46 FreeModule
 47 GetModuleHandle
@@ -325,8 +325,8 @@
 451 VWin32_EventSet
 452 LoadLibrary32
 453 GetProcAddress32
-454 equate __FLATCS 0   
-455 equate __FLATDS 0   
+454 equate __FLATCS 0
+455 equate __FLATDS 0
 456 DefResourceHandler
 457 CreateW32Event
 458 SetW32Event
@@ -360,7 +360,7 @@
 486 FreeLibrary32
 487 GetModuleFileName32
 488 GetModuleHandle32
-489 KERNEL_489  
+489 KERNEL_489
 490 KERNEL_490
 491 RegisterServiceProcess
 492 WOAAbort
@@ -368,7 +368,7 @@
 494 KERNEL_494
 495 WaitForMultipleObjectsEx
 500 varargs WOW16Call
-501 KDDBGOUT                                               
+501 KDDBGOUT
 502 WOWGETNEXTVDMCOMMAND
 503 WOWREGISTERSHELLWINDOWHANDLE
 504 WOWLOADMODULE
@@ -414,13 +414,13 @@
 562 AllocSLThunkletCallback
 563 FindLSThunkletCallback
 564 FindSLThunkletCallback
-566 KERNEL_566  
+566 KERNEL_566
 567 AllocLSThunkletCallbackEx
 568 AllocSLThunkletCallbackEx
 600 AllocCodeAlias
 601 FreeCodeAlias
 602 GetDummyModuleHandleDS
-603 KERNEL_603  
+603 KERNEL_603
 604 CBClientGlueSL
 605 AllocSLThunkletCallback_dup
 606 AllocLSThunkletCallback_dup
