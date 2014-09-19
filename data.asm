@@ -3,6 +3,7 @@ SEGMENT DATA
 
 INCBIN "base.exe", 0x4800, 0x68
 
+; 0x68
 db "Chip's Challenge", 0, 0
 db "Not enough system timers are available.", 0
 db "Starting a new game will begin you back at level 1, reset your score to zero, and forget the passwords to any levels you have visited.", 10, "Is this what you want?", 0
@@ -275,10 +276,15 @@ db "Please enter the password for level %d:", 0
 db 'Sorry, "%s" is not the correct password.', 0
 db "You must enter a password.", 0
 db "DLG_PASSWORD", 0, 0
-dw 0, 0, 0
-db "obj32_4", 0
-db "obj32_4E", 0
-db "obj32_1", 0, 0
+
+dw 0 ; a14 tile bitmap handle
+dw 0 ; a16 tile bitmap data?
+dw 0 ; a18 which bitmap to load: 1, 2, 3, or 4(?)
+HicolorTiles    db "obj32_4", 0
+LocolorTiles    db "obj32_4E", 0
+MonochromeTiles db "obj32_1", 0, 0
+
+; a34
 dw 0
 db "You must enter a level and/or password.", 0
 db "You must enter a valid password.", 0, 0
@@ -349,11 +355,24 @@ dw 0, 0, 0, 0
 dw 0, 0, 0, 0
 dw 0
 
+; 13de
+
 INCBIN "base.exe", 0x4800+$, 0x1680-0x13DE
 
 ; Near pointer to game state structure
 GameStatePtr dw 0   ; 1680
 
-INCBIN "base.exe", 0x4800+$, 0x1738-0x1682
+times 8 dw 0 ; 1682
+
+; 1692
+
+INCBIN "base.exe", 0x4800+$, 0x16f0-0x1692
+
+; Digit image pointers
+times 24 dw 0 ; 16f0
+
+; 1720
+
+INCBIN "base.exe", 0x4800+$, 0x1738-0x1720
 
 ; vim: syntax=nasm

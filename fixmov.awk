@@ -9,8 +9,13 @@
 # we assemble these instructions manually,
 # replacing "mov ax,bx" with "db 0x8B,0xC3".
 {
+    if ($1 == "mov" && $2 == "al,ah") { print "db 0x8a,0xc4"; next }
+    if ($1 == "mov" && $2 == "dl,al") { print "db 0x8a,0xd0"; next }
+    if ($1 == "mov" && $2 == "dh,cl") { print "db 0x8a,0xf1"; next }
+
     if      ($1 == "mov")   opcod = 0x8B;
     else if ($1 == "add")   opcod = 0x03;
+    else if ($1 == "sub")   opcod = 0x2B;
     else if ($1 == "xor")   opcod = 0x33;
     else if ($1 == "or")    opcod = 0x0B;
     else { print; next }
