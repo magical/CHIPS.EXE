@@ -1,5 +1,53 @@
 ; NASM is our linker for now...
-INCBIN "base.exe", 0, 0xa00
+
+; DOS header
+
+    db 'MZ'         ; 00 Signature
+    dw 0x1a6        ; 02 Size of last sector, in bytes
+    dw 0x3          ; 04 Size of file, in 0x200-byte pages
+    dw 0            ; 06 Number of relocation table entries
+    dw 0x20         ; 08 Size of header, in units of 0x10 bytes
+    dw 0            ; 0a Minimum allocation, ditto
+    dw 0xffff       ; 0c Maximum allocation, ditto
+    dw 0x7          ; 0e Stack segment
+    dw 0x100        ; 10 Stack pointer
+    dw 0x4065       ; 12 Checksum
+    dw 0            ; 14 Entry point
+    dw 0            ; 16 Code segment
+    dw MZRelocTable ; 18 Relocation table address
+    dw 0            ; 1a Overlay
+
+; NE extension
+    dd 1            ; 1c
+    times 14 dw 0   ; 20 Reserved
+    dd NEHeader     ; 3c Offset to NE header
+MZRelocTable:
+
+ALIGN 512, db 0
+
+MZEntry:
+    call word MZStub
+
+    db "This program requires Microsoft Windows.", 13, 10, "$"
+    times 0x28 db " "
+
+MZStub:
+    pop dx
+    push cs
+    pop ds
+    mov ah,0x9      ; Print ds:dx
+    int 0x21
+    mov ax,0x4c01   ; Exit with status code 1
+    int 0x21
+
+ALIGN 0x200, db 0
+
+; NE header
+NEHeader:
+    ; TODO
+
+INCBIN "base.exe", 0x400, 0x600
+
 
 INCBIN "base.exe", 0xa00, 0xc00 ; Segment 1
 INCBIN "base.exe", 0x1600, 0x2dca+0x2ba ; Segment 2
