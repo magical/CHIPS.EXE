@@ -33,19 +33,18 @@ MZEntry:
     times 0x28 db " "
 
 MZStub:
-    pop dx
+    pop dx  ; dx = return address
     push cs
-    pop ds
+    pop ds  ; ds = cs
     mov ah,0x9      ; Print ds:dx
     int 0x21
     mov ax,0x4c01   ; Exit with status code 1
     int 0x21
 
-ALIGN 0x200, db 0
+ALIGN 512, db 0
 
 ; NE header and tables
 ; See ftp://ftp.microsoft.com/Softlib/MSLFILES/EXEFMT.EXE
-
 
 ; 400
 ; NE header
@@ -61,9 +60,9 @@ NEHeader:
     dw 0x2000               ; 12 Stack size
     dw 0x1a, 1              ; 14 Entry point
     dw 0, 0xa               ; 18 Stack pointer
-    dw 0xa                  ; 1c Number of entries in segment table
-    dw 0x4                  ; 1e Number of entries in module reference table
-    dw 0xba                 ; 20 Number of bytes in non-resident name table
+    dw NESegmentLen         ; 1c Number of entries in segment table
+    dw NEModuleRefLen       ; 1e Number of entries in module reference table
+    dw NENonResidentNameSize; 20 Number of bytes in non-resident name table
     ; Offsets to tables, relative to header
     dw NESegmentTab-NEHeader        ; 22 Segment table
     dw NEResourceTab-NEHeader       ; 24 Resource table
@@ -82,7 +81,9 @@ NEHeader:
     dw 0x300                ; 3e
 
 ; 440
+NESegmentLen equ 10
 NESegmentTab:
+    ; sector, length, flags, alloc
     dw 0x5, 0x952, 0x1d50, 0x952 ; Segment 1
     dw 0xb, 0x2dca, 0x1d50, 0x2dca ; Segment 2
     dw 0x31, 0x2a70, 0x1d10, 0x2a70 ; Segment 3
@@ -171,6 +172,7 @@ NEResidentNameTab:
     db 0
 
 ; 672
+NEModuleRefLen equ 4
 NEModuleRefTab:
     dw NEImportedNameTab.KERNEL-NEImportedNameTab
     dw NEImportedNameTab.GDI-NEImportedNameTab
@@ -191,7 +193,7 @@ NEEntryTab:
 
 INCBIN "base.exe", 0x694, 0x31
 
-; 6C5
+; 6c5
 NENonResidentNameTab:
     %macro name 2
         %push
@@ -212,96 +214,99 @@ NENonResidentNameTab:
     name "COMPLETEMSGPROC",   13
     name "BESTTIMESMSGPROC",  12
     name "COUNTERWNDPROC",     2
+    db 0
 
-; 77e
+NENonResidentNameSize equ $-NENonResidentNameTab
+
+; 77f
 
 ALIGN 512, db 0
 TIMES 512  db 0
 
-INCBIN "base.exe", 0xa00, 0xc00 ; Segment 1
-INCBIN "base.exe", 0x1600, 0x2dca+0x2ba ; Segment 2
+Segment1: INCBIN "base.exe", 0xa00, 0xc00
+Segment2: INCBIN "base.exe", 0x1600, 0x2dca+0x2ba
 ALIGN 512, db 0
 
-INCBIN "data.bin" ; 4800 Segment 10
-ALIGN 512, db 0
-TIMES 512  db 0
+; 4800
+; Segment 10
+Data:
+    INCBIN "data.bin"
+    ALIGN 512, db 0
+    TIMES 512  db 0
 
-INCBIN "logic.bin" ; 6200 Segment 3
-INCBIN "base.exe", 0x8c70, 0x52
-ALIGN 512, db 0
+; 6200
+; Segment 3
+Logic:
+    INCBIN "logic.bin"
+    INCBIN "base.exe", 0x8c70, 0x52
+    ALIGN 512, db 0
 
-INCBIN "base.exe", 0x8e00, 0x1400 ; Segment 4
+Segment4: INCBIN "base.exe", 0x8e00, 0x1400
 
-INCBIN "seg5.bin" ; a200 Segment 5
-INCBIN "base.exe", 0xa3bc, 0x5a
-ALIGN 512, db 0
+; a200
+Segment5:
+    INCBIN "seg5.bin"
+    INCBIN "base.exe", 0xa3bc, 0x5a
+    ALIGN 512, db 0
 
-INCBIN "base.exe", 0xa600, 0x800 ; Segment 6
-INCBIN "base.exe", 0xae00, 0x1e00 ; Segment 7
-INCBIN "base.exe", 0xcc00, 0x800 ; Segment 8
+Segment6: INCBIN "base.exe", 0xa600, 0x800
+Segment7: INCBIN "base.exe", 0xae00, 0x1e00
+Segment8: INCBIN "base.exe", 0xcc00, 0x800
 
-INCBIN "digits.bin" ; d400
-INCBIN "base.exe", 0xd550, 0x3a
-ALIGN 512, db 0
+; d400
+; Segment 9
+Digits:
+    INCBIN "digits.bin"
+    INCBIN "base.exe", 0xd550, 0x3a
+    ALIGN 512, db 0
 
 ; d600
 ; Resources
+
 INCBIN  "base.exe", $, 0x3fc00-0xd600
 
 ; 3fc00
 ; RT_MENU
-%define MF_POPUP  0x10
-%define MF_END    0x80
 %define MF_CHECKED  0x08
+%define MF_POPUP    0x10
+%define MF_END      0x80
 
-dw 0, 0
-dw MF_POPUP
-db "&Game", 0
-dw 0, 0x72
-db "&New Game", 9, "F2", 0
-dw 0, 0x74
-db "&Pause", 9, "F3", 0
-dw 0, 0x73
-db "Best &Times...", 0
-dw 0, 0
-db 0
-dw MF_END, 0x6A
-db "E&xit", 0
+%macro POPUP 1-2 0
+    dw MF_POPUP|%2
+    db %1, 0
+%endmacro
+%macro MENUITEM 2-3 0
+    dw %3 ; flags
+    dw %2 ; action
+    db %1, 0 ; text
+%endmacro
 
-dw MF_POPUP
-db "&Options", 0
-dw MF_CHECKED, 0x75
-db "&Background Music", 0
-dw MF_CHECKED, 0x76
-db "&Sound Effects", 0
-dw MF_CHECKED|MF_END, 0x7A
-db "&Color", 0
+dd 0
+POPUP "&Game"
+    MENUITEM `&New Game\tF2`, 0x72
+    MENUITEM `&Pause\tF3`, 0x74
+    MENUITEM "Best &Times...", 0x73
+    MENUITEM "", 0
+    MENUITEM "E&xit", 0x6A, MF_END
 
-dw MF_POPUP
-db "&Level", 0
-dw 0, 0x71
-db "&Restart", 9, "Ctrl+R", 0
-dw 0, 0x6E
-db "&Next", 9, "Ctrl+N", 0
-dw 0, 0x6F
-db "&Previous", 9, "Ctrl+P", 0
-dw MF_END, 0x77
-db "&Go To...", 0
+POPUP "&Options"
+    MENUITEM "&Background Music", 0x75, MF_CHECKED
+    MENUITEM "&Sound Effects", 0x76, MF_CHECKED
+    MENUITEM "&Color", 0x7A, MF_CHECKED|MF_END
 
-dw MF_POPUP|MF_END
-db "&Help", 0
-dw 0, 0x6B
-db "&Contents", 9, "F1", 0
-dw 0, 0x78
-db "&How to Play", 0
-dw 0, 0x79
-db "C&ommands", 0
-dw 0, 0x6D
-db "How to &Use Help", 0
-dw 0, 0
-db 0
-dw MF_END, 0x64
-db "&About Chip's Challenge...", 0
+POPUP "&Level"
+    MENUITEM `&Restart\tCtrl+R`, 0x71
+    MENUITEM `&Next\tCtrl+N`, 0x6E
+    MENUITEM `&Previous\tCtrl+P`, 0x6F
+    MENUITEM "&Go To...", 0x77, MF_END
+
+POPUP "&Help", MF_END
+    MENUITEM `&Contents\tF1`, 0x6B
+    MENUITEM "&How to Play", 0x78
+    MENUITEM "C&ommands", 0x79
+    MENUITEM "How to &Use Help", 0x6D
+    MENUITEM "", 0
+    MENUITEM "&About Chip's Challenge...", 0x64, MF_END
 
 ALIGN 512, db 0
 
@@ -312,33 +317,24 @@ INCBIN "base.exe", 0x3fe00, 0x40800-0x3fe00
 ; 40800
 ; RT_ACCELERATOR
 %define VIRTKEY 0x1
+%define LAST    0x80
+%define CTRL(k) ((k)-64)
 %define VK_F1   0x70
 %define VK_F2   0x71
 %define VK_F3   0x72
 
-db 0
-dw 'R'-64   ; Ctrl-R
-dw 0x71     ; Restart
+%macro ACCEL 2-3 0
+    db %3
+    dw %1
+    dw %2
+%endmacro
 
-db 0
-dw 'N'-64   ; Ctrl-N
-dw 0x6E     ; Next level
-
-db 0
-dw 'P'-64   ; Ctrl-P
-dw 0x6F     ; Previous level
-
-db VIRTKEY
-dw VK_F1
-dw 0x6B     ; Help
-
-db VIRTKEY
-dw VK_F2
-dw 0x72     ; New Game
-
-db VIRTKEY|0x80
-dw VK_F3
-dw 0x74     ; Pause
+ACCEL CTRL('R'), 0x71 ; Restart
+ACCEL CTRL('N'), 0x6E ; Next level
+ACCEL CTRL('P'), 0x6F ; Previous level
+ACCEL VK_F1, 0x6B, VIRTKEY ; Help
+ACCEL VK_F2, 0x72, VIRTKEY ; New Game
+ACCEL VK_F3, 0x74, VIRTKEY|LAST ; Pause
 
 ALIGN 512, db 0
 
