@@ -126,6 +126,33 @@ dw 0x74     ; Pause
 ALIGN 512, db 0
 
 ; 40a00
+; RT_RCDATA
+; DLGINCLUDE
+
+; These sections tell the resource compiler
+; the name of the include file
+; associated with a dialog box.
+; They aren't really supposed
+; to end up in the executable.
+
+; https://support.microsoft.com/kb/91697
+
+db "GOTO.H", 0
+ALIGN 512, db 0
+
+; 40c00
+db "PASSWORD.H", 0
+ALIGN 512, db 0
+
+; 40e00
+db "BESTTIME.H", 0
+ALIGN 512, db 0
+
+; 41000
+db "COMPLETE.H", 0
+ALIGN 512, db 0
+
+; 41200
 
 INCBIN "base.exe", $
 
