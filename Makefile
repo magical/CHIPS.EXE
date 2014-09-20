@@ -17,11 +17,12 @@ check: chips.exe Makefile
 data.bin: data.asm base.exe Makefile
 logic.bin: logic.asm base.exe constants.asm Makefile
 
-bin/label: tools/label/label.go
-	go build -o bin/label ./tools/label
-
 bin/dd: tools/dd/dd.go
 	go build -o bin/dd ./tools/dd
+bin/label: tools/label/label.go
+	go build -o bin/label ./tools/label
+bin/res: tools/res/res.go
+	go build -o bin/res ./tools/res
 
 baselogic.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x6200 -count 0x2a70
