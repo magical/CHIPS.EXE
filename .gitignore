@@ -2,5 +2,3 @@ chips.exe
 base.exe
 *.bin
 *.dis
-bin/label
-bin/dd
