@@ -190,8 +190,34 @@ NEImportedNameTab:
 ; 694
 NEEntryTabSize          equ 0x31
 NEEntryTab:
-
-INCBIN "base.exe", 0x694, 0x31
+    %macro BUNDLE 2
+        db %1 ; number of entries
+        db %2 ; segment number
+    %endmacro
+    %macro ENTRY 1
+        db 1  ; EXPORTED flag
+        dw %1 ; offset
+    %endmacro
+    BUNDLE 2, 2
+        ENTRY 0x225c    ; 1 MAINWNDPROC
+        ENTRY 0x296a    ; 2 COUNTERWNDPROC
+    BUNDLE 1, 0         ; 3 (unused)
+    BUNDLE 1, 6
+        ENTRY 0x0       ; 4 GOTOLEVELMSGPROC
+    BUNDLE 4, 0         ; 5-8 (unused)
+    BUNDLE 1, 2
+        ENTRY 0x274e    ; 9 BOARDWNDPROC
+    BUNDLE 1, 0         ; 10 (unused)
+    BUNDLE 1, 4
+        ENTRY 0x1016    ; 11 PASSWORDMSGPROC
+    BUNDLE 2, 6
+        ENTRY 0x18e     ; 12 BESTTIMEMSGPROC
+        ENTRY 0x3c6     ; 13 COMPLETEMSGPROC
+    BUNDLE 3, 2
+        ENTRY 0x2a9a    ; 14 INVENTORYWNDPROC
+        ENTRY 0x2bbe    ; 15 HINTWNDPROC
+        ENTRY 0x2866    ; 16 INFOWNDPROC
+    db 0
 
 ; 6c5
 NENonResidentNameTab:
