@@ -366,7 +366,8 @@ db "COMPLETE.H", 0
 ALIGN 512, db 0
 
 ; 41200
-
-INCBIN "base.exe", $
+; RT_ICON
+INCBIN "chips.ico", 0x16
+ALIGN 512, db 0
 
 ; vim: syntax=nasm

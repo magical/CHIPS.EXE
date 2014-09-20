@@ -1,5 +1,6 @@
 SEGMENTS=data.bin logic.bin seg5.bin digits.bin
-chips.exe: chips.asm base.exe $(SEGMENTS) Makefile
+RESOURCES=chips.ico
+chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
 	nasm -o $@ $<
 
 check: chips.exe Makefile
