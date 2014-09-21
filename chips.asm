@@ -36,7 +36,7 @@ MZStub:
     pop dx  ; dx = return address
     push cs
     pop ds  ; ds = cs
-    mov ah,0x9      ; Print ds:dx
+    mov ah,0x9      ; Print string in ds:dx
     int 0x21
     mov ax,0x4c01   ; Exit with status code 1
     int 0x21
@@ -55,11 +55,11 @@ NEHeader:
     dw NEEntryTabSize       ; 06 Size of entry table, in bytes
     dd 0                    ; 08 CRC
     dw 0x30a                ; 0c Flags
-    dw 0xa                  ; 0e Data segment number
+    dw 10                   ; 0e Data segment
     dw 0x800                ; 10 Heap size
     dw 0x2000               ; 12 Stack size
     dw 0x1a, 1              ; 14 Entry point
-    dw 0, 0xa               ; 18 Stack pointer
+    dw 0x0, 10              ; 18 Stack pointer
     dw NESegmentLen         ; 1c Number of entries in segment table
     dw NEModuleRefLen       ; 1e Number of entries in module reference table
     dw NENonResidentNameSize; 20 Number of bytes in non-resident name table
@@ -106,7 +106,7 @@ NEResourceTab:
     %define RT_RCDATA 0x800a
     %define RT_VERSIONINFO 0x800e
 
-    dw 9    ; Sector shift
+    dw 9    ; Shift amount
 
     dw RT_VERSIONINFO, 1, 0, 0
         ; Offset, Length, Flags, ID, Reserved

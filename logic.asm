@@ -1,6 +1,7 @@
-; SEGMENT 3
-SEGMENT CODE
-BITS 16
+SEGMENT CODE ; 3
+
+; Game logic
+; (Mostly monsters so far)
 
 %include "constants.asm"
 

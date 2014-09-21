@@ -42,9 +42,8 @@ FindBitmap:
     nop
 
 ; 28
-; Bitmap stride
-; a = ((a + 7) & ~7) >> 1
-GetStride:
+; Computes the data size of a 4-bpp bitmap with the given width and height.
+BitmapSize:
     mov ax,ds
     nop
     inc bp
@@ -57,12 +56,20 @@ GetStride:
     %stacksize small
     %arg w:word, h:word
 
-    ; ax = ((((w << 2) + 31) & ~24) >> 3) * h
+    ; Compute the stride (size of a row).
+    ;   ax = (((w << 2) + 31) & ~24) >> 3
+    ;
+    ; Equivalent to
+    ;   ax = ((w + 7) & ~7) >> 1
+    ; or
+    ;   ax = (w*4 + 31) / 32 * 4
     mov ax,[w]
     shl ax,byte 0x2
     add ax,0x1f
     and al,0xe7
     sar ax,byte 0x3
+
+    ; Multiply by the height.
     imul word [h]
 
     lea sp,[bp-0x2]
@@ -105,7 +112,7 @@ LoadDigits:
 
     push byte DigitHeight ; y dimension of digits
     push byte DigitWidth ; x dimension of digits
-    call word 0xffff:0x28 ; 8c 9:0x28
+    call word 0xffff:0x28 ; 8c 9:0x28 BitmapSize
     add sp,byte +0x4
 
     ; Store near pointers to digits at 0x16f0

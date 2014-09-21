@@ -1,3 +1,4 @@
+SEGMENT CODE ; 5
 ; Tile graphics
 
 ; Data

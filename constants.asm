@@ -33,7 +33,7 @@ IceWallSW       equ 0x1D
 FakeFloor       equ 0x1E
 FakeWall        equ 0x1F
 
-; Unused20      equ 0x20
+; Unused20      equ 0x20 ; Combination tile
 Theif           equ 0x21
 Socket          equ 0x22
 ToggleButton    equ 0x23
