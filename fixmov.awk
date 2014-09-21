@@ -12,6 +12,8 @@
     if ($1 == "mov" && $2 == "al,ah") { print "db 0x8a,0xc4"; next }
     if ($1 == "mov" && $2 == "dl,al") { print "db 0x8a,0xd0"; next }
     if ($1 == "mov" && $2 == "dh,cl") { print "db 0x8a,0xf1"; next }
+    if ($1 == "sub" && $2 == "ah,ah") { print "db 0x2a,0xe4"; next }
+    if ($1 == "sub" && $2 == "ch,ch") { print "db 0x2a,0xed"; next }
 
     if      ($1 == "mov")   opcod = 0x8B;
     else if ($1 == "add")   opcod = 0x03;
