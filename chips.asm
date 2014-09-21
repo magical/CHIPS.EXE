@@ -1,5 +1,7 @@
 ; NASM is our linker for now...
 
+%include "constants.asm"
+
 ; DOS header
 
     db 'MZ'         ; 00 Signature
@@ -357,30 +359,30 @@ CHIPEND:
 
 dd 0
 POPUP "&Game"
-    MENUITEM `&New Game\tF2`, 0x72
-    MENUITEM `&Pause\tF3`, 0x74
-    MENUITEM "Best &Times...", 0x73
+    MENUITEM `&New Game\tF2`, ID_NEWGAME
+    MENUITEM `&Pause\tF3`, ID_PAUSE
+    MENUITEM "Best &Times...", ID_BESTTIMES
     MENUITEM "", 0
-    MENUITEM "E&xit", 0x6A, MF_END
+    MENUITEM "E&xit", ID_QUIT, MF_END
 
 POPUP "&Options"
-    MENUITEM "&Background Music", 0x75, MF_CHECKED
-    MENUITEM "&Sound Effects", 0x76, MF_CHECKED
-    MENUITEM "&Color", 0x7A, MF_CHECKED|MF_END
+    MENUITEM "&Background Music", ID_BGM, MF_CHECKED
+    MENUITEM "&Sound Effects", ID_SOUND, MF_CHECKED
+    MENUITEM "&Color", ID_COLOR, MF_CHECKED|MF_END
 
 POPUP "&Level"
-    MENUITEM `&Restart\tCtrl+R`, 0x71
-    MENUITEM `&Next\tCtrl+N`, 0x6E
-    MENUITEM `&Previous\tCtrl+P`, 0x6F
-    MENUITEM "&Go To...", 0x77, MF_END
+    MENUITEM `&Restart\tCtrl+R`, ID_RESTART
+    MENUITEM `&Next\tCtrl+N`, ID_NEXT
+    MENUITEM `&Previous\tCtrl+P`, ID_PREVIOUS
+    MENUITEM "&Go To...", ID_GOTO, MF_END
 
 POPUP "&Help", MF_END
-    MENUITEM `&Contents\tF1`, 0x6B
-    MENUITEM "&How to Play", 0x78
-    MENUITEM "C&ommands", 0x79
-    MENUITEM "How to &Use Help", 0x6D
+    MENUITEM `&Contents\tF1`, ID_HELP
+    MENUITEM "&How to Play", ID_HOWTOPLAY
+    MENUITEM "C&ommands", ID_COMMANDS
+    MENUITEM "How to &Use Help", ID_METAHELP
     MENUITEM "", 0
-    MENUITEM "&About Chip's Challenge...", 0x64, MF_END
+    MENUITEM "&About Chip's Challenge...", ID_ABOUT, MF_END
 
 ALIGN 512, db 0
 
@@ -414,12 +416,12 @@ ALIGN 512, db 0
     dw %2
 %endmacro
 
-ACCEL CTRL('R'), 0x71 ; Restart
-ACCEL CTRL('N'), 0x6E ; Next level
-ACCEL CTRL('P'), 0x6F ; Previous level
-ACCEL VK_F1, 0x6B, VIRTKEY ; Help
-ACCEL VK_F2, 0x72, VIRTKEY ; New Game
-ACCEL VK_F3, 0x74, VIRTKEY|LAST ; Pause
+ACCEL CTRL('R'), ID_RESTART
+ACCEL CTRL('N'), ID_NEXT
+ACCEL CTRL('P'), ID_PREVIOUS
+ACCEL VK_F1, ID_HELP, VIRTKEY
+ACCEL VK_F2, ID_NEWGAME, VIRTKEY
+ACCEL VK_F3, ID_PAUSE, VIRTKEY|LAST
 
 ALIGN 512, db 0
 

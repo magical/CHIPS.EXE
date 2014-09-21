@@ -131,4 +131,24 @@ Squished    equ 4
 Eaten       equ 5
 OutOfTime   equ 6
 
+; Menu actions
+ID_ABOUT        equ 0x64
+ID_QUIT         equ 0x6A
+ID_HELP         equ 0x6B
+ID_METAHELP     equ 0x6D
+
+ID_NEXT         equ 0x6E
+ID_PREVIOUS     equ 0x6F
+ID_RESTART      equ 0x71
+ID_NEWGAME      equ 0x72
+ID_BESTTIMES    equ 0x73
+ID_PAUSE        equ 0x74
+ID_BGM          equ 0x75
+ID_SOUND        equ 0x76
+ID_GOTO         equ 0x77
+ID_COLOR        equ 0x7A
+
+ID_HOWTOPLAY    equ 0x78
+ID_COMMANDS     equ 0x79
+
 ; vim: syntax=nasm
