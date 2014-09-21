@@ -337,8 +337,19 @@ POPUP "&Help", MF_END
 ALIGN 512, db 0
 
 ; 3fe00
+; RT_DIALOGs
 
-INCBIN "base.exe", 0x3fe00, 0x40800-0x3fe00
+INCBIN "base.exe", 0x3fe00, 0x40600-0x3fe00
+
+; 40600
+; RT_STRING
+
+db 0x5, "Chips"
+db 0x10, "Chip's Challenge"
+db 0x24, "By Tony Krueger", 10
+db       "Artwork by Ed Halley"
+
+ALIGN 512, db 0
 
 ; 40800
 ; RT_ACCELERATOR
