@@ -289,7 +289,55 @@ Digits:
 ; d600
 ; Resources
 
-INCBIN  "base.exe", $, 0x3fc00-0xd600
+; d600
+; RT_VERSION
+; Mysterious resource is mysterious
+dw 0, 1, 1, 0x2020, 0x10, 1, 0x4, 0x2e8, 0, 1
+ALIGN 512, db 0
+
+; d800
+; Bitmaps
+; RT_BITMAP
+
+; d800
+OBJ32_4:
+    INCBIN "res/OBJ32_4.bmp", 14
+    TIMES 0x22 db 0xFF ; ???
+    ALIGN 512, db 0
+
+
+; 1f800
+OBJ32_4E:
+    INCBIN "res/OBJ32_4E.bmp", 14
+    TIMES 0x1c db 0xFF
+    ALIGN 512, db 0
+
+; 30000
+OBJ32_1:
+    INCBIN "res/OBJ32_1.bmp", 14
+    db 0x04, 0x04, 0x88, 0x10, 0x0F, 0xFF, 0xF0, 0x00,
+    db 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x8D, 0xBF, 0xD2
+    ALIGN 512, db 0
+
+; 36a00
+BACKGROUND:
+    INCBIN "res/BACKGROUND.bmp", 14
+    ALIGN 512, db 0
+
+; 38400
+DigitsBitmap:
+    INCBIN "res/200.bmp", 14
+    ALIGN 512, db 0
+
+; 3a000
+INFOWND:
+    INCBIN "res/INFOWND.bmp", 14
+    ALIGN 512, db 0
+
+; 3b800
+CHIPEND:
+    INCBIN "res/CHIPEND.bmp", 14
+    ALIGN 512, db 0
 
 ; 3fc00
 ; RT_MENU

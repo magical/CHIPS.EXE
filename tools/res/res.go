@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/binary"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -14,15 +15,16 @@ import (
 var le = binary.LittleEndian
 
 func main() {
+	dump := flag.Bool("dump", false, "dump bitmaps")
 	flag.Parse()
 	f, err := os.Open(flag.Arg(0))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	f.Seek(0x3C, 0)
+	f.Seek(0x3C, os.SEEK_SET)
 	off := int64(read16(f))
-	f.Seek(off, 0)
+	f.Seek(off, os.SEEK_SET)
 	var ne NE
 	err = binary.Read(f, le, &ne)
 	if err != nil {
@@ -32,8 +34,8 @@ func main() {
 
 	var res []Resource
 	var block ResBlock
-	f.Seek(off+int64(ne.ResTableOffset), 0)
-	resShift := read16(f)
+	f.Seek(off+int64(ne.ResTableOffset), os.SEEK_SET)
+	resShift := uint(read16(f))
 	for {
 		err = binary.Read(f, le, &block)
 		if err != nil {
@@ -51,19 +53,28 @@ func main() {
 		}
 		for _, e := range resEntries {
 			res = append(res, Resource{
-				TypeID: block.TypeID,
+				TypeID:     block.TypeID,
 				ResourceID: e.ResourceID,
-				Sector: e.Sector,
-				Length: e.Length,
-				Flag:	e.Flag,
+				Sector:     e.Sector,
+				Length:     e.Length,
+				Flag:       e.Flag,
 			})
 		}
 	}
 
 	for i := range res {
-		printResource(&res[i], resShift, f, off+int64(ne.ResTableOffset))
+		r := &res[i]
+		if r.ResourceID < 0x8000 {
+			r.Name = readStringAt(f, off+int64(ne.ResTableOffset)+int64(r.ResourceID))
+		}
+		printResource(r, resShift, f, off+int64(ne.ResTableOffset))
+		if *dump && r.TypeID == RT_BITMAP {
+			dumpBitmap(r, resShift, f)
+		}
 	}
 }
+
+const RT_BITMAP = 0x8002
 
 var resourceTypes = []string{
 	"0",
@@ -89,25 +100,25 @@ var resourceTypes = []string{
 	"RT_HTML",
 }
 
-func printResource(r *Resource, resShift uint16, f *os.File, base int64) {
+func printResource(r *Resource, resShift uint, f *os.File, base int64) {
 	var typeid interface{}
-	var resid  interface{}
+	var resid interface{}
 	if r.TypeID >= 0x8000 && int(r.TypeID)-0x8000 < len(resourceTypes) {
 		typeid = resourceTypes[r.TypeID-0x8000]
 	} else {
 		typeid = fmt.Sprintf("%x", r.TypeID)
 	}
-	if r.ResourceID < 0x8000 {
-		resid = readStringAt(f, base+int64(r.ResourceID))
+	if r.Name != "" {
+		resid = r.Name
 	} else {
 		resid = fmt.Sprintf("%x", r.ResourceID-0x8000)
 	}
 	fmt.Printf("TypeID:     %v\n", typeid)
 	fmt.Printf("ResourceID: %v\n", resid)
-	fmt.Printf("Offset:     %x\n", uint(r.Sector) << resShift)
+	fmt.Printf("Offset:     %x\n", uint(r.Sector)<<resShift)
 	// EXEFMT says that the length field is measured in bytes.
 	// It is a lie.
-	fmt.Printf("Length:     %x\n", uint(r.Length) << resShift)
+	fmt.Printf("Length:     %x\n", uint(r.Length)<<resShift)
 	fmt.Printf("Flag:       %x\n", r.Flag)
 	fmt.Println()
 }
@@ -166,23 +177,97 @@ type NE struct {
 }
 
 type ResBlock struct {
-	TypeID	uint16
-	Num	uint16
-	_	uint32
+	TypeID uint16
+	Num    uint16
+	_      uint32
 }
 
 type ResEntry struct {
-	Sector	uint16
-	Length	uint16
-	Flag	uint16
-	ResourceID  uint16
-	_	uint32
+	Sector     uint16
+	Length     uint16
+	Flag       uint16
+	ResourceID uint16
+	_          uint32
 }
 
 type Resource struct {
-	TypeID	uint16
-	Sector	uint16
-	Length	uint16
-	Flag	uint16
-	ResourceID  uint16
+	TypeID     uint16
+	Sector     uint16
+	Length     uint16
+	Flag       uint16
+	ResourceID uint16
+
+	Name string
+}
+
+func dumpBitmap(r *Resource, shift uint, f *os.File) error {
+	_, err := f.Seek(int64(r.Sector)<<shift, os.SEEK_SET)
+	if err != nil {
+		return err
+	}
+	var bmp struct {
+		HeaderSize       uint32
+		Width            uint32
+		Height           uint32
+		NPlanes          uint16
+		NBits            uint16
+		Compression      uint32
+		Len              uint32
+		HRes             uint32
+		VRes             uint32
+		NColors          uint32
+		NImportantColors uint32
+	}
+	err = binary.Read(f, le, &bmp)
+	if err != nil {
+		return err
+	}
+
+	if bmp.HeaderSize != 40 {
+		return errors.New("bitmap: bad header")
+	}
+
+	palsize := 4 * uint32(bmp.NColors)
+	if palsize == 0 {
+		palsize = 4 << bmp.NBits
+	}
+
+	len := bmp.Len
+	if len == 0 && bmp.Compression == 0 {
+		len = stride(bmp.Width, bmp.NBits) * bmp.Height
+	}
+
+	name := r.Name
+	if name == "" {
+		name = fmt.Sprintf("%d", r.ResourceID-0x8000)
+	}
+	fout, err := os.Create(name + ".bmp")
+	if err != nil {
+		return err
+	}
+	defer fout.Close()
+
+	var h [14]byte
+	h[0] = 'B'
+	h[1] = 'M'
+	le.PutUint32(h[2:], 14+40+palsize+len)
+	le.PutUint32(h[10:], 14+40+palsize)
+	_, err = fout.Write(h[:])
+	if err != nil {
+		return err
+	}
+	err = binary.Write(fout, le, &bmp)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.CopyN(fout, f, int64(palsize+len))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func stride(w uint32, bits uint16) uint32 {
+	return (uint32(bits)*w + 31) / 32 * 4
 }
