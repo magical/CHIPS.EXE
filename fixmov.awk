@@ -14,12 +14,15 @@
     if ($1 == "mov" && $2 == "dh,cl") { print "db 0x8a,0xf1"; next }
     if ($1 == "sub" && $2 == "ah,ah") { print "db 0x2a,0xe4"; next }
     if ($1 == "sub" && $2 == "ch,ch") { print "db 0x2a,0xed"; next }
+    if ($1 == "sbb" && $2 == "al,al") { print "db 0x1a,0xc0"; next }
 
     if      ($1 == "mov")   opcod = 0x8B;
     else if ($1 == "add")   opcod = 0x03;
     else if ($1 == "sub")   opcod = 0x2B;
+    else if ($1 == "sbb")   opcod = 0x1B;
     else if ($1 == "xor")   opcod = 0x33;
     else if ($1 == "or")    opcod = 0x0B;
+    else if ($1 == "cmp")   opcod = 0x3B;
     else { print; next }
 
     if      ($2 == "ax,ax") modrm = 0xC0;
@@ -38,6 +41,7 @@
     else if ($2 == "cx,bp") modrm = 0xCD;
     else if ($2 == "cx,si") modrm = 0xCE;
     else if ($2 == "cx,di") modrm = 0xCF;
+    else if ($2 == "dx,ax") modrm = 0xD0;
     else if ($2 == "dx,cx") modrm = 0xD1;
     else if ($2 == "dx,dx") modrm = 0xD2;
     else if ($2 == "dx,bx") modrm = 0xD3;
@@ -53,6 +57,7 @@
     else if ($2 == "bx,bp") modrm = 0xDD;
     else if ($2 == "bx,si") modrm = 0xDE;
     else if ($2 == "bx,di") modrm = 0xDF;
+    else if ($2 == "sp,ax") modrm = 0xE0;
     else if ($2 == "sp,cx") modrm = 0xE1;
     else if ($2 == "sp,dx") modrm = 0xE2;
     else if ($2 == "sp,bx") modrm = 0xE3;
