@@ -5,6 +5,7 @@ GameStatePtr    equ 0x1680
 
 Upper               equ 0x0
 Lower               equ 0x400
+LevelNumber         equ 0x800
 ChipX               equ 0x808
 ChipY               equ 0x80a
 IsBuffered          equ 0x80e ; buffered move waiting
@@ -33,8 +34,15 @@ MonsterListSeg      equ 0x930
 
 Connection.flag     equ 8
 
+FakeLastLevel equ 144
+LastLevel     equ 149
+
+; data
+DecadeMessages equ 0xec2
+
 ; 0
 
+; Mouse movement
 One:
     mov ax,ds
     nop
@@ -349,7 +357,7 @@ One:
     mov si,[GameStatePtr]
     neg word [si+0x81a]
     push word 0xc6c
-    push ax
+    push ax ; chip
     mov ax,[GameStatePtr]
     add ax,0x81a
     push ax
@@ -378,7 +386,7 @@ One:
     mov si,[GameStatePtr]
     neg word [si+0x81a]
     push word 0xc6c
-    push ax
+    push ax ; chip
     mov ax,[GameStatePtr]
     add ax,0x81a
     push ax
@@ -648,6 +656,7 @@ One:
 
 ; 636
 
+; Slide movement
 Two:
     mov ax,ds
     nop
@@ -659,6 +668,16 @@ Two:
     sub sp,byte +0x16
     push di
     push si
+
+    ;  6 x
+    ;  8 y
+    ;  a x
+    ;  c y
+    ;  e xdirptr
+    ; 10 ydirptr
+    ; 12 flag
+    ; 14 ptr
+
     mov bx,[bp+0xe]
     mov ax,[bx]
     mov [bp-0xc],ax
@@ -667,28 +686,35 @@ Two:
     mov [bp-0xe],ax
     mov ax,[bp+0x12]
     or ax,ax
-    jz .label0
+    jz .label0 ; ax == 0
     dec ax
-    jl .label1
-    jo .label1
+    jl .label1 ; ax < 1 => ax < 0
+    jo .label1 ; ax - 1 overflows => ax == MININT16
     dec ax
-    jng .label2
+    jng .label2 ; (ax-1) <= 1 => ax <= 2
+
+    ; otherwise
 .label1: ; 664
+    ; uninitialized
     mov si,[bp-0x6]
     mov di,[bp-0xa]
     jmp short .label3
+
+    ; flag == 0
 .label0: ; 66c
     mov bx,[GameStatePtr]
-    mov word [bx+0x80c],0x1
+    mov word [bx+0x80c],0x1 ; issliding?
     mov ax,[GameStatePtr]
-    add ax,0x818
+    add ax,0x818 ; chip slide x?
     mov si,ax
     mov [bp-0x4],ds
     mov ax,[GameStatePtr]
-    add ax,0x81a
+    add ax,0x81a ; chip slide y?
     mov di,ax
     mov [bp-0x8],ds
     jmp short .label3
+
+    ; flag == 2
 .label2: ; 68e
     push word [bp+0x8]
     push word [bp+0x6]
@@ -698,13 +724,13 @@ Two:
     mov si,[GameStatePtr]
     mov al,[bx+si]
     push ax
-    call word 0x6b9:0x1396 ; 6a4
+    call word 0x6b9:0x1396 ; 6a4 FindSlipperAt
     add sp,byte +0x6
     mov [bp-0x12],ax
     mov [bp-0x10],dx
     or dx,ax
     jnz .label4
-    call word 0x272:0x1250 ; 6b6
+    call word 0x272:0x1250 ; 6b6 NewSlipper
     mov [bp-0x12],ax
     mov [bp-0x10],dx
 .label4: ; 6c1
@@ -722,6 +748,7 @@ Two:
     add ax,0x7
     mov di,ax
     mov [bp-0x8],dx
+
 .label3: ; 6e5
     mov ax,[bp+0x6]
     cmp [bp+0xa],ax
@@ -758,51 +785,55 @@ Two:
 .label11: ; 735
     mov al,[bp-0x13]
     sub ah,ah
-    cmp ax,0x32
-    jnz .label12
+    cmp ax,ForceRandom
+    jnz .notForceRandom
     jmp word .label13
-.label12: ; 742
+.notForceRandom: ; 742
     jna .label14
     jmp word .label15
+
 .label14: ; 747
-    cmp al,0x1a
-    jz .label16
+    cmp al,IceWallNW
+    jz .iceWallNW
     jg .label17
-    sub al,0xc
+    sub al,Ice
     jz .label18
     dec al
-    jnz .label19
-    jmp word .label20
-.label19: ; 758
-    sub al,0x5
-    jnz .label21
+    jnz .notForceS
+    jmp word .forceS
+.notForceS: ; 758
+    sub al,ForceN - ForceS
+    jnz .notForceN
     jmp word .label22
-.label21: ; 75f
+.notForceN: ; 75f
     dec al
-    jnz .label23
+    jnz .notForceW
     jmp word .label24
-.label23: ; 766
+.notForceW: ; 766
     dec al
-    jnz .label25
+    jnz .notForceE
     jmp word .label26
-.label25: ; 76d
+.notForceE: ; 76d
     jmp word .label15
+
 .label17: ; 770
-    sub al,0x1b
-    jz .label27
+    sub al,IceWallNE
+    jz .iceWallNE
     dec al
-    jnz .label28
-    jmp word .label29
-.label28: ; 77b
+    jnz .notIceWallSE
+    jmp word .iceWallSE
+.notIceWallSE: ; 77b
     dec al
-    jnz .label30
-    jmp word .label31
-.label30: ; 782
-    sub al,0xc
+    jnz .notIceWallSW
+    jmp word .iceWallSW
+.notIceWallSW: ; 782
+    sub al,Teleport - IceWallSW
     jz .label18
-    sub al,0x2
+    sub al,Trap - Teleport
     jz .label18
     jmp word .label15
+
+    ; Ice
 .label18: ; 78d
     mov ax,[bp-0xc]
     mov es,[bp-0x4]
@@ -814,11 +845,13 @@ Two:
     jmp word .label15
     nop
     nop
-.label16: ; 7a4
+
+    ; Ice wall NW
+.iceWallNW: ; 7a4
     cmp word [bp-0xc],byte -0x1
     jnz .label32
     cmp word [bp-0xe],byte +0x0
-    jz .label20
+    jz .forceS
 .label32: ; 7b0
     cmp word [bp-0xc],byte +0x0
     jnz .label33
@@ -834,7 +867,9 @@ Two:
     neg ax
     jmp short .label34
     nop
-.label27: ; 7d2
+
+    ; Ice wall NE
+.iceWallNE: ; 7d2
     cmp word [bp-0xc],byte +0x0
     jnz .label35
     cmp word [bp-0xe],byte -0x1
@@ -844,13 +879,16 @@ Two:
     jnz .label33
     cmp word [bp-0xe],byte +0x0
     jnz .label33
-.label20: ; 7ea
+    ; Force S
+.forceS: ; 7ea
     mov es,[bp-0x4]
     mov word [es:si],0x0
     mov es,[bp-0x8]
     mov word [es:di],0x1
     jmp short .label15
-.label29: ; 7fc
+
+    ; Ice wall SE
+.iceWallSE: ; 7fc
     cmp word [bp-0xc],byte +0x0
     jnz .label36
     cmp word [bp-0xe],byte +0x1
@@ -870,7 +908,9 @@ Two:
     mov es,[bp-0x8]
     mov word [es:di],0xffff
     jmp short .label15
-.label31: ; 830
+
+    ; Ice wall SW
+.iceWallSW: ; 830
     cmp word [bp-0xc],byte -0x1
     jnz .label38
     cmp word [bp-0xe],byte +0x0
@@ -889,6 +929,7 @@ Two:
 .label37: ; 856
     mov es,[bp-0x8]
     mov word [es:di],0x0
+
 .label15: ; 85e
     mov es,[bp-0x4]
     mov ax,[es:si]
@@ -904,6 +945,7 @@ Two:
     jz .label40
     jmp word .label6
 .label40: ; 883
+    ; if flag == 2 && *di != 0xff, *di = SetTileDir(*di, xdir, ydir)
     mov di,[bp+0x14]
     cmp word [bp+0x12],byte +0x2
     jnz .label41
@@ -913,18 +955,21 @@ Two:
     push word [bp-0xc]
     mov al,[di]
     push ax
-    call word 0x8b3:0x486 ; 89a
+    call word 0x8b3:0x486 ; 89a SetTileDir
     add sp,byte +0x6
     mov [di],al
 .label41: ; 8a4
+
     cmp byte [di],0xff
     jz .label42
     mov al,[di]
     jmp short .label43
     nop
+
+    ; Force Random
 .label13: ; 8ae
     push byte +0x4
-    call word 0x91e:0x72e ; 8b0
+    call word 0x91e:0x72e ; 8b0 Rand
     add sp,byte +0x2
     or ax,ax
     jnz .label44
@@ -932,7 +977,7 @@ Two:
 .label44: ; 8bf
     dec ax
     jnz .label45
-    jmp word .label20
+    jmp word .forceS
 .label45: ; 8c5
     dec ax
     jnz .label46
@@ -1007,6 +1052,7 @@ Two:
 
 ; 966
 
+; DrawTile
 Three:
     mov ax,ds
     nop
@@ -1016,26 +1062,30 @@ Three:
     push ds
     mov ds,ax
     sub sp,byte +0xa
-    cmp byte [bp+0x12],0x0
+
+    ; 10 tile
+    ; 12 tile
+
+    cmp byte [bp+0x12],Floor
     jnz .label0
     jmp word .label1
 .label0: ; 97c
-    cmp byte [bp+0x10],0x40
+    cmp byte [bp+0x10],FirstTransparent
     jnc .label2
     jmp word .label1
 .label2: ; 985
-    cmp byte [bp+0x10],0x6f
+    cmp byte [bp+0x10],LastTransparent
     jna .label3
     jmp word .label1
 .label3: ; 98e
     push byte +0x20
-    call word 0x9a5:0x2a3e ; 990
+    call word 0x9a5:0x2a3e ; 990 GetTileImagePos
     add sp,byte +0x2
     mov [bp-0xa],ax
     mov [bp-0x8],dx
     mov al,[bp+0x12]
     push ax
-    call word 0x9d1:0x2a3e ; 9a2
+    call word 0x9d1:0x2a3e ; 9a2 GetTileImagePos
     add sp,byte +0x2
     push word [0x1734]
     push word [bp-0xa]
@@ -1047,11 +1097,11 @@ Three:
     push dx
     push word 0xcc
     push byte +0x20
-    call word 0x0:0x9f1 ; 9c3
+    call word 0x0:0x9f1 ; 9c3 GDI.BitBlt
     mov al,[bp+0x10]
     add al,0x60
     push ax
-    call word 0x9fe:0x2a3e ; 9ce
+    call word 0x9fe:0x2a3e ; 9ce GetTileImagePos
     add sp,byte +0x2
     push word [0x1734]
     push word [bp-0xa]
@@ -1063,11 +1113,11 @@ Three:
     push dx
     push word 0xee
     push word 0x86
-    call word 0x0:0xa1e ; 9f0
+    call word 0x0:0xa1e ; 9f0 GDI.BitBlt
     mov al,[bp+0x10]
     add al,0x30
     push ax
-    call word 0xa45:0x2a3e ; 9fb
+    call word 0xa45:0x2a3e ; 9fb GetTileImagePos
     add sp,byte +0x2
     push word [0x1734]
     push word [bp-0xa]
@@ -1079,7 +1129,7 @@ Three:
     push dx
     push word 0x88
     push word 0xc6
-    call word 0x0:0xffff ; a1d
+    call word 0x0:0xffff ; a1d GDI.BitBlt
     push word [bp+0x6]
     push word [bp+0x8]
     push word [bp+0xa]
@@ -1093,7 +1143,7 @@ Three:
 .label1: ; a3e
     mov al,[bp+0x10]
     push ax
-    call word 0x5ac:0x2a3e ; a42
+    call word 0x5ac:0x2a3e ; a42 GetTileImagePos
     add sp,byte +0x2
     push word [bp+0x6]
     push word [bp+0x8]
@@ -1108,7 +1158,7 @@ Three:
     push byte +0x20
     push word 0xcc
     push byte +0x20
-    call word 0x0:0xffff ; a68
+    call word 0x0:0xffff ; a68 GDI.StretchBlt
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -1364,6 +1414,7 @@ Four:
 
 ; cca
 
+; EndLevel
 Five:
     mov ax,ds
     nop
@@ -1375,62 +1426,72 @@ Five:
     sub sp,byte +0x6
     push di
     push si
-    call word 0xd51:0x17a2 ; cd9
-    push word 0xffff
-    push word 0x3c6
+
+    call word 0xd51:0x17a2 ; cd9 2:0x17a2
+
+    ; Show level completed dialog
+    push word 0xffff ; 6:
+    push word 0x3c6  ; CompleteMsgProc
     push word [0x172a]
-    call word 0x0:0xffff ; ce8
+    call word 0x0:0xffff ; ce8  KERNEL.MakeProcInstance
     mov si,ax
-    push word [0x172a]
+    push word [0x172a]  ; hInstance
     push ds
-    push word 0x1362
-    push word [bp+0x6]
+    push word 0x1362    ; "DLG_COMPLETE"
+    push word [bp+0x6]  ; hWndParent
     mov ax,dx
     push ax
-    push si
+    push si             ; lpDialogFunc
     mov di,ax
-    call word 0x0:0xffff ; d00
+    call word 0x0:0xffff ; d00 USER.DialogBox
     push di
     push si
-    call word 0x0:0xffff ; d07
+    call word 0x0:0xffff ; d07 KERNEL.FreeProcInstance
     mov bx,[GameStatePtr]
-    cmp word [bx+0x800],0x90
-    jz .label0
-    cmp word [bx+0x800],0x95
-    jz .label0
-    mov ax,[bx+0x800]
-    mov cx,0xa
+    cmp word [bx+LevelNumber],FakeLastLevel
+    jz .lastLevel
+    cmp word [bx+LevelNumber],LastLevel
+    jz .lastLevel
+
+    ; If the level number is divisible by 10
+    ; and greater than or equal to 50
+    ; and less than or equal to 140,
+    ; show a decade message.
+    mov ax,[bx+LevelNumber]
+    mov cx,10
     cwd
     idiv cx
     or dx,dx
-    jnz .label1
-    mov ax,[bx+0x800]
+    jnz .noDecadeMsg
+    mov ax,[bx+LevelNumber]
     cwd
     idiv cx
     mov si,ax
-    cmp ax,0x5
-    jl .label1
-    cmp si,byte +0xe
-    jg .label1
+    cmp ax,5
+    jl .noDecadeMsg
+    cmp si,byte 14
+    jg .noDecadeMsg
     push byte +0x0
     shl si,1
     push ds
-    push word [si+0xeb8]
+    push word [DecadeMessages + si - 5*2]
     push word [0x10]
-    call word 0xd59:0x0 ; d4e
+    call word 0xd59:0x0 ; d4e 2:0x0
     add sp,byte +0x8
-.label1: ; d56
-    call word 0xda3:0x17ba ; d56
+
+.noDecadeMsg: ; d56
+    call word 0xda3:0x17ba ; d56 2:0x17ba
     push byte +0x0
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x800]
+    mov ax,[bx+LevelNumber]
     inc ax
     push ax
-    call word 0x628:0x356 ; d67
+    call word 0x628:0x356 ; d67 4:0x356
     add sp,byte +0x4
-    jmp short .label2
+    jmp short .end
     nop
-.label0: ; d72
+
+.lastLevel: ; d72
     mov word [bx+0xa36],0x1
     mov bx,[GameStatePtr]
     mov word [bx+0x80c],0x0
@@ -1440,8 +1501,8 @@ Five:
     mov word [bx+0x91e],0x0
     mov bx,[GameStatePtr]
     mov word [bx+0x928],0x0
-    call word 0x5f4:0x17ba ; da0
-.label2: ; da5
+    call word 0x5f4:0x17ba ; da0 2:0x17ba
+.end: ; da5
     pop si
     pop di
     lea sp,[bp-0x2]
@@ -1452,6 +1513,7 @@ Five:
 
 ; dae
 
+; move block?
 Six:
     mov ax,ds
     nop
@@ -1462,6 +1524,7 @@ Six:
     mov ds,ax
     sub sp,byte +0xe
     push si
+
     mov ax,[bp+0xe]
     add ax,[bp+0xa]
     mov [bp-0x6],ax
@@ -1581,7 +1644,7 @@ Six:
 .label13: ; ecc
     lea ax,[bp+0x10]
     push ax
-    push byte +0x1
+    push byte +0x1 ; block
     lea ax,[bp+0xe]
     push ax
     lea ax,[bp+0xc]
@@ -1645,7 +1708,7 @@ Six:
     jz .label25
     lea ax,[bp+0x10]
     push ax
-    push byte +0x1
+    push byte +0x1 ; block
     lea ax,[bp+0xe]
     push ax
     lea ax,[bp+0xc]
@@ -1678,7 +1741,7 @@ Six:
     add sp,byte +0xc
     lea ax,[bp+0x10]
     push ax
-    push byte +0x1
+    push byte +0x1 ; block
     lea ax,[bp+0xe]
     push ax
     lea ax,[bp+0xc]
@@ -1872,6 +1935,7 @@ Seven:
     sub sp,byte +0x1c
     push di
     push si
+
     mov bx,[GameStatePtr]
     mov ax,[bx+ChipX]
     add ax,[xdir]
@@ -2268,7 +2332,7 @@ Seven:
     nop
 .label36: ; 1592
     push word 0xc6c
-    push byte +0x0
+    push byte +0x0 ; chip
     lea ax,[bp+0xa]
     push ax
     lea ax,[bp+0x8]
@@ -2325,7 +2389,7 @@ Seven:
     call word 0x16b0:0x276a ; 162b
     add sp,byte +0xc
     push word 0xc6c
-    push byte +0x0
+    push byte +0x0 ; chip
     lea ax,[bp+0xa]
     push ax
     lea ax,[bp+0x8]
@@ -2590,6 +2654,7 @@ Seven:
 
 ; 18da
 
+; Move monster
 ; Called repeatedly in the big freaking monster loop.
 ; Parameters:
 ;   probably HWND or HDC
@@ -2751,7 +2816,7 @@ Eight:
 .jump4:
     lea ax,[tile]
     push ax
-    push byte +0x2
+    push byte +0x2 ; monster
     push word [bp+0xe]
     push word [bp+0xc]
 .label12: ; 1a0a
@@ -2788,7 +2853,7 @@ Eight:
     add bx,[GameStatePtr]
     mov al,[bx]
     push ax
-    call word 0x1a77:0x12be ; 1a50
+    call word 0x1a77:0x12be ; 1a50 DeleteSlipperAt
     add sp,byte +0x8
 .label14: ; 1a58
     cmp word [bp-0x14],byte +0x2
@@ -2835,7 +2900,7 @@ Eight:
     add sp,byte +0xc
     lea ax,[tile]
     push ax
-    push byte +0x2
+    push byte +0x2 ; monster
     push word [bp+0xe]
     push word [bp+0xc]
     push word [bp-0x12]

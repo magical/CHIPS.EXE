@@ -311,7 +311,8 @@ db "s", 0
 db 0
 db "You increased your score on this level by %li point%s!", 0
 db "Total Score:  %li", 0
-db 0, 0xFF, 0
+db 0
+dw 0xFF ; c6c
 db "Great Job, Chip!", 10, "You did it!  You finished the challenge!", 0
 db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0
 db 0
@@ -319,7 +320,8 @@ db "You completed %d levels, and your total score for the challenge is %li point
 db "You can still improve your score, by completing levels that you skipped, and getting better times on each level.  When you replay a level, if your new score is better than your old, your score will be adjusted by the difference.  Select Best Times from the Game menu to see your scores for each level.", 0
 
 ; Decade messages
-; 0xEC0
+; 0xEC2
+DecadeMessages:
 dw Level50Message
 dw Level60Message
 dw Level70Message
