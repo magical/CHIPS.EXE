@@ -19,6 +19,7 @@ var le = binary.LittleEndian
 
 func main() {
 	relative := flag.Bool("rel", false, "show relative addresses")
+	dosort := flag.Bool("sort", true, "sort relocations by address")
 	flag.Parse()
 	f, err := os.Open(flag.Arg(0))
 	if err != nil {
@@ -176,7 +177,9 @@ func main() {
 		}
 
 		// Sort relocations
-		sort.Sort(byAddress(reloclist))
+		if *dosort {
+			sort.Sort(byAddress(reloclist))
+		}
 
 		// Print relocations
 		for _, r := range reloclist {
