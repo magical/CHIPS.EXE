@@ -18,6 +18,7 @@ import (
 var le = binary.LittleEndian
 
 func main() {
+	relative := flag.Bool("rel", false, "show relative addresses")
 	flag.Parse()
 	f, err := os.Open(flag.Arg(0))
 	if err != nil {
@@ -167,6 +168,7 @@ func main() {
 				reloclist = append(reloclist, Reloc{
 					Addr:   segOffset + int64(x),
 					String: str,
+					Typ:    typ,
 				})
 
 				f.Seek(segOffset+int64(x), 0)
@@ -178,7 +180,16 @@ func main() {
 
 		// Print relocations
 		for _, r := range reloclist {
-			fmt.Printf("  Reloc @ %4X %s\n", r.Addr, r.String)
+			x := r.Addr
+			if *relative {
+				x -= segOffset
+			}
+			if r.Typ == "SEGMENT" {
+				x -= 3
+			} else if r.Typ == "FARADDR" {
+				x -= 1
+			}
+			fmt.Printf("  Reloc @ %4X %s\n", x, r.String)
 		}
 		fmt.Println()
 	}
@@ -206,6 +217,7 @@ func read16(f *os.File) uint16 {
 type Reloc struct {
 	Addr   int64
 	String string
+	Typ    string
 }
 
 type byAddress []Reloc
@@ -267,8 +279,8 @@ type Segment struct {
 }
 
 const (
-	SegCode        = 0
-	SegData        = 1
+	SegCode = 0
+	SegData = 1
 
 	SegMovable     = 1 << 4
 	SegPreload     = 1 << 6
