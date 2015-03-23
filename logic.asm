@@ -1309,6 +1309,7 @@ func MonsterLoop
     jnz .label17
     jmp word .next
 .label17: ; 9c2
+    ; rest of logic shared with gliders
     jmp word .label18
     nop
 
@@ -1542,8 +1543,8 @@ func MonsterLoop
     jg .label29
     cmp word [ydistance],byte +0x0
     jng .label30
-    mov word [xnewdir],0x0
-    mov word [ynewdir],0x1
+    mov word [xnewdir],0
+    mov word [ynewdir],+1
     jmp short .label28
 .label30: ; be6
     mov word [xnewdir],0
@@ -1552,7 +1553,7 @@ func MonsterLoop
 .label29: ; bf2
     cmp word [xdistance],byte +0x0
     jng .label31
-    mov word [xnewdir],1
+    mov word [xnewdir],+1
     jmp short .teeth.setYdiroutToZero
     nop
 .label31: ; c00
@@ -1568,7 +1569,7 @@ func MonsterLoop
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     mov si,[offset]
-    mov al,[es:bx+si+Upper]
+    mov al,[es:bx+si+Monster.tile]
     push ax
     call word 0xcd0:0x486 ; c1f SetTileDir
     add sp,byte +0x6
@@ -1610,7 +1611,7 @@ func MonsterLoop
     cwd
     xor ax,dx
     sub ax,dx
-    ; if xdistance >= ydistance
+    ; if xdistance <= ydistance
     cmp ax,cx
     jl .label36
     cmp word [xdistance],byte +0x0
@@ -1643,7 +1644,7 @@ func MonsterLoop
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     mov si,[offset]
-    mov al,[es:bx+si+Upper]
+    mov al,[es:bx+si+Monster.tile]
     push ax
     call word 0xd60:0x486 ; ccd SetTileDir
     add sp,byte +0x6
@@ -1704,7 +1705,7 @@ func MonsterLoop
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     mov si,[offset]
-    mov al,[es:bx+si]
+    mov al,[es:bx+si+Monster.tile]
     push ax
     call word 0xdbd:0x486 ; d5d SetTileDir
     add sp,byte +0x6
@@ -2141,6 +2142,7 @@ func MonsterLoop
     or ax,ax
     jnz .label7
 .label18: ; 113e
+    ; shared with balls
     lea ax,[ynewdir]
     push ax
     lea cx,[xnewdir]
@@ -2249,7 +2251,132 @@ endfunc
 
 ; 1250
 
-INCBIN "base.exe", 0x6200+$, 0x22be - 0x1250
+func NewSlipper
+    sub sp,byte +0x2
+    mov bx,[GameStatePtr]
+    mov ax,[bx+SlipListCap]
+    cmp [bx+SlipListLen],ax
+    jl .label0
+    push byte +0xb
+    push byte +0x8
+    mov ax,bx
+    add ax,SlipListCap
+    push ax
+    mov ax,bx
+    add ax,SlipListPtr
+    push ax
+    mov ax,bx
+    add ax,SlipListHandle
+    push ax
+    call word 0x12e7:0x1a4 ; 1281 3:0x1a4 GrowArray
+    add sp,byte +0xa
+    or ax,ax
+    jnz .label0
+    cwd
+    jmp short .end
+.label0: ; 1290
+    mov bx,[GameStatePtr]
+    inc word [bx+SlipListLen]
+    mov bx,[GameStatePtr]
+    mov ax,[bx+SlipListLen]
+    mov cx,ax
+    shl ax,byte 0x2
+    add ax,cx
+    shl ax,1
+    add ax,cx
+    add ax,[bx+SlipListPtr]
+    mov dx,[bx+SlipListSeg]
+    sub ax,0xb
+.end: ; 12b6
+    lea sp,[bp-0x2]
+endfunc
+
+; 12be
+
+func DeleteSlipperAt
+    sub sp,byte +0x6
+    push di
+    push si
+    mov bx,[GameStatePtr]
+    cmp word [bx+SlipListLen],byte +0x0
+    jnz .nonzero
+.returnZero: ; 12d8
+    xor ax,ax
+    jmp word .end
+    nop
+.nonzero: ; 12de
+    push word [bp+0xa]
+    push word [bp+0x8]
+    call word 0x1316:0x58 ; 12e4 3:58 FindSlipper
+    add sp,byte +0x4
+    mov di,ax
+    cmp di,byte -1
+    jz .returnZero
+    mov bx,ax
+    shl bx,byte 0x2
+    add bx,ax
+    shl bx,1
+    add bx,ax
+    mov si,[GameStatePtr]
+    les si,[si+SlipListPtr]
+    cmp word [es:bx+si+Monster.slipping],byte +0x0
+    jz .notslipping
+    push word [bp+0xa]
+    push word [bp+0x8]
+    call word 0x13ac:0x0 ; 1313 3:0 FindMonster
+    add sp,byte +0x4
+    mov bx,ax
+    shl bx,byte 0x2
+    add bx,ax
+    shl bx,1
+    add bx,ax
+    mov si,[GameStatePtr]
+    les si,[si+MonsterListPtr]
+    mov word [es:bx+si+Monster.slipping],0x0
+.notslipping: ; 1334
+    lea bx,[di+0x1]
+    mov si,[GameStatePtr]
+    cmp bx,[si+SlipListLen]
+    jnl .noloop
+    mov ax,bx
+    shl ax,byte 0x2
+    add ax,bx
+    shl ax,1
+    add ax,bx
+    mov [bp-0x4],ax
+    mov [bp-0x6],bx
+.loop: ; 1352
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    add bx,[bp-0x4]
+    mov ax,es
+    push ds
+    lea di,[bx-0xb]
+    mov si,bx
+    mov ds,ax
+    mov cx,0x5
+    rep movsw
+    movsb
+    pop ds
+    add word [bp-0x4],byte +0xb
+    inc word [bp-0x6]
+    mov ax,[bp-0x6]
+    mov bx,[GameStatePtr]
+    cmp [bx+SlipListLen],ax
+    jg .loop
+.noloop: ; 1382
+    mov bx,[GameStatePtr]
+    mov ax,0x1
+    dec word [bx+SlipListLen]
+.end: ; 138d
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+endfunc
+
+; 1396
+
+INCBIN "base.exe", 0x6200+$, 0x22be - 0x1396
 
 ; 22be
 

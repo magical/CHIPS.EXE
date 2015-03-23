@@ -678,6 +678,11 @@ Two:
     ; 12 flag
     ; 14 ptr
 
+    ; -4 (si) far pointer to x dir
+    ; -6 seg
+    ; -8 (di) far pointer to y dir
+    ; -a seg
+
     mov bx,[bp+0xe]
     mov ax,[bx]
     mov [bp-0xc],ax
@@ -760,7 +765,7 @@ Two:
     shl bx,byte 0x5
     add bx,[bp+0xa]
     add bx,[GameStatePtr]
-    mov al,[bx+0x400]
+    mov al,[bx+Lower]
     jmp short .label8
 .label7: ; 708
     mov bx,[bp+0xc]
@@ -894,8 +899,9 @@ Two:
     cmp word [bp-0xe],byte +0x1
     jnz .label36
 .label26: ; 808
+    ; set slide dir to -1,0
     mov es,[bp-0x4]
-    mov word [es:si],0xffff
+    mov word [es:si],-1
     jmp short .label37
 .label36: ; 812
     cmp word [bp-0xc],byte +0x1
@@ -903,10 +909,11 @@ Two:
     cmp word [bp-0xe],byte +0x0
     jnz .label33
 .label22: ; 81e
+    ; set slide dir to 0,-1
     mov es,[bp-0x4]
-    mov word [es:si],0x0
+    mov word [es:si],0
     mov es,[bp-0x8]
-    mov word [es:di],0xffff
+    mov word [es:di],-1
     jmp short .label15
 
     ; Ice wall SW
@@ -989,6 +996,7 @@ Two:
 .label47: ; 8d1
     jmp short .label15
     nop
+
 .label42: ; 8d4
     mov bx,[bp+0x8]
     shl bx,byte 0x5
@@ -1925,6 +1933,7 @@ Seven:
     %define ydir (bp+0xa)
     %define x (bp-8)
     %define y (bp-0xa)
+    %define tile (bp-0xb)
     mov ax,ds
     nop
     inc bp
@@ -2663,6 +2672,10 @@ Seven:
 ;   x dir
 ;   y dir
 ;   tile
+; Return value:
+;   0 - blocked
+;   1 - success
+;   2 - dead
 Eight:
 ;warning: no jump target 0
 ;warning: no jump target 1a0c
