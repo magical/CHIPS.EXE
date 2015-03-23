@@ -2376,7 +2376,36 @@ endfunc
 
 ; 1396
 
-INCBIN "base.exe", 0x6200+$, 0x22be - 0x1396
+func FindSlipperAt
+    sub sp,byte +0x4
+    push word [bp+0xa]
+    push word [bp+0x8]
+    call word 0x1431:0x58 ; 13a9 FindSlipper
+    add sp,byte +0x4
+    mov [bp-0x4],ax
+    inc ax
+    jz .returnZero
+    mov ax,[bp-0x4]
+    mov cx,ax
+    shl ax,byte 0x2
+    add ax,cx
+    shl ax,1
+    add ax,cx
+    mov bx,[GameStatePtr]
+    add ax,[bx+SlipListPtr]
+    mov dx,[bx+SlipListSeg]
+    jmp short .end
+    nop
+.returnZero: ; 13d4
+    xor ax,ax
+    cwd
+.end: ; 13d7
+    lea sp,[bp-0x2]
+endfunc
+
+; 13de
+
+INCBIN "base.exe", 0x6200+$, 0x22be - 0x13de
 
 ; 22be
 
