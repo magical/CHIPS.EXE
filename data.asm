@@ -11,8 +11,8 @@ SEGMENT DATA ; 10
     dw 0 ; 0xc
     dw 0 ; 0xe
 
-    dw 0 ; 0x10 *
-hWnd    dw 0 ; 0x12
+    dw 0 ; 0x10 HWND main window
+hWnd    dw 0 ; 0x12 HWND
     dw 0 ; 0x14
     dw 0 ; 0x16
     dw 0 ; 0x18
@@ -23,7 +23,7 @@ hWnd    dw 0 ; 0x12
     dw 0 ; 0x20
     dw 0 ; 0x22 *
     dw 0 ; 0x24
-    dw 0 ; 0x26 *
+    dw 0 ; 0x26 HMENU
     dw 0 ; 0x28
     dw 0 ; 0x2a
     dw 0 ; 0x2c
@@ -414,6 +414,13 @@ times 9 dw 0 ; 1682
     dw 0 ; 1694 *
 
 times 45 dw 0 ; 1696
+
+; seg5.asm
+;   169e    ???
+;   16a0            0x20 or 8, depending on vertical resolution
+;   16c0            horizontal resolution
+;   16c2            vertical resolution
+;   172e    BOOL    records whether windows version >= 3.10
 
 ; Digit image pointers
 times 24 dw 0 ; 16f0

@@ -5,12 +5,14 @@ SEGMENT CODE ; 5
 ;   26      HMENU
 ;   a14     HGDIOBJ tile object
 ;   a16     LPVOID  bitmap data?
-;   a18             bitmap to use: 1, 2, 3, or 4
+;   a18             bitmap to use: 1, 2, 3, or 4 (monochrome, locolor, hicolor, hicolor)
+;   169e    ???
 ;   16a0            0x20 or 8, depending on vertical resolution
 ;   16c0            horizontal resolution
 ;   16c2            vertical resolution
-;   169e    ???
 ;   172e    BOOL    records whether windows version >= 3.10
+
+%include "constants.asm"
 
 InitGraphics:
     mov ax,ds
@@ -24,7 +26,6 @@ InitGraphics:
     push si
 
     %stacksize small
-    %arg hWnd:word
     %define hDC (bp-4)
 
     mov si,[bp+6] ; ???
@@ -55,7 +56,7 @@ InitGraphics:
     mov [0x16a0],ax
     or si,si
     jz .label2
-    push byte +0x7a
+    push byte ID_COLOR
     call word 0xffff:0x198e ; 50 2:0x198e
     add sp,byte +0x2
     or ax,ax
@@ -66,41 +67,41 @@ InitGraphics:
     mov dx,0x1
 .label3: ; 63
     or dx,dx
-    jz .label4
+    jz .useMonochrome
     or si,si
-    jz .label5
+    jz .checkRastercaps
     push word [hDC]
     push byte +0x18 ; NUMCOLORS
     call word 0x0:0x80 ; 70 GDI.GetDeviceCaps
     cmp ax,0x2
-    jng .label4
-.label5: ; 7a
+    jng .useMonochrome
+.checkRastercaps: ; 7a
     push word [hDC]
     push byte +0x26 ; RASTERCAPS
     call word 0x0:0x8f ; 7f GDI.GetDeviceCaps
     test ah,0x1 ; RC_BITBLT
-    jz .label6
+    jz .checkVertRes
     push word [hDC]
     push byte +0x68 ; SIZEPALETTE
     call word 0x0:0xffff ; 8e GDI.GetDeviceCaps
     cmp ax,0x100
-    jl .label6
+    jl .checkVertRes
     mov word [0xa18],0x4
-    jmp short .label7
-.label6: ; a0
+    jmp short .releaseDC
+.checkVertRes: ; a0
     cmp word [0x16c2],350
-    jg .label8
+    jg .useHicolor
     mov ax,0x2
-    jmp short .label9
+    jmp short .setColors
     nop
-.label8: ; ae
+.useHicolor: ; ae
     mov ax,0x3
-.label9: ; b1
+.setColors: ; b1
     mov [0xa18],ax ; bitmap to use
-    jmp short .label7
-.label4: ; b6
+    jmp short .releaseDC
+.useMonochrome: ; b6
     mov word [0xa18],0x1
-.label7: ; bc
+.releaseDC: ; bc
     push byte +0x0
     push word [hDC]
     call word 0x0:0xffff ; c1 USER.ReleaseDC
@@ -124,7 +125,7 @@ InitGraphics:
 
     ; Check or uncheck the 'Color' menu item as appropriate.
     push word [0x26]        ; hMenu
-    push byte +0x7a         ; uIDCheckItem
+    push byte ID_COLOR      ; uIDCheckItem
     cmp word [0xa18],byte +0x1
     jz .label12
     mov ax,0x8  ; MF_CHECKED
@@ -151,7 +152,7 @@ InitGraphics:
 ;load tile bitmap
 LoadTiles:
     %stacksize small
-    %arg hInstance:word, hBitmapOut:word
+    %arg hInstance:word, hBitmapOut:word, loadDigits:word
 
     mov ax,ds
     nop
@@ -193,7 +194,7 @@ LoadTiles:
     mov [si],ax
     or ax,ax
     jz .failure
-    cmp word [bp+0xa],byte +0x0
+    cmp word [loadDigits],byte +0x0
     jnz .label18
     call word 0xffff:0x4e ; 163 9:0x4e LoadDigits
     or ax,ax
