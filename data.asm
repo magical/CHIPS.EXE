@@ -1,6 +1,50 @@
 SEGMENT DATA ; 10
 
-INCBIN "base.exe", 0x4800, 0x68
+; Variables
+
+    dw 0 ; 0x0
+    dw 0 ; 0x2
+    dw 5 ; 0x4
+    dw 0 ; 0x6
+    dw 0 ; 0x8
+    dw 0 ; 0xa
+    dw 0 ; 0xc
+    dw 0 ; 0xe
+
+    dw 0 ; 0x10 *
+hWnd    dw 0 ; 0x12
+    dw 0 ; 0x14
+    dw 0 ; 0x16
+    dw 0 ; 0x18
+    dw 0 ; 0x1a
+    dw 0 ; 0x1c
+    dw 0 ; 0x1e
+
+    dw 0 ; 0x20
+    dw 0 ; 0x22 *
+    dw 0 ; 0x24
+    dw 0 ; 0x26 *
+    dw 0 ; 0x28
+    dw 0 ; 0x2a
+    dw 0 ; 0x2c
+    dw 0 ; 0x2e
+
+    dw 0 ; 0x30
+    dw 0 ; 0x32
+    dw -1 ; 0x34
+    dw 0 ; 0x36
+    dw 0 ; 0x38
+    dw 0 ; 0x3a
+    dw 0 ; 0x3c
+    dw 0 ; 0x3e
+
+    dw 0 ; 0x40
+    dw 0 ; 0x42
+    dw 0 ; 0x44
+    dw 0x2202 ; 0x46
+    db "Arial", 0 ; 0x48
+
+times 13 dw 0
 
 ; 0x68
 db "Chip's Challenge", 0, 0
@@ -312,7 +356,9 @@ db 0
 db "You increased your score on this level by %li point%s!", 0
 db "Total Score:  %li", 0
 db 0
+
 dw 0xFF ; c6c
+
 db "Great Job, Chip!", 10, "You did it!  You finished the challenge!", 0
 db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0
 db 0
@@ -322,16 +368,16 @@ db "You can still improve your score, by completing levels that you skipped, and
 ; Decade messages
 ; 0xEC2
 DecadeMessages:
-dw Level50Message
-dw Level60Message
-dw Level70Message
-dw Level80Message
-dw Level90Message
-dw Level100Message
-dw Level110Message
-dw Level120Message
-dw Level130Message
-dw Level140Message
+    dw Level50Message
+    dw Level60Message
+    dw Level70Message
+    dw Level80Message
+    dw Level90Message
+    dw Level100Message
+    dw Level110Message
+    dw Level120Message
+    dw Level130Message
+    dw Level140Message
 
 Level50Message db "Picking up chips is what the challenge is all about. But on the ice, Chip gets chapped and feels like a chump instead of a champ.", 0
 Level60Message db "Chip hits the ice and decides to chill out. Then he runs into a fake wall and turns the maze into a thrash-a-thon!", 0
@@ -363,17 +409,15 @@ INCBIN "base.exe", 0x4800+$, 0x1680-0x13DE
 ; Near pointer to game state structure
 GameStatePtr dw 0   ; 1680
 
-times 8 dw 0 ; 1682
+times 9 dw 0 ; 1682
 
-; 1692
+    dw 0 ; 1694 *
 
-INCBIN "base.exe", 0x4800+$, 0x16f0-0x1692
+times 45 dw 0 ; 1696
 
 ; Digit image pointers
 times 24 dw 0 ; 16f0
 
-; 1720
-
-INCBIN "base.exe", 0x4800+$, 0x1738-0x1720
+times 12 dw 0 ; 1720
 
 ; vim: syntax=nasm

@@ -122,6 +122,9 @@ ChipE           equ 0x6F
 FirstMonster    equ 0x40
 LastMonster     equ 0x63
 
+FirstTransparent equ 0x40
+LastTransparent  equ 0x6F
+
 ; Causes of death
 NotDeadYet  equ 0
 Drowned     equ 1

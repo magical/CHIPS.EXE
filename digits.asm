@@ -5,8 +5,8 @@ SEGMENT CODE ; 9
 ; Data:
 ;   172a    hModule
 ;   1720    HGLOBAL returned by LoadResource
-;   16c4/6  pointer returned by LockResource
-;   16f0-1720   near pointers to digits
+;   16c4    far pointer returned by LockResource
+;   16f0-1720   near pointers to digits (length 24)
 ;
 ;   a18     Color mode
 

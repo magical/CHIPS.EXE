@@ -1,4 +1,4 @@
-SEGMENTS=data.bin logic.bin seg5.bin digits.bin
+SEGMENTS=data.bin logic.bin seg5.bin seg7.bin digits.bin
 RESOURCES=chips.ico res/*
 chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
 	nasm -o $@ $<
@@ -8,6 +8,7 @@ check: chips.exe Makefile
 	-cmp baselogic.bin logic.bin
 	-cmp basedigits.bin digits.bin
 	-cmp baseseg5.bin seg5.bin
+	-cmp baseseg7.bin seg7.bin
 	cmp base.exe chips.exe
 
 %.bin: %.asm fixmov.awk Makefile
@@ -29,10 +30,10 @@ baselogic.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x6200 -count 0x2a70
 basedata.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x4800 -count 0x1738
-basedigits.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xd400 -count 0x150
 baseseg5.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xa200 -count 0x1bc
+basedigits.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0xd400 -count 0x150
 
 %.dis: %.bin
 	ndisasm $< >$@

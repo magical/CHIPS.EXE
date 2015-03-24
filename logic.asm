@@ -2405,7 +2405,322 @@ endfunc
 
 ; 13de
 
-INCBIN "base.exe", 0x6200+$, 0x22be - 0x13de
+func SlipLoop
+    %define i (bp-0xa)
+    %define x (bp-0xc)
+    %define y (bp-0xe)
+    %define xdir (bp-0x10)
+    %define ydir (bp-0x12)
+
+    sub sp,byte +0x16
+    push di
+    push si
+    mov word [i],0x0
+    mov bx,[GameStatePtr]
+    cmp word [bx+SlipListLen],byte +0x0
+    jg .start
+    jmp word .break
+.start: ; 1400
+    xor si,si
+    mov di,[bp+0x6]
+.loop: ; 1405
+    mov ax,[bx+SlipListLen]
+    mov [bp-0x8],ax
+    les bx,[bx+SlipListPtr]
+    add bx,si
+    cmp word [es:bx+Monster.slipping],byte +0x0
+    jnz .notslipping
+    jmp word .slipping
+.notslipping: ; 141c
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    add bx,si
+    push word [es:bx+Monster.y]
+    push word [es:bx+Monster.x]
+    call word 0x148d:0x0 ; 142e FindMonster
+    add sp,byte +0x4
+    mov [bp-0x4],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    mov ax,[es:bx+si+Monster.xdir]
+    mov [xdir],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    mov ax,[es:bx+si+Monster.ydir]
+    mov [ydir],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    mov ax,[es:bx+si+Monster.x]
+    mov [x],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    mov ax,[es:bx+si+Monster.y]
+    mov [y],ax
+    push word [ydir]
+    push word [xdir]
+    mov bx,ax ; y
+    shl bx,byte 0x5
+    add bx,[x]
+    add bx,[GameStatePtr]
+    mov al,[bx+Upper]
+    push ax ; tile
+    call word 0x151c:0x486 ; 148a SetTileDir
+    add sp,byte +0x6
+    push ax         ; tile
+    lea ax,[ydir]
+    push ax
+    lea ax,[xdir]
+    push ax
+    lea ax,[y]
+    push ax
+    lea ax,[x]
+    push ax
+    push di  ; wnd
+    call word 0x14fe:0x18da ; 14a4 MoveMonster
+    add sp,byte +0xc
+    mov [bp-0x6],ax
+    or ax,ax
+    jz .label4
+    jmp word .label5
+.label4: ; 14b6
+    mov bx,[y]
+    shl bx,byte 0x5
+    add bx,[x]
+    add bx,[GameStatePtr]
+    mov al,[bx+Lower]
+    mov [bp-0x14],al
+    cmp al,Ice
+    jz .label6
+    cmp al,IceWallNW
+    jnc .label7
+    jmp word .label8
+.label7: ; 14d5
+    cmp al,IceWallSW
+    jna .label6
+    jmp word .label8
+.label6: ; 14dc
+    neg word [xdir]
+    neg word [ydir]
+    push word 0xc6c
+    push byte +0x2
+    lea ax,[ydir]
+    push ax
+    lea cx,[xdir]
+    push cx
+    push word [y]
+    push word [x]
+    push word [y]
+    push word [x]
+    call word 0x1536:0x636 ; 14fb 7:636
+    add sp,byte +0x10
+    push word [ydir]
+    push word [xdir]
+    mov bx,[y]
+    shl bx,byte 0x5
+    add bx,[x]
+    add bx,[GameStatePtr]
+    mov al,[bx+Upper]
+    push ax
+    call word 0x15bb:0x486 ; 1519 SetTileDir
+    add sp,byte +0x6
+    push ax
+    lea ax,[ydir]
+    push ax
+    lea ax,[xdir]
+    push ax
+    lea ax,[y]
+    push ax
+    lea ax,[x]
+    push ax
+    push di
+    call word 0xf3c:0x18da ; 1533
+    add sp,byte +0xc
+    mov [bp-0x6],ax
+    or ax,ax
+    jnz .label5
+    jmp word .label9
+.label5: ; 1545
+    cmp ax,0x1
+    jz .label10
+    jmp word .label11
+.label10: ; 154d
+    mov ax,[bp-0xc]
+    mov cx,[bp-0x4]
+    mov dx,cx
+    shl cx,byte 0x2
+    add cx,dx
+    shl cx,1
+    add cx,dx
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    add bx,cx
+    mov [es:bx+0x1],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    add bx,cx
+    mov ax,[bp-0xe]
+    mov [es:bx+0x3],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    add bx,cx
+    mov ax,[bp-0x10]
+    mov [es:bx+0x5],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    add bx,cx
+    mov ax,[bp-0x12]
+    mov [es:bx+0x7],ax
+    push word [bp-0x12]
+    push word [bp-0x10]
+    mov bx,[bp-0xe]
+    shl bx,byte 0x5
+    add bx,[bp-0xc]
+    add bx,[GameStatePtr]
+    mov al,[bx]
+    push ax
+    mov [bp-0x16],cx
+    call word 0x15d8:0x486 ; 15b8
+    add sp,byte +0x6
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    add bx,[bp-0x16]
+    mov [es:bx],al
+    jmp word .label12
+    nop
+.label11: ; 15d2
+    push word [bp-0x4]
+    call word 0xee0:0x3b4 ; 15d5
+    add sp,byte +0x2
+    jmp word .label12
+.label9: ; 15e0
+    neg word [bp-0x10]
+    neg word [bp-0x12]
+.label8: ; 15e6
+    push word 0xc6c
+    push byte +0x2
+    jmp word .label13
+.slipping: ; 15ee
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    add bx,si
+    mov ax,[es:bx+0x5]
+    mov [bp-0x10],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    mov ax,[es:bx+si+0x7]
+    mov [bp-0x12],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    mov ax,[es:bx+si+0x1]
+    mov [bp-0xc],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+SlipListPtr]
+    mov ax,[es:bx+si+0x3]
+    mov [bp-0xe],ax
+    push byte +0x0
+    push word 0xff
+    push word [bp-0x12]
+    push word [bp-0x10]
+    push ax
+    push word [bp-0xc]
+    push di
+    call word 0x168d:0xdae ; 163c
+    add sp,byte +0xe
+    or ax,ax
+    jz .label14
+    jmp word .label12
+.label14: ; 164b
+    mov bx,[bp-0xe]
+    shl bx,byte 0x5
+    add bx,[bp-0xc]
+    add bx,[GameStatePtr]
+    mov al,[bx+Lower]
+    mov [bp-0x14],al
+    cmp al,0xc
+    jz .label15
+    cmp al,0x1a
+    jc .label16
+    cmp al,0x1d
+    ja .label16
+.label15: ; 166b
+    neg word [bp-0x10]
+    neg word [bp-0x12]
+    push word 0xc6c
+    push byte +0x1
+    lea ax,[bp-0x12]
+    push ax
+    lea cx,[bp-0x10]
+    push cx
+    push word [bp-0xe]
+    push word [bp-0xc]
+    push word [bp-0xe]
+    push word [bp-0xc]
+    call word 0x16a7:0x636 ; 168a slide movement
+    add sp,byte +0x10
+    push byte +0x0
+    push word 0xff
+    push word [bp-0x12]
+    push word [bp-0x10]
+    push word [bp-0xe]
+    push word [bp-0xc]
+    push di
+    call word 0x16d2:0xdae ; 16a4
+    add sp,byte +0xe
+    or ax,ax
+    jnz .label12
+    neg word [bp-0x10]
+    neg word [bp-0x12]
+.label16: ; 16b6
+    push word 0xc6c
+    push byte +0x1
+.label13: ; 16bb
+    lea ax,[bp-0x12]
+    push ax
+    lea ax,[bp-0x10]
+    push ax
+    push word [bp-0xe]
+    push word [bp-0xc]
+    push word [bp-0xe]
+    push word [bp-0xc]
+    call word 0x14a7:0x636 ; 16cf
+    add sp,byte +0x10
+.label12: ; 16d7
+    mov ax,[bp-0x8]
+    mov bx,[GameStatePtr]
+    cmp [bx+SlipListLen],ax
+    jnz .label17
+    add si,byte +0xb
+    inc word [bp-0xa]
+.label17: ; 16ea
+    mov ax,[bp-0xa]
+    cmp [bx+SlipListLen],ax
+    jng .break
+    jmp word .loop
+.break: ; 16f6
+    cmp word [bx+0x816],byte +0x0
+    jz .label19
+    push byte +0x1
+    call word 0x1716:0xcbe ; 16ff
+    add sp,byte +0x2
+    push byte +0x1
+    push byte +0x2
+    call word 0x17fb:0x56c ; 170b
+    add sp,byte +0x4
+    call word 0x121f:0xb9a ; 1713
+    push byte +0x1
+    mov bx,[GameStatePtr]
+    push word [bx+0x800]
+    call word 0x1242:0x356 ; 1722
+    add sp,byte +0x4
+.label19: ; 172a
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+endfunc
+
+; 1734
+
+INCBIN "base.exe", 0x6200+$, 0x22be - 0x1734
 
 ; 22be
 

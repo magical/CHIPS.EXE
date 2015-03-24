@@ -278,7 +278,12 @@ Segment5:
     ALIGN 512, db 0
 
 Segment6: INCBIN "base.exe", 0xa600, 0x800
-Segment7: INCBIN "base.exe", 0xae00, 0x1e00
+
+; 0xae00
+Segment7:
+    INCBIN "seg7.bin"
+    INCBIN "base.exe", 0xae00+0x1cd4, 300
+
 Segment8: INCBIN "base.exe", 0xcc00, 0x800
 
 ; d400
