@@ -19,6 +19,7 @@ type Line struct {
 	IsTarget  bool
 	Label     int
 	JumpLabel int
+	JumpDest  uint32
 }
 
 type Jump struct {
@@ -101,7 +102,7 @@ func main() {
 			}
 
 			if err != nil {
-				fmt.Printf("line %d: %v\n", number, err)
+				fmt.Fprintf(os.Stderr, "line %d: %v\n", number, err)
 				errors++
 				continue
 			}
@@ -110,6 +111,8 @@ func main() {
 				Text:     text,
 				Mnemonic: mnemonic,
 				IsJump:   true,
+				JumpLabel: -1,
+				JumpDest: uint32(jumpDest),
 			})
 			jumps = append(jumps, Jump{
 				Dest: uint32(jumpDest),
@@ -132,14 +135,13 @@ func main() {
 		return
 	}
 
-	//sort.Sort(ByDest(jumps))
-	_ = sort.Sort
+	sort.Sort(ByDest(jumps))
 
 	var label int
 	for _, j := range jumps {
 		line, ok := findLine(lines, j.Dest)
 		if !ok {
-			fmt.Printf("warning: no jump target %x\n", j.Dest)
+			fmt.Fprintf(os.Stderr, "warning: no jump target %x\n", j.Dest)
 			continue
 		}
 		if !line.IsTarget {
@@ -155,7 +157,11 @@ func main() {
 			fmt.Printf(".label%d: ; %x\n", line.Label, line.Addr)
 		}
 		if line.IsJump {
-			fmt.Printf("%s .label%d\n", line.Text, line.JumpLabel)
+			if line.JumpLabel >= 0 {
+				fmt.Printf("%s .label%d ; %s\n", line.Text, line.JumpLabel, arrow(int32(line.JumpDest - line.Addr)))
+			} else {
+				fmt.Printf("%s %#x\n", line.Text, line.JumpDest)
+			}
 		} else if line.Mnemonic == "call" {
 			s := strings.TrimRight(line.Text, "\n")
 			fmt.Printf("%s ; %x\n", s, line.Addr)
@@ -211,4 +217,11 @@ func stripComment(s string) string {
 		s = s[:idx]
 	}
 	return s
+}
+
+func arrow(n int32) string {
+	if n < 0 {
+		return "↑"
+	}
+	return "↓"
 }
