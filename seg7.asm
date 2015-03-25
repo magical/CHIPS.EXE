@@ -13,6 +13,8 @@ IsBuffered          equ 0x80e ; buffered move waiting
 BufferedX           equ 0x812
 BufferedY           equ 0x814
 Autopsy             equ 0x816
+SlideX              equ 0x818
+SlideY              equ 0x81a
 TrapListLen         equ 0x93c
 TrapListPtr         equ 0x942
 HaveMouseTarget     equ 0xa38
@@ -62,25 +64,34 @@ One:
     %define xdir (bp-0x6)
     %define ydir (bp-0x4)
 
+    ; get the device context
     push word [0x12]    ; hWnd
     call word 0x0:0xffff ; 13 KERNEL.GetDC
     mov [hDC],ax
+
+    ; check whether we're on an even tick or an odd tick
     test byte [bp+0x6],0x1
     jz .evenTick
     jmp word .oddTick
+
 .evenTick: ; 24
     mov bx,[GameStatePtr]
+    ; if chip is sliding, don't do anything
     cmp word [bx+IsSliding],byte +0x0
     jz .label2
-    jmp word .label3
+    jmp word .monsterloop
+
+    ; If 0xa40 is set, just clear it
 .label2: ; 32
     cmp word [bx+0xa40],byte +0x0 ; no mouse target
     jz .label4
 .label10: ; 39
     mov bx,[GameStatePtr]
     mov word [bx+0xa40],0x0
-    jmp word .label3
+    jmp word .monsterloop
+
 .label4: ; 46
+    ; Use a buffered keystroke if we have one (and if chip isn't dead)
     cmp word [bx+IsBuffered],byte +0x0
     jz .label5
     cmp word [bx+Autopsy],byte NotDeadYet
@@ -93,17 +104,21 @@ One:
     call word 0x11e:0x1184 ; 61
     add sp,byte +0xa
 .label6: ; 69
+    ; ...and clear the keystroke regardless
     mov bx,[GameStatePtr]
     mov word [bx+IsBuffered],0x0
     mov bx,[GameStatePtr]
     mov word [bx+0xa38],0x0
-    jmp word .label3
+    jmp word .monsterloop
+
 .label5: ; 80
+    ; we don't have a buffered keystroke
+    ; But we might have a mouse target...
     cmp word [bx+0xa38],byte +0x0
     jnz .label7
     jmp word .label8
 .label7: ; 8a
-    ; If reached target, set 0xa38 to 0
+    ; If we've reached the target, clear 0xa38 and 0xa40 and get on with it
     ; di = mousex - chipx
     mov ax,[bx+MouseTargetX] ; mouse target x
     sub ax,[bx+ChipX]
@@ -118,21 +133,21 @@ One:
     mov [bx+0xa38],ax ; = 0
     jmp short .label10
     ; mov [bx+0xa40], 0
-    ; jmp .label3
+    ; jmp .monsterloop
 
 .label9: ; aa
+    ; If we /haven't/ reached the target yet, make a step towards it
+    ; First, figure out the proper direction
     ; cx = abs(x distance)
     cwd
     xor ax,dx
     sub ax,dx
     mov cx,ax
-
     ; ax = abs(y distance)
     mov ax,si
     cwd
     xor ax,dx
     sub ax,dx
-
     ; if ydistance >= xdistance
     cmp ax,cx
     jl .label11
@@ -155,11 +170,16 @@ One:
     mov word [xdir],-1
 .label15: ; e9
     mov word [ydir],0
+
 .label13: ; ee
+    ; If chip is dead, forget all that; go do something else
     cmp word [bx+Autopsy],byte +0x0
     jz .label16
     jmp word .dead
+
 .label16: ; f8
+    ; Actually move chip
+    ; last argument = (xdist == 0 || ydist == 0)
     or si,si
     jz .label18
     or di,di
@@ -178,17 +198,22 @@ One:
     call word 0x19d:0x1184 ; 11b 7:1184
     add sp,byte +0xa
     or ax,ax
+    ; If we succeeded, or chip died, go deal with it
     jz .label20
     jmp word .dead
 .label20: ; 12a
     mov bx,[GameStatePtr]
-    cmp [bx+0xa38],ax
+    cmp [bx+0xa38],ax ; 0
     jz .dead
+    ; Otherwise we must have been blocked
+    ; Try the other direction
+    ; abs(di)
     mov ax,di
     cwd
     xor ax,dx
     sub ax,dx
     mov cx,ax
+    ; abs(si)
     mov ax,si
     cwd
     xor ax,dx
@@ -197,27 +222,32 @@ One:
     jnl .label21
     jmp word .label22
 .label21: ; 14b
+    ; if xdist > 0, dir = (1,0)
     or di,di
     jng .label23
     mov word [xdir],1
-.label26: ; 154
+.setYdirTo0: ; 154
     mov word [ydir],0
     jmp short .label24
     nop
 .label23: ; 15c
+    ; if xdist < 0, dir = (-1,0)
     or di,di
     jnl .label25
     mov word [xdir],-1
-    jmp short .label26
+    jmp short .setYdirTo0
     nop
 .label25: ; 168
+    ; if xdist == 0, dir = (0,0)
     xor ax,ax
     mov [ydir],ax
     mov [xdir],ax
+
 .label24: ; 170
     mov bx,[GameStatePtr]
     cmp word [bx+Autopsy],byte +0x0
     jnz .dead
+
     mov word [bx+0xa40],0x0
     cmp word [xdir],byte +0x0
     jnz .label27
@@ -244,33 +274,48 @@ One:
     cmp [bx+ChipX],ax
     jz .label30
     jmp word .label10
+    ; mov [bx+0xa40], 0
+    ; jmp .monsterloop
 .label30: ; 1c8
     mov ax,[bx+MouseTargetY]
     cmp [bx+ChipY],ax
     jz .label29
     jmp word .label10
+    ; mov [bx+0xa40], 0
+    ; jmp .monsterloop
 .label29: ; 1d5
     mov word [bx+0xa38],0x0
     jmp word .label10
+    ; mov [bx+0xa40], 0
+    ; jmp .monsterloop
+
 .label22: ; 1de
+    ; the x distance was greater than the y distance
+    ; if ydist > 0, dir = (0,1)
     or si,si
     jng .label31
     mov word [xdir],0
     mov word [ydir],1
     jmp short .label24
 .label31: ; 1ee
+    ; if ydist == 0, dir = (0,0)
     or si,si
     jl .label32
     jmp word .label25
 .label32: ; 1f5
+    ; if ydist < 0, dir = (0,-1)
     mov word [xdir],0
     mov word [ydir],-1
     jmp word .label24
+    ; go move chip
+
 .label8: ; 202
+    ; We don't have a mouse target
+    ; If chip is idle for 2 or more even ticks, face south
     mov ax,[bx+0xa3e]
     inc word [bx+0xa3e]
     cmp ax,0x2
-    jl .label3
+    jl .monsterloop
     mov bx,[GameStatePtr]
     mov ax,[bx+ChipY]
     shl ax,byte 0x5
@@ -278,26 +323,26 @@ One:
     add bx,ax
     mov al,[bx+Upper]
     mov [bp-0x3],al
-    cmp al,0x6e
-    jz .label3
-    cmp al,0x3e
-    jz .label3
+    cmp al,ChipS
+    jz .monsterloop
+    cmp al,SwimS
+    jz .monsterloop
     cmp byte [bx+Lower],Water
     jnz .label33
-    mov al,0x3e
+    mov al,SwimS
     jmp short .label34
 .label33: ; 238
-    mov al,0x6e
+    mov al,ChipS
 .label34: ; 23a
     mov [bx],al
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call word 0xffff:0x1ca ; 24b
+    call word 0xffff:0x1ca ; 24b 2:1ca
     add sp,byte +0x6
 
-.label3: ; 253
+.monsterloop: ; 253
     mov bx,[GameStatePtr]
     cmp word [bx+0x928],byte +0x0
     jz .label35
@@ -314,6 +359,10 @@ One:
     nop
 
 .oddTick: ; 27a
+    ; We're on an odd tick
+    ; Not much to do
+    ; If we have a buffered keystroke and we're not sliding and 0xa40 isn't set,
+    ; then move chip if he isn't dead.
     mov bx,[GameStatePtr]
     cmp word [bx+IsBuffered],byte +0x0
     jz .label35
@@ -331,23 +380,27 @@ One:
     call word 0x2ed:0x1184 ; 2a7
     add sp,byte +0xa
 .label36: ; 2af
+    ; ...if chip /is/ dead, clear the keystroke and mouse target instead.
     mov bx,[GameStatePtr]
     mov word [bx+IsBuffered],0x0
     mov bx,[GameStatePtr]
     mov word [bx+0xa38],0x0
 
 .label35: ; 2c3
+    ; Sliding!
     mov bx,[GameStatePtr]
     cmp word [bx+IsSliding],byte +0x0
     jnz .label37
-    jmp word .label38
+    jmp word .sliploop
 .label37: ; 2d1
+    ; First off, clear the idle timer
     mov word [bx+0xa3e],0x0
+    ; and then move chip in the direction he's sliding
     push byte +0x1
     push byte +0x0
     mov bx,[GameStatePtr]
-    push word [bx+0x81a]
-    push word [bx+0x818]
+    push word [bx+SlideY]
+    push word [bx+SlideX]
     push word [hDC]
     call word 0x33b:0x1184 ; 2ea
     add sp,byte +0xa
@@ -356,49 +409,49 @@ One:
     jmp word .label40
 .label39: ; 2f9
     mov bx,[GameStatePtr]
-    cmp [bx+0x80c],ax
+    cmp [bx+IsSliding],ax ; == 0
     jnz .label41
     jmp word .label40
 .label41: ; 306
-    neg word [bx+0x818]
+    neg word [bx+SlideX]
     mov si,[GameStatePtr]
-    neg word [si+0x81a]
+    neg word [si+SlideY]
     push word 0xc6c
-    push ax ; chip
+    push ax ; 0
     mov ax,[GameStatePtr]
-    add ax,0x81a
+    add ax,SlideY
     push ax
     mov ax,[GameStatePtr]
-    add ax,0x818
+    add ax,SlideX
     push ax
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call word 0x356:0x636 ; 338
+    call word 0x356:0x636 ; 338 7:636 slide movement
     add sp,byte +0x10
     push byte +0x1
     push byte +0x0
     mov bx,[GameStatePtr]
-    push word [bx+0x81a]
-    push word [bx+0x818]
+    push word [bx+SlideY]
+    push word [bx+SlideX]
     push word [hDC]
     call word 0x398:0x1184 ; 353
     add sp,byte +0xa
     or ax,ax
     jnz .label40
     mov si,[GameStatePtr]
-    neg word [si+0x818]
+    neg word [si+SlideX]
     mov si,[GameStatePtr]
-    neg word [si+0x81a]
+    neg word [si+SlideY]
     push word 0xc6c
-    push ax ; chip
+    push ax ; 0
     mov ax,[GameStatePtr]
-    add ax,0x81a
+    add ax,SlideY
     push ax
     mov ax,[GameStatePtr]
-    add ax,0x818
+    add ax,SlideX
     push ax
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
@@ -407,12 +460,13 @@ One:
     push word [bx+ChipX]
     call word 0xffff:0x636 ; 395
     add sp,byte +0x10
+
 .label40: ; 39d
     mov bx,[GameStatePtr]
     cmp word [bx+0xa40],byte +0x0
     jz .label42
     mov word [bx+0xa40],0x0
-    jmp word .label38
+    jmp word .sliploop
     nop
 .label42: ; 3b2
     cmp word [bx+IsBuffered],byte +0x0
@@ -421,10 +475,10 @@ One:
     jnz .label44
     cmp word [bx+IsSliding],byte +0x0
     jz .label45
-    mov ax,[bx+0x818]
+    mov ax,[bx+SlideX]
     cmp [bx+BufferedX],ax
     jnz .label45
-    mov ax,[bx+0x81a]
+    mov ax,[bx+SlideY]
     cmp [bx+BufferedY],ax
     jz .label44
 .label45: ; 3db
@@ -443,7 +497,7 @@ One:
 .label43: ; 400
     cmp word [bx+0xa38],byte +0x0
     jnz .label47
-    jmp word .label38
+    jmp word .sliploop
 .label47: ; 40a
     mov ax,[bx+MouseTargetX]
     sub ax,[bx+ChipX]
@@ -468,36 +522,36 @@ One:
     jl .label49
     or si,si
     jng .label50
-    mov word [xdir],0x0
-    mov word [ydir],0x1
+    mov word [xdir],0
+    mov word [ydir],1
     jmp short .label51
     nop
 .label50: ; 44a
-    mov word [xdir],0x0
-    mov word [ydir],0xffff
+    mov word [xdir],0
+    mov word [ydir],-1
     jmp short .label51
 .label49: ; 456
     or di,di
     jng .label52
-    mov word [xdir],0x1
+    mov word [xdir],1
     jmp short .label53
     nop
 .label52: ; 462
-    mov word [xdir],0xffff
+    mov word [xdir],-1
 .label53: ; 467
-    mov word [ydir],0x0
+    mov word [ydir],0
 .label51: ; 46c
     cmp word [bx+Autopsy],byte +0x0
     jz .label54
     jmp word .label55
 .label54: ; 476
-    cmp word [bx+0x80c],byte +0x0
+    cmp word [bx+IsSliding],byte +0x0
     jz .label56
     mov ax,[xdir]
-    cmp [bx+0x818],ax
+    cmp [bx+SlideX],ax
     jnz .label56
     mov ax,[ydir]
-    cmp [bx+0x81a],ax
+    cmp [bx+SlideY],ax
     jnz .label56
     jmp word .label55
 .label56: ; 492
@@ -574,10 +628,10 @@ One:
     cmp word [bx+0x80c],byte +0x0
     jz .label67
     mov ax,[xdir]
-    cmp [bx+0x818],ax
+    cmp [bx+SlideX],ax
     jnz .label67
     mov ax,[ydir]
-    cmp [bx+0x81a],ax
+    cmp [bx+SlideY],ax
     jz .label55
 .label67: ; 54e
     cmp word [xdir],byte +0x0
@@ -603,14 +657,15 @@ One:
     jnz .label46
     mov ax,[bx+MouseTargetX]
     cmp [bx+ChipX],ax
-    jnz .label38
+    jnz .sliploop
     mov ax,[bx+MouseTargetY]
     cmp [bx+ChipY],ax
-    jnz .label38
+    jnz .sliploop
 .label46: ; 59c
     mov bx,[GameStatePtr]
     mov word [bx+0xa38],0x0
-.label38: ; 5a6
+
+.sliploop: ; 5a6
     ; Do slip list loop and release DC
     push word [hDC]
     call word 0x6a7:0x13de ; 5a9 3:13de Slip loop
@@ -720,11 +775,11 @@ Two:
     mov bx,[GameStatePtr]
     mov word [bx+0x80c],0x1 ; issliding?
     mov ax,[GameStatePtr]
-    add ax,0x818 ; chip slide x?
+    add ax,SlideX ; chip slide x?
     mov si,ax
     mov [bp-0x4],ds
     mov ax,[GameStatePtr]
-    add ax,0x81a ; chip slide y?
+    add ax,SlideY ; chip slide y?
     mov di,ax
     mov [bp-0x8],ds
     jmp short .label3
@@ -1941,6 +1996,7 @@ Seven:
     %define hDC (bp+0x6)
     %define xdir (bp+0x8)
     %define ydir (bp+0xa)
+
     %define x (bp-8)
     %define y (bp-0xa)
     %define tile (bp-0xb)
@@ -2064,10 +2120,10 @@ Seven:
     jnz .label10
 .label17: ; 1291
     mov ax,[bp+0x8]
-    cmp [bx+0x818],ax
+    cmp [bx+SlideX],ax
     jnz .label10
     mov ax,[bp+0xa]
-    cmp [bx+0x81a],ax
+    cmp [bx+SlideY],ax
     jnz .label10
     jmp word .returnZero
 .label10: ; 12a6
