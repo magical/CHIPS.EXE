@@ -1,49 +1,10 @@
 SEGMENT CODE ; 7
 
 %include "constants.asm"
-GameStatePtr    equ 0x1680
-
-Upper               equ 0x0
-Lower               equ 0x400
-LevelNumber         equ 0x800
-ChipX               equ 0x808
-ChipY               equ 0x80a
-IsSliding           equ 0x80c
-IsBuffered          equ 0x80e ; buffered move waiting
-BufferedX           equ 0x812
-BufferedY           equ 0x814
-Autopsy             equ 0x816
-SlideX              equ 0x818
-SlideY              equ 0x81a
-TrapListLen         equ 0x93c
-TrapListPtr         equ 0x942
-HaveMouseTarget     equ 0xa38
-MouseTargetX        equ 0xa3a
-MouseTargetY        equ 0xa3c
-;HaveMouseTarget     equ 0xa40
-
-
-SlipListLen         equ 0x91e
-SlipListCap         equ 0x920
-SlipListHandle      equ 0x922
-SlipListPtr         equ 0x924
-SlipListSeg         equ 0x926
-
-; Monsters
-; See Monster struct
-MonsterListLen      equ 0x928
-MonsterListCap      equ 0x92a
-MonsterListHandle   equ 0x92c
-MonsterListPtr      equ 0x92e
-MonsterListSeg      equ 0x930
-
-Connection.flag     equ 8
-
-FakeLastLevel equ 144
-LastLevel     equ 149
+%include "structs.asm"
+%include "variables.asm"
 
 ; data
-DecadeMessages equ 0xec2
 
 ; 0
 

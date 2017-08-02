@@ -19,7 +19,8 @@ check: $(base) chips.exe Makefile
 	rm $<.tmp
 
 data.bin: data.asm base.exe Makefile
-logic.bin: logic.asm base.exe constants.asm Makefile
+logic.bin: logic.asm base.exe constants.asm structs.asm variables.asm Makefile
+seg7.bin: seg7.asm constants.asm structs.asm variables.asm Makefile
 
 bin/dd: tools/dd/dd.go
 	go build -o bin/dd ./tools/dd

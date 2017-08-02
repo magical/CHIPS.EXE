@@ -1,3 +1,4 @@
+; constants.asm - header file for constants
 
 ; Tiles
 Floor           equ 0x00
@@ -133,6 +134,10 @@ Bombed      equ 3
 Squished    equ 4
 Eaten       equ 5
 OutOfTime   equ 6
+
+; Last level
+FakeLastLevel equ 144
+LastLevel     equ 149
 
 ; Menu actions
 ID_ABOUT        equ 0x64
