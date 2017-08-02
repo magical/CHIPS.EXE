@@ -3,7 +3,9 @@ RESOURCES=chips.ico res/*
 chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
 	nasm -o $@ $<
 
-check: chips.exe Makefile
+base=basedata.bin baselogic.bin basedigits.bin baseseg5.bin baseseg7.bin
+
+check: $(base) chips.exe Makefile
 	-cmp basedata.bin data.bin
 	-cmp baselogic.bin logic.bin
 	-cmp basedigits.bin digits.bin
@@ -32,6 +34,8 @@ basedata.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x4800 -count 0x1738
 baseseg5.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xa200 -count 0x1bc
+baseseg7.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0xae00 -count 0x1cd4
 basedigits.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xd400 -count 0x150
 
