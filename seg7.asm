@@ -21,6 +21,9 @@ One:
     push di
     push si
 
+    ; args
+    ; +6 tick
+
     %define hDC (bp-0xa)
     %define xdir (bp-0x6)
     %define ydir (bp-0x4)
@@ -1097,6 +1100,12 @@ Three:
     mov ds,ax
     sub sp,byte +0xa
 
+    ; args
+    ; 0 hDC
+    ; 2 x position (px)?
+    ; 4 y position (px)?
+    ; 6 width?
+    ; 8 height?
     ; 10 tile
     ; 12 tile
 
@@ -1201,6 +1210,8 @@ Three:
 
 ; a74
 
+; EndGame
+; show final ending animation and text box
 Four:
     mov ax,ds
     nop
@@ -1212,12 +1223,18 @@ Four:
     sub sp,0x19e
     push di
     push si
-    push word [0x12]
-    call word 0x0:0x14 ; a88
-    mov [bp-0x8],ax
+
+    %define hDC (bp-8)
+
+    push word [hWnd]
+    call word 0x0:0x14 ; a88 USER.GetDC
+    mov [hDC],ax
     mov bx,[GameStatePtr]
-    cmp word [bx+0xa36],byte +0x20
-    jnl .label0
+
+    cmp word [bx+0xa36],byte 32
+    jge .atLeast32
+
+    ; set bp-0x3 to an exit tile depending on 0xa36 % 3
     mov si,[bx+0xa36]
     mov ax,si
     mov cx,0x3
@@ -1235,26 +1252,29 @@ Four:
     nop
     nop
 .label1: ; aba
-    mov byte [bp-0x3],0x15
+    mov byte [bp-0x3], Exit
     jmp short .label4
 .label2: ; ac0
-    mov byte [bp-0x3],0x3a
+    mov byte [bp-0x3], Exit2
     jmp short .label4
 .label3: ; ac6
-    mov byte [bp-0x3],0x3b
+    mov byte [bp-0x3], Exit3
+
 .label4: ; aca
     mov al,[bp-0x3]
     push ax
-    push byte +0x6e
-    lea ax,[si+0x20]
-    push ax
-    push ax
+    push byte ChipS
+    lea ax,[si+0x20] ; (_a36 * 8 + 32)
+    push ax ; height?
+    push ax ; width?
+    ; ax =  si / 2 (signed)
     mov ax,si
     cwd
     sub ax,dx
     sar ax,1
+
     mov bx,[GameStatePtr]
-    mov cx,[bx+0x80a]
+    mov cx,[bx+ChipY]
     sub cx,[bx+0xa26]
     sub cx,[bx+0xa2e]
     shl cx,byte 0x5
@@ -1262,8 +1282,9 @@ Four:
     jns .label5
     xor cx,cx
 .label5: ; af5
-    push cx
-    mov cx,[bx+0x808]
+    push cx  ; y position
+
+    mov cx,[bx+ChipX]
     sub cx,[bx+0xa24]
     sub cx,[bx+0xa2c]
     shl cx,byte 0x5
@@ -1271,15 +1292,19 @@ Four:
     jns .label6
     xor cx,cx
 .label6: ; b0b
-    push cx
+    push cx ; x position
+
 .label10: ; b0c
-    push word [bp-0x8]
-    call word 0x3ed:0x966 ; b0f
+    push word [hDC]
+    call word 0x3ed:0x966 ; b0f 7:966 DrawTile
     add sp,byte +0xe
     jmp word .label7
-.label0: ; b1a
+
+
+
+.atLeast32: ; b1a
     cmp word [bx+0xa36],byte +0x68
-    jnl .label8
+    jge .atLeast104
     mov ax,[bx+0xa36]
     mov cx,0x2
     cwd
@@ -1290,26 +1315,30 @@ Four:
     jnz .label9
     jmp word .label7
 .label9: ; b38
-    push byte +0x15
+    push byte Exit
+
+    ; if random int is 0, push ChipS; if >=1, ChipExit
     push cx
-    call word 0xe13:0x72e ; b3b
+    call word 0xe13:0x72e ; b3b 3:72e RandInt
     add sp,byte +0x2
     cmp ax,0x1
     sbb al,al
     and al,0x35
-    add al,0x39
+    add al,ChipExit
     mov [bp-0x3],al
     push ax
+
     push word 0x120
     push word 0x120
     push byte +0x0
     push byte +0x0
-    jmp short .label10
-.label8: ; b5c
+    jmp short .label10 ; draw tile
+
+.atLeast104: ; b5c
     cmp word [bx+0xa36],byte +0x69
-    jl .label11
+    jl .equals104
     jmp word .label12
-.label11: ; b66
+.equals104: ; b66
     cmp word [bp+0x6],byte +0x0
     jz .label13
     jmp word .label12
@@ -1319,20 +1348,20 @@ Four:
     push ds
     push word 0xc6e
     push word [0x10]
-    call word 0xbe4:0x0 ; b7e
+    call word 0xbe4:0x0 ; b7e 2:0
     add sp,byte +0x8
     push word [0x172a]
     push ds
     push word 0x1352
-    call word 0x0:0xc59 ; b8e
+    call word 0x0:0xc59 ; b8e USER.LoadBitmap
     mov [bp-0x6],ax
     or ax,ax
     jz .label14
     push word [0x1734]
     push ax
-    call word 0x0:0xbcb ; b9f
+    call word 0x0:0xbcb ; b9f GDI.SelectObject
     mov si,ax
-    push word [bp-0x8]
+    push word [hDC]
     push byte +0x0
     push byte +0x0
     push word 0x120
@@ -1342,18 +1371,18 @@ Four:
     push byte +0x0
     push word 0xcc
     push byte +0x20
-    call word 0x0:0xc8a ; bc0
+    call word 0x0:0xc8a ; bc0 GDI.BitBlt
     push word [0x1734]
     push si
-    call word 0x0:0xc69 ; bca
+    call word 0x0:0xc69 ; bca GDI.SelectObject
     push word [bp-0x6]
-    call word 0x0:0xc9a ; bd2
+    call word 0x0:0xc9a ; bd2 GDI.DeleteObject
 .label14: ; bd7
     push byte +0x0
     push ds
     push word 0xca8
     push word [0x10]
-    call word 0xbfb:0x0 ; be1
+    call word 0xbfb:0x0 ; be1 2:0
     add sp,byte +0x8
     mov si,0x1
     mov di,[bp-0x4]
@@ -1381,11 +1410,11 @@ Four:
     push word [0x1696]
     push di
     push ds
-    push word 0xd44
+    push word YouCompletedNLevelsMsg
     lea ax,[bp-0x19e]
     push ss
     push ax
-    call word 0x0:0xffff ; c2b
+    call word 0x0:0xffff ; c2b USER._wsprintf
     add sp,byte +0xe
     push byte +0x0
     lea ax,[bp-0x19e]
@@ -1396,6 +1425,7 @@ Four:
     add sp,byte +0x8
     jmp short .label7
     nop
+
 .label12: ; c4a
     cmp word [bp+0x6],byte +0x0
     jz .label18
@@ -1528,13 +1558,13 @@ Five:
 .lastLevel: ; d72
     mov word [bx+0xa36],0x1
     mov bx,[GameStatePtr]
-    mov word [bx+0x80c],0x0
+    mov word [bx+IsSliding],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x816],0x0
+    mov word [bx+Autopsy],NotDeadYet
     mov bx,[GameStatePtr]
-    mov word [bx+0x91e],0x0
+    mov word [bx+SlipListLen],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x928],0x0
+    mov word [bx+MonsterListLen],0x0
     call word 0x5f4:0x17ba ; da0 2:0x17ba
 .end: ; da5
     pop si
@@ -1586,7 +1616,7 @@ Six:
     add si,[bp+0x8]
     mov [bp-0xc],si
     mov bx,[GameStatePtr]
-    mov al,[bx+si+0x400]
+    mov al,[bx+si+Lower]
     mov [bp-0x3],al
     cmp al,0x2b
     jnz .label5
@@ -1604,7 +1634,7 @@ Six:
     add bx,ax
     shl bx,1
     mov si,[GameStatePtr]
-    les si,[si+0x942]
+    les si,[si+TrapListPtr]
     cmp word [es:bx+si+0x8],byte +0x1
     jnz .label5
     jmp word .label1
@@ -2038,9 +2068,9 @@ Seven:
     mov bx,[GameStatePtr]
     cmp word [bx+0x80c],byte +0x0
     jz .label10
-    mov si,[bx+0x80a]
+    mov si,[bx+ChipY]
     shl si,byte 0x5
-    add si,[bx+0x808]
+    add si,[bx+ChipX]
     mov al,[bx+si+0x400]
     mov [bp-0xb],al
     or dx,dx
@@ -2088,15 +2118,15 @@ Seven:
     jnz .label10
     jmp word .returnZero
 .label10: ; 12a6
-    mov si,[bx+0x80a]
+    mov si,[bx+ChipY]
     shl si,byte 0x5
-    add si,[bx+0x808]
+    add si,[bx+ChipX]
     mov al,[bx+si+0x400]
     mov [bp-0x3],al
     cmp al,0x2b
     jnz .label18
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     call word 0x1311:0x22be ; 12c4 FindTrap
     add sp,byte +0x4
     mov si,ax
@@ -2134,8 +2164,8 @@ Seven:
     jmp word .label6
 .label22: ; 131d
     mov bx,[GameStatePtr]
-    mov si,[bx+0x808]
-    mov di,[bx+0x80a]
+    mov si,[bx+ChipX]
+    mov di,[bx+ChipY]
     mov word [bp-0x16],0x0
     mov ax,[bp-0xa]
     shl ax,byte 0x5
@@ -2212,22 +2242,22 @@ Seven:
     jmp word .label6
 .label29: ; 13ee
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x80a]
+    mov ax,[bx+ChipY]
     shl ax,byte 0x5
-    add ax,[bx+0x808]
+    add ax,[bx+ChipX]
     add bx,ax
     mov al,[bx+0x400]
     mov [bx],al
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x80a]
+    mov ax,[bx+ChipY]
     shl ax,byte 0x5
-    add ax,[bx+0x808]
+    add ax,[bx+ChipX]
     add bx,ax
     mov byte [bx+0x400],0x0
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x80a]
+    mov ax,[bx+ChipY]
     shl ax,byte 0x5
-    add ax,[bx+0x808]
+    add ax,[bx+ChipX]
     add bx,ax
     cmp byte [bx],0x2f
     jnz .label30
@@ -2301,10 +2331,10 @@ Seven:
 .label28: ; 14ca
     mov ax,[bp-0x8]
     mov bx,[GameStatePtr]
-    mov [bx+0x808],ax
+    mov [bx+ChipX],ax
     mov ax,[bp-0xa]
     mov bx,[GameStatePtr]
-    mov [bx+0x80a],ax
+    mov [bx+ChipY],ax
     mov bx,[bp-0xa]
     shl bx,byte 0x5
     add bx,[bp-0x8]
@@ -2343,8 +2373,8 @@ Seven:
     push di
     push si
     mov bx,[GameStatePtr]
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     push word [bp+0x6]
     call word 0x1572:0x56e ; 154c
     add sp,byte +0xa
@@ -2353,8 +2383,8 @@ Seven:
     call word 0xf4b:0x56c ; 1558
     add sp,byte +0x4
     mov bx,[GameStatePtr]
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     push word [bp+0x6]
     call word 0x157a:0x1ca ; 156f
     add sp,byte +0x6
@@ -2376,8 +2406,8 @@ Seven:
     push word [bp-0xa]
     push word [bp-0x8]
     mov bx,[GameStatePtr]
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     call word 0xee9:0x636 ; 15b1
     add sp,byte +0x10
     mov bx,[GameStatePtr]
@@ -2433,8 +2463,8 @@ Seven:
     push word [bp-0xa]
     push word [bp-0x8]
     mov bx,[GameStatePtr]
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     call word 0x183c:0x636 ; 1652
     add sp,byte +0x10
     mov word [bp-0xe],0x5
@@ -2448,10 +2478,10 @@ Seven:
 .label41: ; 1672
     mov ax,[bp-0x8]
     mov bx,[GameStatePtr]
-    mov [bx+0x808],ax
+    mov [bx+ChipX],ax
     mov ax,[bp-0xa]
     mov bx,[GameStatePtr]
-    mov [bx+0x80a],ax
+    mov [bx+ChipY],ax
     push word [bp+0xa]
     push word [bp+0x8]
     mov bx,[bp-0xa]
@@ -2475,14 +2505,14 @@ Seven:
     push di
     push si
     mov bx,[GameStatePtr]
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     push word [bp+0x6]
     call word 0x16e5:0x56e ; 16cb
     add sp,byte +0xa
     mov bx,[GameStatePtr]
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     push word [bp+0x6]
     call word 0x176f:0x1ca ; 16e2
     add sp,byte +0x6
@@ -2491,9 +2521,9 @@ Seven:
     jmp word .label54
 .label53: ; 16f3
     mov bx,[GameStatePtr]
-    mov si,[bx+0x80a]
+    mov si,[bx+ChipY]
     shl si,byte 0x5
-    add si,[bx+0x808]
+    add si,[bx+ChipX]
     mov al,[bx+si+0x400]
     sub ah,ah
     cmp ax,0x2f
@@ -2517,8 +2547,8 @@ Seven:
     jmp short .label60
 .label57: ; 172e
     push byte +0x1
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     push word [bp+0x6]
     call word 0x1753:0x2442 ; 173b
     add sp,byte +0x8
@@ -2526,8 +2556,8 @@ Seven:
     nop
 .label58: ; 1746
     push byte +0x1
-    push word [bx+0x80a]
-    push word [bx+0x808]
+    push word [bx+ChipY]
+    push word [bx+ChipX]
     call word 0x1762:0x211a ; 1750
     add sp,byte +0x6
     jmp short .label54
@@ -2606,9 +2636,9 @@ Seven:
     mov bx,[GameStatePtr]
     inc word [bx+0xa34]
     mov bx,[GameStatePtr]
-    mov si,[bx+0x80a]
+    mov si,[bx+ChipY]
     shl si,byte 0x5
-    add si,[bx+0x808]
+    add si,[bx+ChipX]
     cmp byte [bx+si+0x400],0x15
     jnz .label68
     push byte +0x1

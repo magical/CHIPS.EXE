@@ -67,9 +67,16 @@ TeleportListHandle    equ 0x954
 TeleportListPtr       equ 0x956
 TeleportListSeg       equ 0x958
 
+; a24 viewport x?
+; a26 viewport y?
+; a2c ___ x?
+; a2e ___ y?
+
+; a36 ending animation tick?
 HaveMouseTarget     equ 0xa38
 MouseTargetX        equ 0xa3a
 MouseTargetY        equ 0xa3c
+; a3e idle timer?
 ;HaveMouseTarget     equ 0xa40
 
 STRUC Connection

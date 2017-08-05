@@ -821,7 +821,7 @@ func InitBoard
 .notAMonster: ; 60a
     mov al,[tile]
     sub ah,ah
-    sub ax,0x25
+    sub ax,ToggleWall
     jnl .label10
     jmp word .nextX
 .label10: ; 617

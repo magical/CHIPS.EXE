@@ -357,7 +357,7 @@ db "You increased your score on this level by %li point%s!", 0
 db "Total Score:  %li", 0
 db 0
 
-dw 0xFF ; c6c
+dw 0xFF ; c6c something about sliding
 
 db "Great Job, Chip!", 10, "You did it!  You finished the challenge!", 0
 db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0
