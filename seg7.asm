@@ -698,6 +698,7 @@ Two:
     push di
     push si
 
+
     ;  6 x
     ;  8 y
     ;  a x
@@ -711,13 +712,18 @@ Two:
     ; -6 seg
     ; -8 (di) far pointer to y dir
     ; -a seg
+    ; -c xdir
+    ; -e ydir
 
+    ; fetch *xdirptr and *ydirptr
     mov bx,[bp+0xe]
     mov ax,[bx]
     mov [bp-0xc],ax
     mov bx,[bp+0x10]
     mov ax,[bx]
     mov [bp-0xe],ax
+
+    ; check the flag
     mov ax,[bp+0x12]
     or ax,ax
     jz .label0 ; ax == 0
@@ -733,6 +739,10 @@ Two:
     mov si,[bp-0x6]
     mov di,[bp-0xa]
     jmp short .label3
+
+    ; set xdir and ydir pointers
+    ; to slidex and slidey if chip
+    ; or sliplist xdir and ydir if monster
 
     ; flag == 0
 .label0: ; 66c
@@ -756,7 +766,7 @@ Two:
     shl bx,byte 0x5
     add bx,[bp+0x6]
     mov si,[GameStatePtr]
-    mov al,[bx+si]
+    mov al,[bx+si+Upper]
     push ax
     call word 0x6b9:0x1396 ; 6a4 FindSlipperAt
     add sp,byte +0x6
@@ -771,25 +781,27 @@ Two:
     mov ax,[bp-0x10]
     or ax,[bp-0x12]
     jnz .label5
-    jmp word .label6
+    jmp word .return
 .label5: ; 6cc
     mov ax,[bp-0x12]
     mov dx,[bp-0x10]
-    add ax,0x5
+    add ax,Monster.xdir
     mov si,ax
     mov [bp-0x4],dx
     mov ax,[bp-0x12]
-    add ax,0x7
+    add ax,Monster.ydir
     mov di,ax
     mov [bp-0x8],dx
 
+; get the tile
+; XXX when would x0 != x1?
 .label3: ; 6e5
     mov ax,[bp+0x6]
     cmp [bp+0xa],ax
-    jnz .label7
+    jne .label7
     mov ax,[bp+0x8]
     cmp [bp+0xc],ax
-    jnz .label7
+    jne .label7
     mov bx,[bp+0xc]
     shl bx,byte 0x5
     add bx,[bp+0xa]
@@ -801,16 +813,18 @@ Two:
     shl bx,byte 0x5
     add bx,[bp+0xa]
     add bx,[GameStatePtr]
-    mov al,[bx]
+    mov al,[bx+Upper]
+
+; switch statement
 .label8: ; 717
     mov [bp-0x13],al
     cmp al,ChipN
-    jc .label9
+    jb .label9
     cmp al,ChipE
     jna .label10
 .label9: ; 722
     cmp byte [bp-0x13],SwimN
-    jc .label11
+    jb .label11
     cmp byte [bp-0x13],SwimE
     ja .label11
 .label10: ; 72e
@@ -821,7 +835,7 @@ Two:
     sub ah,ah
     cmp ax,ForceRandom
     jnz .notForceRandom
-    jmp word .label13
+    jmp word .forceRandom
 .notForceRandom: ; 742
     jna .label14
     jmp word .label15
@@ -831,22 +845,22 @@ Two:
     jz .iceWallNW
     jg .label17
     sub al,Ice
-    jz .label18
+    jz .ice
     dec al
     jnz .notForceS
     jmp word .forceS
 .notForceS: ; 758
     sub al,ForceN - ForceS
     jnz .notForceN
-    jmp word .label22
+    jmp word .setSlideNorth
 .notForceN: ; 75f
     dec al
     jnz .notForceW
-    jmp word .label24
+    jmp word .forceE
 .notForceW: ; 766
     dec al
     jnz .notForceE
-    jmp word .label26
+    jmp word .forceW
 .notForceE: ; 76d
     jmp word .label15
 
@@ -862,13 +876,13 @@ Two:
     jmp word .iceWallSW
 .notIceWallSW: ; 782
     sub al,Teleport - IceWallSW
-    jz .label18
+    jz .ice
     sub al,Trap - Teleport
-    jz .label18
+    jz .ice
     jmp word .label15
 
     ; Ice
-.label18: ; 78d
+.ice: ; 78d
     mov ax,[bp-0xc]
     mov es,[bp-0x4]
     mov [es:si],ax
@@ -885,13 +899,13 @@ Two:
     cmp word [bp-0xc],byte -0x1
     jnz .label32
     cmp word [bp-0xe],byte +0x0
-    jz .forceS
+    jz .setSlideSouth
 .label32: ; 7b0
     cmp word [bp-0xc],byte +0x0
     jnz .label33
     cmp word [bp-0xe],byte -0x1
     jnz .label33
-    jmp word .label24
+    jmp word .setSlideEast
 .label33: ; 7bf
     mov ax,[bp-0xc]
     neg ax
@@ -907,7 +921,7 @@ Two:
     cmp word [bp-0xc],byte +0x0
     jnz .label35
     cmp word [bp-0xe],byte -0x1
-    jz .label26
+    jz .setSlideWest
 .label35: ; 7de
     cmp word [bp-0xc],byte +0x1
     jnz .label33
@@ -915,6 +929,7 @@ Two:
     jnz .label33
     ; Force S
 .forceS: ; 7ea
+.setSlideSouth:
     mov es,[bp-0x4]
     mov word [es:si],0x0
     mov es,[bp-0x8]
@@ -923,21 +938,24 @@ Two:
 
     ; Ice wall SE
 .iceWallSE: ; 7fc
+    ; check if we're sliding south
     cmp word [bp-0xc],byte +0x0
     jnz .label36
     cmp word [bp-0xe],byte +0x1
     jnz .label36
-.label26: ; 808
+.forceW:
+.setSlideWest: ; 808
     ; set slide dir to -1,0
     mov es,[bp-0x4]
     mov word [es:si],-1
     jmp short .label37
 .label36: ; 812
+    ; check if we're sliding west (0,1)
     cmp word [bp-0xc],byte +0x1
     jnz .label33
     cmp word [bp-0xe],byte +0x0
     jnz .label33
-.label22: ; 81e
+.setSlideNorth: ; 81e
     ; set slide dir to 0,-1
     mov es,[bp-0x4]
     mov word [es:si],0
@@ -950,16 +968,17 @@ Two:
     cmp word [bp-0xc],byte -0x1
     jnz .label38
     cmp word [bp-0xe],byte +0x0
-    jz .label22
+    jz .setSlideNorth
 .label38: ; 83c
     cmp word [bp-0xc],byte +0x0
     jz .label39
     jmp word .label33
 .label39: ; 845
     cmp word [bp-0xe],byte +0x1
-    jz .label24
+    jz .setSlideEast
     jmp word .label33
-.label24: ; 84e
+.forceE:
+.setSlideEast: ; 84e
     mov es,[bp-0x4]
     mov word [es:si],0x1
 .label37: ; 856
@@ -979,7 +998,7 @@ Two:
     jz .label40
     cmp word [bp+0x12],byte +0x2
     jz .label40
-    jmp word .label6
+    jmp word .return
 .label40: ; 883
     ; if flag == 2 && *di != 0xff, *di = SetTileDir(*di, xdir, ydir)
     mov di,[bp+0x14]
@@ -995,7 +1014,6 @@ Two:
     add sp,byte +0x6
     mov [di],al
 .label41: ; 8a4
-
     cmp byte [di],0xff
     jz .label42
     mov al,[di]
@@ -1003,25 +1021,25 @@ Two:
     nop
 
     ; Force Random
-.label13: ; 8ae
+.forceRandom: ; 8ae
     push byte +0x4
     call word 0x91e:0x72e ; 8b0 Rand
     add sp,byte +0x2
     or ax,ax
     jnz .label44
-    jmp word .label22
+    jmp word .setSlideNorth
 .label44: ; 8bf
     dec ax
     jnz .label45
-    jmp word .forceS
+    jmp word .setSlideSouth
 .label45: ; 8c5
     dec ax
     jnz .label46
-    jmp word .label26
+    jmp word .setSlideWest
 .label46: ; 8cb
     dec ax
     jnz .label47
-    jmp word .label24
+    jmp word .setSlideEast
 .label47: ; 8d1
     jmp short .label15
     nop
@@ -1031,15 +1049,15 @@ Two:
     shl bx,byte 0x5
     add bx,[bp+0x6]
     mov si,[GameStatePtr]
-    mov al,[bx+si]
+    mov al,[bx+si+Upper]
 .label43: ; 8e3
     les bx,[bp-0x12]
-    mov [es:bx],al
+    mov [es:bx+Monster.tile],al
     mov ax,[bp+0xa]
     les bx,[bp-0x12]
-    mov [es:bx+0x1],ax
+    mov [es:bx+Monster.x],ax
     mov ax,[bp+0xc]
-    mov [es:bx+0x3],ax
+    mov [es:bx+Monster.y],ax
     cmp word [bp+0x12],byte +0x2
     jnz .label48
     mov ax,0x1
@@ -1049,12 +1067,12 @@ Two:
     xor ax,ax
 .label49: ; 908
     les bx,[bp-0x12]
-    mov [es:bx+0x9],ax
+    mov [es:bx+Monster.slipping],ax
     cmp word [bp+0x12],byte +0x2
-    jnz .label6
+    jnz .return
     push word [bp+0x8]
     push word [bp+0x6]
-    call word 0x993:0x0 ; 91b
+    call word 0x993:0x0 ; 91b 3:0 FindMonster
     add sp,byte +0x4
     mov si,ax
     cmp byte [di],0xff
@@ -1067,7 +1085,7 @@ Two:
     add di,si
     shl di,1
     add di,si
-    mov [es:bx+di],al
+    mov [es:bx+di+Monster.tile],al
 .label50: ; 942
     mov bx,si
     mov ax,bx
@@ -1077,8 +1095,8 @@ Two:
     add bx,ax
     mov si,[GameStatePtr]
     les si,[si+MonsterListPtr]
-    mov word [es:bx+si+0x9],0x1
-.label6: ; 95d
+    mov word [es:bx+si+Monster.slipping],0x1
+.return: ; 95d
     pop si
     pop di
     lea sp,[bp-0x2]
@@ -1701,9 +1719,9 @@ Six:
 .label12: ; eba
     push byte +0x1
     push byte +0xa
-    call word 0x5ea:0x56c ; ebe
+    call word 0x5ea:0x56c ; ebe 8:56c
     add sp,byte +0x4
-    mov byte [bp+0x10],0xb
+    mov byte [bp+0x10],Dirt
     jmp short .label20
 .label13: ; ecc
     lea ax,[bp+0x10]
@@ -1757,7 +1775,7 @@ Six:
     push byte +0xb
     call word 0xec1:0x56c ; f48
     add sp,byte +0x4
-    mov byte [bp+0x10],0x0
+    mov byte [bp+0x10],Floor
     jmp short .label20
 .label17: ; f56
     push word [bp+0xa]
@@ -2766,33 +2784,37 @@ Eight:
     mov si,[si]
     mov bx,[xdirptr]
     mov ax,[bx]
-    mov [bp-0xa],ax
+    mov [xdir],ax
     mov bx,[ydirptr]
     mov cx,[bx]
-    mov [bp-0x6],cx
+    mov [ydir],cx
     mov bx,[xptr]
     add ax,[bx]
-    mov [bp-0x10],ax
+    mov [y],ax
     mov ax,cx
     add ax,si
-    mov [bp-0x12],ax
+    mov [x],ax
     mov word [bp-0x16],0x0
-    cmp word [bp-0x10],byte +0x0
-    jnl .label0
-    jmp word .label1
-.label0: ; 1920
+
+; check that x and y are in [0,32)
+    cmp word [y],byte +0x0
+    jnl .yNotLessThan0
+    jmp word .deleteSlipperAndReturn
+.yNotLessThan0: ; 1920
     or ax,ax
-    jnl .label2
-    jmp word .label1
-.label2: ; 1927
-    cmp word [bp-0x10],byte +0x20
-    jl .label3
-    jmp word .label1
-.label3: ; 1930
+    jnl .xNotLessThan0
+    jmp word .deleteSlipperAndReturn
+.xNotLessThan0: ; 1927
+    cmp word [y],byte +0x20
+    jl .yLessThan32
+    jmp word .deleteSlipperAndReturn
+.yLessThan32: ; 1930
     cmp ax,0x20
-    jl .label4
-    jmp word .label1
-.label4: ; 1938
+    jl .xLessThan32
+    jmp word .deleteSlipperAndReturn
+.xLessThan32: ; 1938
+
+;
     mov bx,si
     shl bx,byte 0x5
     add bx,di
@@ -2810,7 +2832,7 @@ Eight:
     mov [bp-0x8],ax
     or ax,ax
     jnl .label6
-    jmp word .label1
+    jmp word .deleteSlipperAndReturn
 .label6: ; 1965
     mov cx,ax
     shl ax,byte 0x2
@@ -2822,7 +2844,7 @@ Eight:
     ; If trap is closed (flag==1), break.
     cmp word [es:bx+Connection.flag],byte +0x1
     jnz .checkPanelWalls
-    jmp word .label1
+    jmp word .deleteSlipperAndReturn
 
 .checkPanelWalls: ; 1982
     ; It's not a trap!
@@ -2845,7 +2867,7 @@ Eight:
     add sp,byte +0x8
     or ax,ax
     jnz .label9
-    jmp word .label1
+    jmp word .deleteSlipperAndReturn
 .label9: ; 19af
     mov bx,[bp-0x18]
     add bx,[GameStatePtr]
@@ -2863,7 +2885,7 @@ Eight:
     add sp,byte +0xc
     or ax,ax
     jnz .label10
-    jmp word .label1
+    jmp word .deleteSlipperAndReturn
 .label10: ; 19de
     mov ax,[bp-0x14]
     cmp ax,0x7
@@ -3151,7 +3173,8 @@ Eight:
     sbb ax,ax
     add ax,0x2
     jmp short .return
-.label1: ; 1ca4
+
+.deleteSlipperAndReturn: ; 1ca4
     mov bx,[GameStatePtr]
     cmp word [bx+SlipListLen],byte +0x0
     jz .returnZero
@@ -3164,8 +3187,9 @@ Eight:
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax         ; tile
-    call word 0x162e:0x12be ; 1cc1 3:0x12be
+    call word 0x162e:0x12be ; 1cc1 3:0x12be DeleteSlipperAt
     add sp,byte +0x8
+
 .returnZero: ; 1cc9
     xor ax,ax
 .return: ; 1ccb

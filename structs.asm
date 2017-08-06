@@ -88,12 +88,12 @@ STRUC Connection
 ENDSTRUC
 
 STRUC Monster
-    .tile resb 1
-    .x resw 1
-    .y resw 1
-    .xdir resw 1
-    .ydir resw 1
-    .slipping resw 1
+    .tile resb 1        ; 0x0
+    .x resw 1           ; 0x1
+    .y resw 1           ; 0x3
+    .xdir resw 1        ; 0x5
+    .ydir resw 1        ; 0x7
+    .slipping resw 1    ; 0x9
 ENDSTRUC
 
 ; vim: syntax=nasm
