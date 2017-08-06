@@ -2773,9 +2773,11 @@ Eight:
 
     %define ydir (bp-0x6)
     %define xdir (bp-0xa)
-    %define y (bp-0x10)
-    %define x (bp-0x12)
+    %define x (bp-0x10)
+    %define y (bp-0x12)
 
+    ; xdir = *xdirptr
+    ; ydir = *ydirptr
     ; y = *yptr + *yptrdir
     ; x = *xptr + *xptrdir
     mov bx,[xptr]
@@ -2790,14 +2792,14 @@ Eight:
     mov [ydir],cx
     mov bx,[xptr]
     add ax,[bx]
-    mov [y],ax
+    mov [x],ax
     mov ax,cx
     add ax,si
-    mov [x],ax
+    mov [y],ax
     mov word [bp-0x16],0x0
 
 ; check that x and y are in [0,32)
-    cmp word [y],byte +0x0
+    cmp word [x],byte +0x0
     jnl .yNotLessThan0
     jmp word .deleteSlipperAndReturn
 .yNotLessThan0: ; 1920
@@ -2805,7 +2807,7 @@ Eight:
     jnl .xNotLessThan0
     jmp word .deleteSlipperAndReturn
 .xNotLessThan0: ; 1927
-    cmp word [y],byte +0x20
+    cmp word [x],byte +0x20
     jl .yLessThan32
     jmp word .deleteSlipperAndReturn
 .yLessThan32: ; 1930
@@ -2814,7 +2816,7 @@ Eight:
     jmp word .deleteSlipperAndReturn
 .xLessThan32: ; 1938
 
-;
+; get tile under the source coordinates
     mov bx,si
     shl bx,byte 0x5
     add bx,di
@@ -2822,6 +2824,8 @@ Eight:
     add bx,[GameStatePtr]
     mov al,[bx+Lower]
     mov [bp-0x3],al
+
+; check if the floor is a trap
     cmp al,Trap
     jnz .checkPanelWalls
     ; It's a trap!
@@ -2875,10 +2879,10 @@ Eight:
     mov [bp-0x3],al
     lea ax,[bp-0x14]
     push ax
-    push word [bp-0x6]
-    push word [bp-0xa]
-    push word [bp-0x12]
-    push word [bp-0x10]
+    push word [ydir]
+    push word [xdir]
+    push word [y]
+    push word [x]
     mov al,[bp-0x3]
     push ax
     call word 0x12c7:0x1d4a ; 19cf 3:0x1d4a
