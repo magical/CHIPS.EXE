@@ -197,118 +197,119 @@ db "Helv", 0
 ; Tile table (0x66c)
 ; Columns: Chip, ??, Block, ??, Monsters, ??
 ;
-db 1,0,1,0,1,1  ; 0x0
-db 0,0,0,0,0,0  ; 0x1
-db 1,1,0,0,0,0  ; 0x2
-db 2,2,1,2,2,2  ; 0x3
-db 2,2,1,1,2,2  ; 0x4
-db 0,0,0,0,0,0  ; 0x5
-db 2,4,2,1,2,1  ; 0x6
-db 2,4,2,1,2,1  ; 0x7
-db 2,4,2,1,2,1  ; 0x8
-db 2,4,2,1,2,1  ; 0x9
-db 2,0,0,0,0,0  ; 0xa
-db 1,3,0,0,0,0  ; 0xb
-db 2,5,1,4,1,4  ; 0xc
-db 2,5,1,4,1,4  ; 0xd
-db 0,0,0,0,0,0  ; 0xe
-db 0,0,0,0,0,0  ; 0xf
-db 0,0,0,0,0,0  ; 0x10
-db 0,0,0,0,0,0  ; 0x11
-db 2,5,1,4,1,4  ; 0x12
-db 2,5,1,4,1,4  ; 0x13
-db 2,5,1,4,1,4  ; 0x14
-db 1,4,1,1,0,0  ; 0x15
-db 2,3,0,0,0,0  ; 0x16
-db 2,3,0,0,0,0  ; 0x17
-db 2,3,0,0,0,0  ; 0x18
-db 2,3,0,0,0,0  ; 0x19
-db 2,5,2,4,2,4  ; 0x1a
-db 2,5,2,4,2,4  ; 0x1b
-db 2,5,2,4,2,4  ; 0x1c
-db 2,5,2,4,2,4  ; 0x1d
-db 2,0,0,0,0,0  ; 0x1e
-db 2,0,0,0,0,0  ; 0x1f
+TileTable:
+db 1,0,1,0,1,1  ; 0x0  Floor
+db 0,0,0,0,0,0  ; 0x1  Wall
+db 1,1,0,0,0,0  ; 0x2  ICChip
+db 2,2,1,2,2,2  ; 0x3  Water
+db 2,2,1,1,2,2  ; 0x4  Fire
+db 0,0,0,0,0,0  ; 0x5  InvisibleWall
+db 2,4,2,1,2,1  ; 0x6  PanelN
+db 2,4,2,1,2,1  ; 0x7  PanelW
+db 2,4,2,1,2,1  ; 0x8  PanelS
+db 2,4,2,1,2,1  ; 0x9  PanelE
+db 2,0,0,0,0,0  ; 0xa  Block
+db 1,3,0,0,0,0  ; 0xb  Dirt
+db 2,5,1,4,1,4  ; 0xc  Ice
+db 2,5,1,4,1,4  ; 0xd  ForceS
+db 0,0,0,0,0,0  ; 0xe  BlockN
+db 0,0,0,0,0,0  ; 0xf  BlockW
+db 0,0,0,0,0,0  ; 0x10 BlockS
+db 0,0,0,0,0,0  ; 0x11 BlockE
+db 2,5,1,4,1,4  ; 0x12 ForceN
+db 2,5,1,4,1,4  ; 0x13 ForceE
+db 2,5,1,4,1,4  ; 0x14 ForceW
+db 1,4,1,1,0,0  ; 0x15 Exit
+db 2,3,0,0,0,0  ; 0x16 BlueDoor
+db 2,3,0,0,0,0  ; 0x17 RedDoor
+db 2,3,0,0,0,0  ; 0x18 GreenDoor
+db 2,3,0,0,0,0  ; 0x19 YellowDoor
+db 2,5,2,4,2,4  ; 0x1a IceWallNW
+db 2,5,2,4,2,4  ; 0x1b IceWallNE
+db 2,5,2,4,2,4  ; 0x1c IceWallSE
+db 2,5,2,4,2,4  ; 0x1d IceWallSW
+db 2,0,0,0,0,0  ; 0x1e FakeFloor
+db 2,0,0,0,0,0  ; 0x1f FakeWall
 db 0,0,0,0,0,0  ; 0x20
-db 2,4,0,0,0,0  ; 0x21
-db 2,3,0,0,0,0  ; 0x22
-db 1,4,1,1,1,1  ; 0x23
-db 1,4,1,1,1,1  ; 0x24
-db 0,0,0,0,0,0  ; 0x25
-db 1,4,1,1,1,1  ; 0x26
-db 1,4,1,1,1,1  ; 0x27
-db 1,4,1,1,1,1  ; 0x28
-db 1,7,1,7,1,7  ; 0x29
-db 1,2,1,5,1,5  ; 0x2a
-db 1,6,1,6,1,6  ; 0x2b
-db 2,0,0,0,0,0  ; 0x2c
-db 1,4,1,1,0,0  ; 0x2d
-db 2,4,0,0,0,0  ; 0x2e
-db 1,4,1,1,1,1  ; 0x2f
-db 2,4,2,1,2,1  ; 0x30
-db 0,0,0,0,0,0  ; 0x31
-db 2,5,1,4,0,0  ; 0x32
-db 0,0,0,0,0,0  ; 0x33
-db 0,0,0,0,0,0  ; 0x34
-db 0,0,0,0,0,0  ; 0x35
+db 2,4,0,0,0,0  ; 0x21 Theif
+db 2,3,0,0,0,0  ; 0x22 Socket
+db 1,4,1,1,1,1  ; 0x23 ToggleButton
+db 1,4,1,1,1,1  ; 0x24 CloneButton
+db 0,0,0,0,0,0  ; 0x25 ToggleWall
+db 1,4,1,1,1,1  ; 0x26 ToggleFloor
+db 1,4,1,1,1,1  ; 0x27 TrapButton
+db 1,4,1,1,1,1  ; 0x28 TankButton
+db 1,7,1,7,1,7  ; 0x29 Teleport
+db 1,2,1,5,1,5  ; 0x2a Bomb
+db 1,6,1,6,1,6  ; 0x2b Trap
+db 2,0,0,0,0,0  ; 0x2c HiddenWall
+db 1,4,1,1,0,0  ; 0x2d Gravel
+db 2,4,0,0,0,0  ; 0x2e PopupWall
+db 1,4,1,1,1,1  ; 0x2f Hint
+db 2,4,2,1,2,1  ; 0x30 PanelSE
+db 0,0,0,0,0,0  ; 0x31 CloneMachine
+db 2,5,1,4,0,0  ; 0x32 ForceRandom
+db 0,0,0,0,0,0  ; 0x33 ChipSplash
+db 0,0,0,0,0,0  ; 0x34 ChipBurned
+db 0,0,0,0,0,0  ; 0x35 ChipBombed
 db 0,0,0,0,0,0  ; 0x36
 db 0,0,0,0,0,0  ; 0x37
 db 0,0,0,0,0,0  ; 0x38
-db 0,0,0,0,0,0  ; 0x39
-db 0,0,0,0,0,0  ; 0x3a
-db 0,0,0,0,0,0  ; 0x3b
-db 0,0,1,1,1,0  ; 0x3c
-db 0,0,1,1,1,0  ; 0x3d
-db 0,0,1,1,1,0  ; 0x3e
-db 0,0,1,1,1,0  ; 0x3f
-db 2,2,0,0,0,0  ; 0x40
-db 2,2,0,0,0,0  ; 0x41
-db 2,2,0,0,0,0  ; 0x42
-db 2,2,0,0,0,0  ; 0x43
-db 2,2,0,0,0,0  ; 0x44
-db 2,2,0,0,0,0  ; 0x45
-db 2,2,0,0,0,0  ; 0x46
-db 2,2,0,0,0,0  ; 0x47
-db 2,2,0,0,0,0  ; 0x48
-db 2,2,0,0,0,0  ; 0x49
-db 2,2,0,0,0,0  ; 0x4a
-db 2,2,0,0,0,0  ; 0x4b
-db 2,2,0,0,0,0  ; 0x4c
-db 2,2,0,0,0,0  ; 0x4d
-db 2,2,0,0,0,0  ; 0x4e
-db 2,2,0,0,0,0  ; 0x4f
-db 2,2,0,0,0,0  ; 0x50
-db 2,2,0,0,0,0  ; 0x51
-db 2,2,0,0,0,0  ; 0x52
-db 2,2,0,0,0,0  ; 0x53
-db 2,2,0,0,0,0  ; 0x54
-db 2,2,0,0,0,0  ; 0x55
-db 2,2,0,0,0,0  ; 0x56
-db 2,2,0,0,0,0  ; 0x57
-db 2,2,0,0,0,0  ; 0x58
-db 2,2,0,0,0,0  ; 0x59
-db 2,2,0,0,0,0  ; 0x5a
-db 2,2,0,0,0,0  ; 0x5b
-db 2,2,0,0,0,0  ; 0x5c
-db 2,2,0,0,0,0  ; 0x5d
-db 2,2,0,0,0,0  ; 0x5e
-db 2,2,0,0,0,0  ; 0x5f
-db 2,2,0,0,0,0  ; 0x60
-db 2,2,0,0,0,0  ; 0x61
-db 2,2,0,0,0,0  ; 0x62
-db 2,2,0,0,0,0  ; 0x63
-db 2,1,1,1,1,1  ; 0x64
-db 2,1,1,1,1,1  ; 0x65
-db 2,1,1,1,1,1  ; 0x66
-db 2,1,1,1,1,1  ; 0x67
-db 2,1,1,1,0,0  ; 0x68
-db 2,1,1,1,0,0  ; 0x69
-db 2,1,1,1,0,0  ; 0x6a
-db 2,1,1,1,0,0  ; 0x6b
-db 0,0,1,1,1,0  ; 0x6c
-db 0,0,1,1,1,0  ; 0x6d
-db 0,0,1,1,1,0  ; 0x6e
-db 0,0,1,1,1,0  ; 0x6f
+db 0,0,0,0,0,0  ; 0x39 ChipExit
+db 0,0,0,0,0,0  ; 0x3a Exit2
+db 0,0,0,0,0,0  ; 0x3b Exit3
+db 0,0,1,1,1,0  ; 0x3c SwimN
+db 0,0,1,1,1,0  ; 0x3d SwimW
+db 0,0,1,1,1,0  ; 0x3e SwimS
+db 0,0,1,1,1,0  ; 0x3f SwimE
+db 2,2,0,0,0,0  ; 0x40 BugN
+db 2,2,0,0,0,0  ; 0x41 BugW
+db 2,2,0,0,0,0  ; 0x42 BugS
+db 2,2,0,0,0,0  ; 0x43 BugE
+db 2,2,0,0,0,0  ; 0x44 FireballN
+db 2,2,0,0,0,0  ; 0x45 FireballW
+db 2,2,0,0,0,0  ; 0x46 FireballS
+db 2,2,0,0,0,0  ; 0x47 FireballE
+db 2,2,0,0,0,0  ; 0x48 BallN
+db 2,2,0,0,0,0  ; 0x49 BallW
+db 2,2,0,0,0,0  ; 0x4a BallS
+db 2,2,0,0,0,0  ; 0x4b BallE
+db 2,2,0,0,0,0  ; 0x4c TankN
+db 2,2,0,0,0,0  ; 0x4d TankW
+db 2,2,0,0,0,0  ; 0x4e TankS
+db 2,2,0,0,0,0  ; 0x4f TankE
+db 2,2,0,0,0,0  ; 0x50 GliderN
+db 2,2,0,0,0,0  ; 0x51 GliderW
+db 2,2,0,0,0,0  ; 0x52 GliderS
+db 2,2,0,0,0,0  ; 0x53 GliderE
+db 2,2,0,0,0,0  ; 0x54 TeethN
+db 2,2,0,0,0,0  ; 0x55 TeethW
+db 2,2,0,0,0,0  ; 0x56 TeethS
+db 2,2,0,0,0,0  ; 0x57 TeethE
+db 2,2,0,0,0,0  ; 0x58 WalkerN
+db 2,2,0,0,0,0  ; 0x59 WalkerW
+db 2,2,0,0,0,0  ; 0x5a WalkerS
+db 2,2,0,0,0,0  ; 0x5b WalkerE
+db 2,2,0,0,0,0  ; 0x5c BlobN
+db 2,2,0,0,0,0  ; 0x5d BlobW
+db 2,2,0,0,0,0  ; 0x5e BlobS
+db 2,2,0,0,0,0  ; 0x5f BlobE
+db 2,2,0,0,0,0  ; 0x60 ParameciumN
+db 2,2,0,0,0,0  ; 0x61 ParameciumW
+db 2,2,0,0,0,0  ; 0x62 ParameciumS
+db 2,2,0,0,0,0  ; 0x63 ParameciumE
+db 2,1,1,1,1,1  ; 0x64 BlueKey
+db 2,1,1,1,1,1  ; 0x65 RedKey
+db 2,1,1,1,1,1  ; 0x66 GreenKey
+db 2,1,1,1,1,1  ; 0x67 YellowKey
+db 2,1,1,1,0,0  ; 0x68 Flipper
+db 2,1,1,1,0,0  ; 0x69 FireBoots
+db 2,1,1,1,0,0  ; 0x6a IceSkates
+db 2,1,1,1,0,0  ; 0x6b SuctionBoots
+db 0,0,1,1,1,0  ; 0x6c ChipN
+db 0,0,1,1,1,0  ; 0x6d ChipW
+db 0,0,1,1,1,0  ; 0x6e ChipS
+db 0,0,1,1,1,0  ; 0x6f ChipE
 
 db "You seem to be having trouble with this level.", 10
 db "Would you like to skip to the next level?", 0, 0
