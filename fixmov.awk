@@ -13,6 +13,7 @@
     if ($1 == "mov" && $2 == "dl,al") { print "db 0x8a,0xd0"; next }
     if ($1 == "mov" && $2 == "dh,cl") { print "db 0x8a,0xf1"; next }
     if ($1 == "sub" && $2 == "ah,ah") { print "db 0x2a,0xe4"; next }
+    if ($1 == "sub" && $2 == "bh,bh") { print "db 0x2a,0xff"; next }
     if ($1 == "sub" && $2 == "ch,ch") { print "db 0x2a,0xed"; next }
     if ($1 == "sbb" && $2 == "al,al") { print "db 0x1a,0xc0"; next }
 

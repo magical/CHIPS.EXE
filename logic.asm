@@ -2641,7 +2641,336 @@ endfunc
 
 ; 1734
 
-INCBIN "base.exe", 0x6200+$, 0x22be - 0x1734
+INCBIN "base.exe", 0x6200+$, 0x1934 - 0x1734
+
+; 1934
+
+; can exit/enter tile?
+func CanEnterOrExitPanelWalls
+    sub sp,byte +0x2
+
+    %arg tile:byte, xdir:word, ydir:word, flag:byte
+
+    mov al,[tile]
+    sub ah,ah
+    cmp ax,PanelSE
+    jnz .notPanelSE ; ↓
+    jmp word .southEast ; ↓
+.notPanelSE: ; 194e
+    jna .label1 ; ↓
+    jmp word .returnTrue ; ↓
+.label1: ; 1953
+    cmp al,IceWallNW
+    jz .northWest ; ↓
+    jg .label2 ; ↓
+    sub al,PanelN
+    jz .north ; ↓
+    dec al ; PanelW
+    jz .west ; ↓
+    dec al ; PanelS
+    jz .south ; ↓
+    dec al ; PanelE
+    jz .east ; ↓
+    jmp word .returnTrue ; ↓
+    nop
+    nop
+.label2: ; 196e
+    sub al,IceWallNE
+    jz .label19 ; ↓
+    dec al ; IceWallSE
+    jnz .label3 ; ↓
+    jmp word .southEast ; ↓
+.label3: ; 1979
+    dec al ; IceWallSW
+    jnz .label4 ; ↓
+    jmp word .southWest ; ↓
+.label4: ; 1980
+    jmp word .returnTrue ; ↓
+    nop
+
+.north: ; 1984
+    cmp word [flag],byte +0x0
+    jz .label13 ; ↓
+.label6: ; 198a
+    cmp word [xdir],byte +0x0
+    jz .label7 ; ↓
+    jmp word .returnTrue ; ↓
+.label7: ; 1993
+    cmp word [ydir],byte +0x1
+.label8: ; 1997
+    jz .returnFalse ; ↓
+    jmp word .returnTrue ; ↓
+.returnFalse: ; 199c
+    xor ax,ax
+    jmp word .return ; ↓
+    nop
+
+.west: ; 19a2
+    cmp word [flag],byte +0x0
+    jz .label16 ; ↓
+.label11: ; 19a8
+    cmp word [xdir],byte +0x1
+    jmp short .label28 ; ↓
+    nop
+    nop
+
+.south: ; 19b0
+    cmp word [flag],byte +0x0
+    jz .label6 ; ↑
+.label13: ; 19b6
+    cmp word [xdir],byte +0x0
+    jz .label14 ; ↓
+    jmp word .returnTrue ; ↓
+.label14: ; 19bf
+    cmp word [ydir],byte -0x1
+    jmp short .label8 ; ↑
+    nop
+
+.east: ; 19c6
+    cmp word [flag],byte +0x0
+    jz .label11 ; ↑
+.label16: ; 19cc
+    cmp word [xdir],byte -0x1
+    jmp short .label28 ; ↓
+.northWest: ; 19d2
+    cmp word [flag],byte +0x0
+    jz .label21 ; ↓
+.label18: ; 19d8
+    mov bx,[xdir]
+    or bx,bx
+    jnz .label27 ; ↓
+    cmp word [ydir],byte +0x1
+    jmp short .label26 ; ↓
+    nop
+
+.label19: ; 19e6
+    cmp word [flag],byte +0x0
+    jz .label25 ; ↓
+    mov bx,[xdir]
+    or bx,bx
+    jnz .label23 ; ↓
+    cmp word [ydir],byte +0x1
+    jmp short .label22 ; ↓
+    nop
+.southEast: ; 19fa
+    cmp word [flag],byte +0x0
+    jz .label18 ; ↑
+.label21: ; 1a00
+    mov bx,[xdir]
+    or bx,bx
+    jnz .label23 ; ↓
+    cmp word [ydir],byte -0x1
+.label22: ; 1a0b
+    jz .returnFalse ; ↑
+.label23: ; 1a0d
+    inc bx
+    jmp short .label28 ; ↓
+
+.southWest: ; 1a10
+    cmp word [flag],byte +0x0
+    jz .label29 ; ↓
+.label25: ; 1a16
+    mov bx,[xdir]
+    or bx,bx
+    jnz .label27 ; ↓
+    cmp word [ydir],byte -0x1
+.label26: ; 1a21
+    jnz .label27 ; ↓
+    jmp word .returnFalse ; ↑
+.label27: ; 1a26
+    dec bx
+.label28: ; 1a27
+    jnz .returnTrue ; ↓
+    cmp word [ydir],byte +0x0
+    jmp word .label8 ; ↑
+.label29: ; 1a30
+    mov bx,[xdir]
+    or bx,bx
+    jnz .label30 ; ↓
+    cmp word [ydir],byte +0x1
+    jnz .label30 ; ↓
+    jmp word .returnFalse ; ↑
+.label30: ; 1a40
+    inc bx
+    jnz .returnTrue ; ↓
+    cmp word [ydir],byte +0x0
+    jnz .returnTrue ; ↓
+    jmp word .returnFalse ; ↑
+.returnTrue: ; 1a4c
+    mov ax,0x1
+.return: ; 1a4f
+    lea sp,[bp-0x2]
+endfunc
+
+; 1a56
+
+INCBIN "base.exe", 0x6200+$, 0x1d4a - 0x1a56
+
+; 1d4a
+
+func MonsterCanEnterTile
+    sub sp,byte +0xc
+    push di
+    push si
+
+    %arg tile:byte, x:word, y:word, xdir:word, ydir:word, outPtr:byte
+    %define tileTableRow (bp-0xa)
+
+    mov di,[y]
+    mov si,[x]
+    mov bx,di
+    shl bx,byte 0x5
+    add bx,[GameStatePtr]
+    add bx,si
+    mov [bp-0xc],bx
+
+; if tile is on a clone machine, return
+    cmp byte [bx+Lower],CloneMachine
+    jnz .notACloneMachine ; ↓
+    jmp word .clearOutAndReturnZero ; ↓
+
+.notACloneMachine: ; 1d77
+    mov al,[bx+Upper]
+    mov [bp-0x3],al
+    cmp al,ChipN
+    jb .checkSwimmingChip ; ↓
+    cmp al,ChipE
+    jna .getBottomTile ; ↓
+.checkSwimmingChip: ; 1d84
+    cmp byte [bp-0x3],SwimN
+    jb .label3 ; ↓
+    cmp byte [bp-0x3],SwimE
+    ja .label3 ; ↓
+
+; creature is chip or swimming chip
+.getBottomTile: ; 1d90
+    mov al,[bx+Lower]
+    mov [bp-0x3],al
+
+.label3: ; 1d97
+    mov bl,[bp-0x3]
+    sub bh,bh
+    ; multiply by 6
+    mov ax,bx
+    shl bx,1
+    add bx,ax
+    shl bx,1
+    ; load six bytes from the tile table
+    ; onto the stack
+    lea di,[tileTableRow]
+    lea si,[TileTable+bx]
+    mov ax,ss
+    mov es,ax
+    movsw
+    movsw
+    movsw
+
+    ; copy action to outPtr
+    mov al,[tileTableRow + 5]
+    sub ah,ah
+    mov bx,[outPtr]
+    mov [bx],ax
+
+    ; if table entry == 1 return true
+    cmp byte [tileTableRow + 4],0x1
+    jnz .label5 ; ↓
+.returnTrue: ; 1dc2
+    mov ax,0x1
+    jmp word .return
+
+;if table entry == 2 do some other stuff
+.label5: ; 1dc8
+    cmp byte [tileTableRow + 4],0x2
+    jz .label6 ; ↓
+
+; otherwise return zero
+    jmp word .clearOutAndReturnZero ; ↓
+
+; other stuff ==>
+.label6: ; 1dd1
+    mov si,[outPtr]
+    mov al,[bp-0x3]
+    sub ah,ah
+    cmp ax,PanelSE
+    jz .thinWalls ; ↓
+    ja .clearOutAndReturnZero ; ↓
+    cmp al,Fire
+    jz .fire ; ↓
+    jg .checkPanelWallsOrIceWalls ; ↓
+    sub al,Water
+    jz .water ; ↓
+    jmp short .clearOutAndReturnZero ; ↓
+    nop
+    nop
+
+; check if the tile is a panel wall or ice wall
+.checkPanelWallsOrIceWalls: ; 1dee
+    sub al,PanelN
+    jl .clearOutAndReturnZero ; ↓
+    sub al,PanelE - PanelN
+    jng .thinWalls ; ↓
+    sub al,IceWallNW - PanelE
+    jl .clearOutAndReturnZero ; ↓
+    sub al,IceWallSW - IceWallNW
+    jng .thinWalls ; ↓
+    jmp short .clearOutAndReturnZero ; ↓
+
+.water: ; 1e00
+    mov al,[tile]
+    sub ah,ah
+    sub ax,GliderN
+    jl .returnTrue ; ↑
+    jo .returnTrue ; ↑
+    sub ax,GliderE - GliderN
+    jg .returnTrue ; ↑
+.label9: ; 1e11
+    mov word [si],0x1
+    jmp short .returnTrue ; ↑
+    nop
+
+.fire: ; 1e18
+    mov al,[tile]
+    sub ah,ah
+    sub ax,BugN
+    jl .returnTrue ; ↑
+    jo .returnTrue ; ↑
+    sub ax,BugE - BugN
+    jng .clearOutAndReturnZero ; ↓
+    dec ax ; Tank
+    jl .returnTrue ; ↑
+    sub ax,TankE - TankN
+    jng .label9 ; ↑
+    sub ax,ParameciumN - TankE
+    jl .returnTrue ; ↑
+    sub ax,ParameciumE - ParameciumN
+    jng .clearOutAndReturnZero ; ↓
+    jmp short .returnTrue ; ↑
+    nop
+
+.thinWalls: ; 1e3e
+    push byte +0x1
+    push word [ydir]
+    push word [xdir]
+    mov al,[bp-0x3]
+    push ax
+    call word 0x1edc:0x1934 ; 1e4a CheckPanelWalls
+    add sp,byte +0x8
+    or ax,ax
+    jz .clearOutAndReturnZero ; ↓
+    jmp word .returnTrue ; ↑
+.clearOutAndReturnZero: ; 1e59
+    xor ax,ax
+    mov bx,[outPtr]
+    mov [bx],ax
+.return: ; 1e60
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+endfunc
+
+; 1e6a
+
+INCBIN "base.exe", 0x6200+$, 0x22be - 0x1e6a
 
 ; 22be
 
