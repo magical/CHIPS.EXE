@@ -65,7 +65,7 @@ One:
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push ax
-    call word 0x11e:0x1184 ; 61
+    call word 0x11e:0x1184 ; 61 7:1184 MoveChip
     add sp,byte +0xa
 .label6: ; 69
     ; ...and clear the keystroke regardless
@@ -159,7 +159,7 @@ One:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call word 0x19d:0x1184 ; 11b 7:1184
+    call word 0x19d:0x1184 ; 11b 7:1184 MoveChip
     add sp,byte +0xa
     or ax,ax
     ; If we succeeded, or chip died, go deal with it
@@ -223,7 +223,7 @@ One:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call word 0x2aa:0x1184 ; 19a
+    call word 0x2aa:0x1184 ; 19a 7:1184 MoveChip
     add sp,byte +0xa
     or ax,ax
     jnz .dead
@@ -341,7 +341,7 @@ One:
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push ax
-    call word 0x2ed:0x1184 ; 2a7
+    call word 0x2ed:0x1184 ; 2a7 7:1184 MoveChip
     add sp,byte +0xa
 .label36: ; 2af
     ; ...if chip /is/ dead, clear the keystroke and mouse target instead.
@@ -366,7 +366,7 @@ One:
     push word [bx+SlideY]
     push word [bx+SlideX]
     push word [hDC]
-    call word 0x33b:0x1184 ; 2ea
+    call word 0x33b:0x1184 ; 2ea 7:1184 MoveChip
     add sp,byte +0xa
     or ax,ax
     jz .label39
@@ -401,7 +401,7 @@ One:
     push word [bx+SlideY]
     push word [bx+SlideX]
     push word [hDC]
-    call word 0x398:0x1184 ; 353
+    call word 0x398:0x1184 ; 353 7:1184 MoveChip
     add sp,byte +0xa
     or ax,ax
     jnz .label40
@@ -451,7 +451,7 @@ One:
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push word [hDC]
-    call word 0x4b8:0x1184 ; 3ea
+    call word 0x4b8:0x1184 ; 3ea 7:1184 MoveChip
     add sp,byte +0xa
 .label44: ; 3f2
     mov bx,[GameStatePtr]
@@ -534,7 +534,7 @@ One:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call word 0x56a:0x1184 ; 4b5
+    call word 0x56a:0x1184 ; 4b5 7:1184 MoveChip
     add sp,byte +0xa
     or ax,ax
     jz .label59
@@ -608,7 +608,7 @@ One:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call word 0x64:0x1184 ; 567
+    call word 0x64:0x1184 ; 567 7:1184 MoveChip
     add sp,byte +0xa
     or ax,ax
     jnz .label55
@@ -2005,10 +2005,15 @@ Seven:
     %define hDC (bp+0x6)
     %define xdir (bp+0x8)
     %define ydir (bp+0xa)
+    %define flag1 (bp+0xc) ; 0 if sliding (forced move), 1 if not
+    %define flag2 (bp+0xe)
 
-    %define x (bp-8)
-    %define y (bp-0xa)
-    %define tile (bp-0xb)
+    %define tile1 (bp-0x3)
+    %define xdest (bp-0x8)
+    %define ydest (bp-0xa)
+    %define tile2 (bp-0xb)
+    %define action (bp-0xe)
+
     mov ax,ds
     nop
     inc bp
@@ -2017,18 +2022,21 @@ Seven:
     push ds
     mov ds,ax
     sub sp,byte +0x1c
+
     push di
     push si
 
+    ; x = chipx + xdir
+    ; y = chipy + ydir
     mov bx,[GameStatePtr]
     mov ax,[bx+ChipX]
     add ax,[xdir]
-    mov [x],ax
+    mov [xdest],ax
     mov ax,[bx+ChipY]
     add ax,[ydir]
-    mov [y],ax
+    mov [ydest],ax
     mov word [bp-0x10],0x0
-    mov byte [bp-0xb],0xff
+    mov byte [tile2],0xff
 
     ; if [0x22] != 0, return 0
     cmp word [0x22],byte +0x0
@@ -2041,7 +2049,7 @@ Seven:
     ; If <something> and <something about the mouse>
     ; and no buffered move is stored,
     ; buffer the current move and return.
-    mov dx,[bp+0xc]
+    mov dx,[flag1]
     or dx,dx
     jz .label2
     cmp word [bx+0xa40],byte +0x0
@@ -2058,90 +2066,103 @@ Seven:
     jmp short .returnZero
     nop
 
-.label3: ; 11f4 [bp+0xc] != 0 && [bx+0xa40] == 0
+.label3: ; 11f4 [flag1] != 0 && [bx+0xa40] == 0
     mov word [bx+IsBuffered],0x0
     mov bx,[GameStatePtr]
     mov word [bx+0xa40],0x1
-.label2: ; 1204 [bp+0xc] == 0
+.label2: ; 1204 [flag1] == 0
     mov bx,[GameStatePtr]
     mov word [bx+0xa3e],0x0
 
 ; Check board bounds
-    cmp word [x],byte +0x0
-    jnl .label5
+    cmp word [xdest],byte +0x0
+    jnl .xNotLessThan0
     jmp word .label6
-.label5: ; 1217
-    cmp word [y],byte +0x0
-    jnl .label7
+.xNotLessThan0: ; 1217
+    cmp word [ydest],byte +0x0
+    jnl .yNotLessThan0
     jmp word .label6
-.label7: ; 1220
-    cmp word [x],byte +0x20
-    jl .label8
+.yNotLessThan0: ; 1220
+    cmp word [xdest],byte +0x20
+    jl .xNotGreaterThan32
     jmp word .label6
-.label8: ; 1229
-    cmp word [y],byte +0x20
-    jl .label9
+.xNotGreaterThan32: ; 1229
+    cmp word [ydest],byte +0x20
+    jl .yNotGreaterThan32
     jmp word .label6
-.label9: ; 1232
+.yNotGreaterThan32: ; 1232
+
+; if chip is sliding or this is a forced move
+; and we're standing on ice or a teleport,
+; then exit
     mov bx,[GameStatePtr]
-    cmp word [bx+0x80c],byte +0x0
-    jz .label10
+    cmp word [bx+IsSliding],byte +0x0
+    jz .notSliding
+    ; get the tile under chip
     mov si,[bx+ChipY]
     shl si,byte 0x5
     add si,[bx+ChipX]
-    mov al,[bx+si+0x400]
-    mov [bp-0xb],al
-    or dx,dx
-    jz .label10
-    cmp al,0xc
-    jnz .label11
+    mov al,[bx+si+Lower]
+    mov [tile2],al
+    or dx,dx ; flag1
+    jz .notSliding
+    cmp al,Ice
+    jnz .notOnIce
     jmp word .returnZero
-.label11: ; 125a
-    cmp al,0x1a
-    jnz .label12
+.notOnIce: ; 125a
+    cmp al,IceWallNW
+    jnz .notOnIceNW
     jmp word .returnZero
-.label12: ; 1261
-    cmp al,0x1b
-    jnz .label13
+.notOnIceNW: ; 1261
+    cmp al,IceWallNE
+    jnz .notOnIceNE
     jmp word .returnZero
-.label13: ; 1268
-    cmp al,0x1d
-    jnz .label14
+.notOnIceNE: ; 1268
+    cmp al,IceWallSW
+    jnz .notOnIceSW
     jmp word .returnZero
-.label14: ; 126f
-    cmp al,0x1c
-    jnz .label15
+.notOnIceSW: ; 126f
+    cmp al,IceWallSE
+    jnz .notOnIceSE
     jmp word .returnZero
-.label15: ; 1276
-    cmp al,0x29
-    jnz .label16
+.notOnIceSE: ; 1276
+    cmp al,Teleport
+    jnz .notOnTeleport
     jmp word .returnZero
-.label16: ; 127d
-    cmp al,0xd
-    jz .label17
-    cmp al,0x12
-    jz .label17
-    cmp al,0x14
-    jz .label17
-    cmp al,0x13
-    jz .label17
-    cmp al,0x32
-    jnz .label10
-.label17: ; 1291
-    mov ax,[bp+0x8]
+.notOnTeleport: ; 127d
+
+; are we on a force floor?
+    cmp al,ForceS
+    jz .onForceFloor
+    cmp al,ForceN
+    jz .onForceFloor
+    cmp al,ForceW
+    jz .onForceFloor
+    cmp al,ForceE
+    jz .onForceFloor
+    cmp al,ForceRandom
+    jnz .notSliding
+
+; if chip is on a force floor, set the slide dir and return
+.onForceFloor: ; 1291
+    mov ax,[xdir]
     cmp [bx+SlideX],ax
-    jnz .label10
-    mov ax,[bp+0xa]
+    jnz .notSliding
+    mov ax,[ydir]
     cmp [bx+SlideY],ax
-    jnz .label10
+    jnz .notSliding
     jmp word .returnZero
-.label10: ; 12a6
+
+.notSliding: ; 12a6
+
+; if chip is standing on a trap
+; do something
     mov si,[bx+ChipY]
     shl si,byte 0x5
     add si,[bx+ChipX]
-    mov al,[bx+si+0x400]
-    mov [bp-0x3],al
-    cmp al,0x2b
+    mov al,[bx+si+Lower]
+    mov [tile1],al
+    cmp al,Trap
     jnz .label18
     push word [bx+ChipY]
     push word [bx+ChipX]
@@ -2157,45 +2178,49 @@ Seven:
     add bx,ax
     shl bx,1
     mov si,[GameStatePtr]
-    les si,[si+0x942]
-    cmp word [es:bx+si+0x8],byte +0x1
+    les si,[si+TrapListPtr]
+    cmp word [es:bx+si+Connection.flag],byte +0x1
     jnz .label18
     jmp word .label6
+
+; check panel walls
 .label18: ; 12f0
-    cmp byte [bp-0x3],0x6
+    cmp byte [tile1],PanelN
     jc .label20
-    cmp byte [bp-0x3],0x9
+    cmp byte [tile1],PanelE
     jna .label21
 .label20: ; 12fc
-    cmp byte [bp-0x3],0x30
+    cmp byte [tile1],PanelSE
     jnz .label22
 .label21: ; 1302
     push byte +0x0
-    push word [bp+0xa]
-    push word [bp+0x8]
-    mov al,[bp-0x3]
+    push word [ydir]
+    push word [xdir]
+    mov al,[tile1]
     push ax
-    call word 0x134a:0x1934 ; 130e
+    call word 0x134a:0x1934 ; 130e 3:0x1934 CanEnterOrExitPanelWalls
     add sp,byte +0x8
     or ax,ax
     jnz .label22
     jmp word .label6
+
+; something about blocks
 .label22: ; 131d
     mov bx,[GameStatePtr]
     mov si,[bx+ChipX]
     mov di,[bx+ChipY]
     mov word [bp-0x16],0x0
-    mov ax,[bp-0xa]
+    mov ax,[ydest]
     shl ax,byte 0x5
-    add ax,[bp-0x8]
+    add ax,[xdest]
     add bx,ax
-    cmp byte [bx],0xa
+    cmp byte [bx+Upper],Block
     jz .label23
     jmp word .label24
 .label23: ; 1341
-    push word [bp-0xa]
-    push word [bp-0x8]
-    call word 0x13df:0x58 ; 1347
+    push word [ydest]
+    push word [xdest]
+    call word 0x13df:0x58 ; 1347 3:58
     add sp,byte +0x4
     mov [bp-0x4],ax
     inc ax
@@ -2207,30 +2232,30 @@ Seven:
     shl ax,1
     add ax,cx
     mov bx,[GameStatePtr]
-    les bx,[bx+0x924]
+    les bx,[bx+SlipListPtr]
     add bx,ax
-    mov ax,[es:bx+0x5]
+    mov ax,[es:bx+Monster.xdir]
     mov [bp-0x6],ax
-    mov cx,[es:bx+0x7]
-    cmp ax,[bp+0x8]
+    mov cx,[es:bx+Monster.ydir]
+    cmp ax,[xdir]
     jnz .label26
-    cmp [bp+0xa],cx
+    cmp [ydir],cx
     jnz .label26
     jmp word .label6
 .label26: ; 1385
-    add ax,[bp+0x8]
+    add ax,[xdir]
     jnz .label25
-    add cx,[bp+0xa]
+    add cx,[ydir]
     jnz .label25
     jmp word .label6
 .label25: ; 1392
     lea ax,[bp-0x16]
     push ax
     push word 0xff
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [ydir]
+    push word [xdir]
+    push word [ydest]
+    push word [xdest]
     push word [bp+0x6]
     call word 0x15b4:0xdae ; 13a8
     add sp,byte +0xe
@@ -2243,73 +2268,84 @@ Seven:
     or ax,ax
     jnz .label24
     jmp word .label6
+
+
 .label24: ; 13c8
     push byte +0x1
     push byte +0x1
-    lea ax,[bp-0xe]
+    lea ax,[action]
     push ax
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp-0xa]
-    push word [bp-0x8]
-    call word 0x1473:0x1a56 ; 13dc
+    push word [ydir]
+    push word [xdir]
+    push word [ydest]
+    push word [xdest]
+    call word 0x1473:0x1a56 ; 13dc 3:1a56 probably ChipCanEnterTile
     add sp,byte +0xe
     mov [bp-0x10],ax
     or ax,ax
     jnz .label29
     jmp word .label6
 .label29: ; 13ee
+    ; pop source tile
+    ; set upper to lower
     mov bx,[GameStatePtr]
     mov ax,[bx+ChipY]
     shl ax,byte 0x5
     add ax,[bx+ChipX]
     add bx,ax
-    mov al,[bx+0x400]
-    mov [bx],al
+    mov al,[bx+Lower]
+    mov [bx+Upper],al
+    ; set lower to Floor
     mov bx,[GameStatePtr]
     mov ax,[bx+ChipY]
     shl ax,byte 0x5
     add ax,[bx+ChipX]
     add bx,ax
-    mov byte [bx+0x400],0x0
+    mov byte [bx+Lower],Floor
+
+    ; if chip is on a hint tile,
+    ; display hint text (?)
+    ; and continue
     mov bx,[GameStatePtr]
     mov ax,[bx+ChipY]
     shl ax,byte 0x5
     add ax,[bx+ChipX]
     add bx,ax
-    cmp byte [bx],0x2f
+    cmp byte [bx],Hint
     jnz .label30
     push byte +0x8
     call word 0x154f:0xcbe ; 1433
     add sp,byte +0x2
+
 .label30: ; 143b
-    mov ax,[bp-0xe]
+    mov ax,[action]
     dec ax
-    jz .label31
+    jz .action1
     dec ax
-    jz .label32
+    jz .action2
     dec ax
     dec ax
     jnz .label33
-    jmp word .label34
+    jmp word .action4
 .label33: ; 144b
     dec ax
     jnz .label35
-    jmp word .label36
+    jmp word .action5
 .label35: ; 1451
     dec ax
     jnz .label37
-    jmp word .label38
+    jmp word .action6
 .label37: ; 1457
     dec ax
     jnz .label39
-    jmp word .label40
+    jmp word .action7
 .label39: ; 145d
     jmp word .label41
-.label31: ; 1460
-    mov bx,[bp-0xa]
+
+.action1: ; 1460
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov al,[bx]
     push ax
@@ -2317,76 +2353,77 @@ Seven:
     add sp,byte +0x2
     jmp word .label41
     nop
-.label32: ; 147c
-    mov bx,[bp-0xa]
+
+.action2: ; 147c
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
-    mov al,[bx]
+    mov al,[bx+Upper]
     sub ah,ah
-    cmp ax,0x2a
-    jz .label42
-    ja .label43
-    sub al,0x3
-    jz .label44
+    cmp ax,Bomb
+    jz .deathByBomb
+    ja .deathByMonster
+    sub al,Water
+    jz .deathByWater
     dec al
-    jz .label45
-.label43: ; 149c
+    jz .deathByFire
+.deathByMonster: ; 149c
     mov bx,[GameStatePtr]
-    mov word [bx+0x816],0x5
+    mov word [bx+Autopsy],Eaten
     jmp short .label28
-.label44: ; 14a8
+.deathByWater: ; 14a8
     mov bx,[GameStatePtr]
-    mov word [bx+0x816],0x2
+    mov word [bx+Autopsy],Burned
     jmp short .label28
-.label45: ; 14b4
+.deathByFire: ; 14b4
     mov bx,[GameStatePtr]
-    mov word [bx+0x816],0x1
+    mov word [bx+Autopsy],Drowned
     jmp short .label28
-.label42: ; 14c0
+.deathByBomb: ; 14c0
     mov bx,[GameStatePtr]
-    mov word [bx+0x816],0x3
+    mov word [bx+Autopsy],Bombed
 .label28: ; 14ca
-    mov ax,[bp-0x8]
+    mov ax,[xdest]
     mov bx,[GameStatePtr]
     mov [bx+ChipX],ax
-    mov ax,[bp-0xa]
+    mov ax,[ydest]
     mov bx,[GameStatePtr]
     mov [bx+ChipY],ax
-    mov bx,[bp-0xa]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov al,[bx]
-    mov [bx+0x400],al
-    mov bx,[bp-0xa]
+    mov [bx+Lower],al
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov [bp-0x18],bx
-    mov al,[bx+0x400]
+    mov al,[bx+Lower]
     sub ah,ah
     sub ax,0x3
     jz .label46
     dec ax
     jz .label47
-    push word [bp+0xa]
-    push word [bp+0x8]
+    push word [ydir]
+    push word [xdir]
     push byte +0x6c
     call word 0x1611:0x486 ; 1519
     add sp,byte +0x6
-    mov bx,[bp-0xa]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov [bx],al
     jmp short .label48
 .label46: ; 1532
-    mov byte [bx],0x33
+    mov byte [bx],ChipSplash
     jmp short .label48
     nop
 .label47: ; 1538
-    mov byte [bx],0x34
+    mov byte [bx],ChipBurned
 .label48: ; 153b
     push di
     push si
@@ -2414,15 +2451,17 @@ Seven:
     add sp,byte +0x4
     jmp word .returnZero
     nop
-.label36: ; 1592
+
+
+.action5: ; 1592
     push word 0xc6c
     push byte +0x0 ; chip
-    lea ax,[bp+0xa]
+    lea ax,[ydir]
     push ax
-    lea ax,[bp+0x8]
+    lea ax,[xdir]
     push ax
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [ydest]
+    push word [xdest]
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
@@ -2433,10 +2472,10 @@ Seven:
     jnz .label49
     jmp word .label34
 .label49: ; 15c7
-    mov al,[bp-0xb]
-    mov bx,[bp-0xa]
+    mov al,[tile2]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     cmp [bx],al
     jnz .label50
@@ -2444,79 +2483,89 @@ Seven:
 .label50: ; 15de
     mov bx,[GameStatePtr]
     mov ax,[bx+0x812]
-    add ax,[bp+0x8]
+    add ax,[xdir]
     jnz .label34
     mov ax,[bx+0x814]
-    add ax,[bp+0xa]
+    add ax,[ydir]
     jnz .label34
     mov word [bx+0xa40],0x1
     mov bx,[GameStatePtr]
     mov word [bx+0x80e],0x0
     jmp short .label34
-.label38: ; 1606
+
+
+.action6: ; 1606
     push di
     push si
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [ydest]
+    push word [xdest]
     call word 0xf2f:0x21aa ; 160e
     add sp,byte +0x8
     jmp short .label34
-.label40: ; 1618
+
+
+.action7: ; 1618
     push byte +0x0
-    push word [bp+0xa]
-    push word [bp+0x8]
-    lea ax,[bp-0xa]
+    push word [ydir]
+    push word [xdir]
+    lea ax,[ydest]
     push ax
-    lea cx,[bp-0x8]
+    lea cx,[xdest]
     push cx
     push word [bp+0x6]
     call word 0x16b0:0x276a ; 162b
     add sp,byte +0xc
     push word 0xc6c
     push byte +0x0 ; chip
-    lea ax,[bp+0xa]
+    lea ax,[ydir]
     push ax
-    lea ax,[bp+0x8]
+    lea ax,[xdir]
     push ax
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [ydest]
+    push word [xdest]
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
     call word 0x183c:0x636 ; 1652
     add sp,byte +0x10
-    mov word [bp-0xe],0x5
+    mov word [action],0x5
+    ; fallthrough
+
+
+.action4:
 .label34: ; 165f
-    mov bx,[bp-0xa]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov al,[bx]
-    mov [bx+0x400],al
+    mov [bx+Lower],al
+
+; default case
 .label41: ; 1672
-    mov ax,[bp-0x8]
+    mov ax,[xdest]
     mov bx,[GameStatePtr]
     mov [bx+ChipX],ax
-    mov ax,[bp-0xa]
+    mov ax,[ydest]
     mov bx,[GameStatePtr]
     mov [bx+ChipY],ax
-    push word [bp+0xa]
-    push word [bp+0x8]
-    mov bx,[bp-0xa]
+    push word [ydir]
+    push word [xdir]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x8]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov [bp-0x1a],bx
-    cmp byte [bx+0x400],0x3
+    cmp byte [bx+Lower],0x3
     jnz .label51
-    mov al,0x3c
+    mov al,SwimN
     jmp short .label52
     nop
 .label51: ; 16aa
-    mov al,0x6c
+    mov al,ChipN
 .label52: ; 16ac
     push ax
-    call word 0x172a:0x486 ; 16ad
+    call word 0x172a:0x486 ; 16ad 3:486 SetTileDir
     add sp,byte +0x6
     mov bx,[bp-0x1a]
     mov [bx],al
@@ -2534,7 +2583,7 @@ Seven:
     push word [bp+0x6]
     call word 0x176f:0x1ca ; 16e2 2:1ca
     add sp,byte +0x6
-    cmp word [bp-0xe],byte +0x4
+    cmp word [action],byte +0x4
     jz .label53
     jmp word .label54
 .label53: ; 16f3
@@ -2542,7 +2591,7 @@ Seven:
     mov si,[bx+ChipY]
     shl si,byte 0x5
     add si,[bx+ChipX]
-    mov al,[bx+si+0x400]
+    mov al,[bx+si+Lower]
     sub ah,ah
     cmp ax,0x2f
     jz .label55
@@ -2598,9 +2647,9 @@ Seven:
     shl si,byte 0x5
     add si,[bp-0x14]
     mov bx,[GameStatePtr]
-    mov al,[bx+si+0x400]
+    mov al,[bx+si+Lower]
     sub ah,ah
-    sub ax,0x23
+    sub ax,ToggleButton
     jz .label62
     dec ax
     jz .label63
@@ -2647,7 +2696,7 @@ Seven:
     mov bx,[GameStatePtr]
     cmp word [bx+0x80c],byte +0x0
     jz .label67
-    cmp word [bp-0xe],byte +0x5
+    cmp word [action],byte +0x5
     jz .label67
     mov word [bx+0x80c],0x0
 .label67: ; 180b
@@ -2657,7 +2706,7 @@ Seven:
     mov si,[bx+ChipY]
     shl si,byte 0x5
     add si,[bx+ChipX]
-    cmp byte [bx+si+0x400],0x15
+    cmp byte [bx+si+Lower],0x15
     jnz .label68
     push byte +0x1
     push byte +0x3
@@ -2684,7 +2733,7 @@ Seven:
     jmp short .end
 
 .label6: ; 1864
-    ; Out of bounds
+    ; Out of bounds or some other failure
 
     ; If chip is on water, change to swimming chip.
     push word [ydir]
@@ -2714,7 +2763,7 @@ Seven:
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call word 0x1436:0x1ca ; 18ad
+    call word 0x1436:0x1ca ; 18ad 2:0x1ca UpdateTile
     add sp,byte +0x6
     cmp word [bp-0x10],byte +0x0
     jnz .label72
