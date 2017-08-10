@@ -1,16 +1,16 @@
-SEGMENTS=data.bin logic.bin seg5.bin seg7.bin digits.bin
+SEGMENTS=data.bin logic.bin seg5.bin movement.bin digits.bin
 RESOURCES=chips.ico res/*
 chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
 	nasm -o $@ $<
 
-base=basedata.bin baselogic.bin basedigits.bin baseseg5.bin baseseg7.bin
+base=basedata.bin baselogic.bin basedigits.bin baseseg5.bin basemovement.bin
 
 check: $(base) chips.exe Makefile
 	-cmp basedata.bin data.bin
 	-cmp baselogic.bin logic.bin
 	-cmp basedigits.bin digits.bin
 	-cmp baseseg5.bin seg5.bin
-	-cmp baseseg7.bin seg7.bin
+	-cmp basemovement.bin movement.bin
 	cmp base.exe chips.exe
 
 %.bin: %.asm fixmov.awk Makefile
@@ -20,7 +20,7 @@ check: $(base) chips.exe Makefile
 
 data.bin: data.asm base.exe Makefile
 logic.bin: logic.asm base.exe constants.asm structs.asm variables.asm Makefile
-seg7.bin: seg7.asm constants.asm structs.asm variables.asm Makefile
+movement.bin: movement.asm constants.asm structs.asm variables.asm Makefile
 
 bin/dd: tools/dd/dd.go
 	go build -o bin/dd ./tools/dd
@@ -35,7 +35,7 @@ basedata.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x4800 -count 0x1738
 baseseg5.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xa200 -count 0x1bc
-baseseg7.bin: bin/dd base.exe
+basemovement.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xae00 -count 0x1cd4
 basedigits.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xd400 -count 0x150

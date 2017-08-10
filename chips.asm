@@ -281,7 +281,7 @@ Segment6: INCBIN "base.exe", 0xa600, 0x800
 
 ; 0xae00
 Segment7:
-    INCBIN "seg7.bin"
+    INCBIN "movement.bin"
     INCBIN "base.exe", 0xae00+0x1cd4, 300
 
 Segment8: INCBIN "base.exe", 0xcc00, 0x800
