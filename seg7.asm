@@ -2746,7 +2746,7 @@ Seven:
 ;   y pos
 ;   x dir
 ;   y dir
-;   tile
+;   facing (previous monster tile, if applicable, or 0xff)
 ; Return value:
 ;   0 - blocked
 ;   1 - success
@@ -2760,25 +2760,32 @@ Eight:
     push ds
     mov ds,ax
     sub sp,byte +0x1a
-    push di
-    push si
+    push di ; xsrc
+    push si ; ysrc
 
     %define unknown (bp+0x6) ; probably hDC
     %define xptr (bp+0x8)
     %define yptr (bp+0xa)
     %define xdirptr (bp+0xc)
     %define ydirptr (bp+0xe)
-    %define tile (bp+0x10)
+    %define facing (bp+0x10)
 
+    %define tile (bp-0x3)
     %define ydir (bp-0x6)
+    %define trap (bp-0x8)
     %define xdir (bp-0xa)
-    %define x (bp-0x10)
-    %define y (bp-0x12)
+    %define ysrc (bp-0xc)
+    %define xsrc (bp-0xe)
+    %define xdest (bp-0x10)
+    %define ydest (bp-0x12)
+    %define action (bp-0x14)
+    %define dead (bp-0x16)
+    %define srcidx (bp-0x18)
 
     ; xdir = *xdirptr
     ; ydir = *ydirptr
-    ; y = *yptr + *yptrdir
-    ; x = *xptr + *xptrdir
+    ; ydest = *yptr + *yptrdir
+    ; xdest = *xptr + *xptrdir
     mov bx,[xptr]
     mov di,[bx]
     mov si,[yptr]
@@ -2791,14 +2798,14 @@ Eight:
     mov [ydir],cx
     mov bx,[xptr]
     add ax,[bx]
-    mov [x],ax
+    mov [xdest],ax
     mov ax,cx
     add ax,si
-    mov [y],ax
-    mov word [bp-0x16],0x0
+    mov [ydest],ax
+    mov word [dead],0x0
 
-; check that x and y are in [0,32)
-    cmp word [x],byte +0x0
+; check that xdest and ydest are in [0,32)
+    cmp word [xdest],byte +0x0
     jnl .yNotLessThan0
     jmp word .deleteSlipperAndReturn
 .yNotLessThan0: ; 1920
@@ -2806,7 +2813,7 @@ Eight:
     jnl .xNotLessThan0
     jmp word .deleteSlipperAndReturn
 .xNotLessThan0: ; 1927
-    cmp word [x],byte +0x20
+    cmp word [xdest],byte +0x20
     jl .yLessThan32
     jmp word .deleteSlipperAndReturn
 .yLessThan32: ; 1930
@@ -2815,28 +2822,29 @@ Eight:
     jmp word .deleteSlipperAndReturn
 .xLessThan32: ; 1938
 
-; get tile under the source coordinates
+; get tile we're leaving from
     mov bx,si
     shl bx,byte 0x5
     add bx,di
-    mov [bp-0x18],bx
+    mov [srcidx],bx
     add bx,[GameStatePtr]
     mov al,[bx+Lower]
-    mov [bp-0x3],al
+    mov [tile],al
 
 ; check if the floor is a trap
     cmp al,Trap
     jnz .checkPanelWalls
     ; It's a trap!
-    push si
-    push di
+    push si ; ysrc
+    push di ; xsrc
     call word 0x19a3:0x22be ; 1953 FindTrap
     add sp,byte +0x4
-    mov [bp-0x8],ax
+    mov [trap],ax
     or ax,ax
     jnl .label6
     jmp word .deleteSlipperAndReturn
 .label6: ; 1965
+    ; multiply by 10
     mov cx,ax
     shl ax,byte 0x2
     add ax,cx
@@ -2854,18 +2862,18 @@ Eight:
 
     ; Panel walls!
     ; Check if we can exit the tile we're standing on
-    cmp byte [bp-0x3],PanelN
+    cmp byte [tile],PanelN
     jc .label7
-    cmp byte [bp-0x3],PanelE
+    cmp byte [tile],PanelE
     jna .label8
 .label7: ; 198e
-    cmp byte [bp-0x3],PanelSE
+    cmp byte [tile],PanelSE
     jnz .label9
 .label8: ; 1994
     push byte +0x0 ; exit
     push word [bp-0x6]
     push word [bp-0xa]
-    mov al,[bp-0x3]
+    mov al,[tile]
     push ax
     call word 0x19d2:0x1934 ; 19a0 3:0x1934 CanEnterOrExitPanelWalls
     add sp,byte +0x8
@@ -2875,17 +2883,17 @@ Eight:
 
 ; Okay, check if we can enter the destination tile
 .label9: ; 19af
-    mov bx,[bp-0x18]
+    mov bx,[srcidx]
     add bx,[GameStatePtr]
-    mov al,[bx]
-    mov [bp-0x3],al
-    lea ax,[bp-0x14]
+    mov al,[bx+Upper]
+    mov [tile],al
+    lea ax,[action]
     push ax
     push word [ydir]
     push word [xdir]
-    push word [y]
-    push word [x]
-    mov al,[bp-0x3]
+    push word [ydest]
+    push word [xdest]
+    mov al,[tile]
     push ax
     call word 0x12c7:0x1d4a ; 19cf 3:0x1d4a MonsterCanEnterTile
     add sp,byte +0xc
@@ -2893,7 +2901,7 @@ Eight:
     jnz .label10
     jmp word .deleteSlipperAndReturn
 .label10: ; 19de
-    mov ax,[bp-0x14]
+    mov ax,[action]
     cmp ax,0x7
     ja .jumpDefault
     shl ax,1
@@ -2912,15 +2920,15 @@ Eight:
 
 ; 19fe
 .jump4:
-    lea ax,[tile]
+    lea ax,[facing]
     push ax
     push byte +0x2 ; monster
     push word [ydirptr]
     push word [xdirptr]
-    push word [bp-0x12]
-    push word [bp-0x10]
-    push si
-    push di
+    push word [ydest]
+    push word [xdest]
+    push si ; ysrc
+    push di ; xsrc
     call word 0x1ac4:0x636 ; 1a12 7:0x636 SlideMovement
     add sp,byte +0x10
     jmp short .label13
@@ -2932,44 +2940,44 @@ Eight:
     push byte +0xb
     call word 0x1830:0x56c ; 1a20 8:0x56c
     add sp,byte +0x4
-    mov byte [tile],Floor
+    mov byte [facing],Floor
 ; 1a2c
 .jump2:
     ; dead
-    mov word [bp-0x16],0x1
+    mov word [dead],0x1
 
-.jumpDefault
+.jumpDefault:
 .label11: ; 1a31
-    cmp word [bp-0x14],byte +0x4
+    cmp word [action],byte +0x4
     jz .label14
     mov bx,[GameStatePtr]
     cmp word [bx+SlipListLen],byte +0x0
     jz .label14
     push byte +0x2
-    push si
-    push di
-    mov bx,[bp-0x18]
+    push si ; ysrc
+    push di ; xsrc
+    mov bx,[srcidx]
     add bx,[GameStatePtr]
-    mov al,[bx]
+    mov al,[bx+Upper]
     push ax
     call word 0x1a77:0x12be ; 1a50 DeleteSlipperAt
     add sp,byte +0x8
 .label14: ; 1a58
-    cmp word [bp-0x14],byte +0x2
+    cmp word [action],byte +0x2
     jnz .label15
     jmp word .label16
 .label15: ; 1a61
-    cmp byte [tile],0xff
+    cmp byte [facing],0xff
     jz .label17
-    mov al,[tile]
+    mov al,[facing]
     jmp short .label18
 
 ; 1a6c
 .jump6:
-    push si
-    push di
-    push word [bp-0x12]
-    push word [bp-0x10]
+    push si ; ysrc
+    push di ; xsrc
+    push word [ydest]
+    push word [xdest]
     call word 0x1aa8:0x21aa ; 1a74 3:0x21aa
     add sp,byte +0x8
 
@@ -2977,9 +2985,9 @@ Eight:
 .jump0:
 .jump1:
 .label13:
-    mov bx,[bp-0x12]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x10]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov al,[bx]
     mov [bx+Lower],al
@@ -2990,121 +2998,126 @@ Eight:
 .jump7:
     ; teleport
     push byte +0x2
-    push word [bp-0x6]
-    push word [bp-0xa]
-    lea ax,[bp-0x12]
+    push word [ydir]
+    push word [xdir]
+    lea ax,[ydest]
     push ax
-    lea cx,[bp-0x10]
+    lea cx,[xdest]
     push cx
     push word [unknown]
     call word 0x1b76:0x276a ; 1aa5 3:0x276a
     add sp,byte +0xc
-    lea ax,[tile]
+    lea ax,[facing]
     push ax
     push byte +0x2 ; monster
     push word [ydirptr]
     push word [xdirptr]
-    push word [bp-0x12]
-    push word [bp-0x10]
-    push si
-    push di
+    push word [ydest]
+    push word [xdest]
+    push si ; ysrc
+    push di ; xsrc
     call word 0x1655:0x636 ; 1ac1 7:0x636
     add sp,byte +0x10
-    mov bx,[bp-0x12]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x10]
+    add bx,[xdest]
     add bx,[GameStatePtr]
-    mov al,[bx]
-    mov [bx+0x400],al
-    mov word [bp-0x14],0x4
+    mov al,[bx+Upper]
+    mov [bx+Lower],al
+    mov word [action],0x4
     jmp word .label11
+
+
 .label17: ; 1ae4
-    mov al,[bp-0x3]
-
-; end of the jump table cases
-
+    mov al,[tile]
 .label18: ; 1ae7
-    mov bx,[bp-0x12]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp-0x10]
+    add bx,[xdest]
     add bx,[GameStatePtr]
-    mov [bx],al
-    push word [bp-0x12]
-    push word [bp-0x10]
+    mov [bx+Upper],al
+    push word [ydest]
+    push word [xdest]
     push word [unknown]
     call word 0x1b36:0x1ca ; 1aff 2:0x1ca
     add sp,byte +0x6
+
+; end of the jump table cases???
+
+
 .label16: ; 1b07
-    mov bx,[bp-0x18]
+    ; pop tile from source
+    mov bx,[srcidx]
     add bx,[GameStatePtr]
     cmp byte [bx+Lower],CloneMachine
     jz .label19
-    mov bx,[bp-0x18]
+    mov bx,[srcidx]
     add bx,[GameStatePtr]
     mov al,[bx+Lower]
-    mov [bx],al
-    mov bx,[bp-0x18]
+    mov [bx+Upper],al
+    mov bx,[srcidx]
     add bx,[GameStatePtr]
-    mov byte [bx+Lower],0x0
+    mov byte [bx+Lower],Floor
 .label19: ; 1b2e
-    push si
-    push di
+    push si ; ysrc
+    push di ; xsrc
     push word [unknown]
     call word 0x16ce:0x1ca ; 1b33 2:0x1ca
     add sp,byte +0x6
-    cmp word [bp-0x14],byte +0x1
+    cmp word [action],byte +0x1
     jz .label20
-    jmp word .label21
+    jmp word .autopsy
+
 .label20: ; 1b44
-    mov [bp-0xe],di
-    mov [bp-0xc],si
-    mov si,[bp-0x12]
+    mov [xsrc],di
+    mov [ysrc],si
+    mov si,[ydest]
     shl si,byte 0x5
-    add si,[bp-0x10]
+    add si,[xdest]
     mov bx,[GameStatePtr]
     mov al,[bx+si+Lower]
     sub ah,ah
-    sub ax,0x23
-    jz .label22
-    dec ax
-    jz .label23
-    sub ax,0x3
-    jz .label24
-    dec ax
-    jz .label25
-    jmp word .label21
-.label22: ; 1b70
+    sub ax,ToggleButton
+    jz .toggleButton
+    dec ax ; CloneButton
+    jz .cloneButton
+    sub ax,0x3 ; TrapButton
+    jz .trapButton
+    dec ax ; TankButton
+    jz .tankButton
+    jmp word .autopsy
+.toggleButton: ; 1b70
     push word [unknown]
     call word 0x1b8c:0x1fac ; 1b73 3:0x1fac
     add sp,byte +0x2
-    jmp word .label21
-.label23: ; 1b7e
+    jmp word .autopsy
+.cloneButton: ; 1b7e
     push byte +0x0
-    push word [bp-0x12]
-    push word [bp-0x10]
-    push word [bp+0x6]
+    push word [ydest]
+    push word [xdest]
+    push word [unknown]
     call word 0x1b9f:0x2442 ; 1b89 3:0x2442
     add sp,byte +0x8
-    jmp word .label21
-.label24: ; 1b94
+    jmp word .autopsy
+.trapButton: ; 1b94
     push byte +0x0
-    push word [bp-0x12]
-    push word [bp-0x10]
+    push word [ydest]
+    push word [xdest]
     call word 0x1bb4:0x211a ; 1b9c 3:0x211a
     add sp,byte +0x6
-    jmp word .label21
+    jmp word .autopsy
     nop
-.label25: ; 1ba8
+.tankButton: ; 1ba8
     mov di,[xdirptr]
-    push word [bp-0xc]
-    push word [bp-0xe]
+    push word [ysrc]
+    push word [xsrc]
     call word 0x1c1b:0x0 ; 1bb1 FindMonster
     add sp,byte +0x4
     mov si,ax
     cmp si,byte -0x1
     jz .notFound
     mov di,[xdirptr]
-    mov ax,[bp-0x10]
+    mov ax,[xdest]
     mov cx,si
     shl cx,byte 0x2
     add cx,si
@@ -3117,7 +3130,7 @@ Eight:
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
-    mov ax,[bp-0x12]
+    mov ax,[ydest]
     mov [es:bx+Monster.y],ax
     mov ax,[di]
     mov bx,[GameStatePtr]
@@ -3132,11 +3145,12 @@ Eight:
     mov [es:bx+Monster.ydir],ax
 .notFound: ; 1c13
     push byte +0x0
-    push word [bp+0x6]
+    push word [unknown]
     call word 0x1cc4:0x1e6a ; 1c18 3:0x1e6a
     add sp,byte +0x4
     cmp si,byte -0x1
-    jz .label21
+    jz .autopsy
+    ; set *xdirptr and *ydirptr
     mov bx,si
     mov ax,si
     shl bx,byte 0x2
@@ -3145,43 +3159,50 @@ Eight:
     add bx,ax
     mov si,[GameStatePtr]
     les si,[si+MonsterListPtr]
-    mov ax,[es:bx+si+0x5]
+    mov ax,[es:bx+si+Monster.xdir]
     mov [di],ax
     mov si,[GameStatePtr]
     mov ax,bx
     les bx,[si+MonsterListPtr]
     mov si,ax
-    mov ax,[es:bx+si+0x7]
+    mov ax,[es:bx+si+Monster.ydir]
     mov bx,[ydirptr]
     mov [bx],ax
-.label21: ; 1c55
-    cmp word [bp-0x16],byte +0x0
+
+; if the monster isn't dead,
+; and landed on top of chip,
+; set autopsy status to Eaten
+.autopsy: ; 1c55
+    cmp word [dead],byte +0x0
     jnz .label27
-    mov si,[bp-0x12]
+    mov si,[ydest]
     shl si,byte 0x5
-    add si,[bp-0x10]
+    add si,[xdest]
     mov bx,[GameStatePtr]
     mov al,[bx+si+Lower]
     mov [bp-0x1a],al
-    cmp al,0x6c
+    cmp al,ChipN
     jc .label28
-    cmp al,0x6f
+    cmp al,ChipE
     jna .label29
 .label28: ; 1c77
-    cmp byte [bp-0x1a],0x3c
+    cmp byte [bp-0x1a],SwimN
     jc .label27
-    cmp byte [bp-0x1a],0x3f
+    cmp byte [bp-0x1a],SwimE
     ja .label27
 .label29: ; 1c83
-    mov word [bx+Autopsy],0x5
+    mov word [bx+Autopsy],Eaten
+
+; assign xdest and ydest to xptr and yptr
+; return 1, or 2 if not dead
 .label27: ; 1c89
-    mov ax,[bp-0x10]
+    mov ax,[xdest]
     mov bx,[xptr]
     mov [bx],ax
-    mov ax,[bp-0x12]
+    mov ax,[ydest]
     mov bx,[yptr]
     mov [bx],ax
-    cmp word [bp-0x16],byte +0x1
+    cmp word [dead],byte +0x1
     sbb ax,ax
     add ax,0x2
     jmp short .return
@@ -3191,14 +3212,14 @@ Eight:
     cmp word [bx+SlipListLen],byte +0x0
     jz .returnZero
     push byte +0x2
-    push si         ; y
-    push di         ; x
+    push si         ; ysrc
+    push di         ; xsrc
     mov bx,si
     shl bx,byte 0x5
     add bx,di
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
-    push ax         ; tile
+    push ax         ; facing
     call word 0x162e:0x12be ; 1cc1 3:0x12be DeleteSlipperAt
     add sp,byte +0x8
 
