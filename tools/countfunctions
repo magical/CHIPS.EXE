@@ -1,0 +1,18 @@
+count() {
+	reversed=0
+	if [ $# -eq 4 ]; then
+		reversed=$(grep -e '^[A-Z].*:' -e '^func' "$4" | wc -l)
+	fi
+	total=$(bin/dd <base.exe -skip "$2" -count "$3" | ndisasm - | grep 'retf' | wc -l)
+	echo "$1" "$reversed/$total"
+}
+
+count "segment 1" 0xa00 0xc00
+count "segment 2" 0x1600 0x2dca
+count "segment 3" 0x6200 0x2a70 logic.asm
+count "segment 4" 0x8e00 0x1400
+count "segment 5" 0xa200 0x1bc seg5.asm
+count "segment 6" 0xa600 0x800
+count "segment 7" 0xae00 0x1cd4 movement.asm
+count "segment 8" 0xcc00 0x800
+count "segment 9" 0xd400 0x150 digits.asm
