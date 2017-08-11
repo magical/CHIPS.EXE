@@ -1607,6 +1607,8 @@ Six:
     sub sp,byte +0xe
     push si
 
+    ; bp+0x12 pointer set to 1 if the block hit a button
+
     mov ax,[bp+0xe]
     add ax,[bp+0xa]
     mov [bp-0x6],ax
@@ -2013,6 +2015,10 @@ Seven:
     %define ydest (bp-0xa)
     %define tile2 (bp-0xb)
     %define action (bp-0xe)
+    %define canenter (bp-0x10)
+    %define uninitializedY (bp-0x12)
+    %define uninitializedX (bp-0x14)
+    %define tmp (bp-0x1a)
 
     mov ax,ds
     nop
@@ -2035,7 +2041,7 @@ Seven:
     mov ax,[bx+ChipY]
     add ax,[ydir]
     mov [ydest],ax
-    mov word [bp-0x10],0x0
+    mov word [canenter],0x0
     mov byte [tile2],0xff
 
     ; if [0x22] != 0, return 0
@@ -2220,7 +2226,7 @@ Seven:
 .label23: ; 1341
     push word [ydest]
     push word [xdest]
-    call word 0x13df:0x58 ; 1347 3:58
+    call word 0x13df:0x58 ; 1347 3:58 FindSlipper
     add sp,byte +0x4
     mov [bp-0x4],ax
     inc ax
@@ -2234,6 +2240,7 @@ Seven:
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
     add bx,ax
+    ; can't push a block in the same direction as it's slipping
     mov ax,[es:bx+Monster.xdir]
     mov [bp-0x6],ax
     mov cx,[es:bx+Monster.ydir]
@@ -2243,6 +2250,7 @@ Seven:
     jnz .label26
     jmp word .label6
 .label26: ; 1385
+    ; can't push a block in the opposite direction that it's slipping
     add ax,[xdir]
     jnz .label25
     add cx,[ydir]
@@ -2256,8 +2264,8 @@ Seven:
     push word [xdir]
     push word [ydest]
     push word [xdest]
-    push word [bp+0x6]
-    call word 0x15b4:0xdae ; 13a8
+    push word [hDC]
+    call word 0x15b4:0xdae ; 13a8 7:dae MoveBlock
     add sp,byte +0xe
     mov [bp-0x4],ax
     mov bx,[GameStatePtr]
@@ -2281,7 +2289,7 @@ Seven:
     push word [xdest]
     call word 0x1473:0x1a56 ; 13dc 3:1a56 probably ChipCanEnterTile
     add sp,byte +0xe
-    mov [bp-0x10],ax
+    mov [canenter],ax
     or ax,ax
     jnz .label29
     jmp word .label6
@@ -2303,20 +2311,20 @@ Seven:
     add bx,ax
     mov byte [bx+Lower],Floor
 
-    ; if chip is on a hint tile,
-    ; display hint text (?)
-    ; and continue
+    ; if chip is leaving a hint tile,
+    ; hide hint text (?)
     mov bx,[GameStatePtr]
     mov ax,[bx+ChipY]
     shl ax,byte 0x5
     add ax,[bx+ChipX]
     add bx,ax
-    cmp byte [bx],Hint
+    cmp byte [bx+Upper],Hint
     jnz .label30
     push byte +0x8
-    call word 0x154f:0xcbe ; 1433
+    call word 0x154f:0xcbe ; 1433 2:cbe
     add sp,byte +0x2
 
+; Jump based on the returned action
 .label30: ; 143b
     mov ax,[action]
     dec ax
@@ -2349,7 +2357,7 @@ Seven:
     add bx,[GameStatePtr]
     mov al,[bx]
     push ax
-    call word 0x151c:0x1770 ; 1470
+    call word 0x151c:0x1770 ; 1470 3:1770
     add sp,byte +0x2
     jmp word .label41
     nop
@@ -2430,7 +2438,7 @@ Seven:
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x1572:0x56e ; 154c
     add sp,byte +0xa
     push byte +0x1
@@ -2440,7 +2448,7 @@ Seven:
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x157a:0x1ca ; 156f
     add sp,byte +0x6
     call word 0x1024:0xb9a ; 1577
@@ -2512,7 +2520,7 @@ Seven:
     push ax
     lea cx,[xdest]
     push cx
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x16b0:0x276a ; 162b
     add sp,byte +0xc
     push word 0xc6c
@@ -2543,46 +2551,59 @@ Seven:
 
 ; default case
 .label41: ; 1672
+    ; set chip's x and y position
     mov ax,[xdest]
     mov bx,[GameStatePtr]
     mov [bx+ChipX],ax
     mov ax,[ydest]
     mov bx,[GameStatePtr]
     mov [bx+ChipY],ax
+
+    ; update chip's tile
     push word [ydir]
     push word [xdir]
+        ; get upper tile
     mov bx,[ydest]
     shl bx,byte 0x5
     add bx,[xdest]
     add bx,[GameStatePtr]
-    mov [bp-0x1a],bx
-    cmp byte [bx+Lower],0x3
-    jnz .label51
+    mov [tmp],bx
+
+        ; use swimming chip if on water
+    cmp byte [bx+Lower],Water
+    jnz .notSwimming
     mov al,SwimN
-    jmp short .label52
+    jmp short .callSetTileDir
     nop
-.label51: ; 16aa
+.notSwimming: ; 16aa
     mov al,ChipN
-.label52: ; 16ac
+
+.callSetTileDir: ; 16ac
     push ax
     call word 0x172a:0x486 ; 16ad 3:486 SetTileDir
     add sp,byte +0x6
-    mov bx,[bp-0x1a]
-    mov [bx],al
+
+    ; set upper tile to returned tile
+    mov bx,[tmp]
+    mov [bx+Upper],al
+
+; do some UI stuff?
     push di
     push si
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x16e5:0x56e ; 16cb 2:56e
     add sp,byte +0xa
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x176f:0x1ca ; 16e2 2:1ca
     add sp,byte +0x6
+
+; deal with buttons and hints
     cmp word [action],byte +0x4
     jz .label53
     jmp word .label54
@@ -2593,59 +2614,67 @@ Seven:
     add si,[bx+ChipX]
     mov al,[bx+si+Lower]
     sub ah,ah
-    cmp ax,0x2f
-    jz .label55
+    cmp ax,Hint
+    jz .showHint
     ja .label54
-    sub al,0x23
-    jz .label56
-    dec al
-    jz .label57
-    sub al,0x3
-    jz .label58
-    dec al
-    jz .label59
+    sub al,ToggleButton
+    jz .toggleButton
+    dec al ; CloneButton
+    jz .cloneButton
+    sub al,0x3 ; TrapButton
+    jz .trapButton
+    dec al ; TankButton
+    jz .tankButton
     jmp short .label54
     nop
     nop
     nop
-.label56: ; 1724
-    push word [bp+0x6]
+
+.toggleButton: ; 1724
+    push word [hDC]
     call word 0x173e:0x1fac ; 1727
     jmp short .label60
-.label57: ; 172e
+
+.cloneButton: ; 172e
     push byte +0x1
     push word [bx+ChipY]
     push word [bx+ChipX]
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x1753:0x2442 ; 173b
     add sp,byte +0x8
     jmp short .label54
     nop
-.label58: ; 1746
+
+.trapButton: ; 1746
     push byte +0x1
     push word [bx+ChipY]
     push word [bx+ChipX]
     call word 0x1762:0x211a ; 1750
     add sp,byte +0x6
     jmp short .label54
-.label59: ; 175a
+
+.tankButton: ; 175a
     push byte +0x1
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x17a6:0x1e6a ; 175f
     add sp,byte +0x4
     jmp short .label54
     nop
-.label55: ; 176a
+.showHint: ; 176a
     push byte +0x8
     call word 0x17ef:0xcbe ; 176c
 .label60: ; 1771
     add sp,byte +0x2
+
+
+; if we moved a block(?) and it hit (left?) a button(?)
+; do some stuff with uninitialized data
 .label54: ; 1774
     cmp word [bp-0x16],byte +0x0
     jz .label61
-    mov si,[bp-0x12]
+    mov si,[uninitializedY]
     shl si,byte 0x5
-    add si,[bp-0x14]
+    add si,[uninitializedX]
     mov bx,[GameStatePtr]
     mov al,[bx+si+Lower]
     sub ah,ah
@@ -2660,75 +2689,90 @@ Seven:
     jmp short .label61
     nop
 .label62: ; 17a0
-    push word [bp+0x6]
-    call word 0x17bc:0x1fac ; 17a3
+    push word [hDC]
+    call word 0x17bc:0x1fac ; 17a3 3:0x1fac
     add sp,byte +0x2
     jmp short .label61
     nop
 .label63: ; 17ae
     push byte +0x0
-    push word [bp-0x12]
-    push word [bp-0x14]
-    push word [bp+0x6]
+    push word [uninitializedY]
+    push word [uninitializedX]
+    push word [hDC]
     call word 0x17cf:0x2442 ; 17b9 3:0x2442
     add sp,byte +0x8
     jmp short .label61
     nop
 .label64: ; 17c4
     push byte +0x0
-    push word [bp-0x12]
-    push word [bp-0x14]
+    push word [uninitializedY]
+    push word [uninitializedX]
     call word 0x17de:0x211a ; 17cc 3:0x211a
     add sp,byte +0x6
     jmp short .label61
 .label65: ; 17d6
     push byte +0x0
-    push word [bp+0x6]
+    push word [hDC]
     call word 0x1894:0x1e6a ; 17db 3:0x1e6a
     add sp,byte +0x4
+
+
+
 .label61: ; 17e3
     cmp word [0x20],byte +0x0
     jz .label66
     push byte +0x6
     call word 0x18b0:0xcbe ; 17ec
     add sp,byte +0x2
+
+; if chip is sliding and action != 5, stop sliding
 .label66: ; 17f4
     mov bx,[GameStatePtr]
-    cmp word [bx+0x80c],byte +0x0
+    cmp word [bx+IsSliding],byte +0x0
     jz .label67
     cmp word [action],byte +0x5
     jz .label67
-    mov word [bx+0x80c],0x0
+    mov word [bx+IsSliding],0x0
+
 .label67: ; 180b
+    ; increment mystery variable
     mov bx,[GameStatePtr]
     inc word [bx+0xa34]
+
+    ; did chip make it to the exit? OMG!
     mov bx,[GameStatePtr]
     mov si,[bx+ChipY]
     shl si,byte 0x5
     add si,[bx+ChipX]
-    cmp byte [bx+si+Lower],0x15
+    cmp byte [bx+si+Lower],Exit
     jnz .label68
     push byte +0x1
     push byte +0x3
-    call word 0x185b:0x56c ; 182d
+    call word 0x185b:0x56c ; 182d 8:56c
     add sp,byte +0x4
-    push word [0x12]
-    call word 0x13ab:0xcca ; 1839
+    push word [0x12] ; hWnd
+    call word 0x13ab:0xcca ; 1839 7:cca EndLevel
     add sp,byte +0x2
+    ; return 1
     mov ax,0x1
     jmp word .end
     nop
+
 .label68: ; 1848
-    mov si,[bp-0x10]
+    ; if couldn't enter the tile and not flag2
+    mov si,[canenter]
     or si,si
     jnz .label69
-    cmp [bp+0xe],si
+    cmp [flag2],si
     jz .label69
+    ; probably play oof sound
     push byte +0x1
     push byte +0x5
     call word 0x18c8:0x56c ; 1858
     add sp,byte +0x4
+
 .label69: ; 1860
+    ; return canenter
     mov ax,si
     jmp short .end
 
@@ -2767,7 +2811,7 @@ Seven:
     add sp,byte +0x6
     cmp word [bp-0x10],byte +0x0
     jnz .label72
-    cmp word [bp+0xe],byte +0x0
+    cmp word [flag2],byte +0x0
     jz .label72
     push byte +0x1
     push byte +0x5
@@ -3229,15 +3273,15 @@ Eight:
     add si,[xdest]
     mov bx,[GameStatePtr]
     mov al,[bx+si+Lower]
-    mov [bp-0x1a],al
+    mov [tmp],al
     cmp al,ChipN
     jc .label28
     cmp al,ChipE
     jna .label29
 .label28: ; 1c77
-    cmp byte [bp-0x1a],SwimN
+    cmp byte [tmp],SwimN
     jc .label27
-    cmp byte [bp-0x1a],SwimE
+    cmp byte [tmp],SwimE
     ja .label27
 .label29: ; 1c83
     mov word [bx+Autopsy],Eaten

@@ -72,6 +72,7 @@ TeleportListSeg       equ 0x958
 ; a2c ___ x?
 ; a2e ___ y?
 
+; a34 incremented every time chip moves
 ; a36 ending animation tick?
 HaveMouseTarget     equ 0xa38
 MouseTargetX        equ 0xa3a
