@@ -85,8 +85,8 @@ endfunc
 
 ; 58
 
-; Same as above, but searches a different array.
-func FindSomething
+; Same as above, but searches the slip list
+func FindSlipper
     sub sp,byte +0x2
     push di
     push si
@@ -2475,22 +2475,22 @@ func SlipLoop
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
-    mov [es:bx+0x1],ax
+    mov [es:bx+Monster.x],ax
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
     mov ax,[bp-0xe]
-    mov [es:bx+0x3],ax
+    mov [es:bx+Monster.y],ax
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
     mov ax,[bp-0x10]
-    mov [es:bx+0x5],ax
+    mov [es:bx+Monster.xdir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
     mov ax,[bp-0x12]
-    mov [es:bx+0x7],ax
+    mov [es:bx+Monster.ydir],ax
     push word [bp-0x12]
     push word [bp-0x10]
     mov bx,[bp-0xe]

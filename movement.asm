@@ -699,32 +699,34 @@ Two:
     push si
 
 
-    ;  6 x
-    ;  8 y
-    ;  a x
-    ;  c y
+    %define xsrc (bp+0x6)
+    %define ysrc (bp+0x8)
+    %define xdest (bp+0xa)
+    %define ydest (bp+0xc)
     ;  e xdirptr
     ; 10 ydirptr
-    ; 12 flag
-    ; 14 ptr
+    %define flag (bp+0x12)
+    %define facing (bp+0x14)
 
     ; -4 (si) far pointer to x dir
     ; -6 seg
     ; -8 (di) far pointer to y dir
     ; -a seg
-    ; -c xdir
-    ; -e ydir
+    %define xdir (bp-0xc)
+    %define ydir (bp-0xe)
+    %define slipseg (bp-0x10) ; far pointer to slip list entry
+    %define slipptr (bp-0x12)
 
     ; fetch *xdirptr and *ydirptr
     mov bx,[bp+0xe]
     mov ax,[bx]
-    mov [bp-0xc],ax
+    mov [xdir],ax
     mov bx,[bp+0x10]
     mov ax,[bx]
-    mov [bp-0xe],ax
+    mov [ydir],ax
 
     ; check the flag
-    mov ax,[bp+0x12]
+    mov ax,[flag]
     or ax,ax
     jz .label0 ; ax == 0
     dec ax
@@ -759,36 +761,39 @@ Two:
     jmp short .label3
 
     ; flag == 2
+    ; if the slipper is a monster
+    ; find its entry on the slip list
+    ; or create a new entry if one doesn't exist
 .label2: ; 68e
-    push word [bp+0x8]
-    push word [bp+0x6]
-    mov bx,[bp+0x8]
+    push word [ysrc]
+    push word [xsrc]
+    mov bx,[ysrc]
     shl bx,byte 0x5
-    add bx,[bp+0x6]
+    add bx,[xsrc]
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
     call word 0x6b9:0x1396 ; 6a4 FindSlipperAt
     add sp,byte +0x6
-    mov [bp-0x12],ax
-    mov [bp-0x10],dx
+    mov [slipptr],ax
+    mov [slipseg],dx
     or dx,ax
     jnz .label4
     call word 0x272:0x1250 ; 6b6 NewSlipper
-    mov [bp-0x12],ax
-    mov [bp-0x10],dx
+    mov [slipptr],ax
+    mov [slipseg],dx
 .label4: ; 6c1
-    mov ax,[bp-0x10]
-    or ax,[bp-0x12]
+    mov ax,[slipseg]
+    or ax,[slipptr]
     jnz .label5
     jmp word .return
 .label5: ; 6cc
-    mov ax,[bp-0x12]
-    mov dx,[bp-0x10]
+    mov ax,[slipptr]
+    mov dx,[slipseg]
     add ax,Monster.xdir
     mov si,ax
     mov [bp-0x4],dx
-    mov ax,[bp-0x12]
+    mov ax,[slipptr]
     add ax,Monster.ydir
     mov di,ax
     mov [bp-0x8],dx
@@ -796,22 +801,22 @@ Two:
 ; get the tile
 ; XXX when would x0 != x1?
 .label3: ; 6e5
-    mov ax,[bp+0x6]
-    cmp [bp+0xa],ax
+    mov ax,[xsrc]
+    cmp [xdest],ax
     jne .label7
-    mov ax,[bp+0x8]
-    cmp [bp+0xc],ax
+    mov ax,[ysrc]
+    cmp [ydest],ax
     jne .label7
-    mov bx,[bp+0xc]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp+0xa]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov al,[bx+Lower]
     jmp short .label8
 .label7: ; 708
-    mov bx,[bp+0xc]
+    mov bx,[ydest]
     shl bx,byte 0x5
-    add bx,[bp+0xa]
+    add bx,[xdest]
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
 
@@ -883,11 +888,11 @@ Two:
 
     ; Ice
 .ice: ; 78d
-    mov ax,[bp-0xc]
+    mov ax,[xdir]
     mov es,[bp-0x4]
     mov [es:si],ax
-    mov ax,[bp-0xe]
-.label34: ; 799
+    mov ax,[ydir]
+.setYdirToAX: ; 799
     mov es,[bp-0x8]
     mov [es:di],ax
     jmp word .label15
@@ -896,37 +901,37 @@ Two:
 
     ; Ice wall NW
 .iceWallNW: ; 7a4
-    cmp word [bp-0xc],byte -0x1
+    cmp word [xdir],byte -0x1
     jnz .label32
-    cmp word [bp-0xe],byte +0x0
+    cmp word [ydir],byte +0x0
     jz .setSlideSouth
 .label32: ; 7b0
-    cmp word [bp-0xc],byte +0x0
-    jnz .label33
-    cmp word [bp-0xe],byte -0x1
-    jnz .label33
+    cmp word [xdir],byte +0x0
+    jnz .turnAround
+    cmp word [ydir],byte -0x1
+    jnz .turnAround
     jmp word .setSlideEast
-.label33: ; 7bf
-    mov ax,[bp-0xc]
+.turnAround: ; 7bf
+    mov ax,[xdir]
     neg ax
     mov es,[bp-0x4]
     mov [es:si],ax
-    mov ax,[bp-0xe]
+    mov ax,[ydir]
     neg ax
-    jmp short .label34
+    jmp short .setYdirToAX
     nop
 
     ; Ice wall NE
 .iceWallNE: ; 7d2
-    cmp word [bp-0xc],byte +0x0
+    cmp word [xdir],byte +0x0
     jnz .label35
-    cmp word [bp-0xe],byte -0x1
+    cmp word [ydir],byte -0x1
     jz .setSlideWest
 .label35: ; 7de
-    cmp word [bp-0xc],byte +0x1
-    jnz .label33
-    cmp word [bp-0xe],byte +0x0
-    jnz .label33
+    cmp word [xdir],byte +0x1
+    jnz .turnAround
+    cmp word [ydir],byte +0x0
+    jnz .turnAround
     ; Force S
 .forceS: ; 7ea
 .setSlideSouth:
@@ -939,22 +944,22 @@ Two:
     ; Ice wall SE
 .iceWallSE: ; 7fc
     ; check if we're sliding south
-    cmp word [bp-0xc],byte +0x0
+    cmp word [xdir],byte +0x0
     jnz .label36
-    cmp word [bp-0xe],byte +0x1
+    cmp word [ydir],byte +0x1
     jnz .label36
 .forceW:
 .setSlideWest: ; 808
     ; set slide dir to -1,0
     mov es,[bp-0x4]
     mov word [es:si],-1
-    jmp short .label37
+    jmp short .setYdirToZero
 .label36: ; 812
     ; check if we're sliding west (0,1)
-    cmp word [bp-0xc],byte +0x1
-    jnz .label33
-    cmp word [bp-0xe],byte +0x0
-    jnz .label33
+    cmp word [xdir],byte +0x1
+    jnz .turnAround
+    cmp word [ydir],byte +0x0
+    jnz .turnAround
 .setSlideNorth: ; 81e
     ; set slide dir to 0,-1
     mov es,[bp-0x4]
@@ -965,26 +970,28 @@ Two:
 
     ; Ice wall SW
 .iceWallSW: ; 830
-    cmp word [bp-0xc],byte -0x1
+    cmp word [xdir],byte -0x1
     jnz .label38
-    cmp word [bp-0xe],byte +0x0
+    cmp word [ydir],byte +0x0
     jz .setSlideNorth
 .label38: ; 83c
-    cmp word [bp-0xc],byte +0x0
+    cmp word [xdir],byte +0x0
     jz .label39
-    jmp word .label33
+    jmp word .turnAround
 .label39: ; 845
-    cmp word [bp-0xe],byte +0x1
+    cmp word [ydir],byte +0x1
     jz .setSlideEast
-    jmp word .label33
+    jmp word .turnAround
+
 .forceE:
 .setSlideEast: ; 84e
     mov es,[bp-0x4]
     mov word [es:si],0x1
-.label37: ; 856
+.setYdirToZero: ; 856
     mov es,[bp-0x8]
     mov word [es:di],0x0
 
+; end of switch cases
 .label15: ; 85e
     mov es,[bp-0x4]
     mov ax,[es:si]
@@ -994,20 +1001,21 @@ Two:
     mov ax,[es:di]
     mov bx,[bp+0x10]
     mov [bx],ax
-    cmp word [bp+0x12],byte +0x1
+
+    cmp word [flag],byte +0x1
     jz .label40
-    cmp word [bp+0x12],byte +0x2
+    cmp word [flag],byte +0x2
     jz .label40
     jmp word .return
 .label40: ; 883
-    ; if flag == 2 && *di != 0xff, *di = SetTileDir(*di, xdir, ydir)
-    mov di,[bp+0x14]
-    cmp word [bp+0x12],byte +0x2
+    ; if flag == 2 && *facing != 0xff, *facing = SetTileDir(*di, xdir, ydir)
+    mov di,[facing]
+    cmp word [flag],byte +0x2
     jnz .label41
     cmp byte [di],0xff
     jz .label41
-    push word [bp-0xe]
-    push word [bp-0xc]
+    push word [ydir]
+    push word [xdir]
     mov al,[di]
     push ax
     call word 0x8b3:0x486 ; 89a SetTileDir
@@ -1045,20 +1053,24 @@ Two:
     nop
 
 .label42: ; 8d4
-    mov bx,[bp+0x8]
+    mov bx,[ysrc]
     shl bx,byte 0x5
-    add bx,[bp+0x6]
+    add bx,[xsrc]
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
 .label43: ; 8e3
-    les bx,[bp-0x12]
+    les bx,[slipptr]
     mov [es:bx+Monster.tile],al
-    mov ax,[bp+0xa]
-    les bx,[bp-0x12]
+    mov ax,[xdest]
+    les bx,[slipptr]
     mov [es:bx+Monster.x],ax
-    mov ax,[bp+0xc]
+    mov ax,[ydest]
     mov [es:bx+Monster.y],ax
-    cmp word [bp+0x12],byte +0x2
+
+; set slipping to 0 if flag != 2
+; set slipping to 1 if flag == 2
+; XXX the slipping flag must mean something different in the slip list
+    cmp word [flag],byte +0x2
     jnz .label48
     mov ax,0x1
     jmp short .label49
@@ -1066,12 +1078,13 @@ Two:
 .label48: ; 906
     xor ax,ax
 .label49: ; 908
-    les bx,[bp-0x12]
+    les bx,[slipptr]
     mov [es:bx+Monster.slipping],ax
-    cmp word [bp+0x12],byte +0x2
+
+    cmp word [flag],byte +0x2
     jnz .return
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [ysrc]
+    push word [xsrc]
     call word 0x993:0x0 ; 91b 3:0 FindMonster
     add sp,byte +0x4
     mov si,ax
@@ -1096,6 +1109,7 @@ Two:
     mov si,[GameStatePtr]
     les si,[si+MonsterListPtr]
     mov word [es:bx+si+Monster.slipping],0x1
+
 .return: ; 95d
     pop si
     pop di
