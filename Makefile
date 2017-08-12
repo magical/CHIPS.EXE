@@ -29,14 +29,24 @@ bin/label: tools/label/label.go
 bin/res: tools/res/res.go
 	go build -o bin/res ./tools/res
 
-baselogic.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0x6200 -count 0x2a70
+baseseg1.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0xa00 -count 0xc00
+baseseg2.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0x1600 -count 0x2dca
 basedata.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x4800 -count 0x1738
+baselogic.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0x6200 -count 0x2a70
+baseseg4.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0x8e00 -count 0x1400
 baseseg5.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xa200 -count 0x1bc
+baseseg6.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0xa600 -count 0x800
 basemovement.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xae00 -count 0x1cd4
+baseseg8.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0xcc00 -count 0x800
 basedigits.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xd400 -count 0x150
 
