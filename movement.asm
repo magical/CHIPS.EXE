@@ -2396,15 +2396,16 @@ Seven:
     jmp short .label28
 .deathByWater: ; 14a8
     mov bx,[GameStatePtr]
-    mov word [bx+Autopsy],Burned
+    mov word [bx+Autopsy],Drowned
     jmp short .label28
 .deathByFire: ; 14b4
     mov bx,[GameStatePtr]
-    mov word [bx+Autopsy],Drowned
+    mov word [bx+Autopsy],Burned
     jmp short .label28
 .deathByBomb: ; 14c0
     mov bx,[GameStatePtr]
     mov word [bx+Autopsy],Bombed
+
 .label28: ; 14ca
     mov ax,[xdest]
     mov bx,[GameStatePtr]

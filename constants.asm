@@ -128,8 +128,8 @@ LastTransparent  equ 0x6F
 
 ; Causes of death
 NotDeadYet  equ 0
-Drowned     equ 1
-Burned      equ 2
+Burned      equ 1
+Drowned     equ 2
 Bombed      equ 3
 Squished    equ 4
 Eaten       equ 5
