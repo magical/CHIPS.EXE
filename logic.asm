@@ -2804,7 +2804,316 @@ endfunc
 
 ; 1a56
 
-INCBIN "base.exe", 0x6200+$, 0x1d4a - 0x1a56
+func ChipCanEnterTile
+    sub sp,byte +0xe
+    push di
+    push si
+
+    %define x (bp+0x6)
+    %define y (bp+0x8)
+    %define xdir (bp+0xa)
+    %define ydir (bp+0xc)
+    %define ptr (bp+0xe)
+    %define flag1 (bp+0x10)
+    %define upperOrLower (bp+0x12) ; 1=upper 0=lower
+
+    %define tile (bp-0x3)
+    %define tileTableRow (bp-0xa)
+    %define tileIndex (bp-0xe)
+
+    mov bx,[y]
+    shl bx,byte 0x5
+    add bx,[x]
+    mov [tileIndex],bx
+    add bx,[GameStatePtr]
+    mov [bp-0xc],bx
+
+    ; Can't enter clone machines
+    cmp byte [bx+Lower],CloneMachine
+    jnz .notACloneMachine ; ↓
+    jmp word .nope ; ↓
+.notACloneMachine: ; 1a82
+
+    cmp word [upperOrLower],byte +0x0
+    jz .readLowerTile ; ↓
+    mov al,[bx+Upper]
+    jmp short .label2 ; ↓
+.readLowerTile: ; 1a8c
+    mov al,[bx+Lower]
+.label2: ; 1a90
+    mov [tile],al
+
+    ; fetch the appropriate row from the tile table
+    mov bl,al
+    sub bh,bh
+    mov ax,bx
+    shl bx,1
+    add bx,ax
+    shl bx,1
+    lea di,[tileTableRow]
+    lea si,[TileTable+bx]
+    mov ax,ss
+    mov es,ax
+    movsw
+    movsw
+    movsw
+
+    ; set *ptr to action from the table
+    mov al,[tileTableRow+1]
+    sub ah,ah
+    mov bx,[ptr]
+    mov [bx],ax
+
+    ; if table says we can enter (1), return 1
+    cmp byte [tileTableRow+0],0x1
+    jnz .tableIsnt1 ; ↓
+.return1: ; 1abd
+    mov ax,0x1
+    jmp word .end ; ↓
+    nop
+.tableIsnt1: ; 1ac4
+    ; if table says it's more complicated (2), keep going
+    cmp byte [tileTableRow+0],0x2
+    jz .tableIs2 ; ↓
+    ; otherwise return 0
+    jmp word .nope ; ↓
+
+.tableIs2: ; 1acd
+    ; if tile is transparent, check the lower tile instead
+    cmp byte [tile],FirstTransparent
+    jb .notTransparent ; ↓
+    cmp byte [tile],LastTransparent
+    ja .notTransparent ; ↓
+    jmp word .checkLowerTile ; ↓
+.notTransparent: ; 1adc
+    ; if the tile is a block, check the lower tile insteadk
+    cmp byte [tile],Block
+    jnz .doJumpTable ; ↓
+    jmp word .checkLowerTile ; ↓
+
+.doJumpTable: ; 1ae5
+    mov di,[x]
+    mov si,[y]
+    mov al,[tile]
+    sub ah,ah
+    sub ax,Water
+    cmp ax,ForceRandom - Water
+    jna .label8 ; ↓
+    jmp word .nope ; ↓
+.label8: ; 1afb
+    shl ax,1
+    xchg ax,bx
+    jmp word [cs:bx+.jumpTable]
+    nop
+.jumpTable:
+    dw .label9          ; Water
+    dw .label9          ; Fire
+    dw .nope            ; InvisibleWall
+    dw .panelWalls      ; PanelN
+    dw .panelWalls      ; PanelW
+    dw .panelWalls      ; PanelS
+    dw .panelWalls      ; PanelE
+    dw .nope            ; Block
+    dw .nope            ; Dirt
+    dw .label9          ; Ice
+    dw .label9          ; ForceS
+    dw .nope            ; BlockN
+    dw .nope            ; BlockW
+    dw .nope            ; BlockS
+    dw .nope            ; BlockE
+    dw .label9          ; ForceN
+    dw .label9          ; ForceE
+    dw .label9          ; ForceW
+    dw .nope            ; Exit
+    dw .doors           ; BlueDoor
+    dw .doors           ; RedDoor
+    dw .doors           ; GreenDoor
+    dw .doors           ; YellowDoor
+    dw .iceCorners      ; IceWallNW
+    dw .iceCorners      ; IceWallNE
+    dw .iceCorners      ; IceWallSE
+    dw .iceCorners      ; IceWallSW
+    dw .fakeFloor       ; FakeFloor
+    dw .hiddenWall      ; FakeWall
+    dw .nope            ; Unused20
+    dw .theif           ; Theif
+    dw .socket          ; Socket
+    dw .nope            ; ToggleButton
+    dw .nope            ; CloneButton
+    dw .nope            ; ToggleWall
+    dw .nope            ; ToggleFloor
+    dw .nope            ; TrapButton
+    dw .nope            ; TankButton
+    dw .nope            ; Teleport
+    dw .nope            ; Bomb
+    dw .nope            ; Trap
+    dw .hiddenWall      ; HiddenWall
+    dw .nope            ; Gravel
+    dw .popupWall       ; PopupWall
+    dw .nope            ; Hint
+    dw .panelWalls      ; PanelSE
+    dw .nope            ; CloneMachine
+    dw .label9          ; ForceRandom
+
+.label9: ; 1b64
+    ; force floors, ice, water, fire
+    mov al,[tile]
+    push ax
+    call word 0x1b91:0x187c ; 1b68 3:187c
+    add sp,byte +0x2
+    or ax,ax
+    jnz .label10 ; ↓
+    jmp word .return1 ; ↑
+.label10: ; 1b77
+    mov bx,[ptr]
+    mov word [bx],0x4
+    jmp word .return1 ; ↑
+    nop
+
+
+.panelWalls: ; 1b82
+    push byte +0x1
+    push word [ydir]
+    push word [xdir]
+    mov al,[tile]
+    push ax
+    call word 0x1bab:0x1934 ; 1b8e 3:1934 CheckPanelWalls
+    add sp,byte +0x8
+.label12: ; 1b96
+    or ax,ax
+    jnz .label13 ; ↓
+    jmp word .nope ; ↓
+.label13: ; 1b9d
+    jmp word .return1 ; ↑
+
+
+.doors: ; 1ba0
+    mov si,[flag1]
+    push si
+    mov al,[tile]
+    push ax
+    call word 0x1bdd:0x1804 ; 1ba8 3:1804
+    add sp,byte +0x4
+    or ax,ax
+    jnz .label15 ; ↓
+    jmp word .nope ; ↓
+.label15: ; 1bb7
+    or si,si
+    jnz .label16 ; ↓
+    jmp word .return1 ; ↑
+.label16: ; 1bbe
+    push byte +0x1
+    push byte +0x1
+.label17: ; 1bc2
+    call word 0x1c34:0x56c ; 1bc2 8:56c
+    add sp,byte +0x4
+    jmp word .return1 ; ↑
+    nop
+
+
+.iceCorners: ; 1bce
+    push byte +0x1
+    push word [ydir]
+    push word [xdir]
+    mov al,[tile]
+    push ax
+    call word 0x1c3e:0x1934 ; 1bda 3:1934 CheckPanelWalls
+    add sp,byte +0x8
+    or ax,ax
+    jnz .label19 ; ↓
+    jmp word .nope ; ↓
+.label19: ; 1be9
+    jmp word .label9 ; ↑
+
+.fakeFloor: ; 1bec
+    cmp word [flag1],byte +0x0
+    jnz .label21 ; ↓
+    jmp word .return1 ; ↑
+.label21: ; 1bf5
+    mov bx,[tileIndex]
+    mov si,[GameStatePtr]
+    mov byte [bx+si+Upper],Floor
+    jmp word .return1 ; ↑
+
+.hiddenWall: ; 1c02
+    cmp word [flag1],byte +0x0
+    jnz .label23 ; ↓
+    jmp word .nope ; ↓
+.label23: ; 1c0b
+    mov bx,[tileIndex]
+    mov ax,si
+    mov si,[GameStatePtr]
+    mov byte [bx+si+Upper],Wall
+    push ax
+    push di
+    call word 0x1702:0x2b2 ; 1c19
+    add sp,byte +0x4
+    jmp short .nope ; ↓
+    nop
+
+
+.theif: ; 1c24
+    cmp word [flag1],byte +0x0
+    jnz .label25 ; ↓
+    jmp word .return1 ; ↑
+.label25: ; 1c2d
+    push byte +0x1
+    push byte +0x6
+    call word 0x170e:0x56c ; 1c31 8:56c
+    add sp,byte +0x4
+    push byte +0x1
+    call word 0x1c8b:0x1734 ; 1c3b 3:1734
+    add sp,byte +0x2
+    jmp word .return1 ; ↑
+
+.socket: ; 1c46
+    cmp word [0x1692],byte +0x0
+    jnz .nope ; ↓
+    cmp word [flag1],byte +0x0
+    jnz .label27 ; ↓
+    jmp word .return1 ; ↑
+.label27: ; 1c56
+    push byte +0x1
+    push byte +0x4
+    jmp word .label17 ; ↑
+    nop
+
+.popupWall: ; 1c5e
+    cmp word [flag1],byte +0x0
+    jnz .label29 ; ↓
+    jmp word .return1 ; ↑
+.label29: ; 1c67
+    mov bx,[tileIndex]
+    mov si,[GameStatePtr]
+    mov byte [bx+si],0x1
+    jmp word .return1 ; ↑
+
+.checkLowerTile: ; 1c74
+    push byte +0x0
+    push byte +0x0
+    lea ax,[bp-0x4]
+    push ax
+    push word [ydir]
+    push word [xdir]
+    push word [y]
+    push word [x]
+    call word 0x1d31:0x1a56 ; 1c88 3:1a56 ChipCanEnterTile
+    add sp,byte +0xe
+    jmp word .label12 ; ↑
+    nop
+.nope: ; 1c94
+    xor ax,ax
+    mov bx,[ptr]
+    mov [bx],ax
+.end: ; 1c9b
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+endfunc
+
+; 1ca4
+
+INCBIN "base.exe", 0x6200+$, 0x1d4a - 0x1ca4
 
 ; 1d4a
 
