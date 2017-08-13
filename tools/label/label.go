@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"encoding/hex"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -39,6 +41,7 @@ func main() {
 	var lastAddr uint32
 
 	breaking := false
+top:
 	for number := 1; ; number++ {
 		line, err := r.ReadString('\n')
 		if err == io.EOF {
@@ -48,6 +51,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+
 		var (
 			addr     uint32
 			code     string
@@ -89,13 +93,74 @@ func main() {
 		}
 
 		//fmt.Print(line[24:])
-		if isJump(mnemonic) {
+		if isJumpTable(mnemonic, arg1, arg2) {
+			lines = append(lines, Line{
+				Addr:     addr,
+				Mnemonic: mnemonic,
+				Text:     line[24:],
+			})
+
+			var br = bytereader{r: r}
+			var minAddr int = 0xfffff
+			addr += uint32(len(code) / 2)
+
+			if addr&1 == 1 {
+				lines = append(lines, Line{
+					Addr:     addr,
+					Mnemonic: "nop",
+					Text:     "    nop\n",
+				})
+				br.SkipByte() // hopefully not anything important
+				addr++
+			}
+			for {
+				if int(addr) >= minAddr {
+					lines = append(lines, Line{
+						Addr: addr,
+						Text: fmt.Sprintf("; %#x\n", addr),
+					})
+					if len(br.buf) > 0 {
+						text := fmt.Sprintf("    db %s ; %s", hexlist(br.buf), br.lastline)
+						lines = append(lines, Line{
+							Addr:     addr,
+							Text:     text,
+							Mnemonic: "db",
+						})
+					}
+					continue top
+				}
+
+				jumpAddr, err := br.ReadWord()
+				if err != nil {
+					break top
+				}
+
+				if int(jumpAddr) < minAddr {
+					minAddr = int(jumpAddr)
+				}
+
+				lines = append(lines, Line{
+					Addr:      addr,
+					Mnemonic:  "dw",
+					Text:      "    dw",
+					IsJump:    true,
+					JumpLabel: -1,
+					JumpDest:  uint32(jumpAddr),
+				})
+
+				jumps = append(jumps, Jump{
+					Dest: uint32(jumpAddr),
+					Line: len(lines) - 1,
+				})
+
+				addr += 2
+			}
+		} else if isJump(mnemonic) {
 			var jumpDest uint64
 			var text string
 			if n == 4 {
 				jumpDest, err = strconv.ParseUint(arg1, 0, 32)
 				text = fmt.Sprintf("    %s", mnemonic)
-
 			} else if n == 5 && arg2[0] == '0' {
 				jumpDest, err = strconv.ParseUint(arg2, 0, 32)
 				text = fmt.Sprintf("    %s %s", mnemonic, arg1)
@@ -107,12 +172,12 @@ func main() {
 				continue
 			}
 			lines = append(lines, Line{
-				Addr:     addr,
-				Text:     text,
-				Mnemonic: mnemonic,
-				IsJump:   true,
+				Addr:      addr,
+				Text:      text,
+				Mnemonic:  mnemonic,
+				IsJump:    true,
 				JumpLabel: -1,
-				JumpDest: uint32(jumpDest),
+				JumpDest:  uint32(jumpDest),
 			})
 			jumps = append(jumps, Jump{
 				Dest: uint32(jumpDest),
@@ -158,7 +223,7 @@ func main() {
 		}
 		if line.IsJump {
 			if line.JumpLabel >= 0 {
-				fmt.Printf("%s .label%d ; %s\n", line.Text, line.JumpLabel, arrow(int32(line.JumpDest - line.Addr)))
+				fmt.Printf("%s .label%d ; %s\n", line.Text, line.JumpLabel, arrow(int32(line.JumpDest-line.Addr)))
 			} else {
 				fmt.Printf("%s %#x\n", line.Text, line.JumpDest)
 			}
@@ -173,6 +238,10 @@ func main() {
 		fmt.Println()
 		fmt.Printf("; %x\n", lastAddr)
 	}
+}
+
+func isJumpTable(mnemonic, arg1, arg2 string) bool {
+	return mnemonic == "jmp" && strings.Contains(arg2, "[cs:")
 }
 
 func isJump(s string) bool {
@@ -224,4 +293,79 @@ func arrow(n int32) string {
 		return "↑"
 	}
 	return "↓"
+}
+
+// bytereader reads the raw bytes from a nasm disassembly
+type bytereader struct {
+	r        *bufio.Reader
+	buf      []byte
+	lastline string
+}
+
+func (br *bytereader) ReadWord() (uint16, error) {
+	for len(br.buf) < 2 {
+		err := br.readline()
+		if err != nil {
+			return 0, err
+		}
+	}
+	word := uint16(br.buf[0]) | uint16(br.buf[1])<<8
+	br.buf = br.buf[2:]
+	return word, nil
+}
+
+func (br *bytereader) SkipByte() error {
+	for len(br.buf) < 1 {
+		err := br.readline()
+		if err != nil {
+			return err
+		}
+	}
+	br.buf = br.buf[1:]
+	return nil
+}
+
+// readbytes reads a single line from the file
+// and appends the raw bytes to br.buf
+func (br *bytereader) readline() error {
+	line, lineerr := br.r.ReadString('\n')
+	br.lastline = line
+	if lineerr != nil && lineerr != io.EOF {
+		return lineerr
+	}
+
+	var (
+		addr uint32
+		code string
+	)
+	n, err := fmt.Sscanf(
+		stripComment(line),
+		"%x %s",
+		&addr,
+		&code,
+	)
+
+	if n < 2 {
+		return errors.New("invalid line")
+	}
+
+	decoded, err := hex.DecodeString(code)
+	if err != nil {
+		return err
+	}
+	br.buf = append(br.buf, decoded...)
+
+	return lineerr // could be io.EOF
+}
+
+func hexlist(bytes []byte) []byte {
+	var s []byte
+	for i, b := range bytes {
+		if i != 0 {
+			s = append(s, ',')
+		}
+		s = append(s, "0x"...)
+		s = strconv.AppendUint(s, uint64(b), 16)
+	}
+	return s
 }
