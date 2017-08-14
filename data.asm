@@ -405,14 +405,76 @@ dw 0
 
 ; 13de
 
-INCBIN "base.exe", 0x4800+$, 0x1680-0x13DE
+db 0x4d, 0x4d
+db "SYSTEM.DLL", 0
+db "sndPlaySound", 0
+db "mciSendCommand", 0
+db "mciGetErrorString", 0
+db "midiOutGetNumDevs", 0
+db "waveOutGetNumDevs", 0
+db "sequencer", 0
+db 0, 0
+db "The MIDI Mapper is not available. Continue?", 0
+db "Unknown Error", 0
+times 13 db 0
+dw 1, -1, 0, 0, 1, 0
+db "_C_FILE_INFO=", 0
+
+; 14aa
+
+dw 0, 0, 0 ; 14aa
+dw 0, 0, 0, 0, 0, 0, 0, 0  ; 14b0
+db 00, 00, 00, 00, 02, 01, 00, 00,  20, 00, 20, 00, 40, 00, 00, 00 ; 14c0
+db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 14d0
+db 00, 00,0xC1,00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 14e0
+db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 21, 00, 00 ; 14f0
+db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 16 ; 1500
+db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 1510
+
+; 1520
+
+db 0, 0,
+db "<<NMSG>>", 0, 0
+db "R6000", 13, 10, "- stack overflow", 13, 10, 0
+dw 3
+db "R6003", 13, 10, "- integer divide by 0", 13, 10, 0
+dw 9
+db "R6009", 13, 10, "- not enough space for environment", 13, 10, 0
+dw 18
+db "R6018", 13, 10, "- unexpected heap error", 13, 10, 0
+dw 20
+db "R6020", 13, 10, "- unexpected QuickWin error", 13, 10, 0
+dw 8
+db "R6008", 13, 10, "- not enough space for arguments", 13, 10, 0
+dw 21
+db "R6021", 13, 10, "- no main procedure", 13, 10, 0
+dw 252
+db 13, 10, 0
+dw 255
+db "run-time error ", 0
+dw 2
+db "R6002", 13, 10, "- floating-point support not loaded", 13, 10, 0
+dw 0xffff
+db 0xff
+times 13 db 0
+
+; 1680
 
 ; Near pointer to game state structure
 GameStatePtr dw 0   ; 1680
 
-times 9 dw 0 ; 1682
+BlueKeyCount dw 0 ; 1682
+RedKeyCount dw 0 ; 1684
+GreenKeyCount dw 0; 1686
+YellowKeyCount dw 0 ; 1688
 
-    dw 0 ; 1694 *
+HaveFlippers dw 0 ; 168a
+HaveFireBoots dw 0 ; 168c
+HaveIceSkates dw 0 ; 168e
+HaveSuctionBoots dw 0 ; 1690
+
+    dw 0 ; 1692
+    dw 0 ; 1694 level timer?
 
 times 45 dw 0 ; 1696
 
