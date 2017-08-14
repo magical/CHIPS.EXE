@@ -653,7 +653,7 @@ One:
     cmp word [0x1694],byte +0xf
     jg .label71
     push byte +0x1
-    push byte +0xd
+    push byte TickSound
     call word 0x607:0x56c ; 5e7 8:56c
     add sp,byte +0x4
 .label71: ; 5ef
@@ -663,7 +663,7 @@ One:
     cmp word [0x1694],byte +0x0
     jnz .end
     push byte +0x1
-    push byte +0xe
+    push byte ChipDeathByTimeSound
     call word 0xffff:0x56c ; 604 8:56c
     add sp,byte +0x4
     mov bx,[GameStatePtr]
@@ -1734,7 +1734,7 @@ Six:
     nop
 .label12: ; eba
     push byte +0x1
-    push byte +0xa
+    push byte SplashSound
     call word 0x5ea:0x56c ; ebe 8:56c
     add sp,byte +0x4
     mov byte [bp+0x10],Dirt
@@ -1788,7 +1788,7 @@ Six:
     nop
 .label15: ; f44
     push byte +0x1
-    push byte +0xb
+    push byte BombSound
     call word 0xec1:0x56c ; f48
     add sp,byte +0x4
     mov byte [bp+0x10],Floor
@@ -2463,7 +2463,7 @@ Seven:
     call word 0x1572:0x56e ; 154c 2:56e
     add sp,byte +0xa
     push byte +0x1
-    push byte +0x2
+    push byte ChipDeathSound
     call word 0xf4b:0x56c ; 1558 8:56c
     add sp,byte +0x4
     mov bx,[GameStatePtr]
@@ -2768,7 +2768,7 @@ Seven:
     cmp byte [bx+si+Lower],Exit
     jnz .label68
     push byte +0x1
-    push byte +0x3
+    push byte LevelCompleteSound
     call word 0x185b:0x56c ; 182d 8:56c
     add sp,byte +0x4
     push word [0x12] ; hWnd
@@ -2786,9 +2786,9 @@ Seven:
     jnz .label69
     cmp [flag2],si
     jz .label69
-    ; probably play oof sound
+    ; play oof sound
     push byte +0x1
-    push byte +0x5
+    push byte BlockedMoveSound
     call word 0x18c8:0x56c ; 1858
     add sp,byte +0x4
 
@@ -2838,7 +2838,7 @@ Seven:
     cmp word [flag2],byte +0x0
     jz .label72
     push byte +0x1
-    push byte +0x5
+    push byte BlockedMoveSound
     call word 0x155b:0x56c ; 18c5
     add sp,byte +0x4
 .label72: ; 18cd
@@ -3052,9 +3052,9 @@ Eight:
 
 ; 1a1c
 .jump5:
-    ; play bomb sound?
+    ; play bomb sound
     push byte +0x1
-    push byte +0xb
+    push byte BombSound
     call word 0x1830:0x56c ; 1a20 8:0x56c
     add sp,byte +0x4
     mov byte [facing],Floor

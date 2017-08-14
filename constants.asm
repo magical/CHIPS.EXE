@@ -135,6 +135,23 @@ Squished    equ 4
 Eaten       equ 5
 OutOfTime   equ 6
 
+; Sound effects
+PickUpToolSound         equ 0
+OpenDoorSound           equ 1
+ChipDeathSound          equ 2
+LevelCompleteSound      equ 3
+SocketSound             equ 4
+BlockedMoveSound        equ 5
+ThiefSound              equ 6
+SoundOnSound            equ 7
+PickUpChipSound         equ 8
+SwitchSound             equ 9
+SplashSound             equ 10
+BombSound               equ 11
+TeleportSound           equ 12
+TickSound               equ 13
+ChipDeathByTimeSound    equ 14
+
 ; Last level
 FakeLastLevel equ 144
 LastLevel     equ 149

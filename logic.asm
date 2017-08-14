@@ -2154,7 +2154,7 @@ func MonsterLoop
     call word 0x1233:0xcbe ; 121c 2:0xcbe
     add sp,byte +0x2
     push byte +0x1
-    push byte +0x2
+    push byte ChipDeathSound
     call word 0xffff:0x56c ; 1228 8:0x56c
     add sp,byte +0x4
     call word 0xd96:0xb9a ; 1230 2:0xb9a
@@ -2624,7 +2624,7 @@ func SlipLoop
     call word 0x1716:0xcbe ; 16ff
     add sp,byte +0x2
     push byte +0x1
-    push byte +0x2
+    push byte ChipDeathSound
     call word 0x17fb:0x56c ; 170b
     add sp,byte +0x4
     call word 0x121f:0xb9a ; 1713
@@ -3003,7 +3003,7 @@ func ChipCanEnterTile
     jmp word .return1 ; ↑
 .label16: ; 1bbe
     push byte +0x1
-    push byte +0x1
+    push byte OpenDoorSound
 .label17: ; 1bc2
     call word 0x1c34:0x56c ; 1bc2 8:56c
     add sp,byte +0x4
@@ -3058,7 +3058,7 @@ func ChipCanEnterTile
     jmp word .return1 ; ↑
 .label25: ; 1c2d
     push byte +0x1
-    push byte +0x6
+    push byte ThiefSound
     call word 0x170e:0x56c ; 1c31 8:56c
     add sp,byte +0x4
     push byte +0x1
