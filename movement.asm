@@ -1719,14 +1719,14 @@ Six:
     shl bx,1
     mov si,[GameStatePtr]
     les si,[si+TrapListPtr]
-    cmp word [es:bx+si+0x8],byte +0x1
+    cmp word [es:bx+si+Connection.flag],byte +0x1
     jnz .label5
     jmp word .blocked
 
     ; check panel walls
 .label5: ; e3c
     cmp byte [tile],PanelN
-    jc .label7
+    jb .label7
     cmp byte [tile],PanelE
     jna .label8
 .label7: ; e48
@@ -1743,6 +1743,8 @@ Six:
     or ax,ax
     jnz .label9
     jmp word .blocked
+
+    ; call BlockCanEnterTile
 .label9: ; e69
     mov bx,[srcidx]
     mov si,[GameStatePtr]
@@ -1761,37 +1763,40 @@ Six:
     or ax,ax
     jnz .label10
     jmp word .blocked
+
 .label10: ; e98
     mov ax,[action]
     dec ax
-    jz .label11
+    jz .action1
     dec ax
-    jz .label12
+    jz .action2
     dec ax
     dec ax
-    jz .label13
+    jz .action4
     dec ax
     jnz .label14
-    jmp word .label15
+    jmp word .action5
 .label14: ; eab
     dec ax
     jnz .label16
-    jmp word .label17
+    jmp word .action6
 .label16: ; eb1
     dec ax
     jnz .label18
-    jmp word .label19
+    jmp word .action7
 .label18: ; eb7
-    jmp short .label20
+    jmp short .endOfSwitch
     nop
-.label12: ; eba
+
+.action2: ; eba
     push byte +0x1
     push byte SplashSound
     call word 0x5ea:0x56c ; ebe 8:56c
     add sp,byte +0x4
     mov byte [blockTile],Dirt
-    jmp short .label20
-.label13: ; ecc
+    jmp short .endOfSwitch
+
+.action4: ; ecc
     lea ax,[blockTile]
     push ax
     push byte +0x1 ; block
@@ -1805,15 +1810,18 @@ Six:
     push word [xsrc]
     call word 0xf8f:0x636 ; ee6
     add sp,byte +0x10
-.label11: ; eee
+
+.action1: ; eee
     mov bx,[ydest]
     shl bx,byte 0x5
     add bx,[xdest]
     mov si,[GameStatePtr]
-    mov al,[bx+si]
+    mov al,[bx+si+Upper]
     add bx,si
-    mov [bx+0x400],al
-.label20: ; f03
+    mov [bx+Lower],al
+
+.endOfSwitch: ; f03
+    ; delete from slip list if not on a slippy tile
     cmp word [action],byte +0x4
     jz .label21
     cmp word [action],byte +0x6
@@ -1826,7 +1834,7 @@ Six:
     push word [xsrc]
     mov bx,[srcidx]
     mov si,[GameStatePtr]
-    mov al,[bx+si]
+    mov al,[bx+si+Upper]
     push ax
     call word 0xf69:0x12be ; f2c
     add sp,byte +0x8
@@ -1838,19 +1846,20 @@ Six:
     mov al,[blockTile]
     jmp word .label24
     nop
-.label15: ; f44
+
+.action5: ; f44
     push byte +0x1
     push byte BombSound
     call word 0xec1:0x56c ; f48
     add sp,byte +0x4
     mov byte [blockTile],Floor
-    jmp short .label20
-.label17: ; f56
+    jmp short .endOfSwitch
+.action6: ; f56
     push word [ysrc]
     push word [xsrc]
     mov bx,[srcidx]
     mov si,[GameStatePtr]
-    mov al,[bx+si]
+    mov al,[bx+si+Upper]
     push ax
     call word 0xfa3:0x1396 ; f66
     add sp,byte +0x6
@@ -1876,9 +1885,9 @@ Six:
     push word [xdest]
     call word 0xfc2:0x21aa ; fa0
     add sp,byte +0x8
-    jmp word .label11
+    jmp word .action1
     nop
-.label19: ; fac
+.action7: ; fac
     push byte +0x1
     push word [ydir]
     push word [xdir]
@@ -1906,11 +1915,15 @@ Six:
     shl bx,byte 0x5
     add bx,[xdest]
     mov si,[GameStatePtr]
-    mov al,[bx+si]
+    mov al,[bx+si+Upper]
     add bx,si
-    mov [bx+0x400],al
+    mov [bx+Lower],al
     mov word [action],0x4
-    jmp word .label20
+    jmp word .endOfSwitch
+
+; (insert .endofswitch here)
+
+; update dest tile
 .label23: ; 1006
     mov al,[tile]
 .label24: ; 1009
@@ -1918,12 +1931,14 @@ Six:
     shl bx,byte 0x5
     add bx,[xdest]
     mov si,[GameStatePtr]
-    mov [bx+si],al
+    mov [bx+si+Upper],al
     push word [ydest]
     push word [xdest]
     push word [bp+0x6]
     call word 0x105c:0x1ca ; 1021
     add sp,byte +0x6
+
+; delet from source tile if not on a clone machine
     mov bx,[srcidx]
     add bx,[GameStatePtr]
     cmp byte [bx+Lower],CloneMachine
@@ -1937,11 +1952,15 @@ Six:
     mov si,[srcidx]
     mov byte [bx+si+Lower],Floor
 .label26: ; 1050
+
+; update src tile
     push word [ysrc]
     push word [xsrc]
     push word [bp+0x6]
     call word 0xb81:0x1ca ; 1059
     add sp,byte +0x6
+
+; handle any button presses
     cmp word [action],byte +0x1
     jz .label27
     jmp word .label28
@@ -1952,28 +1971,31 @@ Six:
     mov bx,[GameStatePtr]
     mov al,[bx+si+Lower]
     mov [tile],al
+
     mov si,[ptr]
     or si,si
     jnz .label29
+
+    ; not delayed button press
     sub ah,ah
     sub ax,ToggleButton
-    jz .label30
+    jz .toggleButton
     dec ax ; CloneButton
-    jz .label31
+    jz .cloneButton
     sub ax,0x3 ; TrapButton
-    jz .label32
+    jz .trapButton
     dec ax ; TankButton
-    jz .label33
+    jz .tankButton
     jmp word .label34
     nop
     nop
-.label30: ; 109c
+.toggleButton: ; 109c
     push word [bp+0x6]
     call word 0x10b8:0x1fac ; 109f
     add sp,byte +0x2
     jmp short .label34
     nop
-.label31: ; 10aa
+.cloneButton: ; 10aa
     push byte +0x0
     push word [ydest]
     push word [xdest]
@@ -1982,14 +2004,14 @@ Six:
     add sp,byte +0x8
     jmp short .label34
     nop
-.label32: ; 10c0
+.trapButton: ; 10c0
     push byte +0x0
     push word [ydest]
     push word [xdest]
     call word 0x10da:0x211a ; 10c8
     add sp,byte +0x6
     jmp short .label34
-.label33: ; 10d2
+.tankButton: ; 10d2
     push byte +0x0
     push word [bp+0x6]
     call word 0x1174:0x1e6a ; 10d7
@@ -2002,14 +2024,14 @@ Six:
     or si,si
     jz .label34
     cmp byte [tile],ToggleButton
-    jz .label35
+    jz .delayedButton
     cmp byte [tile],TankButton
-    jz .label35
+    jz .delayedButton
     cmp byte [tile],TrapButton
-    jz .label35
+    jz .delayedButton
     cmp byte [tile],CloneButton
     jnz .label34
-.label35: ; 10fe
+.delayedButton: ; 10fe
     mov word [si+0x0],0x1 ; Button.pressed
     mov ax,[xdest]
     mov [si+0x2],ax ; Button.x
