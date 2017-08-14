@@ -2240,8 +2240,10 @@ func DeleteSlipperAt
     add bx,ax
     mov si,[GameStatePtr]
     les si,[si+SlipListPtr]
+    ; if the slipper has a monster list entry (i.e. it isn't a block),
+    ; then find it and turn off its slipping flag
     cmp word [es:bx+si+Monster.slipping],byte +0x0
-    jz .notslipping
+    jz .notAMonster
     push word [bp+0xa]
     push word [bp+0x8]
     call word 0x13ac:0x0 ; 1313 3:0 FindMonster
@@ -2254,7 +2256,7 @@ func DeleteSlipperAt
     mov si,[GameStatePtr]
     les si,[si+MonsterListPtr]
     mov word [es:bx+si+Monster.slipping],0x0
-.notslipping: ; 1334
+.notAMonster: ; 1334
     lea bx,[di+0x1]
     mov si,[GameStatePtr]
     cmp bx,[si+SlipListLen]
@@ -2327,6 +2329,7 @@ endfunc
 ; 13de
 
 func SlipLoop
+    %define previousSlipListLen (bp-0x8)
     %define i (bp-0xa)
     %define x (bp-0xc)
     %define y (bp-0xe)
@@ -2346,13 +2349,13 @@ func SlipLoop
     mov di,[bp+0x6]
 .loop: ; 1405
     mov ax,[bx+SlipListLen]
-    mov [bp-0x8],ax
+    mov [previousSlipListLen],ax
     les bx,[bx+SlipListPtr]
     add bx,si
     cmp word [es:bx+Monster.slipping],byte +0x0
-    jnz .notslipping
-    jmp word .slipping
-.notslipping: ; 141c
+    jnz .isAMonster
+    jmp word .isABlock
+.isAMonster: ; 141c
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
     add bx,si
@@ -2402,7 +2405,9 @@ func SlipLoop
     mov [bp-0x6],ax
     or ax,ax
     jz .label4
-    jmp word .label5
+    jmp word .success
+    ; if the move was blocked,
+    ; check if we're on ice
 .label4: ; 14b6
     mov bx,[y]
     shl bx,byte 0x5
@@ -2420,6 +2425,7 @@ func SlipLoop
     jna .label6
     jmp word .label8
 .label6: ; 14dc
+    ; reverse the move direction and try again
     neg word [xdir]
     neg word [ydir]
     push word 0xc6c
@@ -2432,7 +2438,7 @@ func SlipLoop
     push word [x]
     push word [y]
     push word [x]
-    call word 0x1536:0x636 ; 14fb 7:636
+    call word 0x1536:0x636 ; 14fb 7:636 SlideMovement
     add sp,byte +0x10
     push word [ydir]
     push word [xdir]
@@ -2453,19 +2459,20 @@ func SlipLoop
     push ax
     lea ax,[x]
     push ax
-    push di
-    call word 0xf3c:0x18da ; 1533
+    push di ; hDC
+    call word 0xf3c:0x18da ; 1533 7:18da MoveMonster
     add sp,byte +0xc
     mov [bp-0x6],ax
     or ax,ax
-    jnz .label5
+    jnz .success
     jmp word .label9
-.label5: ; 1545
+
+.success: ; 1545
     cmp ax,0x1
     jz .label10
     jmp word .label11
 .label10: ; 154d
-    mov ax,[bp-0xc]
+    mov ax,[x]
     mov cx,[bp-0x4]
     mov dx,cx
     shl cx,byte 0x2
@@ -2479,134 +2486,137 @@ func SlipLoop
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
-    mov ax,[bp-0xe]
+    mov ax,[y]
     mov [es:bx+Monster.y],ax
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
-    mov ax,[bp-0x10]
+    mov ax,[xdir]
     mov [es:bx+Monster.xdir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,cx
-    mov ax,[bp-0x12]
+    mov ax,[ydir]
     mov [es:bx+Monster.ydir],ax
-    push word [bp-0x12]
-    push word [bp-0x10]
-    mov bx,[bp-0xe]
+    push word [ydir]
+    push word [xdir]
+    mov bx,[y]
     shl bx,byte 0x5
-    add bx,[bp-0xc]
+    add bx,[x]
     add bx,[GameStatePtr]
-    mov al,[bx]
+    mov al,[bx+Upper]
     push ax
     mov [bp-0x16],cx
-    call word 0x15d8:0x486 ; 15b8
+    call word 0x15d8:0x486 ; 15b8 SetTileDir
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,[bp-0x16]
-    mov [es:bx],al
-    jmp word .label12
+    mov [es:bx+Monster.tile],al
+    jmp word .next
     nop
 .label11: ; 15d2
     push word [bp-0x4]
     call word 0xee0:0x3b4 ; 15d5
     add sp,byte +0x2
-    jmp word .label12
+    jmp word .next
 .label9: ; 15e0
-    neg word [bp-0x10]
-    neg word [bp-0x12]
+    neg word [xdir]
+    neg word [ydir]
+
 .label8: ; 15e6
     push word 0xc6c
     push byte +0x2
     jmp word .label13
-.slipping: ; 15ee
+
+.isABlock: ; 15ee
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
     add bx,si
-    mov ax,[es:bx+0x5]
-    mov [bp-0x10],ax
+    mov ax,[es:bx+Monster.xdir]
+    mov [xdir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+0x7]
-    mov [bp-0x12],ax
+    mov ax,[es:bx+si+Monster.ydir]
+    mov [ydir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+0x1]
-    mov [bp-0xc],ax
+    mov ax,[es:bx+si+Monster.x]
+    mov [x],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+0x3]
-    mov [bp-0xe],ax
+    mov ax,[es:bx+si+Monster.y]
+    mov [y],ax
     push byte +0x0
     push word 0xff
-    push word [bp-0x12]
-    push word [bp-0x10]
+    push word [ydir]
+    push word [xdir]
     push ax
-    push word [bp-0xc]
+    push word [x]
     push di
     call word 0x168d:0xdae ; 163c
     add sp,byte +0xe
     or ax,ax
     jz .label14
-    jmp word .label12
+    jmp word .next
 .label14: ; 164b
-    mov bx,[bp-0xe]
+    mov bx,[y]
     shl bx,byte 0x5
-    add bx,[bp-0xc]
+    add bx,[x]
     add bx,[GameStatePtr]
     mov al,[bx+Lower]
     mov [bp-0x14],al
-    cmp al,0xc
+    cmp al,Ice
     jz .label15
-    cmp al,0x1a
-    jc .label16
-    cmp al,0x1d
+    cmp al,IceWallNW
+    jb .label16
+    cmp al,IceWallSW
     ja .label16
 .label15: ; 166b
-    neg word [bp-0x10]
-    neg word [bp-0x12]
+    neg word [xdir]
+    neg word [ydir]
     push word 0xc6c
     push byte +0x1
-    lea ax,[bp-0x12]
+    lea ax,[ydir]
     push ax
-    lea cx,[bp-0x10]
+    lea cx,[xdir]
     push cx
-    push word [bp-0xe]
-    push word [bp-0xc]
-    push word [bp-0xe]
-    push word [bp-0xc]
+    push word [y]
+    push word [x]
+    push word [y]
+    push word [x]
     call word 0x16a7:0x636 ; 168a slide movement
     add sp,byte +0x10
     push byte +0x0
     push word 0xff
-    push word [bp-0x12]
-    push word [bp-0x10]
-    push word [bp-0xe]
-    push word [bp-0xc]
+    push word [ydir]
+    push word [xdir]
+    push word [y]
+    push word [x]
     push di
-    call word 0x16d2:0xdae ; 16a4
+    call word 0x16d2:0xdae ; 16a4 MoveBlock
     add sp,byte +0xe
     or ax,ax
-    jnz .label12
-    neg word [bp-0x10]
-    neg word [bp-0x12]
+    jnz .next
+    neg word [xdir]
+    neg word [ydir]
 .label16: ; 16b6
     push word 0xc6c
     push byte +0x1
 .label13: ; 16bb
-    lea ax,[bp-0x12]
+    lea ax,[ydir]
     push ax
-    lea ax,[bp-0x10]
+    lea ax,[xdir]
     push ax
-    push word [bp-0xe]
-    push word [bp-0xc]
-    push word [bp-0xe]
-    push word [bp-0xc]
+    push word [y]
+    push word [x]
+    push word [y]
+    push word [x]
     call word 0x14a7:0x636 ; 16cf
     add sp,byte +0x10
-.label12: ; 16d7
-    mov ax,[bp-0x8]
+
+.next: ; 16d7
+    mov ax,[previousSlipListLen]
     mov bx,[GameStatePtr]
     cmp [bx+SlipListLen],ax
     jnz .label17
@@ -2617,8 +2627,9 @@ func SlipLoop
     cmp [bx+SlipListLen],ax
     jng .break
     jmp word .loop
+
 .break: ; 16f6
-    cmp word [bx+0x816],byte +0x0
+    cmp word [bx+Autopsy],byte +0x0
     jz .label19
     push byte +0x1
     call word 0x1716:0xcbe ; 16ff
@@ -2630,7 +2641,7 @@ func SlipLoop
     call word 0x121f:0xb9a ; 1713
     push byte +0x1
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     call word 0x1242:0x356 ; 1722
     add sp,byte +0x4
 .label19: ; 172a
@@ -2641,7 +2652,29 @@ endfunc
 
 ; 1734
 
-INCBIN "base.exe", 0x6200+$, 0x1934 - 0x1734
+func ResetInventory
+    sub sp,byte +0x2
+    ; if arg is nonzero, only reset boots, not keys
+    cmp word [bp+0x6],byte +0x0
+    jnz .resetBoots ; ↓
+    xor ax,ax
+    mov [0x1682],ax
+    mov [0x1684],ax
+    mov [0x1686],ax
+    mov [0x1688],ax
+.resetBoots: ; 1755
+    xor ax,ax
+    mov [0x168a],ax
+    mov [0x168c],ax
+    mov [0x168e],ax
+    mov [0x1690],ax
+    mov word [0x20],0x1
+    lea sp,[bp-0x2]
+endfunc
+
+; 1770
+
+INCBIN "base.exe", 0x6200+$, 0x1934 - 0x1770
 
 ; 1934
 
@@ -3062,7 +3095,7 @@ func ChipCanEnterTile
     call word 0x170e:0x56c ; 1c31 8:56c
     add sp,byte +0x4
     push byte +0x1
-    call word 0x1c8b:0x1734 ; 1c3b 3:1734
+    call word 0x1c8b:0x1734 ; 1c3b 3:1734 ResetInventory
     add sp,byte +0x2
     jmp word .return1 ; ↑
 

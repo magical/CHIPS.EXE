@@ -78,7 +78,7 @@ HaveMouseTarget     equ 0xa38
 MouseTargetX        equ 0xa3a
 MouseTargetY        equ 0xa3c
 ; a3e idle timer?
-;HaveMouseTarget     equ 0xa40
+ChipHasMoved        equ 0xa40
 
 STRUC Connection
     .fromX resw 1
