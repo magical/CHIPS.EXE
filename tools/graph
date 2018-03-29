@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
-print("digraph {")
+print("digraph code {")
 currentfunc = "top"
 currentlabel = "top"
 lastjump = ""
@@ -9,8 +9,11 @@ for line in sys.stdin:
     words = line.strip().split()
     if not words:
         continue
-    if words[0].endswith(":"):
-        label = words[0].strip(":")
+    if words[0] == "func" or words[0].endswith(":") and "%" not in words[0]:
+        if words[0] == "func":
+            label = words[1]
+        else:
+            label = words[0].strip(":")
         if label.startswith('.'):
             if lastjump != "jmp":
                 print("  \"{}\" -> \"{}\" [color=blue];".format(currentlabel, currentfunc+label))
@@ -19,7 +22,8 @@ for line in sys.stdin:
             currentfunc = label
             currentlabel = label
         lastjump = ""
-        print("  \"{}\" [label=\"{}\"]".format(currentlabel, label))
+        shape = "ellipse" if "." in label else "box"
+        print("  \"{}\" [label=\"{}\", shape={}]".format(currentlabel, label, shape))
     if words[0].startswith("j"):
         lastjump = words[0]
         for word in words:
