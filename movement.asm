@@ -1738,7 +1738,7 @@ Six:
     push word [xdir]
     mov al,[tile]
     push ax
-    call word 0xe8c:0x1934 ; e5a
+    call word 0xe8c:0x1934 ; e5a CanEnterOrExitPanelWalls
     add sp,byte +0x8
     or ax,ax
     jnz .label9
