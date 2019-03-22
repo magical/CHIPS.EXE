@@ -29,7 +29,7 @@ One:
     %define ydir (bp-0x4)
 
     ; get the device context
-    push word [0x12]    ; hWnd
+    push word [hWnd]    ; hWnd
     call word 0x0:0xffff ; 13 KERNEL.GetDC
     mov [hDC],ax
 
@@ -1287,17 +1287,20 @@ Four:
     push si
 
     %define hDC (bp-8)
+    %define flag (bp+0x6)
+    %define nLevelsCompleted (bp-0x4)
 
     push word [hWnd]
     call word 0x0:0x14 ; a88 USER.GetDC
     mov [hDC],ax
     mov bx,[GameStatePtr]
 
-    cmp word [bx+0xa36],byte 32
+    cmp word [bx+EndingTick],byte 32
     jge .atLeast32
 
-    ; set bp-0x3 to an exit tile depending on 0xa36 % 3
-    mov si,[bx+0xa36]
+.lessThanOrEqualTo32:
+    ; set bp-0x3 to an exit tile depending on EndingTick % 3
+    mov si,[bx+EndingTick]
     mov ax,si
     mov cx,0x3
     shl si,byte 0x3
@@ -1305,21 +1308,21 @@ Four:
     idiv cx
     mov ax,dx
     or ax,ax
-    jz .label1
+    jz .case0
     dec ax
-    jz .label2
+    jz .case1
     dec ax
-    jz .label3
+    jz .case2
     jmp short .label4
     nop
     nop
-.label1: ; aba
+.case0: ; aba
     mov byte [bp-0x3], Exit
     jmp short .label4
-.label2: ; ac0
+.case1: ; ac0
     mov byte [bp-0x3], Exit2
     jmp short .label4
-.label3: ; ac6
+.case2: ; ac6
     mov byte [bp-0x3], Exit3
 
 .label4: ; aca
@@ -1356,26 +1359,28 @@ Four:
 .label6: ; b0b
     push cx ; x position
 
-.label10: ; b0c
+.callDrawTile: ; b0c
     push word [hDC]
     call word 0x3ed:0x966 ; b0f 7:966 DrawTile
     add sp,byte +0xe
-    jmp word .label7
+    jmp word .done
 
 
 
 .atLeast32: ; b1a
-    cmp word [bx+0xa36],byte +0x68
+    cmp word [bx+EndingTick],byte +0x68
     jge .atLeast104
-    mov ax,[bx+0xa36]
+
+    ;
+    mov ax,[bx+EndingTick]
     mov cx,0x2
     cwd
     idiv cx
     or dx,dx
     jz .label9
-    cmp word [bp+0x6],byte +0x0
+    cmp word [flag],byte +0x0
     jnz .label9
-    jmp word .label7
+    jmp word .done
 .label9: ; b38
     push byte Exit
 
@@ -1394,31 +1399,31 @@ Four:
     push word 0x120
     push byte +0x0
     push byte +0x0
-    jmp short .label10 ; draw tile
+    jmp short .callDrawTile ; draw tile
 
 .atLeast104: ; b5c
-    cmp word [bx+0xa36],byte +0x69
+    cmp word [bx+EndingTick],byte +0x69
     jl .equals104
-    jmp word .label12
+    jmp word .greaterThan104orFlagIsNonzero
 .equals104: ; b66
-    cmp word [bp+0x6],byte +0x0
-    jz .label13
-    jmp word .label12
-.label13: ; b6f
-    mov word [bp-0x4],0x0
+    cmp word [flag],byte +0x0
+    jz .equals104andFlagIsZero
+    jmp word .greaterThan104orFlagIsNonzero
+.equals104andFlagIsZero: ; b6f
+    mov word [nLevelsCompleted],0x0
     push byte +0x0
     push ds
-    push word 0xc6e
+    push word GreatJobChipMsg
     push word [0x10]
     call word 0xbe4:0x0 ; b7e 2:0
     add sp,byte +0x8
     push word [0x172a]
     push ds
-    push word 0x1352
+    push word Chipend
     call word 0x0:0xc59 ; b8e USER.LoadBitmap
     mov [bp-0x6],ax
     or ax,ax
-    jz .label14
+    jz .loadBitmapFailed
     push word [0x1734]
     push ax
     call word 0x0:0xbcb ; b9f GDI.SelectObject
@@ -1439,22 +1444,23 @@ Four:
     call word 0x0:0xc69 ; bca GDI.SelectObject
     push word [bp-0x6]
     call word 0x0:0xc9a ; bd2 GDI.DeleteObject
-.label14: ; bd7
+.loadBitmapFailed: ; bd7
     push byte +0x0
     push ds
-    push word 0xca8
+    push word MelindaHerselfMsg
     push word [0x10]
     call word 0xbfb:0x0 ; be1 2:0
     add sp,byte +0x8
+
     mov si,0x1
-    mov di,[bp-0x4]
-.label17: ; bef
+    mov di,[nLevelsCompleted]
+.levelLoop: ; bef
     lea ax,[bp-0xc]
     push ax
     push byte +0x0
     push byte +0x0
     push si
-    call word 0xc42:0x1adc ; bf8
+    call word 0xc42:0x1adc ; bf8 2:0x1adc
     add sp,byte +0x8
     or ax,ax
     jz .label15
@@ -1467,9 +1473,10 @@ Four:
 .label15: ; c11
     inc si
     cmp si,0x95
-    jng .label17
-    push word [0x1698]
-    push word [0x1696]
+    jng .levelLoop
+
+    push word [TotalScore+2]
+    push word [TotalScore]
     push di
     push ds
     push word YouCompletedNLevelsMsg
@@ -1483,26 +1490,28 @@ Four:
     push ss
     push ax
     push word [0x10]
-    call word 0xcdc:0x0 ; c3f
+    call word 0xcdc:0x0 ; c3f 2:0
     add sp,byte +0x8
-    jmp short .label7
+    jmp short .done
     nop
 
-.label12: ; c4a
-    cmp word [bp+0x6],byte +0x0
-    jz .label18
+.greaterThan104orFlagIsNonzero: ; c4a
+    cmp word [flag],byte +0x0
+    jz .else
+
+.showEndGraphic:
     push word [0x172a]
     push ds
     push word 0x135a
-    call word 0x0:0xffff ; c58
+    call word 0x0:0xffff ; c58 USER.LoadBitmap
     mov si,ax
     or si,si
-    jz .label18
+    jz .else
     push word [0x1734]
     push si
-    call word 0x0:0xc94 ; c68
+    call word 0x0:0xc94 ; c68 GDI.SelectObject
     mov di,ax
-    push word [bp-0x8]
+    push word [hDC]
     push byte +0x0
     push byte +0x0
     push word 0x120
@@ -1512,24 +1521,27 @@ Four:
     push byte +0x0
     push word 0xcc
     push byte +0x20
-    call word 0x0:0x9c4 ; c89
+    call word 0x0:0x9c4 ; c89 GDI.BitBlt
     push word [0x1734]
     push di
-    call word 0x0:0xffff ; c93
+    call word 0x0:0xffff ; c93 GDI.SelectObject
     push si
-    call word 0x0:0xffff ; c99
-.label18: ; c9e
+    call word 0x0:0xffff ; c99 GDI.DeleteObject
+
+.else: ; c9e
     mov bx,[GameStatePtr]
-    dec word [bx+0xa36]
-.label7: ; ca6
+    dec word [bx+EndingTick]
+
+
+.done: ; ca6
     mov bx,[GameStatePtr]
-    cmp word [bx+0xa36],byte +0x0
+    cmp word [bx+EndingTick],byte +0x0
     jz .label19
-    inc word [bx+0xa36]
+    inc word [bx+EndingTick]
 .label19: ; cb5
-    push word [0x12]
-    push word [bp-0x8]
-    call word 0x0:0x5b9 ; cbc
+    push word [hWnd]
+    push word [hDC]
+    call word 0x0:0x5b9 ; cbc USER.ReleaseDC
     pop si
     pop di
     lea sp,[bp-0x2]
@@ -1618,7 +1630,7 @@ Five:
     nop
 
 .lastLevel: ; d72
-    mov word [bx+0xa36],0x1
+    mov word [bx+EndingTick],0x1
     mov bx,[GameStatePtr]
     mov word [bx+IsSliding],0x0
     mov bx,[GameStatePtr]
@@ -2855,7 +2867,7 @@ Seven:
     push byte LevelCompleteSound
     call word 0x185b:0x56c ; 182d 8:56c
     add sp,byte +0x4
-    push word [0x12] ; hWnd
+    push word [hWnd] ; hWnd
     call word 0x13ab:0xcca ; 1839 7:cca EndLevel
     add sp,byte +0x2
     ; return 1

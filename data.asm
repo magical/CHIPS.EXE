@@ -360,10 +360,10 @@ db 0
 
 dw 0xFF ; c6c something about sliding
 
-db "Great Job, Chip!", 10, "You did it!  You finished the challenge!", 0
-db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0
+GreatJobChipMsg db "Great Job, Chip!", 10, "You did it!  You finished the challenge!", 0
+MelindaHerselfMsg db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0
 db 0
-db "You completed %d levels, and your total score for the challenge is %li points.", 10, 10
+YouCompletedNLevelsMsg db "You completed %d levels, and your total score for the challenge is %li points.", 10, 10
 db "You can still improve your score, by completing levels that you skipped, and getting better times on each level.  When you replay a level, if your new score is better than your old, your score will be adjusted by the difference.  Select Best Times from the Game menu to see your scores for each level.", 0
 
 ; Decade messages
@@ -391,7 +391,7 @@ Level120Message db "If Chip's grades aren't as good as Melinda's, maybe she'll c
 Level130Message db "'I've made it this far,' Chip thinks. 'Totally fair, with my mega-brain.' Then he starts the next maze. 'Totally unfair!' he yelps.", 0
 Level140Message db "Groov-u-loids! Chip makes it almost to the end. He's stoked!", 0
 
-db "chipend", 0
+Chipend db "chipend", 0
 db "chipend", 0
 db "DLG_COMPLETE", 0
 db 0
