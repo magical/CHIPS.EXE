@@ -651,7 +651,7 @@ One:
 .clearMouseTargetAndProceedToMonsterSlideMovement: ; 59c
     mov bx,[GameStatePtr]
     mov word [bx+HaveMouseTarget],0x0
-    
+
     ;;; PHASE 4 ;;;;
     ; Monster slide movement
 
