@@ -3636,110 +3636,122 @@ func PressTankButton
     sub sp,byte +0xc
     push di
     push si
+    %define x (bp-0x6)
+    %define index (bp-0x8)
+    %define xdir (bp-0xc)
+    %define ydir (bp-0xa)
+    %define tile (bp-0x3)
     push word [bp+0x8]
-    push byte +0x9
-    call word 0x2130:0x56c ; 1e7e
+    push byte SwitchSound
+    call word 0x2130:0x56c ; 1e7e 8:0x56c PlaySoundEffect
     add sp,byte +0x4
-    mov word [bp-0x8],0x0
-    mov bx,[0x1680]
-    cmp word [bx+0x928],byte +0x0
+    mov word [index],0x0
+    mov bx,[GameStatePtr]
+    cmp word [bx+MonsterListLen],byte +0x0
     jg .label0 ; ↓
-    jmp word .label4 ; ↓
+    jmp word .end ; ↓
 .label0: ; 1e99
     xor si,si
-.label1: ; 1e9b
-    les bx,[bx+0x92e]
-    mov al,[es:bx+si]
-    mov [bp-0x3],al
-    cmp al,0x4c
-    jz .label2 ; ↓
-    cmp al,0x4d
-    jz .label2 ; ↓
-    cmp al,0x4e
-    jz .label2 ; ↓
-    cmp al,0x4f
-    jz .label2 ; ↓
-    jmp word .label3 ; ↓
-.label2: ; 1eb8
-    mov bx,[0x1680]
-    les bx,[bx+0x92e]
+.loop: ; 1e9b
+    les bx,[bx+MonsterListPtr]
+    mov al,[es:bx+si+Monster.tile]
+    mov [tile],al
+    cmp al,TankN
+    jz .isATank ; ↓
+    cmp al,TankW
+    jz .isATank ; ↓
+    cmp al,TankS
+    jz .isATank ; ↓
+    cmp al,TankE
+    jz .isATank ; ↓
+    jmp word .loopCheck ; ↓
+.isATank: ; 1eb8
+    ; get position from monster list
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
     add bx,si
-    mov di,[es:bx+0x1]
-    mov ax,[es:bx+0x3]
-    mov [bp-0x6],ax
-    lea ax,[bp-0xa]
+    mov di,[es:bx+Monster.x]
+    mov ax,[es:bx+Monster.y]
+    mov [x],ax
+    ; get direction, indirectly from monster list
+    lea ax,[ydir]
     push ax
-    lea cx,[bp-0xc]
+    lea cx,[xdir]
     push cx
-    mov dl,[bp-0x3]
+    mov dl,[tile]
     push dx
-    call word 0x1ef2:0x4d8 ; 1ed9
+    call word 0x1ef2:0x4d8 ; 1ed9 3:0x4d8 GetMonsterDir
     add sp,byte +0x6
-    lea ax,[bp-0xa]
+    ; turn tile left and store in map
+    lea ax,[ydir]
     push ax
-    lea cx,[bp-0xc]
+    lea cx,[xdir]
     push cx
-    push word [bp-0xa]
-    push word [bp-0xc]
-    call word 0x1f04:0xb0 ; 1eef
+    push word [ydir]
+    push word [xdir]
+    call word 0x1f04:0xb0 ; 1eef 3:0xb0 TurnLeft
     add sp,byte +0x8
-    push word [bp-0xa]
-    push word [bp-0xc]
-    mov al,[bp-0x3]
+    push word [ydir]
+    push word [xdir]
+    mov al,[tile]
     push ax
-    call word 0x1f3b:0x486 ; 1f01
+    call word 0x1f3b:0x486 ; 1f01 3:0x486 SetTileDir
     add sp,byte +0x6
-    mov bx,[bp-0x6]
+    mov bx,[x]
     shl bx,byte 0x5
-    add bx,di
+    add bx,di ; y
     mov cx,di
-    mov di,[0x1680]
-    mov [bx+di],al
-    push word [bp-0x6]
-    push cx
+    mov di,[GameStatePtr]
+    mov [di+bx+Upper],al ; store tile
+    ; update display?
+    push word [x]
+    push cx ; y
     push word [bp+0x6]
     mov di,bx
-    call word 0x204d:0x1ca ; 1f22
+    call word 0x204d:0x1ca ; 1f22 2:0x1ca
     add sp,byte +0x6
-    lea ax,[bp-0xa]
+    ; turn direction left again (180 degrees total)
+    ; and store new direction in monster list
+    lea ax,[ydir]
     push ax
-    lea cx,[bp-0xc]
+    lea cx,[xdir]
     push cx
-    push word [bp-0xa]
-    push word [bp-0xc]
-    call word 0x1f6b:0xb0 ; 1f38
+    push word [ydir]
+    push word [xdir]
+    call word 0x1f6b:0xb0 ; 1f38 3:0xb0 TurnLeft
     add sp,byte +0x8
-    mov bx,[0x1680]
-    les bx,[bx+0x92e]
-    mov ax,[bp-0xc]
-    mov [es:bx+si+0x5],ax
-    mov bx,[0x1680]
-    les bx,[bx+0x92e]
-    mov ax,[bp-0xa]
-    mov [es:bx+si+0x7],ax
-    push word [bp-0xa]
-    push word [bp-0xc]
-    mov al,[bp-0x3]
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    mov ax,[xdir]
+    mov [es:bx+si+Monster.xdir],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
+    mov ax,[ydir]
+    mov [es:bx+si+Monster.ydir],ax
+    ; update the tile stored in the monster list
+    push word [ydir]
+    push word [xdir]
+    mov al,[tile]
     push ax
-    call word 0x1b6b:0x486 ; 1f68
+    call word 0x1b6b:0x486 ; 1f68 3:0x486 SetTileDir
     add sp,byte +0x6
-    mov bx,[0x1680]
-    les bx,[bx+0x92e]
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
     mov [es:bx+si],al
-    mov bx,[0x1680]
-    les bx,[bx+0x92e]
+    mov bx,[GameStatePtr]
+    les bx,[bx+MonsterListPtr]
     mov al,[es:bx+si]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov [bx+di],al
-.label3: ; 1f8c
+.loopCheck: ; 1f8c
     add si,byte +0xb
-    inc word [bp-0x8]
-    mov ax,[bp-0x8]
-    mov bx,[0x1680]
-    cmp [bx+0x928],ax
-    jng .label4 ; ↓
-    jmp word .label1 ; ↑
-.label4: ; 1fa2
+    inc word [index]
+    mov ax,[index]
+    mov bx,[GameStatePtr]
+    cmp [bx+MonsterListLen],ax
+    jng .end ; ↓
+    jmp word .loop ; ↑
+.end: ; 1fa2
     pop si
     pop di
     lea sp,[bp-0x2]
