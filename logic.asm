@@ -2658,23 +2658,254 @@ func ResetInventory
     cmp word [bp+0x6],byte +0x0
     jnz .resetBoots ; ↓
     xor ax,ax
-    mov [0x1682],ax
-    mov [0x1684],ax
-    mov [0x1686],ax
-    mov [0x1688],ax
+    mov [BlueKeyCount],ax
+    mov [RedKeyCount],ax
+    mov [GreenKeyCount],ax
+    mov [YellowKeyCount],ax
 .resetBoots: ; 1755
     xor ax,ax
-    mov [0x168a],ax
-    mov [0x168c],ax
-    mov [0x168e],ax
-    mov [0x1690],ax
-    mov word [0x20],0x1
+    mov [FlipperCount],ax
+    mov [FireBootCount],ax
+    mov [IceSkateCount],ax
+    mov [SuctionBootCount],ax
+    mov word [0x20],0x1 ; ???
     lea sp,[bp-0x2]
 endfunc
 
 ; 1770
 
-INCBIN "base.exe", 0x6200+$, 0x1934 - 0x1770
+; boots / keys?
+func PickUpKeyOrBoot
+    sub sp,byte +0x2
+    mov al,[bp+0x6]
+    sub ah,ah
+    cmp ax,SuctionBoots
+    jz .suctionBoots ; ↓
+    ja .playToolSound ; ↓
+    cmp al,GreenKey
+    jz .greenKey ; ↓
+    jg .label0 ; ↓
+    sub al,ICChip
+    jz .chip ; ↓
+    sub al,BlueKey-ICChip
+    jz .blueKey ; ↓
+    dec al
+    jz .redKey ; ↓
+    jmp short .playToolSound ; ↓
+    nop
+.label0: ; 179e
+    sub al,YellowKey
+    jz .yellowKey ; ↓
+    dec al
+    jz .flipper ; ↓
+    dec al
+    jz .fireBoots ; ↓
+    dec al
+    jz .iceSkates ; ↓
+    jmp short .playToolSound ; ↓
+.chip: ; 17b0
+    cmp word [ChipsRemainingCount],byte +0x0
+    jng .noChipsLeft ; ↓
+    dec word [ChipsRemainingCount]
+.noChipsLeft: ; 17bb
+    mov cx,PickUpChipSound
+    jmp short .playSound ; ↓
+.blueKey: ; 17c0
+    inc word [BlueKeyCount]
+    jmp short .playToolSound ; ↓
+.redKey: ; 17c6
+    inc word [RedKeyCount]
+    jmp short .playToolSound ; ↓
+.greenKey: ; 17cc
+    inc word [GreenKeyCount]
+    jmp short .playToolSound ; ↓
+.yellowKey: ; 17d2
+    inc word [YellowKeyCount]
+    jmp short .playToolSound ; ↓
+.flipper: ; 17d8
+    inc word [FlipperCount]
+    jmp short .playToolSound ; ↓
+.fireBoots: ; 17de
+    inc word [FireBootCount]
+    jmp short .playToolSound ; ↓
+.iceSkates: ; 17e4
+    inc word [IceSkateCount]
+    jmp short .playToolSound ; ↓
+.suctionBoots: ; 17ea
+    inc word [SuctionBootCount]
+
+    ; play a sound effect?
+.playToolSound: ; 17ee
+    xor cx,cx ; PickUpToolSound
+.playSound: ; 17f0
+    mov ax,0x1
+    mov [0x20],ax
+    push ax
+    push cx
+    call word 0x122b:0x56c ; 17f8 8:56c
+    lea sp,[bp-0x2]
+endfunc
+
+; 1804
+
+; Check whether chip has the key necessary to open a door,
+; and possibly decrement the inventory count.
+func CanOpenDoor
+    sub sp,byte +0x2
+    %arg tile:byte, consume:word
+    mov al,[bp+0x6]
+    sub ah,ah
+    sub ax,BlueDoor
+    jz .blueDoor ; ↓
+    dec ax
+    jz .redDoor ; ↓
+    dec ax
+    jz .greenDoor ; ↓
+    dec ax
+    jz .yellowDoor ; ↓
+    jmp short .no ; ↓
+
+.blueDoor: ; 1826
+    cmp word [BlueKeyCount],byte +0x0
+    jz .no ; ↓
+    cmp word [bp+0x8],byte +0x0
+    jz .yes ; ↓
+    dec word [BlueKeyCount]
+.yes: ; 1837
+    mov ax,0x1
+    mov [0x20],ax
+    jmp short .label6 ; ↓
+    nop
+
+.redDoor: ; 1840
+    cmp word [RedKeyCount],byte +0x0
+    jz .no ; ↓
+    cmp word [bp+0x8],byte +0x0
+    jz .yes ; ↑
+    dec word [RedKeyCount]
+    jmp short .yes ; ↑
+    nop
+
+.greenDoor: ; 1854
+    cmp word [GreenKeyCount],byte +0x0
+    jz .no ; ↓
+    ; green keys aren't expended
+    jmp short .yes ; ↑
+    nop
+
+.yellowDoor: ; 185e
+    cmp word [YellowKeyCount],byte +0x0
+    jz .no ; ↓
+    cmp word [bp+0x8],byte +0x0
+    jz .yes ; ↑
+    dec word [YellowKeyCount]
+    jmp short .yes ; ↑
+    nop
+
+.no: ; 1872
+    xor ax,ax
+.label6: ; 1874
+    lea sp,[bp-0x2]
+endfunc
+
+; 187c
+
+; force floors, ice, fire, water
+func HaveBootsForTile
+    sub sp,byte +0x2
+    mov al,[bp+0x6]
+    sub ah,ah
+    sub ax,Water
+    cmp ax,ForceRandom-Water
+    jna .label0 ; ↓
+    jmp word .none ; ↓
+.label0: ; 1899
+    shl ax,1
+    xchg ax,bx
+    jmp word [cs:bx+0x18a2]
+    nop
+    dw .water ; ↓
+    dw .fire ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .ice ; ↓
+    dw .forceFloor ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .forceFloor ; ↓
+    dw .forceFloor ; ↓
+    dw .forceFloor ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .iceWall ; ↓
+    dw .iceWall ; ↓
+    dw .iceWall ; ↓
+    dw .ice ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .none ; ↓
+    dw .forceFloor ; ↓
+
+.water: ; 1902
+; 0x1902
+    cmp word [FlipperCount],byte +0x0
+.compare: ; 1907
+    jz .returnZero ; ↓
+    ; return True and set something mysterious
+    mov ax,0x1
+    mov [0x20],ax
+    jmp short .end ; ↓
+    nop
+
+.fire: ; 1912
+    cmp word [FireBootCount],byte +0x0
+    jmp short .compare ; ↑
+    nop
+
+.ice: ; 191a
+.iceWall:
+    cmp word [IceSkateCount],byte +0x0
+    jmp short .compare ; ↑
+    nop
+
+.forceFloor: ; 1922
+    cmp word [SuctionBootCount],byte +0x0
+    jmp short .compare ; ↑
+    nop
+
+.none: ; 192a
+.returnZero:
+    xor ax,ax
+.end: ; 192c
+    lea sp,[bp-0x2]
+endfunc
 
 ; 1934
 
@@ -2990,9 +3221,12 @@ func ChipCanEnterTile
 
 .label9: ; 1b64
     ; force floors, ice, water, fire
+    ; if we have boots for this tile,
+    ; override the returned action to be 4
+    ; instead of whatever the table says
     mov al,[tile]
     push ax
-    call word 0x1b91:0x187c ; 1b68 3:187c
+    call word 0x1b91:0x187c ; 1b68 3:187c HaveBootsForTile
     add sp,byte +0x2
     or ax,ax
     jnz .label10 ; ↓
@@ -3100,7 +3334,7 @@ func ChipCanEnterTile
     jmp word .return1 ; ↑
 
 .socket: ; 1c46
-    cmp word [0x1692],byte +0x0
+    cmp word [ChipsRemainingCount],byte +0x0
     jnz .nope ; ↓
     cmp word [flag1],byte +0x0
     jnz .label27 ; ↓
