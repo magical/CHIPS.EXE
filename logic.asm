@@ -3146,7 +3146,91 @@ endfunc
 
 ; 1ca4
 
-INCBIN "base.exe", 0x6200+$, 0x1d4a - 0x1ca4
+func BlockCanEnterTile
+    sub sp,byte +0xc
+    push di
+    push si
+
+    %arg tile:byte, x:word, y:word, xdir:word, ydir:word, outPtr:byte
+    %define tileTableRow (bp-0xa)
+
+    mov bx,[y]
+    shl bx,byte 0x5
+    add bx,[x]
+    add bx,[GameStatePtr]
+    mov [bp-0xc],bx
+
+    ; Can't enter clone machines
+    cmp byte [bx+Lower],CloneMachine
+    jz .nope ; ↓
+
+    mov al,[bx+Upper]
+    mov [bp-0x3],al
+
+    mov bl,al
+    sub bh,bh
+    ; multiply by 6
+    mov ax,bx
+    shl bx,1
+    add bx,ax
+    shl bx,1
+    ; load six bytes from the tile table
+    ; onto the stack
+    lea di,[tileTableRow]
+    lea si,[TileTable+bx]
+    mov ax,ss
+    mov es,ax
+    movsw
+    movsw
+    movsw
+
+    mov al,[tileTableRow+3]
+    sub ah,ah
+    mov bx,[outPtr]
+    mov [bx],ax
+
+    cmp byte [tileTableRow+2],0x1
+    jnz .label1 ; ↓
+.label0: ; 1cf9
+    mov ax,0x1
+    jmp short .end ; ↓
+    nop
+    nop
+.label1: ; 1d00
+    cmp byte [tileTableRow+2],0x2
+    jnz .nope ; ↓
+    mov al,[bp-0x3]
+    sub ah,ah
+    cmp ax,PanelSE
+    jz .checkPanelWallsOrIceWalls ; ↓
+    ja .nope ; ↓
+    sub al,PanelN
+    jl .nope ; ↓
+    sub al,PanelE-PanelN
+    jng .checkPanelWallsOrIceWalls ; ↓
+    sub al,IceWallNW-PanelE
+    jl .nope ; ↓
+    sub al,IceWallSW-IceWallNW
+    jg .nope ; ↓
+.checkPanelWallsOrIceWalls: ; 1d22
+    push byte +0x1
+    push word [ydir]
+    push word [xdir]
+    mov al,[bp-0x3]
+    push ax
+    call word 0x1284:0x1934 ; 1d2e 3:1934 CheckPanelWalls
+    add sp,byte +0x8
+    or ax,ax
+    jnz .label0 ; ↑
+.nope: ; 1d3a
+    xor ax,ax
+    mov bx,[outPtr]
+    mov [bx],ax
+.end: ; 1d41
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+endfunc
 
 ; 1d4a
 
