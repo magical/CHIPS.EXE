@@ -2472,7 +2472,7 @@ Seven:
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
     push ax
-    call word 0x151c:0x1770 ; 1470 3:1770
+    call word 0x151c:0x1770 ; 1470 3:1770 PickUpKeyOrBoot
     add sp,byte +0x2
     jmp word .label41
     nop
@@ -2665,6 +2665,7 @@ Seven:
     add bx,[GameStatePtr]
     mov al,[bx]
     mov [bx+Lower],al
+    ; end of cases
 
 ; default case
 .label41: ; 1672
@@ -3229,7 +3230,7 @@ Eight:
     push word [xdest]
     push si ; ysrc
     push di ; xsrc
-    call word 0x1655:0x636 ; 1ac1 7:0x636
+    call word 0x1655:0x636 ; 1ac1 7:0x636 SlideMovement
     add sp,byte +0x10
     mov bx,[ydest]
     shl bx,byte 0x5

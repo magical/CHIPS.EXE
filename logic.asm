@@ -2674,7 +2674,6 @@ endfunc
 
 ; 1770
 
-; boots / keys?
 func PickUpKeyOrBoot
     sub sp,byte +0x2
     mov al,[bp+0x6]
@@ -2910,7 +2909,8 @@ endfunc
 ; 1934
 
 ; can exit/enter tile?
-func CanEnterOrExitPanelWalls
+; Returns whether something can enter (or exit) a panel or ice wall in a given direction.
+func CheckPanelWalls
     sub sp,byte +0x2
 
     %arg tile:byte, xdir:word, ydir:word, flag:byte
@@ -2940,7 +2940,7 @@ func CanEnterOrExitPanelWalls
     nop
 .label2: ; 196e
     sub al,IceWallNE
-    jz .label19 ; ↓
+    jz .northEast ; ↓
     dec al ; IceWallSE
     jnz .label3 ; ↓
     jmp word .southEast ; ↓
@@ -2996,6 +2996,7 @@ func CanEnterOrExitPanelWalls
 .label16: ; 19cc
     cmp word [xdir],byte -0x1
     jmp short .label28 ; ↓
+
 .northWest: ; 19d2
     cmp word [flag],byte +0x0
     jz .label21 ; ↓
@@ -3007,7 +3008,7 @@ func CanEnterOrExitPanelWalls
     jmp short .label26 ; ↓
     nop
 
-.label19: ; 19e6
+.northEast: ; 19e6
     cmp word [flag],byte +0x0
     jz .label25 ; ↓
     mov bx,[xdir]
@@ -3016,6 +3017,7 @@ func CanEnterOrExitPanelWalls
     cmp word [ydir],byte +0x1
     jmp short .label22 ; ↓
     nop
+
 .southEast: ; 19fa
     cmp word [flag],byte +0x0
     jz .label18 ; ↑
