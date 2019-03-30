@@ -3632,7 +3632,495 @@ endfunc
 
 ; 1e6a
 
-INCBIN "base.exe", 0x6200+$, 0x22be - 0x1e6a
+func PressTankButton
+    sub sp,byte +0xc
+    push di
+    push si
+    push word [bp+0x8]
+    push byte +0x9
+    call word 0x2130:0x56c ; 1e7e
+    add sp,byte +0x4
+    mov word [bp-0x8],0x0
+    mov bx,[0x1680]
+    cmp word [bx+0x928],byte +0x0
+    jg .label0 ; ↓
+    jmp word .label4 ; ↓
+.label0: ; 1e99
+    xor si,si
+.label1: ; 1e9b
+    les bx,[bx+0x92e]
+    mov al,[es:bx+si]
+    mov [bp-0x3],al
+    cmp al,0x4c
+    jz .label2 ; ↓
+    cmp al,0x4d
+    jz .label2 ; ↓
+    cmp al,0x4e
+    jz .label2 ; ↓
+    cmp al,0x4f
+    jz .label2 ; ↓
+    jmp word .label3 ; ↓
+.label2: ; 1eb8
+    mov bx,[0x1680]
+    les bx,[bx+0x92e]
+    add bx,si
+    mov di,[es:bx+0x1]
+    mov ax,[es:bx+0x3]
+    mov [bp-0x6],ax
+    lea ax,[bp-0xa]
+    push ax
+    lea cx,[bp-0xc]
+    push cx
+    mov dl,[bp-0x3]
+    push dx
+    call word 0x1ef2:0x4d8 ; 1ed9
+    add sp,byte +0x6
+    lea ax,[bp-0xa]
+    push ax
+    lea cx,[bp-0xc]
+    push cx
+    push word [bp-0xa]
+    push word [bp-0xc]
+    call word 0x1f04:0xb0 ; 1eef
+    add sp,byte +0x8
+    push word [bp-0xa]
+    push word [bp-0xc]
+    mov al,[bp-0x3]
+    push ax
+    call word 0x1f3b:0x486 ; 1f01
+    add sp,byte +0x6
+    mov bx,[bp-0x6]
+    shl bx,byte 0x5
+    add bx,di
+    mov cx,di
+    mov di,[0x1680]
+    mov [bx+di],al
+    push word [bp-0x6]
+    push cx
+    push word [bp+0x6]
+    mov di,bx
+    call word 0x204d:0x1ca ; 1f22
+    add sp,byte +0x6
+    lea ax,[bp-0xa]
+    push ax
+    lea cx,[bp-0xc]
+    push cx
+    push word [bp-0xa]
+    push word [bp-0xc]
+    call word 0x1f6b:0xb0 ; 1f38
+    add sp,byte +0x8
+    mov bx,[0x1680]
+    les bx,[bx+0x92e]
+    mov ax,[bp-0xc]
+    mov [es:bx+si+0x5],ax
+    mov bx,[0x1680]
+    les bx,[bx+0x92e]
+    mov ax,[bp-0xa]
+    mov [es:bx+si+0x7],ax
+    push word [bp-0xa]
+    push word [bp-0xc]
+    mov al,[bp-0x3]
+    push ax
+    call word 0x1b6b:0x486 ; 1f68
+    add sp,byte +0x6
+    mov bx,[0x1680]
+    les bx,[bx+0x92e]
+    mov [es:bx+si],al
+    mov bx,[0x1680]
+    les bx,[bx+0x92e]
+    mov al,[es:bx+si]
+    mov bx,[0x1680]
+    mov [bx+di],al
+.label3: ; 1f8c
+    add si,byte +0xb
+    inc word [bp-0x8]
+    mov ax,[bp-0x8]
+    mov bx,[0x1680]
+    cmp [bx+0x928],ax
+    jng .label4 ; ↓
+    jmp word .label1 ; ↑
+.label4: ; 1fa2
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+endfunc
+
+; 1fac
+
+PressToggleButton:
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    mov bp,sp
+    push ds
+    mov ds,ax
+    sub sp,byte +0xa
+    push di
+    push si
+    xor di,di
+    mov bx,[0x1680]
+    cmp [bx+0x932],di
+    jg .label0 ; ↓
+    jmp word .label6 ; ↓
+.label0: ; 1fca
+    xor si,si
+.label1: ; 1fcc
+    les bx,[bx+0x938]
+    mov ax,[es:bx+si]
+    mov [bp-0x4],ax
+    add bx,si
+    mov cx,[es:bx+0x2]
+    mov [bp-0x6],cx
+    mov bx,cx
+    shl bx,byte 0x5
+    add bx,ax
+    add bx,[0x1680]
+    mov al,[bx]
+    mov [bp-0x7],al
+    cmp al,0x25
+    jnz .label2 ; ↓
+    mov bx,cx
+    shl bx,byte 0x5
+    add bx,[bp-0x4]
+    add bx,[0x1680]
+    mov byte [bx],0x26
+    jmp short .label3 ; ↓
+.label2: ; 2004
+    cmp byte [bp-0x7],0x26
+    jnz .label3 ; ↓
+    mov bx,cx
+    shl bx,byte 0x5
+    add bx,[bp-0x4]
+    add bx,[0x1680]
+    mov byte [bx],0x25
+.label3: ; 2019
+    mov bx,[bp-0x6]
+    shl bx,byte 0x5
+    add bx,[bp-0x4]
+    add bx,[0x1680]
+    add bh,0x4
+    mov al,[bx]
+    mov [bp-0x7],al
+    cmp al,0x25
+    jnz .label4 ; ↓
+    mov byte [bx],0x26
+    jmp short .label5 ; ↓
+    nop
+.label4: ; 2038
+    cmp byte [bp-0x7],0x26
+    jnz .label5 ; ↓
+    mov byte [bx],0x25
+.label5: ; 2041
+    push word [bp-0x6]
+    push word [bp-0x4]
+    push word [bp+0x6]
+    call word 0x1c1c:0x1ca ; 204a
+    add sp,byte +0x6
+    add si,byte +0x4
+    inc di
+    mov bx,[0x1680]
+    cmp [bx+0x932],di
+    jng .label6 ; ↓
+    jmp word .label1 ; ↑
+.label6: ; 2063
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
+
+; 206c
+
+Unknown206c:
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    mov bp,sp
+    push ds
+    mov ds,ax
+    sub sp,byte +0x2
+    push di
+    push si
+    xor cx,cx
+    mov bx,[0x1680]
+    cmp [bx+0x93c],cx
+    jg .label0 ; ↓
+    jmp word .label6 ; ↓
+.label0: ; 208a
+    mov si,bx
+    mov ax,[si+0x942]
+    mov dx,[si+0x944]
+    add ax,0x4
+    mov bx,ax
+    mov es,dx
+    mov di,[bp+0x6]
+.label1: ; 209e
+    cmp [es:bx],di
+    jnz .label2 ; ↓
+    mov ax,[bp+0x8]
+    cmp [es:bx+0x2],ax
+    jz .label3 ; ↓
+.label2: ; 20ac
+    add bx,byte +0xa
+    inc cx
+    cmp [si+0x93c],cx
+    jg .label1 ; ↑
+    jmp short .label6 ; ↓
+.label3: ; 20b8
+    mov bx,[bp+0xa]
+    mov [bx],cx
+    inc cx
+    mov bx,[0x1680]
+    cmp [bx+0x93c],cx
+    jng .label5 ; ↓
+    mov si,bx
+    mov ax,[si+0x942]
+    mov dx,[si+0x944]
+    mov si,cx
+    shl si,byte 0x2
+    add si,cx
+    shl si,1
+    add ax,si
+    add ax,0x4
+    mov bx,ax
+    mov es,dx
+    mov di,[bp+0x8]
+.label4: ; 20e7
+    mov ax,[bp+0x6]
+    cmp [es:bx],ax
+    jnz .label5 ; ↓
+    cmp [es:bx+0x2],di
+    jnz .label5 ; ↓
+    add bx,byte +0xa
+    inc cx
+    mov si,[0x1680]
+    cmp [si+0x93c],cx
+    jg .label4 ; ↑
+.label5: ; 2103
+    dec cx
+    mov bx,[bp+0xc]
+    mov [bx],cx
+    mov ax,0x1
+    jmp short .label7 ; ↓
+.label6: ; 210e
+    xor ax,ax
+.label7: ; 2110
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
+    nop
+
+; 211a
+
+PressTrapButton:
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    mov bp,sp
+    push ds
+    mov ds,ax
+    sub sp,byte +0x6
+    push si
+    push word [bp+0xa]
+    push byte +0x9
+    call word 0x1bc5:0x56c ; 212d
+    add sp,byte +0x4
+    push word [bp+0x8]
+    push word [bp+0x6]
+    call word 0x216f:0x2270 ; 213b
+    add sp,byte +0x4
+    mov si,ax
+    or si,si
+    jl .label1 ; ↓
+    lea ax,[bp-0x4]
+    push ax
+    lea ax,[bp-0x6]
+    push ax
+    mov ax,si
+    shl si,byte 0x2
+    add si,ax
+    shl si,1
+    mov bx,[0x1680]
+    les bx,[bx+0x942]
+    add bx,si
+    push word [es:bx+0x6]
+    push word [es:bx+0x4]
+    call word 0x21ca:0x206c ; 216c
+    add sp,byte +0x8
+    or ax,ax
+    jz .label1 ; ↓
+    mov cx,[bp-0x6]
+    cmp cx,[bp-0x4]
+    jg .label1 ; ↓
+    mov bx,cx
+    mov ax,cx
+    shl bx,byte 0x2
+    add bx,ax
+    shl bx,1
+.label0: ; 218b
+    mov si,[0x1680]
+    les si,[si+0x942]
+    mov word [es:bx+si+0x8],0x0
+    add bx,byte +0xa
+    inc cx
+    cmp cx,[bp-0x4]
+    jng .label0 ; ↑
+.label1: ; 21a2
+    pop si
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
+
+; 21aa
+
+ActivateTrap:
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    mov bp,sp
+    push ds
+    mov ds,ax
+    sub sp,byte +0xa
+    push di
+    push si
+    lea ax,[bp-0x4]
+    push ax
+    lea ax,[bp-0x6]
+    push ax
+    push word [bp+0x8]
+    push word [bp+0x6]
+    call word 0x234d:0x206c ; 21c7
+    add sp,byte +0x8
+    or ax,ax
+    jnz .label0 ; ↓
+    jmp word .label6 ; ↓
+.label0: ; 21d6
+    mov di,0x1
+    mov cx,[bp-0x6]
+    cmp cx,[bp-0x4]
+    jg .label4 ; ↓
+    mov [bp-0x8],di
+    mov si,[0x1680]
+    mov ax,[si+0x942]
+    mov dx,[si+0x944]
+    mov si,cx
+    shl si,byte 0x2
+    add si,cx
+    shl si,1
+    add ax,si
+    add ax,0x2
+    mov bx,ax
+    mov es,dx
+    mov di,[bp+0xa]
+.label1: ; 2205
+    lea si,[bx-0x2]
+    mov ax,[es:si]
+    mov [bp-0xa],ax
+    mov si,[es:bx]
+    shl si,byte 0x5
+    add si,ax
+    add si,[0x1680]
+    cmp byte [si],0x27
+    jz .label2 ; ↓
+    cmp ax,di
+    jnz .label3 ; ↓
+    mov ax,[bp+0xc]
+    cmp [es:bx],ax
+    jnz .label3 ; ↓
+.label2: ; 222b
+    add bx,byte +0xa
+    inc cx
+    cmp cx,[bp-0x4]
+    jng .label1 ; ↑
+    mov di,[bp-0x8]
+    jmp short .label4 ; ↓
+    nop
+.label3: ; 223a
+    xor di,di
+.label4: ; 223c
+    mov ax,[bp-0x6]
+    mov cx,ax
+    cmp [bp-0x4],ax
+    jl .label6 ; ↓
+    mov bx,ax
+    shl bx,byte 0x2
+    add bx,ax
+    shl bx,1
+    mov [bp-0x8],di
+.label5: ; 2252
+    mov si,[0x1680]
+    les si,[si+0x942]
+    mov [es:bx+si+0x8],di
+    add bx,byte +0xa
+    inc cx
+    cmp cx,[bp-0x4]
+    jng .label5 ; ↑
+.label6: ; 2267
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
+
+; 2270
+
+Unknown2270:
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    mov bp,sp
+    push ds
+    mov ds,ax
+    sub sp,byte +0x2
+    push di
+    push si
+    xor cx,cx
+    mov bx,[0x1680]
+    cmp [bx+0x93c],cx
+    jng .label3 ; ↓
+    mov si,bx
+    les bx,[si+0x942]
+    mov di,[bp+0x6]
+.label0: ; 2294
+    cmp [es:bx],di
+    jnz .label1 ; ↓
+    mov ax,[bp+0x8]
+    cmp [es:bx+0x2],ax
+    jz .label2 ; ↓
+.label1: ; 22a2
+    add bx,byte +0xa
+    inc cx
+    cmp [si+0x93c],cx
+    jg .label0 ; ↑
+    jmp short .label3 ; ↓
+.label2: ; 22ae
+    mov ax,cx
+    jmp short .label4 ; ↓
+.label3: ; 22b2
+    mov ax,0xffff
+.label4: ; 22b5
+    pop si
+    pop di
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
 
 ; 22be
 
