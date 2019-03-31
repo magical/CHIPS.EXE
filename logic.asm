@@ -111,7 +111,7 @@ func FindSlipper
     cmp [es:bx+Monster.y-1],ax
     jz .found
 .next:
-    add bx,byte +0xb
+    add bx,byte Monster_size
     inc cx
     cmp [si+SlipListLen],cx
     jg .loop
@@ -2281,7 +2281,7 @@ func DeleteSlipperAt
     rep movsw
     movsb
     pop ds
-    add word [bp-0x4],byte +0xb
+    add word [bp-0x4],byte Monster_size
     inc word [bp-0x6]
     mov ax,[bp-0x6]
     mov bx,[GameStatePtr]
@@ -2620,7 +2620,7 @@ func SlipLoop
     mov bx,[GameStatePtr]
     cmp [bx+SlipListLen],ax
     jnz .label17
-    add si,byte +0xb
+    add si,byte Monster_size
     inc word [bp-0xa]
 .label17: ; 16ea
     mov ax,[bp-0xa]
@@ -3744,7 +3744,7 @@ func PressTankButton
     mov bx,[GameStatePtr]
     mov [bx+di],al
 .loopCheck: ; 1f8c
-    add si,byte +0xb
+    add si,byte Monster_size
     inc word [index]
     mov ax,[index]
     mov bx,[GameStatePtr]
