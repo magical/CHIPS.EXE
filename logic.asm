@@ -3759,90 +3759,90 @@ endfunc
 
 ; 1fac
 
-PressToggleButton:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func PressToggleButton
     sub sp,byte +0xa
     push di
     push si
+    %define x (bp-0x4)
+    %define y (bp-0x6)
     xor di,di
-    mov bx,[0x1680]
-    cmp [bx+0x932],di
+    mov bx,[GameStatePtr]
+    cmp [bx+ToggleListLen],di
     jg .label0 ; ↓
-    jmp word .label6 ; ↓
+    jmp word .end ; ↓
 .label0: ; 1fca
     xor si,si
-.label1: ; 1fcc
-    les bx,[bx+0x938]
-    mov ax,[es:bx+si]
-    mov [bp-0x4],ax
+.loop: ; 1fcc
+    ; get toggle wall coordinates
+    les bx,[bx+ToggleListPtr]
+    mov ax,[es:bx+si+Point.x]
+    mov [x],ax
     add bx,si
-    mov cx,[es:bx+0x2]
-    mov [bp-0x6],cx
+    mov cx,[es:bx+Point.y]
+    mov [y],cx
+
+.toggleUpper:
     mov bx,cx
     shl bx,byte 0x5
     add bx,ax
-    add bx,[0x1680]
-    mov al,[bx]
+    add bx,[GameStatePtr]
+    mov al,[bx+Upper]
     mov [bp-0x7],al
-    cmp al,0x25
-    jnz .label2 ; ↓
+    cmp al,ToggleWall
+    jnz .upperIsNotAWall ; ↓
+.setUpperFloor:
     mov bx,cx
     shl bx,byte 0x5
-    add bx,[bp-0x4]
-    add bx,[0x1680]
-    mov byte [bx],0x26
-    jmp short .label3 ; ↓
-.label2: ; 2004
-    cmp byte [bp-0x7],0x26
-    jnz .label3 ; ↓
+    add bx,[x]
+    add bx,[GameStatePtr]
+    mov byte [bx+Upper],ToggleFloor
+    jmp short .toggleLower ; ↓
+.upperIsNotAWall: ; 2004
+    cmp byte [bp-0x7],ToggleFloor
+    jnz .toggleLower ; ↓
     mov bx,cx
     shl bx,byte 0x5
-    add bx,[bp-0x4]
-    add bx,[0x1680]
-    mov byte [bx],0x25
-.label3: ; 2019
-    mov bx,[bp-0x6]
+    add bx,[x]
+    add bx,[GameStatePtr]
+    mov byte [bx+Upper],ToggleWall
+
+.toggleLower: ; 2019
+    mov bx,[y]
     shl bx,byte 0x5
-    add bx,[bp-0x4]
-    add bx,[0x1680]
-    add bh,0x4
+    add bx,[x]
+    add bx,[GameStatePtr]
+    add bh,(Lower>>8)
     mov al,[bx]
     mov [bp-0x7],al
-    cmp al,0x25
-    jnz .label4 ; ↓
-    mov byte [bx],0x26
+    cmp al,ToggleWall
+    jnz .lowerIsNotAWall ; ↓
+    mov byte [bx],ToggleFloor
     jmp short .label5 ; ↓
     nop
-.label4: ; 2038
-    cmp byte [bp-0x7],0x26
+.lowerIsNotAWall: ; 2038
+    cmp byte [bp-0x7],ToggleFloor
     jnz .label5 ; ↓
-    mov byte [bx],0x25
+    mov byte [bx],ToggleWall
+
 .label5: ; 2041
-    push word [bp-0x6]
-    push word [bp-0x4]
+    ; update display?
+    push word [y]
+    push word [x]
     push word [bp+0x6]
-    call word 0x1c1c:0x1ca ; 204a
+    call word 0x1c1c:0x1ca ; 204a 2:0x1ca
     add sp,byte +0x6
-    add si,byte +0x4
+    ; check loop condition
+    add si,byte Point_size
     inc di
-    mov bx,[0x1680]
-    cmp [bx+0x932],di
-    jng .label6 ; ↓
-    jmp word .label1 ; ↑
-.label6: ; 2063
+    mov bx,[GameStatePtr]
+    cmp [bx+ToggleListLen],di
+    jng .end ; ↓
+    jmp word .loop ; ↑
+.end: ; 2063
     pop si
     pop di
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 206c
 

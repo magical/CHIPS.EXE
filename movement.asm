@@ -2003,7 +2003,7 @@ Six:
     nop
 .toggleButton: ; 109c
     push word [bp+0x6]
-    call word 0x10b8:0x1fac ; 109f
+    call word 0x10b8:0x1fac ; 109f 3:0x1fac PressToggleButton
     add sp,byte +0x2
     jmp short .label34
     nop
@@ -2750,7 +2750,7 @@ Seven:
 
 .toggleButton: ; 1724
     push word [hDC]
-    call word 0x173e:0x1fac ; 1727
+    call word 0x173e:0x1fac ; 1727 3:0x1fac PressToggleButton
     jmp short .label60
 
 .cloneButton: ; 172e
@@ -2808,7 +2808,7 @@ Seven:
     nop
 .label62: ; 17a0
     push word [hDC]
-    call word 0x17bc:0x1fac ; 17a3 3:0x1fac
+    call word 0x17bc:0x1fac ; 17a3 3:0x1fac PressToggleButton
     add sp,byte +0x2
     jmp short .label61
     nop
@@ -3302,7 +3302,7 @@ Eight:
     jmp word .autopsy
 .toggleButton: ; 1b70
     push word [unknown]
-    call word 0x1b8c:0x1fac ; 1b73 3:0x1fac
+    call word 0x1b8c:0x1fac ; 1b73 3:0x1fac PressToggleButton
     add sp,byte +0x2
     jmp word .autopsy
 .cloneButton: ; 1b7e
