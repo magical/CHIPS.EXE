@@ -3673,7 +3673,7 @@ func PressTankButton
     mov di,[es:bx+Monster.x]
     mov ax,[es:bx+Monster.y]
     mov [x],ax
-    ; get direction, indirectly from monster list
+    ; get direction from tile
     lea ax,[ydir]
     push ax
     lea cx,[xdir]
@@ -3737,12 +3737,12 @@ func PressTankButton
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
-    mov [es:bx+si],al
+    mov [es:bx+si+Monster.tile],al
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
-    mov al,[es:bx+si]
+    mov al,[es:bx+si+Monster.tile]
     mov bx,[GameStatePtr]
-    mov [bx+di],al
+    mov [bx+di+Upper],al
 .loopCheck: ; 1f8c
     add si,byte Monster_size
     inc word [index]
