@@ -879,7 +879,7 @@ func InitBoard
     shl bx,byte 0x2
     mov es,dx
     add bx,cx
-    mov [es:bx],si ; = x
+    mov [es:bx+Point.x],si ; = x
     mov bx,[GameStatePtr]
     mov bx,[bx+ToggleListLen]
     mov ax,bx
@@ -890,7 +890,7 @@ func InitBoard
     shl bx,byte 0x2
     mov es,dx
     add bx,cx
-    mov [es:bx+0x2],di ; = y
+    mov [es:bx+Point.y],di ; = y
     mov bx,[GameStatePtr]
     inc word [bx+ToggleListLen]
     jmp short .nextX

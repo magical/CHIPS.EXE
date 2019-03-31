@@ -80,6 +80,11 @@ MouseTargetY        equ 0xa3c
 ; a3e idle timer?
 ChipHasMoved        equ 0xa40
 
+STRUC Point
+    .x  resw 1
+    .y  resw 1
+ENDSTRUC
+
 STRUC Connection
     .fromX resw 1
     .fromY resw 1
