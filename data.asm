@@ -231,7 +231,7 @@ db 2,5,2,4,2,4  ; 0x1d IceWallSW
 db 2,0,0,0,0,0  ; 0x1e FakeFloor
 db 2,0,0,0,0,0  ; 0x1f FakeWall
 db 0,0,0,0,0,0  ; 0x20
-db 2,4,0,0,0,0  ; 0x21 Theif
+db 2,4,0,0,0,0  ; 0x21 Thief
 db 2,3,0,0,0,0  ; 0x22 Socket
 db 1,4,1,1,1,1  ; 0x23 ToggleButton
 db 1,4,1,1,1,1  ; 0x24 CloneButton

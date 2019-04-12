@@ -3202,7 +3202,7 @@ func ChipCanEnterTile
     dw .fakeFloor       ; FakeFloor
     dw .hiddenWall      ; FakeWall
     dw .nope            ; Unused20
-    dw .theif           ; Theif
+    dw .thief           ; Thief
     dw .socket          ; Socket
     dw .nope            ; ToggleButton
     dw .nope            ; CloneButton
@@ -3321,7 +3321,7 @@ func ChipCanEnterTile
     nop
 
 
-.theif: ; 1c24
+.thief: ; 1c24
     cmp word [flag1],byte +0x0
     jnz .label25 ; ↓
     jmp word .return1 ; ↑
