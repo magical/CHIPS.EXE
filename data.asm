@@ -1,5 +1,7 @@
 SEGMENT DATA ; 10
 
+[MAP SYMBOLS data.map]
+
 ; Variables
 
     dw 0 ; 0x0

@@ -22,6 +22,9 @@ data.bin: data.asm base.exe Makefile
 logic.bin: logic.asm base.exe constants.asm structs.asm variables.asm Makefile
 movement.bin: movement.asm constants.asm structs.asm variables.asm Makefile
 
+variables.asm: data.asm genvars.sh Makefile
+	sh genvars.sh >variables.asm
+
 movement.svg: tools/graph movement.asm
 	tools/graph <movement.asm | dot -Tsvg >movement.svg
 
