@@ -3846,187 +3846,184 @@ endfunc
 
 ; 206c
 
-Unknown206c:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; Finds multiple traps at x,y.
+; Returns the first and last index in the trap index (inclusive).
+func FindTrapSpan
+    %arg x:word, y:word, firstIndexOut:word, lastIndexOut:word
+
     sub sp,byte +0x2
     push di
     push si
+    ; look for a trap connected to the given x,y coordinates
     xor cx,cx
-    mov bx,[0x1680]
-    cmp [bx+0x93c],cx
+    mov bx,[GameStatePtr]
+    cmp [bx+TrapListLen],cx
     jg .label0 ; ↓
-    jmp word .label6 ; ↓
+    jmp word .returnZero ; ↓
 .label0: ; 208a
     mov si,bx
-    mov ax,[si+0x942]
-    mov dx,[si+0x944]
+    mov ax,[si+TrapListPtr]
+    mov dx,[si+TrapListSeg]
     add ax,0x4
     mov bx,ax
     mov es,dx
-    mov di,[bp+0x6]
-.label1: ; 209e
-    cmp [es:bx],di
+    mov di,[x]
+.loop1: ; 209e
+    cmp [es:bx+Connection.toX-4],di
     jnz .label2 ; ↓
-    mov ax,[bp+0x8]
-    cmp [es:bx+0x2],ax
-    jz .label3 ; ↓
+    mov ax,[y]
+    cmp [es:bx+Connection.toY-4],ax
+    jz .found ; ↓
 .label2: ; 20ac
-    add bx,byte +0xa
+    add bx,byte Connection_size
     inc cx
-    cmp [si+0x93c],cx
-    jg .label1 ; ↑
-    jmp short .label6 ; ↓
-.label3: ; 20b8
-    mov bx,[bp+0xa]
+    cmp [si+TrapListLen],cx
+    jg .loop1 ; ↑
+    jmp short .returnZero ; ↓
+
+.found: ; 20b8
+    ; index in cx
+    ; store found index in *firstIndexOut
+    mov bx,[firstIndexOut]
     mov [bx],cx
-    inc cx
-    mov bx,[0x1680]
-    cmp [bx+0x93c],cx
-    jng .label5 ; ↓
+
+    ; there might be a run of traps with the same destination  coordinates
+    ; look for where the run ends
+    inc cx ; index++
+    mov bx,[GameStatePtr]
+    cmp [bx+TrapListLen],cx
+    jng .break ; ↓
     mov si,bx
-    mov ax,[si+0x942]
-    mov dx,[si+0x944]
+    mov ax,[si+TrapListPtr]
+    mov dx,[si+TrapListSeg]
+    ; si = cx*10
     mov si,cx
     shl si,byte 0x2
     add si,cx
     shl si,1
+    ; si = &traplist[i] + 4
     add ax,si
     add ax,0x4
     mov bx,ax
     mov es,dx
-    mov di,[bp+0x8]
-.label4: ; 20e7
-    mov ax,[bp+0x6]
-    cmp [es:bx],ax
-    jnz .label5 ; ↓
-    cmp [es:bx+0x2],di
-    jnz .label5 ; ↓
-    add bx,byte +0xa
+    mov di,[y]
+.loop2: ; 20e7
+    mov ax,[x]
+    cmp [es:bx+Connection.toX-4],ax
+    jnz .break ; ↓
+    cmp [es:bx+Connection.toY-4],di
+    jnz .break ; ↓
+    add bx,byte Connection_size
     inc cx
-    mov si,[0x1680]
-    cmp [si+0x93c],cx
-    jg .label4 ; ↑
-.label5: ; 2103
+    mov si,[GameStatePtr]
+    cmp [si+TrapListLen],cx
+    jg .loop2 ; ↑
+.break: ; 2103
+    ; store i-1 in *lastIndexOut
     dec cx
-    mov bx,[bp+0xc]
+    mov bx,[lastIndexOut]
     mov [bx],cx
     mov ax,0x1
-    jmp short .label7 ; ↓
-.label6: ; 210e
+    jmp short .end ; ↓
+.returnZero: ; 210e
     xor ax,ax
-.label7: ; 2110
+.end: ; 2110
     pop si
     pop di
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 211a
 
-PressTrapButton:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func PressTrapButton
+    %arg x:word, y:word, arg:word
+    %define firstTrap (bp-0x6)
+    %define lastTrap (bp-0x4)
     sub sp,byte +0x6
     push si
-    push word [bp+0xa]
-    push byte +0x9
-    call word 0x1bc5:0x56c ; 212d
+    push word [arg]
+    push byte SwitchSound
+    call word 0x1bc5:0x56c ; 212d 8:0x56c PlaySoundEffect
     add sp,byte +0x4
-    push word [bp+0x8]
-    push word [bp+0x6]
-    call word 0x216f:0x2270 ; 213b
+    push word [y]
+    push word [x]
+    call word 0x216f:0x2270 ; 213b 3:0x2270
     add sp,byte +0x4
     mov si,ax
     or si,si
-    jl .label1 ; ↓
-    lea ax,[bp-0x4]
+    jl .end ; ↓
+    lea ax,[lastTrap]
     push ax
-    lea ax,[bp-0x6]
+    lea ax,[firstTrap]
     push ax
     mov ax,si
     shl si,byte 0x2
     add si,ax
     shl si,1
-    mov bx,[0x1680]
-    les bx,[bx+0x942]
+    mov bx,[GameStatePtr]
+    les bx,[bx+TrapListPtr]
     add bx,si
-    push word [es:bx+0x6]
-    push word [es:bx+0x4]
-    call word 0x21ca:0x206c ; 216c
+    push word [es:bx+Connection.toY]
+    push word [es:bx+Connection.toX]
+    call word 0x21ca:0x206c ; 216c 2:0x206c FindTrapSpan
     add sp,byte +0x8
     or ax,ax
-    jz .label1 ; ↓
-    mov cx,[bp-0x6]
-    cmp cx,[bp-0x4]
-    jg .label1 ; ↓
+    jz .end ; ↓
+
+    ; set flag = 0 for all traps between first and last
+    mov cx,[firstTrap]
+    cmp cx,[lastTrap]
+    jg .end ; ↓
     mov bx,cx
     mov ax,cx
     shl bx,byte 0x2
     add bx,ax
     shl bx,1
-.label0: ; 218b
-    mov si,[0x1680]
-    les si,[si+0x942]
-    mov word [es:bx+si+0x8],0x0
-    add bx,byte +0xa
+.loop: ; 218b
+    mov si,[GameStatePtr]
+    les si,[si+TrapListPtr]
+    mov word [es:bx+si+Connection.flag],0x0
+    add bx,byte Connection_size
     inc cx
-    cmp cx,[bp-0x4]
-    jng .label0 ; ↑
-.label1: ; 21a2
+    cmp cx,[lastTrap]
+    jng .loop ; ↑
+.end: ; 21a2
     pop si
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 21aa
 
-ActivateTrap:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func EnterTrap
     sub sp,byte +0xa
     push di
     push si
-    lea ax,[bp-0x4]
+    %arg xdest:word, ydest:word, xsrc:word, ysrc:word
+    %define firstTrap (bp-0x6)
+    %define lastTrap (bp-0x4)
+
+    lea ax,[lastTrap]
     push ax
-    lea ax,[bp-0x6]
+    lea ax,[firstTrap]
     push ax
-    push word [bp+0x8]
-    push word [bp+0x6]
-    call word 0x234d:0x206c ; 21c7
+    push word [ydest]
+    push word [xdest]
+    call word 0x234d:0x206c ; 21c7 3:0x206c FindTrapSpan
     add sp,byte +0x8
     or ax,ax
     jnz .label0 ; ↓
-    jmp word .label6 ; ↓
+    jmp word .end ; ↓
 .label0: ; 21d6
     mov di,0x1
-    mov cx,[bp-0x6]
-    cmp cx,[bp-0x4]
+    mov cx,[firstTrap]
+    cmp cx,[lastTrap]
     jg .label4 ; ↓
     mov [bp-0x8],di
-    mov si,[0x1680]
-    mov ax,[si+0x942]
-    mov dx,[si+0x944]
+    ;
+    mov si,[GameStatePtr]
+    mov ax,[si+TrapListPtr]
+    mov dx,[si+TrapListSeg]
+    ; si = cx*10
     mov si,cx
     shl si,byte 0x2
     add si,cx
@@ -4035,51 +4032,55 @@ ActivateTrap:
     add ax,0x2
     mov bx,ax
     mov es,dx
-    mov di,[bp+0xa]
-.label1: ; 2205
-    lea si,[bx-0x2]
+    mov di,[xsrc]
+.loop1: ; 2205
+    lea si,[bx+Connection.fromX-0x2]
     mov ax,[es:si]
     mov [bp-0xa],ax
-    mov si,[es:bx]
+    mov si,[es:bx+Connection.fromY-0x2]
+    ; look up connection src coords & check if there is a trap button in the
+    ; upper layer
     shl si,byte 0x5
     add si,ax
-    add si,[0x1680]
-    cmp byte [si],0x27
-    jz .label2 ; ↓
+    add si,[GameStatePtr]
+    cmp byte [si],TrapButton
+    jz .continue ; ↓
+    ; do the provided src coords match the connection coords?
     cmp ax,di
-    jnz .label3 ; ↓
-    mov ax,[bp+0xc]
+    jnz .break1 ; ↓
+    mov ax,[ysrc]
     cmp [es:bx],ax
-    jnz .label3 ; ↓
-.label2: ; 222b
-    add bx,byte +0xa
+    jnz .break1 ; ↓
+.continue: ; 222b
+    add bx,byte Connection_size
     inc cx
-    cmp cx,[bp-0x4]
-    jng .label1 ; ↑
+    cmp cx,[lastTrap]
+    jng .loop1 ; ↑
     mov di,[bp-0x8]
     jmp short .label4 ; ↓
     nop
-.label3: ; 223a
+.break1: ; 223a
     xor di,di
 .label4: ; 223c
-    mov ax,[bp-0x6]
+    ; Update status of all connected traps
+    mov ax,[firstTrap]
     mov cx,ax
-    cmp [bp-0x4],ax
-    jl .label6 ; ↓
+    cmp [lastTrap],ax
+    jl .end ; ↓
     mov bx,ax
     shl bx,byte 0x2
     add bx,ax
     shl bx,1
     mov [bp-0x8],di
-.label5: ; 2252
-    mov si,[0x1680]
-    les si,[si+0x942]
-    mov [es:bx+si+0x8],di
-    add bx,byte +0xa
+.loop2: ; 2252
+    mov si,[GameStatePtr]
+    les si,[si+TrapListPtr]
+    mov [es:bx+si+Connection.flag],di
+    add bx,byte Connection_size
     inc cx
-    cmp cx,[bp-0x4]
-    jng .label5 ; ↑
-.label6: ; 2267
+    cmp cx,[lastTrap]
+    jng .loop2 ; ↑
+.end: ; 2267
     pop si
     pop di
     lea sp,[bp-0x2]
@@ -4090,7 +4091,10 @@ ActivateTrap:
 
 ; 2270
 
-Unknown2270:
+; Finds the trap connection associated with a button at the given coordinates.
+; Returns index into the trap list or -1.
+FindTrapByButton:
+    %arg x:word, y:word
     mov ax,ds
     nop
     inc bp
@@ -4102,11 +4106,11 @@ Unknown2270:
     push di
     push si
     xor cx,cx
-    mov bx,[0x1680]
-    cmp [bx+0x93c],cx
+    mov bx,[GameStatePtr]
+    cmp [bx+TrapListLen],cx
     jng .label3 ; ↓
     mov si,bx
-    les bx,[si+0x942]
+    les bx,[si+TrapListPtr]
     mov di,[bp+0x6]
 .label0: ; 2294
     cmp [es:bx],di
@@ -4117,7 +4121,7 @@ Unknown2270:
 .label1: ; 22a2
     add bx,byte +0xa
     inc cx
-    cmp [si+0x93c],cx
+    cmp [si+TrapListLen],cx
     jg .label0 ; ↑
     jmp short .label3 ; ↓
 .label2: ; 22ae
@@ -4137,6 +4141,7 @@ Unknown2270:
 ; 22be
 
 ; Search trap list for trap at x,y
+; Returns an index.
 func FindTrap
     %arg x:word, y:word
     sub sp,byte +0x2
@@ -4179,7 +4184,75 @@ endfunc
 
 ; 2318
 
-INCBIN "base.exe", 0x6200+0x2318, 0x295e-0x2318
+func AddTrap_Unused
+    sub sp,byte +0x2
+    push si
+    mov bx,[GameStatePtr]
+    mov ax,[bx+0x93e]
+    cmp [bx+0x93c],ax
+    jl .label0 ; ↓
+    push byte Connection_size
+    push byte +0x8
+    mov ax,bx
+    add ax,TrapListCap
+    push ax
+    mov ax,bx
+    add ax,TrapListPtr
+    push ax
+    mov ax,bx
+    add ax,TrapListHandle
+    push ax
+    call word 0x2467:0x1a4 ; 234a 3:0x1a4 GrowArray
+    add sp,byte +0xa
+    or ax,ax
+    jnz .label0 ; ↓
+    mov ax,0xffff
+    jmp short .label1 ; ↓
+    nop
+.label0: ; 235c
+    mov si,[GameStatePtr]
+    mov bx,[si+TrapListLen]
+    inc word [si+TrapListLen]
+    mov ax,[bp+0x6]
+    mov si,bx
+    mov dx,bx
+    mov cx,bx
+    shl si,byte 0x2
+    add si,cx
+    shl si,1
+    mov bx,[GameStatePtr]
+    les bx,[bx+TrapListPtr]
+    mov [es:bx+si+Connection.fromX],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+TrapListPtr]
+    mov ax,[bp+0x8]
+    mov [es:bx+si+Connection.fromY],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+TrapListPtr]
+    mov word [es:bx+si+Connection.toX],-1
+    mov bx,[GameStatePtr]
+    les bx,[bx+TrapListPtr]
+    mov word [es:bx+si+Connection.toY],-1
+    mov bx,[GameStatePtr]
+    les bx,[bx+TrapListPtr]
+    mov word [es:bx+si+Connection.flag],0x0
+    mov ax,dx
+.label1: ; 23be
+    pop si
+    lea sp,[bp-0x2]
+endfunc
+
+; 23c6
+; DeleteTrap_Unused
+
+; 2442 PressCloneButton
+; 260e FindCloneMachine
+; 265c AddCloneMachine (unused)
+; 26f6 DeleteCloneMachine (unused)
+; 276a EnterTeleport
+; 2910 FindTeleport
+
+INCBIN "base.exe", 0x6200+0x23c6, 0x295e-0x23c6
 
 ; 295e
 func AddTeleport
@@ -4232,7 +4305,8 @@ func AddTeleport
 endfunc
 
 ; 29dc
-func DeleteTeleport
+
+func DeleteTeleport_Unused
     sub sp,byte +0x2
     push si
 

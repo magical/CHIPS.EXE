@@ -47,7 +47,8 @@ ToggleListSeg       equ 0x93a
 ; Trap connections
 ; See Connection
 TrapListLen         equ 0x93c
-TrapListCap         equ 0x940
+TrapListCap         equ 0x93e
+TrapListHandle      equ 0x940
 TrapListPtr         equ 0x942
 TrapListSeg         equ 0x944
 ; no handle?
