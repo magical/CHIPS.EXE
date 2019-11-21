@@ -87,11 +87,11 @@ STRUC Point
 ENDSTRUC
 
 STRUC Connection
-    .fromX resw 1
-    .fromY resw 1
-    .toX   resw 1
-    .toY   resw 1
-    .flag resw 1
+    .fromX resw 1       ; 0x0
+    .fromY resw 1       ; 0x2
+    .toX   resw 1       ; 0x4
+    .toY   resw 1       ; 0x6
+    .flag resw 1        ; 0x8
 ENDSTRUC
 
 STRUC Monster
