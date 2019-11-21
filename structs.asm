@@ -54,14 +54,13 @@ TrapListCap         equ 0x93e
 TrapListHandle      equ 0x940
 TrapListPtr         equ 0x942
 TrapListSeg         equ 0x944
-; no handle?
-; probably no cap, actually
 
-; 946
-; 948
-; 94a
-; 94c
-; 94e
+; Clone machine connections
+CloneListLen        equ 0x946
+CloneListCap        equ 0x948
+CloneListHandle     equ 0x94a
+CloneListPtr        equ 0x94c
+CloneListSeg        equ 0x94e
 
 ; Teleports
 ; x, y
