@@ -16,6 +16,7 @@ FireBootCount   equ 0x168c
 IceSkateCount   equ 0x168e
 SuctionBootCount equ 0x1690
 ChipsRemainingCount equ 0x1692
+TimeRemaining   equ 0x1694
 
 GreatJobChipMsg equ 0xc6e
 MelindaHerselfMsg equ 0xca8

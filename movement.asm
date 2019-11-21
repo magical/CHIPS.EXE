@@ -669,7 +669,7 @@ One:
     call word 0x0:0xffff ; 5b8 USER.ReleaseDC
 
     ; countdown timer?
-    cmp word [0x1694],byte +0x0
+    cmp word [TimeRemaining],byte +0x0
     jng .end
     cmp word [bp+0x6],byte +0x0
     jz .end
@@ -679,8 +679,8 @@ One:
     div cx
     or dx,dx
     jnz .end
-    dec word [0x1694]
-    cmp word [0x1694],byte +0xf
+    dec word [TimeRemaining]
+    cmp word [TimeRemaining],byte +0xf
     jg .label71
     push byte +0x1
     push byte TickSound
@@ -690,7 +690,7 @@ One:
     push byte +0x1
     call word 0x619:0xcbe ; 5f1 2:cbe
     add sp,byte +0x2
-    cmp word [0x1694],byte +0x0
+    cmp word [TimeRemaining],byte +0x0
     jnz .end
     push byte +0x1
     push byte ChipDeathByTimeSound
