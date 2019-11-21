@@ -5,6 +5,9 @@ Upper               equ 0x0
 Lower               equ 0x400
 
 LevelNumber         equ 0x800
+NumLevelsInSet      equ 0x802
+InitialTimeLimit    equ 0x804
+InitialChipsRemainingCount equ 0x806
 ChipX               equ 0x808
 ChipY               equ 0x80a
 IsSliding           equ 0x80c
