@@ -392,7 +392,7 @@ Level130Message db "'I've made it this far,' Chip thinks. 'Totally fair, with my
 Level140Message db "Groov-u-loids! Chip makes it almost to the end. He's stoked!", 0
 
 Chipend db "chipend", 0
-db "chipend", 0
+Chipend2 db "chipend", 0
 db "DLG_COMPLETE", 0
 db 0
 db "MIDI Error on file %s: ", 0
@@ -465,18 +465,20 @@ GameStatePtr dw 0   ; 1680
 
 BlueKeyCount dw 0 ; 1682
 RedKeyCount dw 0 ; 1684
-GreenKeyCount dw 0; 1686
+GreenKeyCount dw 0 ; 1686
 YellowKeyCount dw 0 ; 1688
 
-HaveFlippers dw 0 ; 168a
-HaveFireBoots dw 0 ; 168c
-HaveIceSkates dw 0 ; 168e
-HaveSuctionBoots dw 0 ; 1690
+FlipperCount dw 0 ; 168a
+FireBootCount dw 0 ; 168c
+IceSkateCount dw 0 ; 168e
+SuctionBootCount dw 0 ; 1690
 
-    dw 0 ; 1692
-    dw 0 ; 1694 level timer?
+ChipsRemainingCount dw 0 ; 1692
+TimeRemaining dw 0 ; 1694
 
-times 45 dw 0 ; 1696
+TotalScore dw 0 ; 1696
+
+times 44 dw 0 ; 1698
 
 ; seg5.asm
 ;   169e    ???
