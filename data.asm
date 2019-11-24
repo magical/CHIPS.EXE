@@ -13,23 +13,24 @@ SEGMENT DATA ; 10
     dw 0 ; 0xc
     dw 0 ; 0xe
 
-    dw 0 ; 0x10 HWND main window
-hWnd    dw 0 ; 0x12 HWND
-    dw 0 ; 0x14
-    dw 0 ; 0x16
+hwndMain     dw 0 ; 0x10 HWND main window
+hwndBoard    dw 0 ; 0x12 HWND board window
+hwndInfo     dw 0 ; 0x14
+hwndCounter  dw 0 ; 0x16
     dw 0 ; 0x18
     dw 0 ; 0x1a
-    dw 0 ; 0x1c
-    dw 0 ; 0x1e
+hwndInventory  dw 0 ; 0x1c
 
-    dw 0 ; 0x20
+hwndHint     dw 0 ; 0x1e
+
+    dw 0 ; 0x20 ; inventory changed
     dw 0 ; 0x22 *
-    dw 0 ; 0x24
+GamePaused   dw 0 ; 0x24
     dw 0 ; 0x26 HMENU
     dw 0 ; 0x28
     dw 0 ; 0x2a
     dw 0 ; 0x2c
-    dw 0 ; 0x2e
+    dw 0 ; 0x2e ; passwords disabled
 
     dw 0 ; 0x30
     dw 0 ; 0x32

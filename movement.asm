@@ -29,7 +29,7 @@ One:
     %define ydir (bp-0x4)
 
     ; get the device context
-    push word [hWnd]    ; hWnd
+    push word [hwndBoard]    ; hWnd
     call word 0x0:0xffff ; 13 KERNEL.GetDC
     mov [hDC],ax
 
@@ -1290,7 +1290,7 @@ Four:
     %define flag (bp+0x6)
     %define nLevelsCompleted (bp-0x4)
 
-    push word [hWnd]
+    push word [hwndBoard]
     call word 0x0:0x14 ; a88 USER.GetDC
     mov [hDC],ax
     mov bx,[GameStatePtr]
@@ -1539,7 +1539,7 @@ Four:
     jz .label19
     inc word [bx+EndingTick]
 .label19: ; cb5
-    push word [hWnd]
+    push word [hwndBoard]
     push word [hDC]
     call word 0x0:0x5b9 ; cbc USER.ReleaseDC
     pop si
@@ -2868,7 +2868,7 @@ Seven:
     push byte LevelCompleteSound
     call word 0x185b:0x56c ; 182d 8:56c
     add sp,byte +0x4
-    push word [hWnd] ; hWnd
+    push word [hwndBoard] ; hWnd
     call word 0x13ab:0xcca ; 1839 7:cca EndLevel
     add sp,byte +0x2
     ; return 1
