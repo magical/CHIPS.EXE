@@ -31,17 +31,17 @@ InitGraphics:
 
     mov si,[bp+6] ; ???
     push byte +0x0 ; NULL
-    call word 0x0:0xffff ; 13 USER.GetDC
+    call 0x0:0xffff ; 13 USER.GetDC
     mov [hDC],ax
 
     push ax
     push byte +0x8 ; HORZRES
-    call word 0x0:0x2c ; 1e GDI.GetDeviceCaps
+    call 0x0:0x2c ; 1e GDI.GetDeviceCaps
     mov [0x16c0],ax
 
     push word [hDC]
     push byte +0xa ; VERTRES
-    call word 0x0:0x71 ; 2b GDI.GetDeviceCaps
+    call 0x0:0x71 ; 2b GDI.GetDeviceCaps
     mov [0x16c2],ax
 
     mov word [0x169e],0x20 ;???
@@ -58,7 +58,7 @@ InitGraphics:
     or si,si
     jz .label2
     push byte ID_COLOR
-    call word 0xffff:0x198e ; 50 2:0x198e
+    call 0xffff:0x198e ; 50 2:0x198e
     add sp,byte +0x2
     or ax,ax
     jnz .label2
@@ -73,18 +73,18 @@ InitGraphics:
     jz .checkRastercaps
     push word [hDC]
     push byte +0x18 ; NUMCOLORS
-    call word 0x0:0x80 ; 70 GDI.GetDeviceCaps
+    call 0x0:0x80 ; 70 GDI.GetDeviceCaps
     cmp ax,0x2
     jng .useMonochrome
 .checkRastercaps: ; 7a
     push word [hDC]
     push byte +0x26 ; RASTERCAPS
-    call word 0x0:0x8f ; 7f GDI.GetDeviceCaps
+    call 0x0:0x8f ; 7f GDI.GetDeviceCaps
     test ah,0x1 ; RC_BITBLT
     jz .checkVertRes
     push word [hDC]
     push byte +0x68 ; SIZEPALETTE
-    call word 0x0:0xffff ; 8e GDI.GetDeviceCaps
+    call 0x0:0xffff ; 8e GDI.GetDeviceCaps
     cmp ax,0x100
     jl .checkVertRes
     mov word [0xa18],0x4
@@ -105,10 +105,10 @@ InitGraphics:
 .releaseDC: ; bc
     push byte +0x0
     push word [hDC]
-    call word 0x0:0xffff ; c1 USER.ReleaseDC
+    call 0x0:0xffff ; c1 USER.ReleaseDC
 
     ; ax = (GetVersion() >= 3.10)
-    call word 0x0:0xffff ; c6 KERNEL.GetVersion
+    call 0x0:0xffff ; c6 KERNEL.GetVersion
     ; swap low byte and high byte
     mov si,ax
     mov al,ah
@@ -136,10 +136,10 @@ InitGraphics:
     xor ax,ax   ; MF_UNCHECKED
 .label13: ; fa
     push ax                 ; uCheck
-    call word 0x0:0xffff ; fb USER.CheckMenuItem
+    call 0x0:0xffff ; fb USER.CheckMenuItem
 
     push word [hwndMain]
-    call word 0x0:0xffff ; 104 USER.DrawMenuBar
+    call 0x0:0xffff ; 104 USER.DrawMenuBar
     pop si
     lea sp,[bp-0x2]
     pop ds
@@ -191,13 +191,13 @@ LoadTiles:
     push word 0xa22 ; "obj32_4E"
 
 .loadBitmap: ; 152
-    call word 0x0:0xffff ; 152 USER.LoadBitmap
+    call 0x0:0xffff ; 152 USER.LoadBitmap
     mov [si],ax
     or ax,ax
     jz .failure
     cmp word [loadDigits],byte +0x0
     jnz .label18
-    call word 0xffff:0x4e ; 163 9:0x4e LoadDigits
+    call 0xffff:0x4e ; 163 9:0x4e LoadDigits
     or ax,ax
     jz .failure
 .label18: ; 16c
@@ -231,14 +231,14 @@ FreeTiles:
     cmp word [0xa14],byte +0x0
     jz .hObjectIsNull
     push word [0xa14]
-    call word 0x0:0xffff ; 194 GDI.DeleteObject
+    call 0x0:0xffff ; 194 GDI.DeleteObject
     mov word [0xa14],0x0
 .hObjectIsNull: ; 19f
 
     cmp word [0xa16],byte +0x0
     jz .pointerIsNull
     push word [0xa16]
-    call word 0x0:0xffff ; 1aa KERNEL.LocalFree
+    call 0x0:0xffff ; 1aa KERNEL.LocalFree
     mov word [0xa16],0x0
 .pointerIsNull: ; 1b5
 

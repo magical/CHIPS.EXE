@@ -29,7 +29,7 @@ MZRelocTable:
 ALIGN 512, db 0
 
 MZEntry:
-    call word MZStub
+    call MZStub
 
     db "This program requires Microsoft Windows.", 13, 10, "$"
     times 0x28 db " "

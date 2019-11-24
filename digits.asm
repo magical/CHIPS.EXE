@@ -33,7 +33,7 @@ FindBitmap:
     push ax
     push dx             ; lpType
     push byte +0x2 ; RT_BITMAP
-    call word 0x0:0xffff ; 1b KERNEL.FindResource
+    call 0x0:0xffff ; 1b KERNEL.FindResource
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -94,25 +94,25 @@ LoadDigits:
     push si
 
     push word 200       ; ID of the digits resource
-    call word 0x8f:0x0  ; 60 9:0 FindBitmap
+    call 0x8f:0x0  ; 60 9:0 FindBitmap
     add sp,byte +0x2
     mov si,ax
 
     push word [0x172a]  ; hModule
     push si             ; hResInfo
-    call word 0x0:0xffff ; 6f KERNEL.LoadResource
+    call 0x0:0xffff ; 6f KERNEL.LoadResource
     mov [0x1720],ax
 
     or ax,ax
     jz .end
     push ax             ; hResInfo
-    call word 0x0:0xffff ; 7c KERNEL.LockResource
+    call 0x0:0xffff ; 7c KERNEL.LockResource
     mov [0x16c4],ax
     mov [0x16c6],dx
 
     push byte DigitHeight ; y dimension of digits
     push byte DigitWidth ; x dimension of digits
-    call word 0xffff:0x28 ; 8c 9:0x28 BitmapSize
+    call 0xffff:0x28 ; 8c 9:0x28 BitmapSize
     add sp,byte +0x4
 
     ; Store near pointers to digits at 0x16f0
@@ -150,9 +150,9 @@ FreeDigits:
     cmp word [0x1720],byte +0x0
     jz .null
     push word [0x1720]
-    call word 0x0:0xffff ; d4 KERNEL.GlobalUnlock
+    call 0x0:0xffff ; d4 KERNEL.GlobalUnlock
     push word [0x1720]
-    call word 0x0:0xffff ; dd KERNEL.FreeResource
+    call 0x0:0xffff ; dd KERNEL.FreeResource
 .null: ; e2
     lea sp,[bp-0x2]
     pop ds
@@ -208,7 +208,7 @@ DrawDigit:
     push dx             ; lpbmi
     push word [0x16c4]
     push byte +0x0      ; fuColorUse
-    call word 0x0:0xffff ; 143 GDI.SetDIBitsToDevice
+    call 0x0:0xffff ; 143 GDI.SetDIBitsToDevice
     lea sp,[bp-0x2]
     pop ds
     pop bp
