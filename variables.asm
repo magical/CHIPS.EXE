@@ -47,6 +47,7 @@ TileTable                           equ 0x66C
 HicolorTiles                        equ 0xA1A
 LocolorTiles                        equ 0xA22
 MonochromeTiles                     equ 0xA2B
+DebugModeEnabled                    equ 0xA34
 GreatJobChipMsg                     equ 0xC6E
 MelindaHerselfMsg                   equ 0xCA8
 YouCompletedNLevelsMsg              equ 0xD44

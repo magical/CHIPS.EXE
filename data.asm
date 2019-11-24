@@ -331,8 +331,12 @@ HicolorTiles    db "obj32_4", 0
 LocolorTiles    db "obj32_4E", 0
 MonochromeTiles db "obj32_1", 0, 0
 
-; a34
-dw 0
+; if this is set to nonzero, the viewport will be fixed in place
+; at the top left of the map; maybe some other effects?
+DebugModeEnabled dw 0 ; a34
+
+; a36
+
 db "You must enter a level and/or password.", 0
 db "You must enter a valid password.", 0, 0
 db "That is not a valid level number.", 0
