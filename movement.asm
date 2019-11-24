@@ -1414,7 +1414,7 @@ Four:
     push byte +0x0
     push ds
     push word GreatJobChipMsg
-    push word [0x10]
+    push word [hwndMain]
     call word 0xbe4:0x0 ; b7e 2:0
     add sp,byte +0x8
     push word [0x172a]
@@ -1448,7 +1448,7 @@ Four:
     push byte +0x0
     push ds
     push word MelindaHerselfMsg
-    push word [0x10]
+    push word [hwndMain]
     call word 0xbfb:0x0 ; be1 2:0
     add sp,byte +0x8
 
@@ -1489,7 +1489,7 @@ Four:
     lea ax,[bp-0x19e]
     push ss
     push ax
-    push word [0x10]
+    push word [hwndMain]
     call word 0xcdc:0x0 ; c3f 2:0
     add sp,byte +0x8
     jmp short .done
@@ -1613,7 +1613,7 @@ Five:
     shl si,1
     push ds
     push word [DecadeMessages + si - 5*2]
-    push word [0x10]
+    push word [hwndMain]
     call word 0xd59:0x0 ; d4e 2:0x0
     add sp,byte +0x8
 

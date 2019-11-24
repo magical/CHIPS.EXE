@@ -13,6 +13,7 @@ SEGMENT CODE ; 5
 ;   172e    BOOL    records whether windows version >= 3.10
 
 %include "constants.asm"
+%include "variables.asm"
 
 InitGraphics:
     mov ax,ds
@@ -137,7 +138,7 @@ InitGraphics:
     push ax                 ; uCheck
     call word 0x0:0xffff ; fb USER.CheckMenuItem
 
-    push word [0x10]
+    push word [hwndMain]
     call word 0x0:0xffff ; 104 USER.DrawMenuBar
     pop si
     lea sp,[bp-0x2]
