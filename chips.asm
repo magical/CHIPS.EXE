@@ -274,7 +274,36 @@ Segment4: INCBIN "base.exe", 0x8e00, 0x1400
 ; a200
 Segment5:
     INCBIN "seg5.bin"
-    INCBIN "base.exe", 0xa3bc, 0x5a
+
+    ; Relocation info
+    dw 11 ; number of entries
+    %macro reloc_segment 2
+        db 2 ; relocation type = SEGMENT
+        db 0 ; flags = INTERNALREF
+        dw %1 ; offset to first relocation
+        db %2 ; target segment
+        db 0
+        dw 0  ; offset into segment(?)
+    %endmacro
+    %macro reloc_ordinal 3
+        db 3 ; relocation type = FARADDR
+        db 1 ; flags = IMPORTORDINAL
+        dw %1 ; offset to first relocation
+        dw %2 ; index into module reference table
+        dw %3 ; procedure ordinal number
+    %endmacro
+    reloc_segment 0x53, 2
+    reloc_ordinal 0xc7, 1, 3 ; KERNEL.GetVersion
+    reloc_ordinal 0x1ab, 1, 7 ; KERNEL.LocalFree
+    reloc_segment 0x166, 9
+    reloc_ordinal 0xfc, 3, 0x9a ; USER.CheckMenuItem
+    reloc_ordinal 0x105, 3, 0xa0 ; USER.DrawMenuBar
+    reloc_ordinal 0x153, 3, 0xaf ; USER.LoadBitmap
+    reloc_ordinal 0x195, 2, 0x45 ; GDI.DeleteObject
+    reloc_ordinal 0x14, 3, 0x42 ; USER.GetDC
+    reloc_ordinal 0xc2, 3, 0x44 ; USER.ReleaseDC
+    reloc_ordinal 0x1f, 2, 0x50 ; GDI.GetDeviceCaps
+
     ALIGN 512, db 0
 
 Segment6: INCBIN "base.exe", 0xa600, 0x800
