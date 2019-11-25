@@ -70,7 +70,7 @@ DoTick:
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push ax
-    call 0x11e:0x1184 ; 61 7:1184 MoveChip
+    call 0x11e:MoveChip ; 61 7:1184
     add sp,byte +0xa
 .label6: ; 69
     ; ...and clear the keystroke regardless
@@ -167,7 +167,7 @@ DoTick:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x19d:0x1184 ; 11b 7:1184 MoveChip
+    call 0x19d:MoveChip ; 11b 7:1184
     add sp,byte +0xa
     or ax,ax
     ; If we succeeded, or chip died, go deal with it
@@ -236,7 +236,7 @@ DoTick:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x2aa:0x1184 ; 19a 7:1184 MoveChip
+    call 0x2aa:MoveChip ; 19a 7:1184
     add sp,byte +0xa
     or ax,ax
     jnz .dead
@@ -358,7 +358,7 @@ DoTick:
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push ax
-    call 0x2ed:0x1184 ; 2a7 7:1184 MoveChip
+    call 0x2ed:MoveChip ; 2a7 7:1184
     add sp,byte +0xa
 .label36: ; 2af
     ; ...if chip /is/ dead, clear the keystroke and mouse target instead.
@@ -386,7 +386,7 @@ DoTick:
     push word [bx+SlideY]
     push word [bx+SlideX]
     push word [hDC]
-    call 0x33b:0x1184 ; 2ea 7:1184 MoveChip
+    call 0x33b:MoveChip ; 2ea 7:1184
     add sp,byte +0xa
     or ax,ax
     jz .label39
@@ -413,7 +413,7 @@ DoTick:
     push word [bx+ChipX]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x356:0x636 ; 338 7:636 slide movement
+    call 0x356:SlideMovement ; 338 7:636
     add sp,byte +0x10
     push byte +0x1
     push byte +0x0
@@ -421,7 +421,7 @@ DoTick:
     push word [bx+SlideY]
     push word [bx+SlideX]
     push word [hDC]
-    call 0x398:0x1184 ; 353 7:1184 MoveChip
+    call 0x398:MoveChip ; 353 7:1184
     add sp,byte +0xa
     or ax,ax
     jnz .moveChipAfterSliding
@@ -442,7 +442,7 @@ DoTick:
     push word [bx+ChipX]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0xffff:0x636 ; 395
+    call 0xffff:SlideMovement ; 395 7:0x636
     add sp,byte +0x10
 
     ; Allow chip to get a move in after sliding
@@ -474,7 +474,7 @@ DoTick:
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push word [hDC]
-    call 0x4b8:0x1184 ; 3ea 7:1184 MoveChip
+    call 0x4b8:MoveChip ; 3ea 7:1184
     add sp,byte +0xa
 .label44: ; 3f2
     mov bx,[GameStatePtr]
@@ -560,7 +560,7 @@ DoTick:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x56a:0x1184 ; 4b5 7:1184 MoveChip
+    call 0x56a:MoveChip ; 4b5 7:1184
     add sp,byte +0xa
     or ax,ax
     jz .label59
@@ -635,7 +635,7 @@ DoTick:
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x64:0x1184 ; 567 7:1184 MoveChip
+    call 0x64:MoveChip ; 567 7:1184
     add sp,byte +0xa
     or ax,ax
     jnz .label55
@@ -1366,7 +1366,7 @@ EndGame:
 
 .callDrawTile: ; b0c
     push word [hDC]
-    call 0x3ed:0x966 ; b0f 7:966 DrawTile
+    call 0x3ed:DrawTile ; b0f 7:966
     add sp,byte +0xe
     jmp word .done
 
@@ -1827,7 +1827,7 @@ MoveBlock:
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xf8f:0x636 ; ee6
+    call 0xf8f:SlideMovement ; ee6 7:0x636
     add sp,byte +0x10
 
 .action1: ; eee
@@ -1895,7 +1895,7 @@ MoveBlock:
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xfe4:0x636 ; f8c
+    call 0xfe4:SlideMovement ; f8c 7:0x636
     add sp,byte +0x10
 .label25: ; f94
     push word [ysrc]
@@ -1928,7 +1928,7 @@ MoveBlock:
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xb12:0x636 ; fe1
+    call 0xb12:SlideMovement ; fe1 7:0x636
     add sp,byte +0x10
     mov bx,[ydest]
     shl bx,byte 0x5
@@ -2386,7 +2386,7 @@ MoveChip:
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x15b4:0xdae ; 13a8 7:dae MoveBlock
+    call 0x15b4:MoveBlock ; 13a8 7:dae
     add sp,byte +0xe
     mov [blocktmp],ax
     mov bx,[GameStatePtr]
@@ -2597,7 +2597,7 @@ MoveChip:
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0xee9:0x636 ; 15b1 SlideMovement
+    call 0xee9:SlideMovement ; 15b1 7:0x636
     add sp,byte +0x10
     mov bx,[GameStatePtr]
     cmp word [bx+IsBuffered],byte +0x0
@@ -2658,7 +2658,7 @@ MoveChip:
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x183c:0x636 ; 1652 SlideMovement
+    call 0x183c:SlideMovement ; 1652 7:0x636
     add sp,byte +0x10
     mov word [action],0x5
     ; fallthrough
@@ -2875,7 +2875,7 @@ MoveChip:
     call 0x185b:0x56c ; 182d 8:56c
     add sp,byte +0x4
     push word [hwndBoard] ; hWnd
-    call 0x13ab:0xcca ; 1839 7:cca EndLevel
+    call 0x13ab:EndLevel ; 1839 7:cca
     add sp,byte +0x2
     ; return 1
     mov ax,0x1
@@ -3149,7 +3149,7 @@ MoveMonster:
     push word [xdest]
     push si ; ysrc
     push di ; xsrc
-    call 0x1ac4:0x636 ; 1a12 7:0x636 SlideMovement
+    call 0x1ac4:SlideMovement ; 1a12 7:0x636
     add sp,byte +0x10
     jmp short .label13
 
@@ -3236,7 +3236,7 @@ MoveMonster:
     push word [xdest]
     push si ; ysrc
     push di ; xsrc
-    call 0x1655:0x636 ; 1ac1 7:0x636 SlideMovement
+    call 0x1655:SlideMovement ; 1ac1 7:0x636
     add sp,byte +0x10
     mov bx,[ydest]
     shl bx,byte 0x5
