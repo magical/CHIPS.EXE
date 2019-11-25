@@ -70,8 +70,15 @@ TeleportListHandle    equ 0x954
 TeleportListPtr       equ 0x956
 TeleportListSeg       equ 0x958
 
-; a24 viewport x?
-; a26 viewport y?
+; 95a ???
+; 99a hint? limit: 128
+
+; a1a Password limit: 10
+
+; a24 viewport x
+; a26 viewport y
+; a28 viewport width
+; a2a viewport height
 ; a2c ___ x?
 ; a2e ___ y?
 
