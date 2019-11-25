@@ -1855,7 +1855,7 @@ MoveBlock:
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0xf69:0x12be ; f2c
+    call 0xf69:0x12be ; f2c 3:12be DeleteSlipperAt
     add sp,byte +0x8
 .label21: ; f34
     cmp byte [blockTile],0xff
@@ -1902,7 +1902,7 @@ MoveBlock:
     push word [xsrc]
     push word [ydest]
     push word [xdest]
-    call 0xfc2:0x21aa ; fa0
+    call 0xfc2:0x21aa ; fa0 3:21aa EnterTrap
     add sp,byte +0x8
     jmp word .action1
     nop
@@ -2631,7 +2631,7 @@ MoveChip:
     push si
     push word [ydest]
     push word [xdest]
-    call 0xf2f:0x21aa ; 160e
+    call 0xf2f:0x21aa ; 160e 3:21aa EnterTrap
     add sp,byte +0x8
     jmp short .label34
 
@@ -3198,7 +3198,7 @@ MoveMonster:
     push di ; xsrc
     push word [ydest]
     push word [xdest]
-    call 0x1aa8:0x21aa ; 1a74 3:0x21aa
+    call 0x1aa8:0x21aa ; 1a74 3:0x21aa EnterTrap
     add sp,byte +0x8
 
 ; 1a7c
