@@ -4084,24 +4084,14 @@ func EnterTrap
     pop si
     pop di
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 2270
 
 ; Finds the trap connection associated with a button at the given coordinates.
 ; Returns index into the trap list or -1.
-FindTrapByButton:
+func FindTrapByButton
     %arg x:word, y:word
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
     sub sp,byte +0x2
     push di
     push si
@@ -4133,10 +4123,7 @@ FindTrapByButton:
     pop si
     pop di
     lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 22be
 
