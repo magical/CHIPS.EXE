@@ -241,7 +241,7 @@ top:
 }
 
 func isJumpTable(mnemonic, arg1, arg2 string) bool {
-	return mnemonic == "jmp" && strings.Contains(arg2, "[cs:")
+	return mnemonic == "jmp" && (strings.Contains(arg1, "[cs:") || strings.Contains(arg2, "[cs:"))
 }
 
 func isJump(s string) bool {
