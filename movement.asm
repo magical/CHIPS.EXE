@@ -2834,13 +2834,12 @@ Seven:
     call 0x1894:0x1e6a ; 17db 3:0x1e6a
     add sp,byte +0x4
 
-
-
+; Invalidate the inventory window if the inventory changed
 .label61: ; 17e3
     cmp word [0x20],byte +0x0
     jz .label66
     push byte +0x6
-    call 0x18b0:0xcbe ; 17ec
+    call 0x18b0:0xcbe ; 17ec 2:cbc
     add sp,byte +0x2
 
 ; if chip is sliding and action != 5, stop sliding
