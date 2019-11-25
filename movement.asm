@@ -8,8 +8,13 @@ SEGMENT CODE ; 7
 
 ; 0
 
-; Mouse movement
-One:
+; DoTick advances the game one tick.
+; It handles movement for Chip, including mouse movement,
+; buffered moves, slipping, and boosting; it calls
+; SlipLoop and MonsterLoop to update monster positions;
+; and it plays the timer sound when the clock is low.
+;
+DoTick:
     mov ax,ds
     nop
     inc bp
@@ -715,8 +720,9 @@ One:
 
 ; 636
 
-; Slide movement
-Two:
+; Slide movement for a creature
+; Sets the tile direction and updates the slip list
+SlideMovement:
     mov ax,ds
     nop
     inc bp
@@ -1151,8 +1157,7 @@ Two:
 
 ; 966
 
-; DrawTile
-Three:
+DrawTile:
     mov ax,ds
     nop
     inc bp
@@ -1274,7 +1279,7 @@ Three:
 
 ; EndGame
 ; show final ending animation and text box
-Four:
+EndGame:
     mov ax,ds
     nop
     inc bp
@@ -1553,7 +1558,9 @@ Four:
 ; cca
 
 ; EndLevel
-Five:
+; Shows level completed dialog box
+; and advance to the next level
+EndLevel:
     mov ax,ds
     nop
     inc bp
@@ -1652,7 +1659,7 @@ Five:
 ; dae
 
 ; Move block
-Six:
+MoveBlock:
     mov ax,ds
     nop
     inc bp
@@ -2111,7 +2118,7 @@ Six:
 ; 1184
 
 ; Move chip
-Seven:
+MoveChip:
     %define hDC (bp+0x6)
     %define xdir (bp+0x8)
     %define ydir (bp+0xa)
@@ -2964,7 +2971,7 @@ Seven:
 ;   0 - blocked
 ;   1 - success
 ;   2 - dead
-Eight:
+MoveMonster:
     mov ax,ds
     nop
     inc bp
