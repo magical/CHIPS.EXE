@@ -1,5 +1,17 @@
 package main
 
+// This tool is (will be) a "half" linker: it takes several
+// .obj files as input, performs symbol resolution and relocation,
+// and writes out a .bin file for each object which can then
+// be copied into the final executable.
+
+// Reference for the OBJ file format:
+//
+// Tool Interface Standard (TIS)
+// Portable Formats Specification Version 1.1
+// Chapter III. Relocatable Object Format Module (OMF)
+// https://refspecs.linuxfoundation.org/elf/TIS1.1.pdf
+
 import (
 	"encoding/hex"
 	"flag"
@@ -45,6 +57,11 @@ func ReadRecord(f *os.File) (*Record, error) {
 	return rec, nil
 }
 
+const (
+	TypePubdef = 0x90
+	TypeFixup  = 0x9c
+)
+
 func dump(f *os.File) error {
 	for {
 		rec, err := ReadRecord(f)
@@ -55,7 +72,14 @@ func dump(f *os.File) error {
 			return err
 		}
 		fmt.Printf("RECORD type %#0x, size %d\n", rec.Type, rec.Size)
-		fmt.Println(hex.Dump(rec.Contents))
+		fmt.Print(hex.Dump(rec.Contents))
+		switch rec.Type {
+		case TypePubdef:
+			pubdef(rec)
+		case TypeFixup:
+			fixup(rec)
+		}
+		fmt.Println()
 	}
 }
 
@@ -71,4 +95,60 @@ func main() {
 		log.Fatal(err)
 	}
 
+}
+
+func fixup(r *Record) {
+	data := r.Contents
+	for len(data) > 0 {
+		if data[0]&0x80 == 0 {
+			// THREAD sub record
+			fmt.Println("THREAD")
+			skip := 2
+			if data[1]&0x80 != 0 {
+				skip = 3
+			}
+			data = data[skip:]
+		} else {
+			// FIXUP subrecord
+			locationType := data[0] >> 2 & 15
+			locationStr := "(unknown)"
+			switch locationType {
+			case 0:
+				locationStr = "8-bit low"
+			case 1:
+				locationStr = "16-bit offset"
+			case 2:
+				locationStr = "16-bit segment base"
+			case 3:
+				locationStr = "32-bit pointer"
+			case 4:
+				locationStr = "8-bit high"
+			case 9:
+				locationStr = "32-bit offset"
+			case 11:
+				locationStr = "48-bit pointer"
+			}
+			dataOffset := uint(data[1]) | (uint(data[0]&3) << 8)
+
+			frameType := int(data[2] >> 4)
+			targetType := int(data[2] & 7)
+			datum := int(data[3])
+
+			fmt.Printf("FIXUP %s @ %#x, F%d T%d, datum %d\n", locationStr, dataOffset, frameType, targetType, datum)
+			data = data[4:] // TODO
+		}
+	}
+}
+
+func pubdef(r *Record) {
+	data := r.Contents
+	data = data[2:] // base group index and base seg index
+	for len(data) > 0 {
+		n := data[0]
+		name := string(data[1 : n+1])
+		offset := int(data[n+1]) + int(data[n+2])<<8
+
+		data = data[1+n+3:]
+		fmt.Printf("	%04x\t%s\n", offset, name)
+	}
 }
