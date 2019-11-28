@@ -56,7 +56,6 @@ func FindMonster
 .end:
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 58
@@ -101,7 +100,6 @@ func FindSlipper
 .end:
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; b0
@@ -157,7 +155,6 @@ func TurnLeft
     mov bx,[yOut]
     mov word [bx],-1
 .end:
-    lea sp,[bp-0x2]
 endfunc
 
 ; 116
@@ -211,7 +208,6 @@ func TurnRight
     mov bx,[yOut]
     mov word [bx],1
 .end:
-    lea sp,[bp-0x2]
 endfunc
 
 ; 17c
@@ -238,7 +234,6 @@ func TurnAround
     mov bx,[yOut]
     mov [bx],ax
 
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1a4
@@ -312,7 +307,6 @@ func GrowArray
 
 .end: ; 21f
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 228
@@ -490,7 +484,6 @@ func NewMonster
     mov word [bx+Autopsy],Eaten
 .end: ; 3ac
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 3b4
@@ -568,7 +561,6 @@ func DeleteMonster
     dec word [bx+MonsterListLen]
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 45e
@@ -581,7 +573,6 @@ func DeleteMonsterAt
     add sp,byte +0x4
     push ax
     call 0x5c9:DeleteMonster ; 47a 3:47a
-    lea sp,[bp-0x2]
 endfunc
 
 ; 486
@@ -625,7 +616,6 @@ func SetTileDir
     mov al,[tile]
     add al,0x3
 .end: ; 4d1
-    lea sp,[bp-0x2]
 endfunc
 
 ; 4d8
@@ -678,7 +668,6 @@ func GetMonsterDir
     ; Return 0
     xor ax,ax
 .end: ; 544
-    lea sp,[bp-0x2]
 endfunc
 
 ; 54c
@@ -920,7 +909,6 @@ func InitBoard
 .end: ; 724
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 72e
@@ -931,7 +919,6 @@ func RandInt
     sub dx,dx
     div word [bp+0x6]
     mov ax,dx
-    lea sp,[bp-0x2]
 endfunc
 
 ; 74e
@@ -2143,7 +2130,6 @@ func MonsterLoop
 
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1250
@@ -2185,7 +2171,6 @@ func NewSlipper
     mov dx,[bx+SlipListSeg]
     sub ax,0xb
 .end: ; 12b6
-    lea sp,[bp-0x2]
 endfunc
 
 ; 12be
@@ -2270,7 +2255,6 @@ func DeleteSlipperAt
 .end: ; 138d
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1396
@@ -2299,7 +2283,6 @@ func FindSlipperAt
     xor ax,ax
     cwd
 .end: ; 13d7
-    lea sp,[bp-0x2]
 endfunc
 
 ; 13de
@@ -2623,7 +2606,6 @@ func SlipLoop
 .label19: ; 172a
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1734
@@ -2645,7 +2627,6 @@ func ResetInventory
     mov [IceSkateCount],ax
     mov [SuctionBootCount],ax
     mov word [0x20],0x1 ; ???
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1770
@@ -2718,7 +2699,6 @@ func PickUpKeyOrBoot
     push ax
     push cx
     call 0x122b:0x56c ; 17f8 8:56c
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1804
@@ -2780,7 +2760,6 @@ func CanOpenDoor
 .no: ; 1872
     xor ax,ax
 .label6: ; 1874
-    lea sp,[bp-0x2]
 endfunc
 
 ; 187c
@@ -2879,7 +2858,6 @@ func HaveBootsForTile
 .returnZero:
     xor ax,ax
 .end: ; 192c
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1934
@@ -3041,7 +3019,6 @@ func CheckPanelWalls
 .returnTrue: ; 1a4c
     mov ax,0x1
 .return: ; 1a4f
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1a56
@@ -3353,7 +3330,6 @@ func ChipCanEnterTile
 .end: ; 1c9b
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1ca4
@@ -3441,7 +3417,6 @@ func BlockCanEnterTile
 .end: ; 1d41
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1d4a
@@ -3603,7 +3578,6 @@ func MonsterCanEnterTile
 .return: ; 1e60
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1e6a
@@ -3730,7 +3704,6 @@ func PressTankButton
 .end: ; 1fa2
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1fac
@@ -3817,7 +3790,6 @@ func PressToggleButton
 .end: ; 2063
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 206c
@@ -3906,7 +3878,6 @@ func FindTrapSpan
 .end: ; 2110
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 211a
@@ -3965,7 +3936,6 @@ func PressTrapButton
     jng .loop ; ↑
 .end: ; 21a2
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 21aa
@@ -4059,7 +4029,6 @@ func EnterTrap
 .end: ; 2267
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2270
@@ -4098,7 +4067,6 @@ func FindTrapByButton
 .label4: ; 22b5
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 22be
@@ -4142,7 +4110,6 @@ func FindTrap
 .end: ; 230f
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2318
@@ -4202,7 +4169,6 @@ func AddTrap_Unused
     mov ax,dx
 .label1: ; 23be
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 23c6
@@ -4264,7 +4230,6 @@ func AddTeleport
     mov ax,cx
 .end: ; 29d4
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 29dc
@@ -4309,7 +4274,6 @@ func DeleteTeleport_Unused
     jg .loop
 .end: ; 2a35
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2a3e
@@ -4331,7 +4295,6 @@ func GetTileImagePos
     mov [bp-0x4],ax
     mov ax,[bp-0x6]
     mov dx,[bp-0x4]
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2a70

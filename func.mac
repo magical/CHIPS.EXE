@@ -15,6 +15,7 @@
 %endmacro
 
 %macro endfunc 0
+    lea sp,[bp-0x2]
     pop ds
     pop bp
     dec bp
