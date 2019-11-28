@@ -3,6 +3,7 @@ SEGMENT CODE ; 7
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
+%include "func.mac"
 
 ; data
 
@@ -14,14 +15,7 @@ SEGMENT CODE ; 7
 ; SlipLoop and MonsterLoop to update monster positions;
 ; and it plays the timer sound when the clock is low.
 ;
-DoTick:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func DoTick
     sub sp,byte +0xc
     push di
     push si
@@ -712,24 +706,13 @@ DoTick:
 .end: ; 62d
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 636
 
 ; Slide movement for a creature
 ; Sets the tile direction and updates the slip list
-SlideMovement:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func SlideMovement
     sub sp,byte +0x16
     push di
     push si
@@ -1149,22 +1132,11 @@ SlideMovement:
 .return: ; 95d
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 966
 
-DrawStretchedTile:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func DrawStretchedTile
     sub sp,byte +0xa
 
     ; args
@@ -1269,24 +1241,13 @@ DrawStretchedTile:
     push word 0xcc
     push byte +0x20
     call 0x0:0xffff ; a68 GDI.StretchBlt
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; a74
 
 ; EndGame
 ; show final ending animation and text box
-EndGame:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func EndGame
     sub sp,0x19e
     push di
     push si
@@ -1549,25 +1510,14 @@ EndGame:
     call 0x0:0x5b9 ; cbc USER.ReleaseDC
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; cca
 
 ; EndLevel
 ; Shows level completed dialog box
 ; and advance to the next level
-EndLevel:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func EndLevel
     sub sp,byte +0x6
     push di
     push si
@@ -1650,23 +1600,12 @@ EndLevel:
 .end: ; da5
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; dae
 
 ; Move block
-MoveBlock:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func MoveBlock
     sub sp,byte +0xe
     push si
 
@@ -2108,17 +2047,12 @@ MoveBlock:
     xor ax,ax
 .return: ; 117b
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 1184
 
 ; Move chip
-MoveChip:
+func MoveChip
     %define hDC (bp+0x6)
     %define xdir (bp+0x8)
     %define ydir (bp+0xa)
@@ -2137,13 +2071,6 @@ MoveChip:
     %define buttonPressed (bp-0x16)
     %define tmp (bp-0x1a)
 
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
     sub sp,byte +0x1c
 
     push di ; ysrc
@@ -2949,12 +2876,7 @@ MoveChip:
 .end: ; 18d0
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 18da
 
@@ -2971,14 +2893,7 @@ MoveChip:
 ;   0 - blocked
 ;   1 - success
 ;   2 - dead
-MoveMonster:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func MoveMonster
     sub sp,byte +0x1a
     push di ; xsrc
     push si ; ysrc
@@ -3448,11 +3363,7 @@ MoveMonster:
 .return: ; 1ccb
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1cd3
 
