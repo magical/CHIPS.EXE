@@ -14,19 +14,12 @@ SEGMENT CODE ; 5
 
 %include "constants.asm"
 %include "variables.asm"
+%include "func.mac"
 
-InitGraphics:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func InitGraphics
     sub sp,byte +0x4
     push si
 
-    %stacksize small
     %define hDC (bp-4)
 
     mov si,[bp+6] ; ???
@@ -141,27 +134,14 @@ InitGraphics:
     push word [hwndMain]
     call 0x0:0xffff ; 104 USER.DrawMenuBar
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 112
 
 ;load tile bitmap
-LoadTiles:
-    %stacksize small
+func LoadTiles
     %arg hInstance:word, hBitmapOut:word, loadDigits:word
 
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
     sub sp,byte +0x2
     push si
 
@@ -209,23 +189,12 @@ LoadTiles:
     xor ax,ax
 .end: ; 174
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 17e
 
 ; delete tile bitmap
-FreeTiles:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FreeTiles
     sub sp,byte +0x2
 
     cmp word [0xa14],byte +0x0
@@ -241,11 +210,6 @@ FreeTiles:
     call 0x0:0xffff ; 1aa KERNEL.LocalFree
     mov word [0xa16],0x0
 .pointerIsNull: ; 1b5
-
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; vim: syntax=nasm
