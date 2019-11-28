@@ -4,7 +4,14 @@ SEGMENT CODE ; 7
 %include "structs.asm"
 %include "variables.asm"
 
-; data
+global DoTick
+global SlideMovement
+global DrawTile
+global EndGame
+global EndLevel
+global MoveBlock
+global MoveChip
+global MoveMonster
 
 ; 0
 

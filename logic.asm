@@ -7,6 +7,9 @@ SEGMENT CODE ; 3
 %include "structs.asm"
 %include "variables.asm"
 
+EXTERN MoveMonster
+EXTERN GlobalUnlock@16
+
 %macro  func 1
     global %1
 %1:
@@ -277,7 +280,7 @@ func GrowArray
     cmp word [bx],byte +0x0
     jz .globalAlloc
     push word [bx]
-    call 0x0:0xffff ; 1bc KERNEL.GlobalUnlock
+    call far GlobalUnlock@16 ; 1bc KERNEL.GlobalUnlock
     mov bx,[hMem]
     push word [bx]
     ; Compute (*len + numToAlloc) * size
@@ -338,6 +341,8 @@ func GrowArray
     pop si
     lea sp,[bp-0x2]
 endfunc
+
+SEGMENT CODE
 
 ; 228
 func NewMonster
@@ -1097,7 +1102,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x909:0x18da ; 899 7:0x18da
+    call far MoveMonster ; 899 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1147,7 +1152,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x991:0x18da ; 906 7:0x18da
+    call far MoveMonster ; 906 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1209,7 +1214,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xa01:0x18da ; 98e 7:0x18da
+    call far MoveMonster ; 98e 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1259,7 +1264,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xadb:0x18da ; 9fe 7:0x18da
+    call far MoveMonster ; 9fe 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1342,7 +1347,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xffff:0x18da ; ad8 7:0x18da
+    call far MoveMonster ; ad8 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1396,7 +1401,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xc3e:0x18da ; b53 7:0x18da
+    call far MoveMonster ; b53 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1504,7 +1509,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xcec:0x18da ; c3b 7:0x18da
+    call far MoveMonster ; c3b 7:0x18da
     add sp,byte +0xc
     ; Check if we succeeded
     mov [deadflag],ax
@@ -1579,7 +1584,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xdd9:0x18da ; ce9 7:0x18da
+    call far MoveMonster ; ce9 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1674,7 +1679,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xebf:0x18da ; dd6 7:0x18da
+    call far MoveMonster ; dd6 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1790,7 +1795,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x89c:0x18da ; ebc 7:0x18da
+    call far MoveMonster ; ebc 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1845,7 +1850,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x1001:0x18da ; f39 7:0x18da
+    call far MoveMonster ; f39 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1930,7 +1935,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x107a:0x18da ; ffe 7:0x18da
+    call far MoveMonster ; ffe 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1980,7 +1985,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x10d9:0x18da ; 1077 7:0x18da
+    call far MoveMonster ; 1077 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2020,7 +2025,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x1132:0x18da ; 10d6 7:0x18da
+    call far MoveMonster ; 10d6 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2057,7 +2062,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0x1188:0x18da ; 112f 7:0x18da
+    call far MoveMonster ; 112f 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2091,7 +2096,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [bp+0x6]
-    call 0xb56:0x18da ; 1185 7:0x18da
+    call far MoveMonster ; 1185 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2400,7 +2405,7 @@ func SlipLoop
     lea ax,[x]
     push ax
     push di  ; wnd
-    call 0x14fe:0x18da ; 14a4 MoveMonster
+    call far MoveMonster ; 14a4 MoveMonster
     add sp,byte +0xc
     mov [bp-0x6],ax
     or ax,ax
@@ -2460,7 +2465,7 @@ func SlipLoop
     lea ax,[x]
     push ax
     push di ; hDC
-    call 0xf3c:0x18da ; 1533 7:18da MoveMonster
+    call far MoveMonster ; 1533 7:18da MoveMonster
     add sp,byte +0xc
     mov [bp-0x6],ax
     or ax,ax
