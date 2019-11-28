@@ -10,20 +10,13 @@ SEGMENT CODE ; 9
 ;
 ;   a18     Color mode
 
+%include "func.mac"
+
 %define DigitWidth 17
 %define DigitHeight 23
 
-; 0
-FindBitmap:
-    %stacksize small
+func FindBitmap
     %arg name:word
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
     sub sp,byte +0x2
 
     push word [0x172a]  ; hModule
@@ -34,26 +27,14 @@ FindBitmap:
     push dx             ; lpType
     push byte +0x2 ; RT_BITMAP
     call 0x0:0xffff ; 1b KERNEL.FindResource
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 28
+
 ; Computes the data size of a 4-bpp bitmap with the given width and height.
-BitmapSize:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func BitmapSize
     sub sp,byte +0x2
 
-    %stacksize small
     %arg w:word, h:word
 
     ; Compute the stride (size of a row).
@@ -71,24 +52,11 @@ BitmapSize:
 
     ; Multiply by the height.
     imul word [h]
+endfunc
 
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+; 4e
 
-
-; 4E
-LoadDigits:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func LoadDigits
     sub sp,byte +0x8
     push di
     push si
@@ -131,21 +99,11 @@ LoadDigits:
 .end: ; b3
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
-; BC
-FreeDigits:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; bc
+
+func FreeDigits
     sub sp,byte +0x2
     cmp word [0x1720],byte +0x0
     jz .null
@@ -154,25 +112,13 @@ FreeDigits:
     push word [0x1720]
     call 0x0:0xffff ; dd KERNEL.FreeResource
 .null: ; e2
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; ea
-DrawDigit:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+
+func DrawDigit
     sub sp,byte +0x4
 
-    %stacksize small
     %arg hdc:word, xDest:word, yDest:word, digit:word, color:word
     %define colorOffset (bp-4)
 
@@ -209,11 +155,6 @@ DrawDigit:
     push word [0x16c4]
     push byte +0x0      ; fuColorUse
     call 0x0:0xffff ; 143 GDI.SetDIBitsToDevice
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; vim: syntax=nasm

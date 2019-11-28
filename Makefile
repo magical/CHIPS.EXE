@@ -22,6 +22,7 @@ data.bin: data.asm base.exe Makefile
 logic.bin: logic.asm base.exe constants.asm structs.asm variables.asm func.mac Makefile
 movement.bin: movement.asm constants.asm structs.asm variables.asm func.mac Makefile
 seg5.bin: seg5.asm constants.asm variables.asm func.mac Makefile
+digits.bin: digits.asm func.mac Makefile
 
 variables.asm: data.asm genvars.sh Makefile
 	sh genvars.sh >variables.asm
