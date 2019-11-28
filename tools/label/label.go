@@ -175,6 +175,15 @@ top:
 		} else if isJump(mnemonic) {
 			var jumpDest uint64
 			var text string
+			if strings.Contains(arg1, ":") || strings.Contains(arg2, ":") {
+				// far jump. basically a call. ignore
+				lines = append(lines, Line{
+					Addr:     addr,
+					Mnemonic: mnemonic,
+					Text:     line[24:],
+				})
+				continue
+			}
 			if n == 4 {
 				jumpDest, err = strconv.ParseUint(arg1, 0, 32)
 				text = fmt.Sprintf("    %s", mnemonic)
