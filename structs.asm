@@ -90,6 +90,8 @@ MouseTargetY        equ 0xa3c
 ; a3e idle timer?
 ChipHasMoved        equ 0xa40
 
+GameStateSize       equ 0xa42
+
 STRUC Point
     .x  resw 1
     .y  resw 1
