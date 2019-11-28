@@ -19,7 +19,7 @@ check: $(base) chips.exe Makefile
 	rm $<.tmp
 
 data.bin: data.asm base.exe Makefile
-logic.bin: logic.asm base.exe constants.asm structs.asm variables.asm Makefile
+logic.bin: logic.asm base.exe constants.asm structs.asm variables.asm func.mac Makefile
 movement.bin: movement.asm constants.asm structs.asm variables.asm Makefile
 
 variables.asm: data.asm genvars.sh Makefile

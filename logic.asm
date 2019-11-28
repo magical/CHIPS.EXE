@@ -6,31 +6,7 @@ SEGMENT CODE ; 3
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
-
-%macro  func 1
-    global %1
-%1:
-    %push func
-    %stacksize small
-    ; Standard function prologue
-    ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
-%endmacro
-
-%macro endfunc 0
-    pop ds
-    pop bp
-    dec bp
-    retf
-    align 2
-    %pop func
-%endmacro
+%include "func.mac"
 
 ; 0
 
