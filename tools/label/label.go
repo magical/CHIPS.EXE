@@ -127,6 +127,7 @@ top:
 							Mnemonic: "db",
 						})
 					}
+					number += br.nlines
 					continue top
 				}
 
@@ -300,6 +301,7 @@ type bytereader struct {
 	r        *bufio.Reader
 	buf      []byte
 	lastline string
+	nlines   int
 }
 
 func (br *bytereader) ReadWord() (uint16, error) {
@@ -329,6 +331,7 @@ func (br *bytereader) SkipByte() error {
 // and appends the raw bytes to br.buf
 func (br *bytereader) readline() error {
 	line, lineerr := br.r.ReadString('\n')
+	br.nlines++
 	br.lastline = line
 	if lineerr != nil && lineerr != io.EOF {
 		return lineerr
