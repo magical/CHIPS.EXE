@@ -62,7 +62,7 @@
 
 7:0000    DoTick
 7:0636    SlideMovement
-7:0966    DrawTile
+7:0966    DrawStretchedTile
 7:0a74    EndGame
 7:0cca    EndLevel
 7:0dad    MoveBlock

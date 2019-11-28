@@ -1157,7 +1157,7 @@ SlideMovement:
 
 ; 966
 
-DrawTile:
+DrawStretchedTile:
     mov ax,ds
     nop
     inc bp
@@ -1364,9 +1364,9 @@ EndGame:
 .label6: ; b0b
     push cx ; x position
 
-.callDrawTile: ; b0c
+.callDrawStretchedTile: ; b0c
     push word [hDC]
-    call 0x3ed:DrawTile ; b0f 7:966
+    call 0x3ed:DrawStretchedTile ; b0f 7:966
     add sp,byte +0xe
     jmp word .done
 
@@ -1404,7 +1404,7 @@ EndGame:
     push word 0x120
     push byte +0x0
     push byte +0x0
-    jmp short .callDrawTile ; draw tile
+    jmp short .callDrawStretchedTile ; draw tile
 
 .atLeast104: ; b5c
     cmp word [bx+EndingTick],byte +0x69
