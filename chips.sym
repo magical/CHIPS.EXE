@@ -1,11 +1,28 @@
+1:001a    entry
+1:00c4    srand
+1:00dc    rand
+1:05cb    exit
+1:060e    atoi
+1:0662    mul32
+
+2:0000    ShowMessageBox
+2:007a    IsCoordOnscreen
+2:00c4    DrawTile
+2:01ca    UpdateTile
+2:0232    DrawInventoryTile
+2:0628    WinMain
+2:06c8    CreateWindowsAndClasses
+2:0c1a    ShowHint
+2:0c7e    HideHint
+2:17da    PauseGame
+2:1834    UnpauseGame
+2:1e28    MenuItemCallback
 2:225c    MAINWNDPROC
 2:274e    BOARDWNDPROC
 2:2866    INFOWNDPROC
 2:296a    COUNTERWNDPROC
 2:2a9a    INVENTORYWNDPROC
 2:2bbe    HINTWNDPROC
-
-4:1016    PASSWORDMSGPROC
 
 3:0000    FindMonster
 3:0058    FindSlipper
@@ -52,6 +69,14 @@
 3:29dc    DeleteTeleport_Unused
 3:2a3e    GetTileImagePos
 
+4:0134    UpdateWindowTitle
+4:01a0    UpdateNextPrevMenuItems
+4:01fc    ResetTimerAndChipCount
+4:06b0    DecodePassword
+4:06d8    DecodeLevelFields
+4:0a56    ReadLevelData
+4:1016    PASSWORDMSGPROC
+
 5:0000    InitGraphics
 5:0112    LoadTiles
 5:017e    FreeTiles
@@ -69,6 +94,8 @@
 7:1183    MoveChip
 7:18d9    MoveMonster
 
+8:0000    InitSound
+8:00e6    TeardownSound
 8:056c    PlaySoundEffect
 
 9:0000    FindBitmap
