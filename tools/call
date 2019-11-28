@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+import sys
+import re
+from collections import namedtuple
+
+segment = 2 # segment number being processeed
+call_only = False # print only lines that would be altered
+
+Reloc = namedtuple('Reloc', 'offset, fixup_type, ref_type, function')
+
+def main():
+    symbols = {}
+    with open("chips.sym") as symfile:
+        for line in symfile:
+            line = line.strip()
+            if line != "":
+                # addr is of the form 7:0042 with leading zeros in the second part
+                # we could normalize it here but we'll just assume it's correct
+                addr, name = line.split()
+                symbols[addr] = name
+
+    relocs = {}
+    in_the_right_segment = False
+    with open("info/reloc") as relocfile:
+        for line in relocfile:
+            line = line.strip()
+            if line.startswith("Segment "):
+                in_the_right_segment = (int(line.split()[1]) == segment)
+            if in_the_right_segment and line.startswith("Reloc "):
+                _, _, offset, fixup_type, ref_type, function = line.split()
+                offset = int(offset, 16)
+                relocs[offset] = Reloc(offset, fixup_type, ref_type, function)
+
+    assert len(relocs) != 0
+
+    # match lines of the form "    call 0x1234:0xabc ; d4d"
+    # that is, calls which
+    #  1) still have constants in the operand
+    #  2) have the address of the call instruction in the comment
+    #  3) and don't have the function name in the comment yet
+    call_re = re.compile(r" *call (0x[0-9a-f]+):(0x[0-9a-f]+) *; *([0-9a-f]+)(?: ([0-9]:[0-9a-f]+))?$")
+    asmfile = sys.stdin
+    for line in asmfile:
+        if line.strip().startswith("call "):
+            m = call_re.match(line)
+            if not m:
+                if not call_only:
+                    print(line, end="")
+                continue
+            offset = int(m.group(3), 16)
+            r = relocs[offset]
+
+            # is this a segment reference? then we can do some shenanigans
+            if ':' in r.function and r.fixup_type == "SEGMENT":
+                # is the called function in this file?
+                # if so, we can include the symbol in the call opcode
+                target_segment = int(r.function.split(":")[0])
+                same_segment = (target_segment == segment)
+
+                # normalize the function address so we can look up the symbol
+                addr = int(m.group(2), 16)
+                target = "{}:{:04x}".format(target_segment, addr)
+                short_target = "{}:{:x}".format(target_segment, addr)
+
+                sym = ""
+                if target in symbols:
+                    sym = symbols[target]
+
+                if same_segment and sym:
+                    operand = "{}:{}".format(m.group(1), sym)
+                else:
+                    operand = "{}:{}".format(m.group(1), m.group(2))
+
+                print("    call", operand, ";", m.group(3), short_target, *([sym] if sym else []) )
+
+            else:
+                operand = "{}:{}".format(m.group(1), m.group(2))
+                print("    call", operand, ";", m.group(3), r.function)
+        else:
+            if not call_only:
+                print(line, end="")
+           
+
+if __name__ == '__main__':
+    main()
