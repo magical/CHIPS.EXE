@@ -19,7 +19,7 @@ check: $(base) chips.exe Makefile
 	rm $<.tmp
 
 # additional dependencies
-logic.bin: base.exe constants.asm structs.asm variables.asm func.mac
+logic.bin: constants.asm structs.asm variables.asm func.mac
 movement.bin: constants.asm structs.asm variables.asm func.mac
 seg5.bin: constants.asm variables.asm func.mac
 digits.bin: func.mac

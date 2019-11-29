@@ -4172,18 +4172,582 @@ func AddTrap_Unused
 endfunc
 
 ; 23c6
-; DeleteTrap_Unused
 
-; 2442 PressCloneButton
-; 260e FindCloneMachine
-; 265c AddCloneMachine (unused)
-; 26f6 DeleteCloneMachine (unused)
-; 276a EnterTeleport
-; 2910 FindTeleport
+func DeleteTrap_Unused
+    sub sp,byte +0x4
+    push di
+    push si
+    mov bx,[bp+0x6]
+    or bx,bx
+    jl .label1 ; ↓
+    mov si,[0x1680]
+    cmp [si+0x93c],bx
+    jng .label1 ; ↓
+    dec word [si+0x93c]
+    mov si,[0x1680]
+    cmp [si+0x93c],bx
+    jng .label1 ; ↓
+    mov ax,bx
+    shl ax,byte 0x2
+    add ax,bx
+    shl ax,1
+    mov [bp-0x4],ax
+.label0: ; 2400
+    mov bx,[0x1680]
+    mov ax,[bx+0x942]
+    mov dx,[bx+0x944]
+    add ax,[bp-0x4]
+    mov cx,ax
+    mov bx,dx
+    add ax,0xa
+    push ds
+    mov di,cx
+    mov si,ax
+    mov es,bx
+    mov ds,dx
+    mov cx,0x5
+    rep movsw
+    pop ds
+    add word [bp-0x4],byte +0xa
+    inc word [bp+0x6]
+    mov ax,[bp+0x6]
+    mov bx,[0x1680]
+    cmp [bx+0x93c],ax
+    jg .label0 ; ↑
+.label1: ; 2439
+    pop si
+    pop di
+endfunc
 
-INCBIN "base.exe", 0x6200+0x23c6, 0x295e-0x23c6
+; 2442
+
+func PressCloneButton
+    sub sp,byte +0xe
+    push di
+    push si
+    push word [bp+0xc]
+    push byte +0x9
+    call 0x1e81:0x56c ; 2456 8:56c PlaySoundEffect
+    add sp,byte +0x4
+    push word [bp+0xa]
+    push word [bp+0x8]
+    call 0x24b2:FindCloneMachine ; 2464 3:260e
+    add sp,byte +0x4
+    mov si,ax
+    or si,si
+    jnl .label0 ; ↓
+    jmp .label15 ; ↓
+.label0: ; 2475
+    shl si,byte 0x3
+    mov bx,[0x1680]
+    les di,[bx+0x94c]
+    add di,si
+    mov ax,[es:di+0x4]
+    mov [bp-0x6],ax
+    mov [bp+0x8],ax
+    mov cx,[es:di+0x6]
+    mov [bp-0x8],cx
+    mov [bp+0xa],cx
+    lea dx,[bp-0xa]
+    push dx
+    lea dx,[bp-0xc]
+    push dx
+    mov bx,cx
+    shl bx,byte 0x5
+    add bx,ax
+    mov si,[0x1680]
+    mov al,[bx+si]
+    mov [bp-0x3],al
+    push ax
+    call 0x1e4d:GetMonsterDir ; 24af 3:4d8
+    add sp,byte +0x6
+    or ax,ax
+    jnz .label1 ; ↓
+    jmp .label8 ; ↓
+.label1: ; 24be
+    mov ax,[bp-0xa]
+    add [bp+0xa],ax
+    mov ax,[bp-0xc]
+    add [bp+0x8],ax
+    jns .label2 ; ↓
+    jmp .label15 ; ↓
+.label2: ; 24cf
+    cmp word [bp+0xa],byte +0x0
+    jnl .label3 ; ↓
+    jmp .label15 ; ↓
+.label3: ; 24d8
+    cmp word [bp+0x8],byte +0x20
+    jl .label4 ; ↓
+    jmp .label15 ; ↓
+.label4: ; 24e1
+    cmp word [bp+0xa],byte +0x20
+    jl .label5 ; ↓
+    jmp .label15 ; ↓
+.label5: ; 24ea
+    lea ax,[bp-0xe]
+    push ax
+    push word [bp-0xa]
+    push word [bp-0xc]
+    push word [bp+0xa]
+    push word [bp+0x8]
+    mov al,[bp-0x3]
+    push ax
+    call 0x252a:MonsterCanEnterTile ; 24fe 3:1d4a
+    add sp,byte +0xc
+    or ax,ax
+    jnz .label6 ; ↓
+    mov al,[bp-0x3]
+    mov bx,[bp+0xa]
+    shl bx,byte 0x5
+    add bx,[bp+0x8]
+    mov si,[0x1680]
+    cmp [bx+si],al
+    jz .label6 ; ↓
+    jmp .label15 ; ↓
+.label6: ; 2521
+    push word [bp-0x8]
+    push word [bp-0x6]
+    call 0x254a:FindMonster ; 2527 3:0
+    add sp,byte +0x4
+    inc ax
+    jz .label7 ; ↓
+    jmp .label15 ; ↓
+.label7: ; 2535
+    push byte +0x1
+    push word [bp-0xa]
+    push word [bp-0xc]
+    push word [bp-0x8]
+    push word [bp-0x6]
+    mov al,[bp-0x3]
+    push ax
+    call 0x25d9:NewMonster ; 2547 3:228
+    add sp,byte +0xc
+    push word [bp+0xa]
+    push word [bp+0x8]
+    call 0x1f25:0x2b2 ; 2555 2:2b2
+    add sp,byte +0x4
+    jmp .label15 ; ↓
+.label8: ; 2560
+    mov al,[bp-0x3]
+    sub ah,ah
+    sub ax,0xe
+    jz .label9 ; ↓
+    dec ax
+    jz .label10 ; ↓
+    dec ax
+    jz .label11 ; ↓
+    dec ax
+    jz .label12 ; ↓
+    jmp short .label14 ; ↓
+    nop
+.label9: ; 2576
+    mov word [bp-0xc],0x0
+    mov word [bp-0xa],0xffff
+    jmp short .label14 ; ↓
+.label10: ; 2582
+    mov word [bp-0xc],0xffff
+    jmp short .label13 ; ↓
+    nop
+.label11: ; 258a
+    mov word [bp-0xc],0x0
+    mov word [bp-0xa],0x1
+    jmp short .label14 ; ↓
+.label12: ; 2596
+    mov word [bp-0xc],0x1
+.label13: ; 259b
+    mov word [bp-0xa],0x0
+.label14: ; 25a0
+    mov byte [bp-0x3],0xa
+    mov ax,[bp-0xa]
+    add [bp+0xa],ax
+    mov ax,[bp-0xc]
+    add [bp+0x8],ax
+    js .label15 ; ↓
+    cmp word [bp+0xa],byte +0x0
+    jl .label15 ; ↓
+    cmp word [bp+0x8],byte +0x20
+    jnl .label15 ; ↓
+    cmp word [bp+0xa],byte +0x20
+    jnl .label15 ; ↓
+    lea ax,[bp-0xe]
+    push ax
+    push word [bp-0xa]
+    push word [bp-0xc]
+    push word [bp+0xa]
+    push word [bp+0x8]
+    push byte +0xa
+    call 0x2691:BlockCanEnterTile ; 25d6 3:1ca4
+    add sp,byte +0xc
+    or ax,ax
+    jz .label15 ; ↓
+    push byte +0x0
+    push byte +0xa
+    push word [bp-0xa]
+    push word [bp-0xc]
+    mov ax,[bp+0xa]
+    sub ax,[bp-0xa]
+    push ax
+    mov ax,[bp+0x8]
+    sub ax,[bp-0xc]
+    push ax
+    push word [bp+0x6]
+    call 0x2855:0xdae ; 25fd 7:dae
+    add sp,byte +0xe
+.label15: ; 2605
+    pop si
+    pop di
+endfunc
+
+; 260e
+
+func FindCloneMachine
+    sub sp,byte +0x2
+    push di
+    push si
+    xor cx,cx
+    mov bx,[0x1680]
+    cmp [bx+0x946],cx
+    jng .label3 ; ↓
+    mov si,bx
+    les bx,[si+0x94c]
+    mov di,[bp+0x6]
+.label0: ; 2632
+    cmp [es:bx],di
+    jnz .label1 ; ↓
+    mov ax,[bp+0x8]
+    cmp [es:bx+0x2],ax
+    jz .label2 ; ↓
+.label1: ; 2640
+    add bx,byte +0x8
+    inc cx
+    cmp [si+0x946],cx
+    jg .label0 ; ↑
+    jmp short .label3 ; ↓
+.label2: ; 264c
+    mov ax,cx
+    jmp short .label4 ; ↓
+.label3: ; 2650
+    mov ax,0xffff
+.label4: ; 2653
+    pop si
+    pop di
+endfunc
+
+; 265c
+
+func AddCloneMachine_Unused
+    sub sp,byte +0x2
+    push si
+    mov bx,[0x1680]
+    mov ax,[bx+0x948]
+    cmp [bx+0x946],ax
+    jl .label0 ; ↓
+    push byte +0x8
+    push byte +0x8
+    mov ax,bx
+    add ax,0x948
+    push ax
+    mov ax,bx
+    add ax,0x94c
+    push ax
+    mov ax,bx
+    add ax,0x94a
+    push ax
+    call 0x2786:GrowArray ; 268e 3:1a4
+    add sp,byte +0xa
+    or ax,ax
+    jnz .label0 ; ↓
+    mov ax,0xffff
+    jmp short .label1 ; ↓
+    nop
+.label0: ; 26a0
+    mov si,[0x1680]
+    mov bx,[si+0x946]
+    inc word [si+0x946]
+    mov ax,[bp+0x6]
+    mov si,bx
+    mov cx,bx
+    shl si,byte 0x3
+    mov bx,[0x1680]
+    les bx,[bx+0x94c]
+    mov [es:bx+si],ax
+    mov bx,[0x1680]
+    les bx,[bx+0x94c]
+    mov ax,[bp+0x8]
+    mov [es:bx+si+0x2],ax
+    mov bx,[0x1680]
+    les bx,[bx+0x94c]
+    mov word [es:bx+si+0x4],0xffff
+    mov bx,[0x1680]
+    les bx,[bx+0x94c]
+    mov word [es:bx+si+0x6],0xffff
+    mov ax,cx
+.label1: ; 26ee
+    pop si
+endfunc
+
+; 26f6
+
+func DeleteCloneMachine_Unused
+    sub sp,byte +0x4
+    push di
+    push si
+    mov dx,[bp+0x6]
+    or dx,dx
+    jl .label1 ; ↓
+    mov bx,[0x1680]
+    cmp [bx+0x946],dx
+    jng .label1 ; ↓
+    dec word [bx+0x946]
+    mov bx,[0x1680]
+    cmp [bx+0x946],dx
+    jng .label1 ; ↓
+    mov ax,dx
+    shl ax,byte 0x3
+    mov [bp-0x4],ax
+.label0: ; 272c
+    mov ax,[bx+0x94c]
+    mov dx,[bx+0x94e]
+    add ax,[bp-0x4]
+    mov cx,ax
+    mov bx,dx
+    add ax,0x8
+    push ds
+    mov di,cx
+    mov si,ax
+    mov es,bx
+    mov ds,dx
+    movsw
+    movsw
+    movsw
+    movsw
+    pop ds
+    add word [bp-0x4],byte +0x8
+    inc word [bp+0x6]
+    mov ax,[bp+0x6]
+    mov bx,[0x1680]
+    cmp [bx+0x946],ax
+    jg .label0 ; ↑
+.label1: ; 2760
+    pop si
+    pop di
+endfunc
+
+; 276a
+
+func EnterTeleport
+    sub sp,byte +0xe
+    push di
+    push si
+    mov bx,[bp+0xa]
+    push word [bx]
+    mov si,[bp+0x8]
+    push word [si]
+    call 0x2871:FindTeleport ; 2783 3:2910
+    add sp,byte +0x4
+    mov di,ax
+    mov bx,[bp+0xa]
+    mov bx,[bx]
+    shl bx,byte 0x5
+    add bx,[si]
+    mov si,[0x1680]
+    mov al,[bx+si]
+    mov [bp-0x7],al
+    or di,di
+    jnl .label0 ; ↓
+    jmp .label18 ; ↓
+.label0: ; 27a7
+    lea bx,[di-0x1]
+    or bx,bx
+    jnl .label1 ; ↓
+    mov bx,[0x1680]
+    mov bx,[bx+0x950]
+    dec bx
+.label1: ; 27b7
+    cmp bx,di
+    jnz .label2 ; ↓
+    jmp .label18 ; ↓
+.label2: ; 27be
+    mov [bp-0xa],bx
+    mov [bp-0xe],di
+    mov di,[bp+0xe]
+.label3: ; 27c7
+    mov bx,[0x1680]
+    les bx,[bx+0x956]
+    mov si,[bp-0xa]
+    shl si,byte 0x2
+    mov ax,[es:bx+si]
+    mov [bp-0x6],ax
+    add bx,si
+    mov cx,[es:bx+0x2]
+    mov [bp-0x4],cx
+    mov bx,cx
+    shl bx,byte 0x5
+    add bx,ax
+    mov si,[0x1680]
+    cmp byte [bx+si],0x29
+    jz .label4 ; ↓
+    jmp .label13 ; ↓
+.label4: ; 27f7
+    mov si,[bp+0xc]
+    add [bp-0x4],di
+    add [bp-0x6],si
+    jns .label5 ; ↓
+    jmp .label13 ; ↓
+.label5: ; 2805
+    cmp word [bp-0x4],byte +0x0
+    jnl .label6 ; ↓
+    jmp .label13 ; ↓
+.label6: ; 280e
+    cmp word [bp-0x6],byte +0x20
+    jl .label7 ; ↓
+    jmp .label13 ; ↓
+.label7: ; 2817
+    cmp word [bp-0x4],byte +0x20
+    jl .label8 ; ↓
+    jmp .label13 ; ↓
+.label8: ; 2820
+    mov ax,[bp+0x10]
+    or ax,ax
+    jz .label9 ; ↓
+    dec ax
+    jz .label11 ; ↓
+    dec ax
+    jz .label12 ; ↓
+    jmp .label13 ; ↓
+.label9: ; 2830
+    mov bx,[bp-0x4]
+    shl bx,byte 0x5
+    add bx,[bp-0x6]
+    add bx,[0x1680]
+    cmp byte [bx],0xa
+    jnz .label10 ; ↓
+    push byte +0x0
+    push word 0xff
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    push word [bp+0x6]
+    call 0x163f:0xdae ; 2852 7:dae
+    add sp,byte +0xe
+    or ax,ax
+    jz .label13 ; ↓
+.label10: ; 285e
+    push byte +0x1
+    push byte +0x0
+    lea ax,[bp-0xc]
+    push ax
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    call 0x288f:ChipCanEnterTile ; 286e 3:1a56
+    add sp,byte +0xe
+    or ax,ax
+    jz .label13 ; ↓
+    jmp short .label16 ; ↓
+.label11: ; 287c
+    lea ax,[bp-0xc]
+    push ax
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    mov al,[bp-0x7]
+    push ax
+    call 0x213e:BlockCanEnterTile ; 288c 3:1ca4
+    add sp,byte +0xc
+    or ax,ax
+    jz .label13 ; ↓
+    jmp short .label17 ; ↓
+.label12: ; 289a
+    lea ax,[bp-0xc]
+    push ax
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    mov al,[bp-0x7]
+    push ax
+    call 0x2993:MonsterCanEnterTile ; 28aa 3:1d4a
+    add sp,byte +0xc
+    or ax,ax
+    jnz .label17 ; ↓
+.label13: ; 28b6
+    dec word [bp-0xa]
+    jns .label14 ; ↓
+    mov bx,[0x1680]
+    mov ax,[bx+0x950]
+    dec ax
+    mov [bp-0xa],ax
+.label14: ; 28c7
+    mov ax,[bp-0xe]
+    cmp [bp-0xa],ax
+    jz .label15 ; ↓
+    jmp .label3 ; ↑
+.label15: ; 28d2
+    jmp short .label18 ; ↓
+.label16: ; 28d4
+    push byte +0x1
+    push byte +0xc
+    call 0x2459:0x56c ; 28d8 8:56c PlaySoundEffect
+    add sp,byte +0x4
+.label17: ; 28e0
+    mov bx,[0x1680]
+    les bx,[bx+0x956]
+    mov si,[bp-0xa]
+    shl si,byte 0x2
+    mov ax,[es:bx+si]
+    mov bx,[bp+0x8]
+    mov [bx],ax
+    mov bx,[0x1680]
+    les bx,[bx+0x956]
+    mov ax,[es:bx+si+0x2]
+    mov bx,[bp+0xa]
+    mov [bx],ax
+.label18: ; 2907
+    pop si
+    pop di
+endfunc
+
+; 2910
+
+func FindTeleport
+    sub sp,byte +0x2
+    push di
+    push si
+    xor cx,cx
+    mov bx,[0x1680]
+    cmp [bx+0x950],cx
+    jng .label3 ; ↓
+    mov si,bx
+    les bx,[si+0x956]
+    mov di,[bp+0x6]
+.label0: ; 2934
+    cmp [es:bx],di
+    jnz .label1 ; ↓
+    mov ax,[bp+0x8]
+    cmp [es:bx+0x2],ax
+    jz .label2 ; ↓
+.label1: ; 2942
+    add bx,byte +0x4
+    inc cx
+    cmp [si+0x950],cx
+    jg .label0 ; ↑
+    jmp short .label3 ; ↓
+.label2: ; 294e
+    mov ax,cx
+    jmp short .label4 ; ↓
+.label3: ; 2952
+    mov ax,0xffff
+.label4: ; 2955
+    pop si
+    pop di
+endfunc
 
 ; 295e
+
 func AddTeleport
     %arg x:word, y:word
     sub sp,byte +0x2
