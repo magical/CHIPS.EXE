@@ -4118,9 +4118,9 @@ func AddTrap_Unused
     sub sp,byte +0x2
     push si
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x93e]
-    cmp [bx+0x93c],ax
-    jl .label0 ; ↓
+    mov ax,[bx+TrapListCap]
+    cmp [bx+TrapListLen],ax
+    jl .longEnough ; ↓
     push byte Connection_size
     push byte +0x8
     mov ax,bx
@@ -4135,11 +4135,11 @@ func AddTrap_Unused
     call 0x2467:GrowArray ; 234a 3:0x1a4
     add sp,byte +0xa
     or ax,ax
-    jnz .label0 ; ↓
-    mov ax,0xffff
-    jmp short .label1 ; ↓
+    jnz .longEnough ; ↓
+    mov ax,-1
+    jmp short .end ; ↓
     nop
-.label0: ; 235c
+.longEnough: ; 235c
     mov si,[GameStatePtr]
     mov bx,[si+TrapListLen]
     inc word [si+TrapListLen]
@@ -4167,7 +4167,7 @@ func AddTrap_Unused
     les bx,[bx+TrapListPtr]
     mov word [es:bx+si+Connection.flag],0x0
     mov ax,dx
-.label1: ; 23be
+.end: ; 23be
     pop si
 endfunc
 
@@ -4180,12 +4180,12 @@ func DeleteTrap_Unused
     mov bx,[bp+0x6]
     or bx,bx
     jl .label1 ; ↓
-    mov si,[0x1680]
-    cmp [si+0x93c],bx
+    mov si,[GameStatePtr]
+    cmp [si+TrapListLen],bx
     jng .label1 ; ↓
-    dec word [si+0x93c]
-    mov si,[0x1680]
-    cmp [si+0x93c],bx
+    dec word [si+TrapListLen]
+    mov si,[GameStatePtr]
+    cmp [si+TrapListLen],bx
     jng .label1 ; ↓
     mov ax,bx
     shl ax,byte 0x2
@@ -4193,9 +4193,9 @@ func DeleteTrap_Unused
     shl ax,1
     mov [bp-0x4],ax
 .label0: ; 2400
-    mov bx,[0x1680]
-    mov ax,[bx+0x942]
-    mov dx,[bx+0x944]
+    mov bx,[GameStatePtr]
+    mov ax,[bx+TrapListPtr]
+    mov dx,[bx+TrapListSeg]
     add ax,[bp-0x4]
     mov cx,ax
     mov bx,dx
@@ -4211,8 +4211,8 @@ func DeleteTrap_Unused
     add word [bp-0x4],byte +0xa
     inc word [bp+0x6]
     mov ax,[bp+0x6]
-    mov bx,[0x1680]
-    cmp [bx+0x93c],ax
+    mov bx,[GameStatePtr]
+    cmp [bx+TrapListLen],ax
     jg .label0 ; ↑
 .label1: ; 2439
     pop si
@@ -4239,13 +4239,13 @@ func PressCloneButton
     jmp .label15 ; ↓
 .label0: ; 2475
     shl si,byte 0x3
-    mov bx,[0x1680]
-    les di,[bx+0x94c]
+    mov bx,[GameStatePtr]
+    les di,[bx+CloneListPtr]
     add di,si
-    mov ax,[es:di+0x4]
+    mov ax,[es:di+Connection.toX]
     mov [bp-0x6],ax
     mov [bp+0x8],ax
-    mov cx,[es:di+0x6]
+    mov cx,[es:di+Connection.toY]
     mov [bp-0x8],cx
     mov [bp+0xa],cx
     lea dx,[bp-0xa]
@@ -4255,8 +4255,8 @@ func PressCloneButton
     mov bx,cx
     shl bx,byte 0x5
     add bx,ax
-    mov si,[0x1680]
-    mov al,[bx+si]
+    mov si,[GameStatePtr]
+    mov al,[bx+si+Upper]
     mov [bp-0x3],al
     push ax
     call 0x1e4d:GetMonsterDir ; 24af 3:4d8
@@ -4300,7 +4300,7 @@ func PressCloneButton
     mov bx,[bp+0xa]
     shl bx,byte 0x5
     add bx,[bp+0x8]
-    mov si,[0x1680]
+    mov si,[GameStatePtr]
     cmp [bx+si],al
     jz .label6 ; ↓
     jmp .label15 ; ↓
@@ -4405,29 +4405,29 @@ func FindCloneMachine
     push di
     push si
     xor cx,cx
-    mov bx,[0x1680]
-    cmp [bx+0x946],cx
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],cx
     jng .label3 ; ↓
     mov si,bx
-    les bx,[si+0x94c]
+    les bx,[si+CloneListPtr]
     mov di,[bp+0x6]
 .label0: ; 2632
-    cmp [es:bx],di
+    cmp [es:bx+Connection.fromX],di
     jnz .label1 ; ↓
     mov ax,[bp+0x8]
-    cmp [es:bx+0x2],ax
+    cmp [es:bx+Connection.fromY],ax
     jz .label2 ; ↓
 .label1: ; 2640
     add bx,byte +0x8
     inc cx
-    cmp [si+0x946],cx
+    cmp [si+CloneListLen],cx
     jg .label0 ; ↑
     jmp short .label3 ; ↓
 .label2: ; 264c
     mov ax,cx
     jmp short .label4 ; ↓
 .label3: ; 2650
-    mov ax,0xffff
+    mov ax, -1
 .label4: ; 2653
     pop si
     pop di
@@ -4438,51 +4438,51 @@ endfunc
 func AddCloneMachine_Unused
     sub sp,byte +0x2
     push si
-    mov bx,[0x1680]
-    mov ax,[bx+0x948]
-    cmp [bx+0x946],ax
-    jl .label0 ; ↓
+    mov bx,[GameStatePtr]
+    mov ax,[bx+CloneListCap]
+    cmp [bx+CloneListLen],ax
+    jl .havespace ; ↓
     push byte +0x8
     push byte +0x8
     mov ax,bx
-    add ax,0x948
+    add ax,CloneListCap
     push ax
     mov ax,bx
-    add ax,0x94c
+    add ax,CloneListPtr
     push ax
     mov ax,bx
-    add ax,0x94a
+    add ax,CloneListHandle
     push ax
     call 0x2786:GrowArray ; 268e 3:1a4
     add sp,byte +0xa
     or ax,ax
-    jnz .label0 ; ↓
-    mov ax,0xffff
-    jmp short .label1 ; ↓
+    jnz .havespace ; ↓
+    mov ax,-1
+    jmp short .end ; ↓
     nop
-.label0: ; 26a0
-    mov si,[0x1680]
-    mov bx,[si+0x946]
-    inc word [si+0x946]
+.havespace: ; 26a0
+    mov si,[GameStatePtr]
+    mov bx,[si+CloneListLen]
+    inc word [si+CloneListLen]
     mov ax,[bp+0x6]
     mov si,bx
     mov cx,bx
     shl si,byte 0x3
-    mov bx,[0x1680]
-    les bx,[bx+0x94c]
-    mov [es:bx+si],ax
-    mov bx,[0x1680]
-    les bx,[bx+0x94c]
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
+    mov [es:bx+si+Connection.fromX],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
     mov ax,[bp+0x8]
-    mov [es:bx+si+0x2],ax
-    mov bx,[0x1680]
-    les bx,[bx+0x94c]
-    mov word [es:bx+si+0x4],0xffff
-    mov bx,[0x1680]
-    les bx,[bx+0x94c]
-    mov word [es:bx+si+0x6],0xffff
+    mov [es:bx+si+Connection.fromY],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
+    mov word [es:bx+si+Connection.toX],-1
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
+    mov word [es:bx+si+Connection.toY],-1
     mov ax,cx
-.label1: ; 26ee
+.end: ; 26ee
     pop si
 endfunc
 
@@ -4495,19 +4495,19 @@ func DeleteCloneMachine_Unused
     mov dx,[bp+0x6]
     or dx,dx
     jl .label1 ; ↓
-    mov bx,[0x1680]
-    cmp [bx+0x946],dx
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],dx
     jng .label1 ; ↓
-    dec word [bx+0x946]
-    mov bx,[0x1680]
-    cmp [bx+0x946],dx
+    dec word [bx+CloneListLen]
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],dx
     jng .label1 ; ↓
     mov ax,dx
     shl ax,byte 0x3
     mov [bp-0x4],ax
 .label0: ; 272c
-    mov ax,[bx+0x94c]
-    mov dx,[bx+0x94e]
+    mov ax,[bx+CloneListPtr]
+    mov dx,[bx+CloneListSeg]
     add ax,[bp-0x4]
     mov cx,ax
     mov bx,dx
@@ -4525,8 +4525,8 @@ func DeleteCloneMachine_Unused
     add word [bp-0x4],byte +0x8
     inc word [bp+0x6]
     mov ax,[bp+0x6]
-    mov bx,[0x1680]
-    cmp [bx+0x946],ax
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],ax
     jg .label0 ; ↑
 .label1: ; 2760
     pop si
@@ -4550,8 +4550,8 @@ func EnterTeleport
     mov bx,[bx]
     shl bx,byte 0x5
     add bx,[si]
-    mov si,[0x1680]
-    mov al,[bx+si]
+    mov si,[GameStatePtr]
+    mov al,[bx+si+Upper]
     mov [bp-0x7],al
     or di,di
     jnl .label0 ; ↓
@@ -4560,8 +4560,8 @@ func EnterTeleport
     lea bx,[di-0x1]
     or bx,bx
     jnl .label1 ; ↓
-    mov bx,[0x1680]
-    mov bx,[bx+0x950]
+    mov bx,[GameStatePtr]
+    mov bx,[bx+TeleportListLen]
     dec bx
 .label1: ; 27b7
     cmp bx,di
@@ -4572,8 +4572,8 @@ func EnterTeleport
     mov [bp-0xe],di
     mov di,[bp+0xe]
 .label3: ; 27c7
-    mov bx,[0x1680]
-    les bx,[bx+0x956]
+    mov bx,[GameStatePtr]
+    les bx,[bx+TeleportListPtr]
     mov si,[bp-0xa]
     shl si,byte 0x2
     mov ax,[es:bx+si]
@@ -4584,7 +4584,7 @@ func EnterTeleport
     mov bx,cx
     shl bx,byte 0x5
     add bx,ax
-    mov si,[0x1680]
+    mov si,[GameStatePtr]
     cmp byte [bx+si],0x29
     jz .label4 ; ↓
     jmp .label13 ; ↓
@@ -4619,7 +4619,7 @@ func EnterTeleport
     mov bx,[bp-0x4]
     shl bx,byte 0x5
     add bx,[bp-0x6]
-    add bx,[0x1680]
+    add bx,[GameStatePtr]
     cmp byte [bx],0xa
     jnz .label10 ; ↓
     push byte +0x0
@@ -4677,8 +4677,8 @@ func EnterTeleport
 .label13: ; 28b6
     dec word [bp-0xa]
     jns .label14 ; ↓
-    mov bx,[0x1680]
-    mov ax,[bx+0x950]
+    mov bx,[GameStatePtr]
+    mov ax,[bx+TeleportListLen]
     dec ax
     mov [bp-0xa],ax
 .label14: ; 28c7
@@ -4694,16 +4694,16 @@ func EnterTeleport
     call 0x2459:0x56c ; 28d8 8:56c PlaySoundEffect
     add sp,byte +0x4
 .label17: ; 28e0
-    mov bx,[0x1680]
-    les bx,[bx+0x956]
+    mov bx,[GameStatePtr]
+    les bx,[bx+TeleportListPtr]
     mov si,[bp-0xa]
     shl si,byte 0x2
-    mov ax,[es:bx+si]
+    mov ax,[es:bx+si+Point.x]
     mov bx,[bp+0x8]
     mov [bx],ax
-    mov bx,[0x1680]
-    les bx,[bx+0x956]
-    mov ax,[es:bx+si+0x2]
+    mov bx,[GameStatePtr]
+    les bx,[bx+TeleportListPtr]
+    mov ax,[es:bx+si+Point.y]
     mov bx,[bp+0xa]
     mov [bx],ax
 .label18: ; 2907
@@ -4718,11 +4718,11 @@ func FindTeleport
     push di
     push si
     xor cx,cx
-    mov bx,[0x1680]
-    cmp [bx+0x950],cx
+    mov bx,[GameStatePtr]
+    cmp [bx+TeleportListLen],cx
     jng .label3 ; ↓
     mov si,bx
-    les bx,[si+0x956]
+    les bx,[si+TeleportListPtr]
     mov di,[bp+0x6]
 .label0: ; 2934
     cmp [es:bx],di
@@ -4733,14 +4733,14 @@ func FindTeleport
 .label1: ; 2942
     add bx,byte +0x4
     inc cx
-    cmp [si+0x950],cx
+    cmp [si+TeleportListLen],cx
     jg .label0 ; ↑
     jmp short .label3 ; ↓
 .label2: ; 294e
     mov ax,cx
     jmp short .label4 ; ↓
 .label3: ; 2952
-    mov ax,0xffff
+    mov ax,-1
 .label4: ; 2955
     pop si
     pop di
