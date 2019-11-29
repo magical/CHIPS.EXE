@@ -2513,7 +2513,7 @@ func SlipLoop
     push ax
     push word [x]
     push di
-    call 0x168d:0xdae ; 163c
+    call 0x168d:0xdae ; 163c MoveBlock
     add sp,byte +0xe
     or ax,ax
     jz .label14
@@ -4222,185 +4222,225 @@ endfunc
 ; 2442
 
 func PressCloneButton
+    %arg _:word, buttonX:word, buttonY:word
+    %define destX buttonX
+    %define destY buttonY
+    %define cloneTile (bp-0x3)
+    %define monsterX (bp-0x6)
+    %define monsterY (bp-0x8)
+    %define ydir (bp-0xa)
+    %define xdir (bp-0xc)
     sub sp,byte +0xe
     push di
     push si
+    ; Play the button sound
     push word [bp+0xc]
-    push byte +0x9
+    push byte SwitchSound
     call 0x1e81:0x56c ; 2456 8:56c PlaySoundEffect
     add sp,byte +0x4
-    push word [bp+0xa]
-    push word [bp+0x8]
+    ; Find the index in the clone connection list
+    ; store it in si
+    push word [buttonY]
+    push word [buttonX]
     call 0x24b2:FindCloneMachine ; 2464 3:260e
     add sp,byte +0x4
     mov si,ax
     or si,si
-    jnl .label0 ; ↓
-    jmp .label15 ; ↓
-.label0: ; 2475
+    jnl .foundCloneMachine ; ↓
+    jmp .end ; ↓
+.foundCloneMachine: ; 2475
+    ; Load the destination coords
+    ; and store monsterX,monsterY
     shl si,byte 0x3
     mov bx,[GameStatePtr]
     les di,[bx+CloneListPtr]
     add di,si
     mov ax,[es:di+Connection.toX]
-    mov [bp-0x6],ax
-    mov [bp+0x8],ax
+    mov [monsterX],ax
+    mov [destX],ax
     mov cx,[es:di+Connection.toY]
-    mov [bp-0x8],cx
-    mov [bp+0xa],cx
-    lea dx,[bp-0xa]
+    mov [monsterY],cx
+    mov [buttonY],cx
+    ; Load the upper tile at the destination coords
+    ; which should be the monster we're cloning
+    ; clonetile = gameStatePtr->Upper[si]
+    lea dx,[ydir]
     push dx
-    lea dx,[bp-0xc]
+    lea dx,[xdir]
     push dx
     mov bx,cx
     shl bx,byte 0x5
     add bx,ax
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
-    mov [bp-0x3],al
+    mov [cloneTile],al
+    ; Get xdir and ydir from monster tile
     push ax
     call 0x1e4d:GetMonsterDir ; 24af 3:4d8
     add sp,byte +0x6
+    ; Did GetMonsterDir succeed?
+    ; if so, we're cloning a monster
+    ; if not, we're cloning a block
     or ax,ax
-    jnz .label1 ; ↓
-    jmp .label8 ; ↓
-.label1: ; 24be
-    mov ax,[bp-0xa]
-    add [bp+0xa],ax
-    mov ax,[bp-0xc]
-    add [bp+0x8],ax
+    jnz .cloneMonster ; ↓
+    jmp .cloneBlock ; ↓
+
+.cloneMonster: ; 24be
+    ; check if the destination tile is in bounds
+    ; if not, return
+    mov ax,[ydir]
+    add [destY],ax
+    mov ax,[xdir]
+    add [destX],ax
     jns .label2 ; ↓
-    jmp .label15 ; ↓
+    jmp .end ; ↓
 .label2: ; 24cf
-    cmp word [bp+0xa],byte +0x0
+    cmp word [destY],byte +0x0
     jnl .label3 ; ↓
-    jmp .label15 ; ↓
+    jmp .end ; ↓
 .label3: ; 24d8
-    cmp word [bp+0x8],byte +0x20
+    cmp word [destX],byte +0x20
     jl .label4 ; ↓
-    jmp .label15 ; ↓
+    jmp .end ; ↓
 .label4: ; 24e1
-    cmp word [bp+0xa],byte +0x20
-    jl .label5 ; ↓
-    jmp .label15 ; ↓
-.label5: ; 24ea
+    cmp word [destY],byte +0x20
+    jl .inBounds ; ↓
+    jmp .end ; ↓
+.inBounds: ; 24ea
+    ; Is the monster allowed to enter the destination tile?
     lea ax,[bp-0xe]
     push ax
-    push word [bp-0xa]
-    push word [bp-0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    mov al,[bp-0x3]
+    push word [ydir]
+    push word [xdir]
+    push word [destY]
+    push word [destX]
+    mov al,[cloneTile]
     push ax
     call 0x252a:MonsterCanEnterTile ; 24fe 3:1d4a
     add sp,byte +0xc
     or ax,ax
-    jnz .label6 ; ↓
-    mov al,[bp-0x3]
-    mov bx,[bp+0xa]
+    jnz .findMonster ; ↓
+    ; are we blocked because there is
+    ; already a monster with the same tile
+    ; in front of the clone machine?
+    mov al,[cloneTile]
+    mov bx,[destY]
     shl bx,byte 0x5
-    add bx,[bp+0x8]
+    add bx,[destX]
     mov si,[GameStatePtr]
-    cmp [bx+si],al
-    jz .label6 ; ↓
-    jmp .label15 ; ↓
-.label6: ; 2521
-    push word [bp-0x8]
-    push word [bp-0x6]
+    cmp [bx+si+Upper],al
+    jz .findMonster ; ↓
+    jmp .end ; ↓
+.findMonster: ; 2521
+    ; Look for the clone machine coords on the
+    ; monster list. if it's not there, add it
+    push word [monsterY]
+    push word [monsterX]
     call 0x254a:FindMonster ; 2527 3:0
     add sp,byte +0x4
     inc ax
-    jz .label7 ; ↓
-    jmp .label15 ; ↓
-.label7: ; 2535
+    jz .addMonster ; ↓
+    jmp .end ; ↓
+.addMonster: ; 2535
     push byte +0x1
-    push word [bp-0xa]
-    push word [bp-0xc]
-    push word [bp-0x8]
-    push word [bp-0x6]
-    mov al,[bp-0x3]
+    push word [ydir]
+    push word [xdir]
+    push word [monsterY]
+    push word [monsterX]
+    mov al,[cloneTile]
     push ax
     call 0x25d9:NewMonster ; 2547 3:228
     add sp,byte +0xc
-    push word [bp+0xa]
-    push word [bp+0x8]
+    push word [destY]
+    push word [destX]
     call 0x1f25:0x2b2 ; 2555 2:2b2
     add sp,byte +0x4
-    jmp .label15 ; ↓
-.label8: ; 2560
-    mov al,[bp-0x3]
+    jmp .end ; ↓
+
+.cloneBlock: ; 2560
+    ; Figure out the clone direction based on the clone machine tile
+    mov al,[cloneTile]
     sub ah,ah
-    sub ax,0xe
-    jz .label9 ; ↓
-    dec ax
-    jz .label10 ; ↓
-    dec ax
-    jz .label11 ; ↓
-    dec ax
-    jz .label12 ; ↓
-    jmp short .label14 ; ↓
+    sub ax,BlockN
+    jz .blockN ; ↓
+    dec ax ; BlockW
+    jz .blockW ; ↓
+    dec ax ; BlockS
+    jz .blockS ; ↓
+    dec ax ; BlockE
+    jz .blockE ; ↓
+    jmp short .default ; ↓
     nop
-.label9: ; 2576
-    mov word [bp-0xc],0x0
-    mov word [bp-0xa],0xffff
-    jmp short .label14 ; ↓
-.label10: ; 2582
-    mov word [bp-0xc],0xffff
+.blockN: ; 2576
+    mov word [xdir],0x0
+    mov word [ydir],-1
+    jmp short .default ; ↓
+.blockW: ; 2582
+    mov word [xdir],-1
     jmp short .label13 ; ↓
     nop
-.label11: ; 258a
-    mov word [bp-0xc],0x0
-    mov word [bp-0xa],0x1
-    jmp short .label14 ; ↓
-.label12: ; 2596
-    mov word [bp-0xc],0x1
+.blockS: ; 258a
+    mov word [xdir],0x0
+    mov word [ydir],0x1
+    jmp short .default ; ↓
+.blockE: ; 2596
+    mov word [xdir],0x1
 .label13: ; 259b
-    mov word [bp-0xa],0x0
-.label14: ; 25a0
-    mov byte [bp-0x3],0xa
-    mov ax,[bp-0xa]
-    add [bp+0xa],ax
-    mov ax,[bp-0xc]
-    add [bp+0x8],ax
-    js .label15 ; ↓
-    cmp word [bp+0xa],byte +0x0
-    jl .label15 ; ↓
-    cmp word [bp+0x8],byte +0x20
-    jnl .label15 ; ↓
-    cmp word [bp+0xa],byte +0x20
-    jnl .label15 ; ↓
+    mov word [ydir],0x0
+.default: ; 25a0
+    ; cloneTile = Block
+    mov byte [cloneTile],Block
+    ; check if the destination tile is in bounds
+    ; if not, return
+    mov ax,[ydir]
+    add [destY],ax
+    mov ax,[xdir]
+    add [destX],ax
+    js .end ; ↓
+    cmp word [destY],byte +0x0
+    jl .end ; ↓
+    cmp word [destX],byte +0x20
+    jnl .end ; ↓
+    cmp word [destY],byte +0x20
+    jnl .end ; ↓
+    ; Check if the block is allowed to enter the destination tile
+    ; if not, return
     lea ax,[bp-0xe]
     push ax
-    push word [bp-0xa]
-    push word [bp-0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
+    push word [ydir]
+    push word [xdir]
+    push word [destY]
+    push word [destX]
     push byte +0xa
     call 0x2691:BlockCanEnterTile ; 25d6 3:1ca4
     add sp,byte +0xc
     or ax,ax
-    jz .label15 ; ↓
+    jz .end ; ↓
+    ; Move the block there immediately
     push byte +0x0
     push byte +0xa
-    push word [bp-0xa]
-    push word [bp-0xc]
-    mov ax,[bp+0xa]
-    sub ax,[bp-0xa]
+    push word [ydir]
+    push word [xdir]
+    mov ax,[destY]
+    sub ax,[ydir]
     push ax
-    mov ax,[bp+0x8]
-    sub ax,[bp-0xc]
+    mov ax,[destX]
+    sub ax,[xdir]
     push ax
     push word [bp+0x6]
-    call 0x2855:0xdae ; 25fd 7:dae
+    call 0x2855:0xdae ; 25fd 7:dae MoveBlock
     add sp,byte +0xe
-.label15: ; 2605
+.end: ; 2605
     pop si
     pop di
 endfunc
 
 ; 260e
 
+; Find the index of the clone machine with a button at x,y
+; Returns -1 if not found.
 func FindCloneMachine
+    %arg x:word, y:word
     sub sp,byte +0x2
     push di
     push si
@@ -4410,11 +4450,11 @@ func FindCloneMachine
     jng .label3 ; ↓
     mov si,bx
     les bx,[si+CloneListPtr]
-    mov di,[bp+0x6]
+    mov di,[x]
 .label0: ; 2632
     cmp [es:bx+Connection.fromX],di
     jnz .label1 ; ↓
-    mov ax,[bp+0x8]
+    mov ax,[y]
     cmp [es:bx+Connection.fromY],ax
     jz .label2 ; ↓
 .label1: ; 2640
@@ -4629,7 +4669,7 @@ func EnterTeleport
     push word [bp-0x4]
     push word [bp-0x6]
     push word [bp+0x6]
-    call 0x163f:0xdae ; 2852 7:dae
+    call 0x163f:0xdae ; 2852 7:dae MoveBlock
     add sp,byte +0xe
     or ax,ax
     jz .label13 ; ↓
