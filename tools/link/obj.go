@@ -1,10 +1,5 @@
 package main
 
-// This tool is (will be) a "half" linker: it takes several
-// .obj files as input, performs symbol resolution and relocation,
-// and writes out a .bin file for each object which can then
-// be copied into the final executable.
-
 // Reference for the OBJ file format:
 //
 // Tool Interface Standard (TIS)
@@ -14,11 +9,8 @@ package main
 
 import (
 	"encoding/hex"
-	"flag"
 	"fmt"
 	"io"
-	"log"
-	"os"
 )
 
 type Record struct {
@@ -28,9 +20,9 @@ type Record struct {
 	Checksum uint8
 }
 
-func ReadRecord(f *os.File) (*Record, error) {
+func ReadRecord(r io.Reader) (*Record, error) {
 	var header [3]byte
-	_, err := io.ReadFull(f, header[:])
+	_, err := io.ReadFull(r, header[:])
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +37,7 @@ func ReadRecord(f *os.File) (*Record, error) {
 		return nil, fmt.Errorf("record too large: %d", size)
 	}
 	contents := make([]byte, size)
-	if _, err := io.ReadFull(f, contents); err != nil {
+	if _, err := io.ReadFull(r, contents); err != nil {
 		return nil, err
 	}
 	rec := &Record{
@@ -62,9 +54,9 @@ const (
 	TypeFixup  = 0x9c
 )
 
-func dump(f *os.File) error {
+func dump(r io.Reader) error {
 	for {
-		rec, err := ReadRecord(f)
+		rec, err := ReadRecord(r)
 		if err == io.EOF {
 			return nil
 		}
@@ -81,20 +73,6 @@ func dump(f *os.File) error {
 		}
 		fmt.Println()
 	}
-}
-
-func main() {
-	log.SetFlags(0)
-	flag.Parse()
-	f, err := os.Open(flag.Arg(0))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	if err := dump(f); err != nil {
-		log.Fatal(err)
-	}
-
 }
 
 func fixup(r *Record) {
