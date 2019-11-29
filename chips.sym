@@ -90,7 +90,7 @@
 7:0966    DrawStretchedTile
 7:0a74    EndGame
 7:0cca    EndLevel
-7:0dad    MoveBlock
+7:0dae    MoveBlock
 7:1183    MoveChip
 7:18d9    MoveMonster
 
