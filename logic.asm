@@ -6,34 +6,10 @@ SEGMENT CODE ; 3
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
+%include "func.mac"
 
 EXTERN MoveMonster
 EXTERN GlobalUnlock@16
-
-%macro  func 1
-    global %1
-%1:
-    %push func
-    %stacksize small
-    ; Standard function prologue
-    ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
-%endmacro
-
-%macro endfunc 0
-    pop ds
-    pop bp
-    dec bp
-    retf
-    align 2
-    %pop func
-%endmacro
 
 ; 0
 
@@ -83,7 +59,6 @@ func FindMonster
 .end:
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 58
@@ -128,7 +103,6 @@ func FindSlipper
 .end:
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; b0
@@ -184,7 +158,6 @@ func TurnLeft
     mov bx,[yOut]
     mov word [bx],-1
 .end:
-    lea sp,[bp-0x2]
 endfunc
 
 ; 116
@@ -238,7 +211,6 @@ func TurnRight
     mov bx,[yOut]
     mov word [bx],1
 .end:
-    lea sp,[bp-0x2]
 endfunc
 
 ; 17c
@@ -265,7 +237,6 @@ func TurnAround
     mov bx,[yOut]
     mov [bx],ax
 
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1a4
@@ -339,7 +310,6 @@ func GrowArray
 
 .end: ; 21f
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 SEGMENT CODE
@@ -519,7 +489,6 @@ func NewMonster
     mov word [bx+Autopsy],Eaten
 .end: ; 3ac
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 3b4
@@ -597,7 +566,6 @@ func DeleteMonster
     dec word [bx+MonsterListLen]
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 45e
@@ -610,7 +578,6 @@ func DeleteMonsterAt
     add sp,byte +0x4
     push ax
     call 0x5c9:DeleteMonster ; 47a 3:47a
-    lea sp,[bp-0x2]
 endfunc
 
 ; 486
@@ -654,7 +621,6 @@ func SetTileDir
     mov al,[tile]
     add al,0x3
 .end: ; 4d1
-    lea sp,[bp-0x2]
 endfunc
 
 ; 4d8
@@ -707,7 +673,6 @@ func GetMonsterDir
     ; Return 0
     xor ax,ax
 .end: ; 544
-    lea sp,[bp-0x2]
 endfunc
 
 ; 54c
@@ -949,7 +914,6 @@ func InitBoard
 .end: ; 724
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 72e
@@ -960,7 +924,6 @@ func RandInt
     sub dx,dx
     div word [bp+0x6]
     mov ax,dx
-    lea sp,[bp-0x2]
 endfunc
 
 ; 74e
@@ -2172,7 +2135,6 @@ func MonsterLoop
 
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1250
@@ -2214,7 +2176,6 @@ func NewSlipper
     mov dx,[bx+SlipListSeg]
     sub ax,0xb
 .end: ; 12b6
-    lea sp,[bp-0x2]
 endfunc
 
 ; 12be
@@ -2299,7 +2260,6 @@ func DeleteSlipperAt
 .end: ; 138d
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1396
@@ -2328,7 +2288,6 @@ func FindSlipperAt
     xor ax,ax
     cwd
 .end: ; 13d7
-    lea sp,[bp-0x2]
 endfunc
 
 ; 13de
@@ -2559,7 +2518,7 @@ func SlipLoop
     push ax
     push word [x]
     push di
-    call 0x168d:0xdae ; 163c
+    call 0x168d:0xdae ; 163c MoveBlock
     add sp,byte +0xe
     or ax,ax
     jz .label14
@@ -2652,7 +2611,6 @@ func SlipLoop
 .label19: ; 172a
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1734
@@ -2674,7 +2632,6 @@ func ResetInventory
     mov [IceSkateCount],ax
     mov [SuctionBootCount],ax
     mov word [0x20],0x1 ; ???
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1770
@@ -2747,7 +2704,6 @@ func PickUpKeyOrBoot
     push ax
     push cx
     call 0x122b:0x56c ; 17f8 8:56c
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1804
@@ -2809,7 +2765,6 @@ func CanOpenDoor
 .no: ; 1872
     xor ax,ax
 .label6: ; 1874
-    lea sp,[bp-0x2]
 endfunc
 
 ; 187c
@@ -2908,7 +2863,6 @@ func HaveBootsForTile
 .returnZero:
     xor ax,ax
 .end: ; 192c
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1934
@@ -3070,7 +3024,6 @@ func CheckPanelWalls
 .returnTrue: ; 1a4c
     mov ax,0x1
 .return: ; 1a4f
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1a56
@@ -3382,7 +3335,6 @@ func ChipCanEnterTile
 .end: ; 1c9b
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1ca4
@@ -3470,7 +3422,6 @@ func BlockCanEnterTile
 .end: ; 1d41
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1d4a
@@ -3632,7 +3583,6 @@ func MonsterCanEnterTile
 .return: ; 1e60
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1e6a
@@ -3759,7 +3709,6 @@ func PressTankButton
 .end: ; 1fa2
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 1fac
@@ -3846,7 +3795,6 @@ func PressToggleButton
 .end: ; 2063
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 206c
@@ -3935,7 +3883,6 @@ func FindTrapSpan
 .end: ; 2110
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 211a
@@ -3994,7 +3941,6 @@ func PressTrapButton
     jng .loop ; ↑
 .end: ; 21a2
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 21aa
@@ -4088,7 +4034,6 @@ func EnterTrap
 .end: ; 2267
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2270
@@ -4127,7 +4072,6 @@ func FindTrapByButton
 .label4: ; 22b5
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 22be
@@ -4171,7 +4115,6 @@ func FindTrap
 .end: ; 230f
     pop si
     pop di
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2318
@@ -4180,9 +4123,9 @@ func AddTrap_Unused
     sub sp,byte +0x2
     push si
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x93e]
-    cmp [bx+0x93c],ax
-    jl .label0 ; ↓
+    mov ax,[bx+TrapListCap]
+    cmp [bx+TrapListLen],ax
+    jl .longEnough ; ↓
     push byte Connection_size
     push byte +0x8
     mov ax,bx
@@ -4197,11 +4140,11 @@ func AddTrap_Unused
     call 0x2467:GrowArray ; 234a 3:0x1a4
     add sp,byte +0xa
     or ax,ax
-    jnz .label0 ; ↓
-    mov ax,0xffff
-    jmp short .label1 ; ↓
+    jnz .longEnough ; ↓
+    mov ax,-1
+    jmp short .end ; ↓
     nop
-.label0: ; 235c
+.longEnough: ; 235c
     mov si,[GameStatePtr]
     mov bx,[si+TrapListLen]
     inc word [si+TrapListLen]
@@ -4229,24 +4172,627 @@ func AddTrap_Unused
     les bx,[bx+TrapListPtr]
     mov word [es:bx+si+Connection.flag],0x0
     mov ax,dx
-.label1: ; 23be
+.end: ; 23be
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 23c6
-; DeleteTrap_Unused
 
-; 2442 PressCloneButton
-; 260e FindCloneMachine
-; 265c AddCloneMachine (unused)
-; 26f6 DeleteCloneMachine (unused)
-; 276a EnterTeleport
-; 2910 FindTeleport
+func DeleteTrap_Unused
+    sub sp,byte +0x4
+    push di
+    push si
+    mov bx,[bp+0x6]
+    or bx,bx
+    jl .label1 ; ↓
+    mov si,[GameStatePtr]
+    cmp [si+TrapListLen],bx
+    jng .label1 ; ↓
+    dec word [si+TrapListLen]
+    mov si,[GameStatePtr]
+    cmp [si+TrapListLen],bx
+    jng .label1 ; ↓
+    mov ax,bx
+    shl ax,byte 0x2
+    add ax,bx
+    shl ax,1
+    mov [bp-0x4],ax
+.label0: ; 2400
+    mov bx,[GameStatePtr]
+    mov ax,[bx+TrapListPtr]
+    mov dx,[bx+TrapListSeg]
+    add ax,[bp-0x4]
+    mov cx,ax
+    mov bx,dx
+    add ax,0xa
+    push ds
+    mov di,cx
+    mov si,ax
+    mov es,bx
+    mov ds,dx
+    mov cx,0x5
+    rep movsw
+    pop ds
+    add word [bp-0x4],byte +0xa
+    inc word [bp+0x6]
+    mov ax,[bp+0x6]
+    mov bx,[GameStatePtr]
+    cmp [bx+TrapListLen],ax
+    jg .label0 ; ↑
+.label1: ; 2439
+    pop si
+    pop di
+endfunc
 
-INCBIN "base.exe", 0x6200+0x23c6, 0x295e-0x23c6
+; 2442
+
+func PressCloneButton
+    %arg _:word, buttonX:word, buttonY:word
+    %define destX buttonX
+    %define destY buttonY
+    %define cloneTile (bp-0x3)
+    %define monsterX (bp-0x6)
+    %define monsterY (bp-0x8)
+    %define ydir (bp-0xa)
+    %define xdir (bp-0xc)
+    sub sp,byte +0xe
+    push di
+    push si
+    ; Play the button sound
+    push word [bp+0xc]
+    push byte SwitchSound
+    call 0x1e81:0x56c ; 2456 8:56c PlaySoundEffect
+    add sp,byte +0x4
+    ; Find the index in the clone connection list
+    ; store it in si
+    push word [buttonY]
+    push word [buttonX]
+    call 0x24b2:FindCloneMachine ; 2464 3:260e
+    add sp,byte +0x4
+    mov si,ax
+    or si,si
+    jnl .foundCloneMachine ; ↓
+    jmp .end ; ↓
+.foundCloneMachine: ; 2475
+    ; Load the destination coords
+    ; and store monsterX,monsterY
+    shl si,byte 0x3
+    mov bx,[GameStatePtr]
+    les di,[bx+CloneListPtr]
+    add di,si
+    mov ax,[es:di+Connection.toX]
+    mov [monsterX],ax
+    mov [destX],ax
+    mov cx,[es:di+Connection.toY]
+    mov [monsterY],cx
+    mov [buttonY],cx
+    ; Load the upper tile at the destination coords
+    ; which should be the monster we're cloning
+    ; clonetile = gameStatePtr->Upper[si]
+    lea dx,[ydir]
+    push dx
+    lea dx,[xdir]
+    push dx
+    mov bx,cx
+    shl bx,byte 0x5
+    add bx,ax
+    mov si,[GameStatePtr]
+    mov al,[bx+si+Upper]
+    mov [cloneTile],al
+    ; Get xdir and ydir from monster tile
+    push ax
+    call 0x1e4d:GetMonsterDir ; 24af 3:4d8
+    add sp,byte +0x6
+    ; Did GetMonsterDir succeed?
+    ; if so, we're cloning a monster
+    ; if not, we're cloning a block
+    or ax,ax
+    jnz .cloneMonster ; ↓
+    jmp .cloneBlock ; ↓
+
+.cloneMonster: ; 24be
+    ; check if the destination tile is in bounds
+    ; if not, return
+    mov ax,[ydir]
+    add [destY],ax
+    mov ax,[xdir]
+    add [destX],ax
+    jns .label2 ; ↓
+    jmp .end ; ↓
+.label2: ; 24cf
+    cmp word [destY],byte +0x0
+    jnl .label3 ; ↓
+    jmp .end ; ↓
+.label3: ; 24d8
+    cmp word [destX],byte +0x20
+    jl .label4 ; ↓
+    jmp .end ; ↓
+.label4: ; 24e1
+    cmp word [destY],byte +0x20
+    jl .inBounds ; ↓
+    jmp .end ; ↓
+.inBounds: ; 24ea
+    ; Is the monster allowed to enter the destination tile?
+    lea ax,[bp-0xe]
+    push ax
+    push word [ydir]
+    push word [xdir]
+    push word [destY]
+    push word [destX]
+    mov al,[cloneTile]
+    push ax
+    call 0x252a:MonsterCanEnterTile ; 24fe 3:1d4a
+    add sp,byte +0xc
+    or ax,ax
+    jnz .findMonster ; ↓
+    ; are we blocked because there is
+    ; already a monster with the same tile
+    ; in front of the clone machine?
+    mov al,[cloneTile]
+    mov bx,[destY]
+    shl bx,byte 0x5
+    add bx,[destX]
+    mov si,[GameStatePtr]
+    cmp [bx+si+Upper],al
+    jz .findMonster ; ↓
+    jmp .end ; ↓
+.findMonster: ; 2521
+    ; Look for the clone machine coords on the
+    ; monster list. if it's not there, add it
+    push word [monsterY]
+    push word [monsterX]
+    call 0x254a:FindMonster ; 2527 3:0
+    add sp,byte +0x4
+    inc ax
+    jz .addMonster ; ↓
+    jmp .end ; ↓
+.addMonster: ; 2535
+    push byte +0x1
+    push word [ydir]
+    push word [xdir]
+    push word [monsterY]
+    push word [monsterX]
+    mov al,[cloneTile]
+    push ax
+    call 0x25d9:NewMonster ; 2547 3:228
+    add sp,byte +0xc
+    push word [destY]
+    push word [destX]
+    call 0x1f25:0x2b2 ; 2555 2:2b2
+    add sp,byte +0x4
+    jmp .end ; ↓
+
+.cloneBlock: ; 2560
+    ; Figure out the clone direction based on the clone machine tile
+    mov al,[cloneTile]
+    sub ah,ah
+    sub ax,BlockN
+    jz .blockN ; ↓
+    dec ax ; BlockW
+    jz .blockW ; ↓
+    dec ax ; BlockS
+    jz .blockS ; ↓
+    dec ax ; BlockE
+    jz .blockE ; ↓
+    jmp short .default ; ↓
+    nop
+.blockN: ; 2576
+    mov word [xdir],0x0
+    mov word [ydir],-1
+    jmp short .default ; ↓
+.blockW: ; 2582
+    mov word [xdir],-1
+    jmp short .label13 ; ↓
+    nop
+.blockS: ; 258a
+    mov word [xdir],0x0
+    mov word [ydir],0x1
+    jmp short .default ; ↓
+.blockE: ; 2596
+    mov word [xdir],0x1
+.label13: ; 259b
+    mov word [ydir],0x0
+.default: ; 25a0
+    ; cloneTile = Block
+    mov byte [cloneTile],Block
+    ; check if the destination tile is in bounds
+    ; if not, return
+    mov ax,[ydir]
+    add [destY],ax
+    mov ax,[xdir]
+    add [destX],ax
+    js .end ; ↓
+    cmp word [destY],byte +0x0
+    jl .end ; ↓
+    cmp word [destX],byte +0x20
+    jnl .end ; ↓
+    cmp word [destY],byte +0x20
+    jnl .end ; ↓
+    ; Check if the block is allowed to enter the destination tile
+    ; if not, return
+    lea ax,[bp-0xe]
+    push ax
+    push word [ydir]
+    push word [xdir]
+    push word [destY]
+    push word [destX]
+    push byte +0xa
+    call 0x2691:BlockCanEnterTile ; 25d6 3:1ca4
+    add sp,byte +0xc
+    or ax,ax
+    jz .end ; ↓
+    ; Move the block there immediately
+    push byte +0x0
+    push byte +0xa
+    push word [ydir]
+    push word [xdir]
+    mov ax,[destY]
+    sub ax,[ydir]
+    push ax
+    mov ax,[destX]
+    sub ax,[xdir]
+    push ax
+    push word [bp+0x6]
+    call 0x2855:0xdae ; 25fd 7:dae MoveBlock
+    add sp,byte +0xe
+.end: ; 2605
+    pop si
+    pop di
+endfunc
+
+; 260e
+
+; Find the index of the clone machine with a button at x,y
+; Returns -1 if not found.
+func FindCloneMachine
+    %arg x:word, y:word
+    sub sp,byte +0x2
+    push di
+    push si
+    xor cx,cx
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],cx
+    jng .label3 ; ↓
+    mov si,bx
+    les bx,[si+CloneListPtr]
+    mov di,[x]
+.label0: ; 2632
+    cmp [es:bx+Connection.fromX],di
+    jnz .label1 ; ↓
+    mov ax,[y]
+    cmp [es:bx+Connection.fromY],ax
+    jz .label2 ; ↓
+.label1: ; 2640
+    add bx,byte +0x8
+    inc cx
+    cmp [si+CloneListLen],cx
+    jg .label0 ; ↑
+    jmp short .label3 ; ↓
+.label2: ; 264c
+    mov ax,cx
+    jmp short .label4 ; ↓
+.label3: ; 2650
+    mov ax, -1
+.label4: ; 2653
+    pop si
+    pop di
+endfunc
+
+; 265c
+
+func AddCloneMachine_Unused
+    sub sp,byte +0x2
+    push si
+    mov bx,[GameStatePtr]
+    mov ax,[bx+CloneListCap]
+    cmp [bx+CloneListLen],ax
+    jl .havespace ; ↓
+    push byte +0x8
+    push byte +0x8
+    mov ax,bx
+    add ax,CloneListCap
+    push ax
+    mov ax,bx
+    add ax,CloneListPtr
+    push ax
+    mov ax,bx
+    add ax,CloneListHandle
+    push ax
+    call 0x2786:GrowArray ; 268e 3:1a4
+    add sp,byte +0xa
+    or ax,ax
+    jnz .havespace ; ↓
+    mov ax,-1
+    jmp short .end ; ↓
+    nop
+.havespace: ; 26a0
+    mov si,[GameStatePtr]
+    mov bx,[si+CloneListLen]
+    inc word [si+CloneListLen]
+    mov ax,[bp+0x6]
+    mov si,bx
+    mov cx,bx
+    shl si,byte 0x3
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
+    mov [es:bx+si+Connection.fromX],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
+    mov ax,[bp+0x8]
+    mov [es:bx+si+Connection.fromY],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
+    mov word [es:bx+si+Connection.toX],-1
+    mov bx,[GameStatePtr]
+    les bx,[bx+CloneListPtr]
+    mov word [es:bx+si+Connection.toY],-1
+    mov ax,cx
+.end: ; 26ee
+    pop si
+endfunc
+
+; 26f6
+
+func DeleteCloneMachine_Unused
+    sub sp,byte +0x4
+    push di
+    push si
+    mov dx,[bp+0x6]
+    or dx,dx
+    jl .label1 ; ↓
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],dx
+    jng .label1 ; ↓
+    dec word [bx+CloneListLen]
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],dx
+    jng .label1 ; ↓
+    mov ax,dx
+    shl ax,byte 0x3
+    mov [bp-0x4],ax
+.label0: ; 272c
+    mov ax,[bx+CloneListPtr]
+    mov dx,[bx+CloneListSeg]
+    add ax,[bp-0x4]
+    mov cx,ax
+    mov bx,dx
+    add ax,0x8
+    push ds
+    mov di,cx
+    mov si,ax
+    mov es,bx
+    mov ds,dx
+    movsw
+    movsw
+    movsw
+    movsw
+    pop ds
+    add word [bp-0x4],byte +0x8
+    inc word [bp+0x6]
+    mov ax,[bp+0x6]
+    mov bx,[GameStatePtr]
+    cmp [bx+CloneListLen],ax
+    jg .label0 ; ↑
+.label1: ; 2760
+    pop si
+    pop di
+endfunc
+
+; 276a
+
+func EnterTeleport
+    sub sp,byte +0xe
+    push di
+    push si
+    mov bx,[bp+0xa]
+    push word [bx]
+    mov si,[bp+0x8]
+    push word [si]
+    call 0x2871:FindTeleport ; 2783 3:2910
+    add sp,byte +0x4
+    mov di,ax
+    mov bx,[bp+0xa]
+    mov bx,[bx]
+    shl bx,byte 0x5
+    add bx,[si]
+    mov si,[GameStatePtr]
+    mov al,[bx+si+Upper]
+    mov [bp-0x7],al
+    or di,di
+    jnl .label0 ; ↓
+    jmp .label18 ; ↓
+.label0: ; 27a7
+    lea bx,[di-0x1]
+    or bx,bx
+    jnl .label1 ; ↓
+    mov bx,[GameStatePtr]
+    mov bx,[bx+TeleportListLen]
+    dec bx
+.label1: ; 27b7
+    cmp bx,di
+    jnz .label2 ; ↓
+    jmp .label18 ; ↓
+.label2: ; 27be
+    mov [bp-0xa],bx
+    mov [bp-0xe],di
+    mov di,[bp+0xe]
+.label3: ; 27c7
+    mov bx,[GameStatePtr]
+    les bx,[bx+TeleportListPtr]
+    mov si,[bp-0xa]
+    shl si,byte 0x2
+    mov ax,[es:bx+si]
+    mov [bp-0x6],ax
+    add bx,si
+    mov cx,[es:bx+0x2]
+    mov [bp-0x4],cx
+    mov bx,cx
+    shl bx,byte 0x5
+    add bx,ax
+    mov si,[GameStatePtr]
+    cmp byte [bx+si],0x29
+    jz .label4 ; ↓
+    jmp .label13 ; ↓
+.label4: ; 27f7
+    mov si,[bp+0xc]
+    add [bp-0x4],di
+    add [bp-0x6],si
+    jns .label5 ; ↓
+    jmp .label13 ; ↓
+.label5: ; 2805
+    cmp word [bp-0x4],byte +0x0
+    jnl .label6 ; ↓
+    jmp .label13 ; ↓
+.label6: ; 280e
+    cmp word [bp-0x6],byte +0x20
+    jl .label7 ; ↓
+    jmp .label13 ; ↓
+.label7: ; 2817
+    cmp word [bp-0x4],byte +0x20
+    jl .label8 ; ↓
+    jmp .label13 ; ↓
+.label8: ; 2820
+    mov ax,[bp+0x10]
+    or ax,ax
+    jz .label9 ; ↓
+    dec ax
+    jz .label11 ; ↓
+    dec ax
+    jz .label12 ; ↓
+    jmp .label13 ; ↓
+.label9: ; 2830
+    mov bx,[bp-0x4]
+    shl bx,byte 0x5
+    add bx,[bp-0x6]
+    add bx,[GameStatePtr]
+    cmp byte [bx],0xa
+    jnz .label10 ; ↓
+    push byte +0x0
+    push word 0xff
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    push word [bp+0x6]
+    call 0x163f:0xdae ; 2852 7:dae MoveBlock
+    add sp,byte +0xe
+    or ax,ax
+    jz .label13 ; ↓
+.label10: ; 285e
+    push byte +0x1
+    push byte +0x0
+    lea ax,[bp-0xc]
+    push ax
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    call 0x288f:ChipCanEnterTile ; 286e 3:1a56
+    add sp,byte +0xe
+    or ax,ax
+    jz .label13 ; ↓
+    jmp short .label16 ; ↓
+.label11: ; 287c
+    lea ax,[bp-0xc]
+    push ax
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    mov al,[bp-0x7]
+    push ax
+    call 0x213e:BlockCanEnterTile ; 288c 3:1ca4
+    add sp,byte +0xc
+    or ax,ax
+    jz .label13 ; ↓
+    jmp short .label17 ; ↓
+.label12: ; 289a
+    lea ax,[bp-0xc]
+    push ax
+    push di
+    push si
+    push word [bp-0x4]
+    push word [bp-0x6]
+    mov al,[bp-0x7]
+    push ax
+    call 0x2993:MonsterCanEnterTile ; 28aa 3:1d4a
+    add sp,byte +0xc
+    or ax,ax
+    jnz .label17 ; ↓
+.label13: ; 28b6
+    dec word [bp-0xa]
+    jns .label14 ; ↓
+    mov bx,[GameStatePtr]
+    mov ax,[bx+TeleportListLen]
+    dec ax
+    mov [bp-0xa],ax
+.label14: ; 28c7
+    mov ax,[bp-0xe]
+    cmp [bp-0xa],ax
+    jz .label15 ; ↓
+    jmp .label3 ; ↑
+.label15: ; 28d2
+    jmp short .label18 ; ↓
+.label16: ; 28d4
+    push byte +0x1
+    push byte +0xc
+    call 0x2459:0x56c ; 28d8 8:56c PlaySoundEffect
+    add sp,byte +0x4
+.label17: ; 28e0
+    mov bx,[GameStatePtr]
+    les bx,[bx+TeleportListPtr]
+    mov si,[bp-0xa]
+    shl si,byte 0x2
+    mov ax,[es:bx+si+Point.x]
+    mov bx,[bp+0x8]
+    mov [bx],ax
+    mov bx,[GameStatePtr]
+    les bx,[bx+TeleportListPtr]
+    mov ax,[es:bx+si+Point.y]
+    mov bx,[bp+0xa]
+    mov [bx],ax
+.label18: ; 2907
+    pop si
+    pop di
+endfunc
+
+; 2910
+
+func FindTeleport
+    sub sp,byte +0x2
+    push di
+    push si
+    xor cx,cx
+    mov bx,[GameStatePtr]
+    cmp [bx+TeleportListLen],cx
+    jng .label3 ; ↓
+    mov si,bx
+    les bx,[si+TeleportListPtr]
+    mov di,[bp+0x6]
+.label0: ; 2934
+    cmp [es:bx],di
+    jnz .label1 ; ↓
+    mov ax,[bp+0x8]
+    cmp [es:bx+0x2],ax
+    jz .label2 ; ↓
+.label1: ; 2942
+    add bx,byte +0x4
+    inc cx
+    cmp [si+TeleportListLen],cx
+    jg .label0 ; ↑
+    jmp short .label3 ; ↓
+.label2: ; 294e
+    mov ax,cx
+    jmp short .label4 ; ↓
+.label3: ; 2952
+    mov ax,-1
+.label4: ; 2955
+    pop si
+    pop di
+endfunc
 
 ; 295e
+
 func AddTeleport
     %arg x:word, y:word
     sub sp,byte +0x2
@@ -4293,7 +4839,6 @@ func AddTeleport
     mov ax,cx
 .end: ; 29d4
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 29dc
@@ -4338,7 +4883,6 @@ func DeleteTeleport_Unused
     jg .loop
 .end: ; 2a35
     pop si
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2a3e
@@ -4360,7 +4904,6 @@ func GetTileImagePos
     mov [bp-0x4],ax
     mov ax,[bp-0x6]
     mov dx,[bp-0x4]
-    lea sp,[bp-0x2]
 endfunc
 
 ; 2a70

@@ -32,7 +32,14 @@ type Jump struct {
 func main() {
 	start := flag.Uint("start", 0, "start address")
 	single := flag.Bool("one", false, "disassemble a single function")
+	many := flag.Bool("many", false, "disassemble many functions")
+	prefix := flag.String("prefix", "", "function name prefix")
 	flag.Parse()
+
+	if *single && *many {
+		fmt.Fprintln(os.Stderr, "error: invalild flag combination")
+		os.Exit(1)
+	}
 
 	r := bufio.NewReader(os.Stdin)
 	var lines []Line
@@ -89,7 +96,16 @@ top:
 		}
 
 		if breaking && mnemonic != "nop" {
-			break
+			if *many && len(lines) > 0 {
+				printFunctionLabel(*prefix, lines[0].Addr)
+				drain(lines, jumps)
+				fmt.Println()
+				lines = lines[:0]
+				jumps = jumps[:0]
+				breaking = false
+			} else {
+				break
+			}
 		}
 
 		//fmt.Print(line[24:])
@@ -127,6 +143,7 @@ top:
 							Mnemonic: "db",
 						})
 					}
+					number += br.nlines
 					continue top
 				}
 
@@ -158,6 +175,15 @@ top:
 		} else if isJump(mnemonic) {
 			var jumpDest uint64
 			var text string
+			if strings.Contains(arg1, ":") || strings.Contains(arg2, ":") {
+				// far jump. basically a call. ignore
+				lines = append(lines, Line{
+					Addr:     addr,
+					Mnemonic: mnemonic,
+					Text:     line[24:],
+				})
+				continue
+			}
 			if n == 4 {
 				jumpDest, err = strconv.ParseUint(arg1, 0, 32)
 				text = fmt.Sprintf("    %s", mnemonic)
@@ -191,7 +217,7 @@ top:
 			})
 		}
 
-		if *single && mnemonic == "retf" {
+		if (*single || *many) && mnemonic == "retf" {
 			breaking = true
 		}
 	}
@@ -200,6 +226,26 @@ top:
 		return
 	}
 
+	if *many && len(lines) > 0 {
+		printFunctionLabel(*prefix, lines[0].Addr)
+	}
+	drain(lines, jumps)
+
+	if *single || *many {
+		fmt.Println()
+		fmt.Printf("; %x\n", lastAddr)
+	}
+}
+
+func printFunctionLabel(prefix string, addr uint32) {
+	fmt.Printf("; %x\n", addr)
+	fmt.Println()
+	if prefix != "" {
+		fmt.Printf("%s_%04x:\n", prefix, addr)
+	}
+}
+
+func drain(lines []Line, jumps []Jump) {
 	sort.Sort(ByDest(jumps))
 
 	var label int
@@ -233,10 +279,6 @@ top:
 		} else {
 			fmt.Print(line.Text)
 		}
-	}
-	if *single {
-		fmt.Println()
-		fmt.Printf("; %x\n", lastAddr)
 	}
 }
 
@@ -300,6 +342,7 @@ type bytereader struct {
 	r        *bufio.Reader
 	buf      []byte
 	lastline string
+	nlines   int
 }
 
 func (br *bytereader) ReadWord() (uint16, error) {
@@ -329,6 +372,7 @@ func (br *bytereader) SkipByte() error {
 // and appends the raw bytes to br.buf
 func (br *bytereader) readline() error {
 	line, lineerr := br.r.ReadString('\n')
+	br.nlines++
 	br.lastline = line
 	if lineerr != nil && lineerr != io.EOF {
 		return lineerr

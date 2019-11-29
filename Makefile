@@ -18,9 +18,11 @@ check: $(base) chips.exe Makefile
 	nasm -O0 -o $@ $<.tmp
 	rm $<.tmp
 
-data.bin: data.asm base.exe Makefile
-logic.bin: logic.asm base.exe constants.asm structs.asm variables.asm Makefile
-movement.bin: movement.asm constants.asm structs.asm variables.asm Makefile
+# additional dependencies
+logic.bin: constants.asm structs.asm variables.asm func.mac
+movement.bin: constants.asm structs.asm variables.asm func.mac
+seg5.bin: constants.asm variables.asm func.mac
+digits.bin: func.mac
 
 variables.asm: data.asm genvars.sh Makefile
 	sh genvars.sh >variables.asm

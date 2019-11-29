@@ -1,0 +1,27 @@
+%macro  func 1
+    global %1
+%1:
+    %push func
+    %stacksize small
+    ; Standard function prologue
+    ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
+    mov ax,ds
+    nop
+    inc bp
+    push bp
+    db 0x8b,0xec ; mov bp,sp
+    push ds
+    mov ds,ax
+%endmacro
+
+%macro endfunc 0
+    lea sp,[bp-0x2]
+    pop ds
+    pop bp
+    dec bp
+    retf
+    align 2
+    %pop func
+%endmacro
+
+; vim: syntax=nasm
