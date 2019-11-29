@@ -18,6 +18,11 @@ check: $(base) chips.exe Makefile
 	nasm -O0 -o $@ $<.tmp
 	rm $<.tmp
 
+%.obj: %.asm fixmov.awk Makefile
+	awk -f fixmov.awk $< >$<.tmp
+	nasm -O0 -f obj -o $@ $<.tmp
+	rm $<.tmp
+
 # additional dependencies
 logic.bin: constants.asm structs.asm variables.asm func.mac
 movement.bin: constants.asm structs.asm variables.asm func.mac
