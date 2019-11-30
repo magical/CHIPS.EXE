@@ -51,6 +51,8 @@ func ReadRecord(r io.Reader) (*Record, error) {
 
 const (
 	TypePubdef = 0x90
+	TypeExtdef = 0x8c
+	TypeLedata = 0xa0
 	TypeFixup  = 0x9c
 )
 
@@ -130,3 +132,144 @@ func pubdef(r *Record) {
 		fmt.Printf("	%04x\t%s\n", offset, name)
 	}
 }
+
+func ReadNames(r io.Reader) ([]ObjSymbol, error) {
+	// TODO: maybe don't read the whole file
+	var syms []ObjSymbol
+	for {
+		rec, err := ReadRecord(r)
+		if err == io.EOF {
+			return syms, nil
+		}
+		if err != nil {
+			return syms, err
+		}
+		switch rec.Type {
+		case TypePubdef:
+			syms = append(syms, parsePubdef(rec)...)
+		}
+	}
+}
+
+type ObjSymbol struct {
+	Offset int
+	Name   string
+}
+
+func parsePubdef(r *Record) []ObjSymbol {
+	data := r.Contents
+	data = data[2:] // base group index and base seg index
+	// we ignore the segment index because the files we're
+	// concerned with only contain one segment per file
+	var syms []ObjSymbol
+	for len(data) > 0 {
+		n := data[0]
+		name := string(data[1 : n+1])
+		offset := int(data[n+1]) + int(data[n+2])<<8
+		syms = append(syms, ObjSymbol{Offset: offset, Name: name})
+		data = data[1+n+2+1:]
+	}
+	return syms
+}
+
+type ObjLedata struct {
+	SegmentIndex int
+	StartOffset  int
+	Data         []byte
+}
+
+func ParseLedata(r *Record) ObjLedata {
+	if r.Type != TypeLedata {
+		panic(fmt.Sprintf("ParseLedata: wrong record type %x", r.Type))
+	}
+	data := r.Contents
+	segmentIndex, data := readIndex(data)
+	startOffset, data := read16(data)
+	return ObjLedata{
+		SegmentIndex: segmentIndex,
+		StartOffset:  startOffset,
+		Data:         data,
+	}
+}
+
+func readIndex(b []byte) (int, []byte) {
+	n := int(b[0])
+	if n&0x80 != 0 {
+		n = n&0x7f<<8 | int(b[1])
+		return n, b[2:]
+	} else {
+		return n, b[1:]
+	}
+}
+
+func read16(b []byte) (int, []byte) {
+	n := int(b[0]) | int(b[1])<<8
+	return n, b[2:]
+}
+
+type ObjFixup struct {
+	FixupType int
+	//LocationType int
+
+	DataOffset int
+
+	RefType  int
+	RefIndex int
+	//FrameType    int
+	//TargetType   int
+	//Datum        int
+}
+
+func ParseFixup(r *Record) ([]ObjFixup, error) {
+	if r.Type != TypeFixup {
+		panic(fmt.Sprintf("ParseFixup: wrong record type %x", r.Type))
+	}
+	data := r.Contents
+	var list []ObjFixup
+	for len(data) > 0 {
+		// FIXUP subrecord
+		var ft int = FixupUnknown
+		switch data[0] & 0xFC {
+		case 0xC4:
+			ft = FixupOffset
+		case 0xC8:
+			ft = FixupSegment
+		//case 0xCC:
+		//	locationStr = "32-bit pointer"
+		//case 0xE4:
+		//	locationStr = "32-bit offset"
+		default:
+			return nil, fmt.Errorf("ParseFixup: unknown location type")
+		}
+		var rt int
+		switch data[2] {
+		case 0x54:
+			rt = RefSegment
+		case 0x56:
+			rt = RefExternal
+		default:
+			return nil, fmt.Errorf("ParseFixup: unknown frame/target type")
+		}
+		var f ObjFixup
+		f.DataOffset = int(data[1]) | (int(data[0]&3) << 8)
+		f.FixupType = ft
+		f.RefType = rt
+		f.RefIndex = int(data[3]) // either a segment index or a symbol index
+		list = append(list, f)
+		data = data[4:]
+	}
+	return list, nil
+}
+
+const (
+	FixupUnknown = -1
+	FixupSegment = 1
+	FixupOffset  = 2
+	//FixupPointer32 = 3
+	//FixupOffset32  = 9
+)
+
+const (
+	RefSegment  = 0
+	RefExternal = 1
+)
