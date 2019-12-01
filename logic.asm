@@ -4260,7 +4260,7 @@ func PressCloneButton
     mov [destX],ax
     mov cx,[es:di+Connection.toY]
     mov [monsterY],cx
-    mov [buttonY],cx
+    mov [destY],cx
     ; Load the upper tile at the destination coords
     ; which should be the monster we're cloning
     ; clonetile = gameStatePtr->Upper[si]
