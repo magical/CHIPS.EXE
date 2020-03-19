@@ -46,7 +46,7 @@ func DoTick
 
     ; If ChipHasMoved is set, just clear it
 .label2: ; 32
-    cmp word [bx+ChipHasMoved],byte +0x0 ; no mouse target
+    cmp word [bx+ChipHasMoved],byte +0x0
     jz .tryBufferedKeystroke
 .clearAlreadyMovedFlag: ; 39
     mov bx,[GameStatePtr]
