@@ -64,6 +64,22 @@ Level130Message                     equ 0x1291
 Level140Message                     equ 0x1315
 Chipend                             equ 0x1352
 Chipend2                            equ 0x135A
+MusicEnabled                        equ 0x13C6
+SoundEnabled                        equ 0x13C8
+MusicMenuItemEnabled                equ 0x13CA
+SoundMenuItemEnabled                equ 0x13CC
+fpSndPlaySound                      equ 0x13CE
+fpMciSendCommand                    equ 0x13D2
+fpMciGetErrorString                 equ 0x13D6
+hmoduleMMSystem                     equ 0x13DA
+s_MMSYSTEM_DLL                      equ 0x13DE
+s_sndPlaySound                      equ 0x13EB
+s_mciSendCommand                    equ 0x13F8
+s_mciGetErrorString                 equ 0x1407
+s_midiOutGetNumDevs                 equ 0x1419
+s_waveOutGetNumDevs                 equ 0x142B
+s_sequencer                         equ 0x143D
+EmptyStringForMciSendCommand        equ 0x1447
 GameStatePtr                        equ 0x1680
 BlueKeyCount                        equ 0x1682
 RedKeyCount                         equ 0x1684
@@ -76,5 +92,7 @@ SuctionBootCount                    equ 0x1690
 ChipsRemainingCount                 equ 0x1692
 TimeRemaining                       equ 0x1694
 TotalScore                          equ 0x1696
+fpWaveOutGetNumDevs                 equ 0x1726
+fpMidiOutGetNumDevs                 equ 0x1730
 
 ; vim: syntax=nasm

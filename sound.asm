@@ -4,85 +4,96 @@ SEGMENT CODE ; 8
 
 ;%include "constants.asm"
 ;%include "structs.asm"
-;%include "variables.asm"
+%include "variables.asm"
 %include "func.mac"
 
 ; 0
 
+%define SEM_NOOPENFILEERRORBOX 0x8000
+
 func InitSound
     sub sp,byte +0x2
     push si
-    push word 0x8000
+    ; Tell OpenFile not to display an error message on file not found
+    push word SEM_NOOPENFILEERRORBOX
     call 0x0:0xd1 ; 11 KERNEL.SetErrorMode
     mov si,ax
+    ; Load MMSYSTEM.DLL
     push ds
-    push word 0x13de
+    push word s_MMSYSTEM_DLL
     call 0x0:0xffff ; 1c KERNEL.LoadLibrary
-    mov [0x13da],ax
+    mov [hmoduleMMSystem],ax
     cmp ax,0x20
-    ja .label0 ; ↓
-    jmp .label2 ; ↓
-.label0: ; 2c
+    ja .loadedMMSystem ; ↓
+    jmp .failedToLoadLibrary ; ↓
+.loadedMMSystem: ; 2c
+    ; Look up a bunch of functions from the library
     push ax
     push ds
-    push word 0x13eb
+    push word s_sndPlaySound
     call 0x0:0x46 ; 31 KERNEL.GetProcAddress
-    mov [0x13ce],ax
-    mov [0x13d0],dx
-    push word [0x13da]
+    mov [fpSndPlaySound],ax
+    mov [fpSndPlaySound+2],dx
+    push word [hmoduleMMSystem]
     push ds
-    push word 0x13f8
+    push word s_mciSendCommand
     call 0x0:0x5a ; 45 KERNEL.GetProcAddress
-    mov [0x13d2],ax
-    mov [0x13d4],dx
-    push word [0x13da]
+    mov [fpMciSendCommand],ax
+    mov [fpMciSendCommand+2],dx
+    push word [hmoduleMMSystem]
     push ds
-    push word 0x1407
+    push word s_mciGetErrorString
     call 0x0:0x6e ; 59 KERNEL.GetProcAddress
-    mov [0x13d6],ax
-    mov [0x13d8],dx
-    push word [0x13da]
+    mov [fpMciGetErrorString],ax
+    mov [fpMciGetErrorString+2],dx
+    push word [hmoduleMMSystem]
     push ds
-    push word 0x1419
+    push word s_midiOutGetNumDevs
     call 0x0:0x82 ; 6d KERNEL.GetProcAddress
-    mov [0x1730],ax
-    mov [0x1732],dx
-    push word [0x13da]
+    mov [fpMidiOutGetNumDevs],ax
+    mov [fpMidiOutGetNumDevs+2],dx
+    push word [hmoduleMMSystem]
     push ds
-    push word 0x142b
+    push word s_waveOutGetNumDevs
     call 0x0:0xffff ; 81 KERNEL.GetProcAddress
-    mov [0x1726],ax
-    mov [0x1728],dx
-    call far [0x1730] ; 8d
+    mov [fpWaveOutGetNumDevs],ax
+    mov [fpWaveOutGetNumDevs+2],dx
+    ; Enable (or disable) Background Music menu item if midiOutGetNumDevs() != 0
+    call far [fpMidiOutGetNumDevs] ; 8d
     cmp ax,0x1
     sbb ax,ax
     inc ax
-    mov [0x13ca],ax
-    call far [0x1726] ; 9a
+    mov [MusicMenuItemEnabled],ax
+    ; Enable (or disable) Sound Effects menu item if waveOutGetNumDevs() != 0
+    call far [fpWaveOutGetNumDevs] ; 9a
     cmp ax,0x1
     sbb ax,ax
     inc ax
-    mov [0x13cc],ax
-    cmp word [0x13ca],byte +0x0
-    jnz .label1 ; ↓
-    mov word [0x13c6],0x0
-.label1: ; b4
+    mov [SoundMenuItemEnabled],ax
+    ; If we can't play midi, turn music off
+    cmp word [MusicMenuItemEnabled],byte +0x0
+    jnz .dontDisableMusic ; ↓
+    mov word [MusicEnabled],0x0
+.dontDisableMusic: ; b4
+    ; if we can't play sounds, turn sound effects off
     or ax,ax
-    jnz .label3 ; ↓
-    mov [0x13c8],ax
-    jmp short .label3 ; ↓
+    jnz .done ; ↓
+    mov [SoundEnabled],ax
+    jmp short .done ; ↓
     nop
-.label2: ; be
+.failedToLoadLibrary: ; be
     xor ax,ax
-    mov [0x13da],ax
-    mov [0x13cc],ax
-    mov [0x13ca],ax
-    mov [0x13c8],ax
-    mov [0x13c6],ax
-.label3: ; cf
+    mov [hmoduleMMSystem],ax
+    mov [SoundMenuItemEnabled],ax
+    mov [MusicMenuItemEnabled],ax
+    mov [SoundEnabled],ax
+    mov [MusicEnabled],ax
+.done: ; cf
+    ; change error mode back
     push si
     call 0x0:0xffff ; d0 KERNEL.SetErrorMode
-    cmp word [0x13da],byte +0x1
+    ; Return 1 if we loaded the module sucessfully, 0 otherwise
+    cmp word [hmoduleMMSystem],byte +0x1
     sbb ax,ax
     inc ax
     pop si
@@ -92,12 +103,12 @@ endfunc
 
 func TeardownSound
     sub sp,byte +0x2
-    cmp word [0x13da],byte +0x0
+    cmp word [hmoduleMMSystem],byte +0x0
     jz .label0 ; ↓
-    push word [0x13da]
+    push word [hmoduleMMSystem]
     call 0x0:0xffff ; fe KERNEL.FreeLibrary
 .label0: ; 103
-    mov word [0x13da],0x0
+    mov word [hmoduleMMSystem],0x0
 endfunc
 
 ; 110
@@ -108,13 +119,13 @@ func FUN_8_0110
     jz .label0 ; ↓
     jmp .label5 ; ↓
 .label0: ; 126
-    mov word [bp-0x56],0x143d
+    mov word [bp-0x56], s_sequencer
     mov [bp-0x54],ds
     mov ax,[bp+0x8]
     mov dx,[bp+0xa]
     mov [bp-0x52],ax
     mov [bp-0x50],dx
-    mov word [bp-0x4e],0x1447
+    mov word [bp-0x4e],EmptyStringForMciSendCommand
     mov [bp-0x4c],ds
     push byte +0x0
     push word 0x803
@@ -123,7 +134,7 @@ func FUN_8_0110
     lea ax,[bp-0x5e]
     push ss
     push ax
-    call far [0x13d2] ; 151
+    call far [fpMciSendCommand] ; 151
     mov [bp-0x6],ax
     mov [bp-0x4],dx
     or dx,ax
@@ -144,7 +155,7 @@ func FUN_8_0110
     lea ax,[bp-0x4a]
     push ss
     push ax
-    call far [0x13d2] ; 186
+    call far [fpMciSendCommand] ; 186
     mov [bp-0x6],ax
     mov [bp-0x4],dx
     or dx,ax
@@ -156,7 +167,7 @@ func FUN_8_0110
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call far [0x13d2] ; 1a3
+    call far [fpMciSendCommand] ; 1a3
     mov word [0x13c4],0x0
     jmp short .label1 ; ↑
     nop
@@ -177,7 +188,7 @@ func FUN_8_0110
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call far [0x13d2] ; 1dc
+    call far [fpMciSendCommand] ; 1dc
     mov word [0x13c4],0x0
     jmp short .label6 ; ↓
 .label5: ; 1e8
@@ -195,7 +206,7 @@ func FUN_8_0110
     lea ax,[bp-0x3a]
     push ss
     push ax
-    call far [0x13d2] ; 20e
+    call far [fpMciSendCommand] ; 20e
     mov [bp-0x6],ax
     mov [bp-0x4],dx
     or dx,ax
@@ -240,8 +251,8 @@ func FUN_8_025c
     push ax
     call 0x0:0xffff ; 27b USER._wsprintf
     add sp,byte +0xc
-    mov ax,[0x13d8]
-    or ax,[0x13d6]
+    mov ax,[fpMciGetErrorString+2]
+    or ax,[fpMciGetErrorString]
     jz .label0 ; ↓
     push word [bp+0x8]
     push word [bp+0x6]
@@ -254,7 +265,7 @@ func FUN_8_025c
     push ss
     push ax
     push word 0x80
-    call far [0x13d6] ; 2a8
+    call far [fpMciGetErrorString] ; 2a8
     or ax,ax
     jz .label0 ; ↓
     push byte +0x30
@@ -285,7 +296,7 @@ func FUN_8_02d4
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call far [0x13d2] ; 2f7
+    call far [fpMciSendCommand] ; 2f7
 .label0: ; 2fb
     mov word [0x13c4],0x0
 endfunc
@@ -296,12 +307,12 @@ func FUN_8_0308
     sub sp,byte +0x12
     push di
     push si
-    cmp word [0x13c6],byte +0x0
+    cmp word [MusicEnabled],byte +0x0
     jnz .label0 ; ↓
     jmp .label12 ; ↓
 .label0: ; 321
-    mov ax,[0x13d4]
-    or ax,[0x13d2]
+    mov ax,[fpMciSendCommand+2]
+    or ax,[fpMciSendCommand]
     jnz .label1 ; ↓
     jmp .label12 ; ↓
 .label1: ; 32d
@@ -532,14 +543,14 @@ endfunc
 
 func PlaySoundEffect
     sub sp,byte +0x6
-    cmp word [0x13c8],byte +0x0
+    cmp word [SoundEnabled],byte +0x0
     jz .label0 ; ↓
-    mov ax,[0x13d0]
-    or ax,[0x13ce]
+    mov ax,[fpSndPlaySound+2]
+    or ax,[fpSndPlaySound]
     jz .label0 ; ↓
     mov bx,[bp+0x6]
     shl bx,1
-    mov ax,[bx+0x16a2]
+    mov ax,[0x16a2+bx]
     mov dx,ds
     mov cx,ax
     mov [bp-0x4],dx
@@ -552,7 +563,7 @@ func PlaySoundEffect
     and ax,0x10
     or al,0x3
     push ax
-    call far [0x13ce] ; 5ad
+    call far [fpSndPlaySound] ; 5ad
 .label0: ; 5b1
 endfunc
 
@@ -562,13 +573,13 @@ func FUN_8_05b8
     sub sp,byte +0x4
     push di
     push si
-    mov ax,[0x13d0]
-    or ax,[0x13ce]
+    mov ax,[fpSndPlaySound+2]
+    or ax,[fpSndPlaySound]
     jz .label0 ; ↓
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call far [0x13ce] ; 5d6
+    call far [fpSndPlaySound] ; 5d6
 .label0: ; 5da
     mov si,0x16a2
     mov di,[bp-0x4]

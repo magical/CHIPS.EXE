@@ -405,22 +405,30 @@ db 0
 db "MIDI Error on file %s: ", 0
 db "None of the MIDI files specified in entpack.ini were found.", 0
 
-dw 0, 1, 1, 0
-dw 0, 0, 0, 0
-dw 0, 0, 0, 0
-dw 0
+dw 0 ; 13c4
+MusicEnabled dw 1 ; 13c6
+SoundEnabled dw 1 ; 13c8
+MusicMenuItemEnabled dw 0 ; 13ca
+SoundMenuItemEnabled dw 0 ; 13cc
+fpSndPlaySound dw 0, 0 ; 13ce
+fpMciSendCommand dw 0, 0 ; 13d2
+fpMciGetErrorString dw 0, 0 ; 13d6
+
+hmoduleMMSystem dw 0 ; 13da
+dw 0 ; 13dc
 
 ; 13de
 
-db 0x4d, 0x4d
-db "SYSTEM.DLL", 0
-db "sndPlaySound", 0
-db "mciSendCommand", 0
-db "mciGetErrorString", 0
-db "midiOutGetNumDevs", 0
-db "waveOutGetNumDevs", 0
-db "sequencer", 0
-db 0, 0
+s_MMSYSTEM_DLL db "MMSYSTEM.DLL", 0
+s_sndPlaySound db "sndPlaySound", 0
+s_mciSendCommand db "mciSendCommand", 0
+s_mciGetErrorString db "mciGetErrorString", 0
+s_midiOutGetNumDevs db "midiOutGetNumDevs", 0
+s_waveOutGetNumDevs db "waveOutGetNumDevs", 0
+
+s_sequencer db "sequencer", 0 ; 143d
+EmptyStringForMciSendCommand db 0, 0
+
 db "The MIDI Mapper is not available. Continue?", 0
 db "Unknown Error", 0
 times 13 db 0
@@ -497,6 +505,10 @@ times 44 dw 0 ; 1698
 ; Digit image pointers
 times 24 dw 0 ; 16f0
 
-times 12 dw 0 ; 1720
+times 3 dw 0 ; 1720
+fpWaveOutGetNumDevs dw 0, 0 ; 1726
+times 3 dw 0 ; 172a
+fpMidiOutGetNumDevs dw 0, 0; 1730
+times 2 dw 0 ; 1734
 
 ; vim: syntax=nasm
