@@ -1,9 +1,9 @@
-SEGMENTS=data.bin logic.bin seg5.bin movement.bin digits.bin
+SEGMENTS=data.bin logic.bin seg5.bin movement.bin sound.bin digits.bin
 RESOURCES=chips.ico res/*
 chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
 	nasm -o $@ $<
 
-base=basedata.bin baselogic.bin basedigits.bin baseseg5.bin basemovement.bin
+base=basedata.bin baselogic.bin basedigits.bin baseseg5.bin basemovement.bin baseseg8.bin
 
 check: $(base) chips.exe Makefile
 	-cmp basedata.bin data.bin
@@ -11,6 +11,7 @@ check: $(base) chips.exe Makefile
 	-cmp basedigits.bin digits.bin
 	-cmp baseseg5.bin seg5.bin
 	-cmp basemovement.bin movement.bin
+	-cmp baseseg8.bin sound.bin
 	cmp base.exe chips.exe
 
 %.bin: %.asm fixmov.awk Makefile
@@ -23,6 +24,7 @@ logic.bin: constants.asm structs.asm variables.asm func.mac
 movement.bin: constants.asm structs.asm variables.asm func.mac
 seg5.bin: constants.asm variables.asm func.mac
 digits.bin: func.mac
+sound.bin: func.mac
 
 variables.asm: data.asm genvars.sh Makefile
 	sh genvars.sh >variables.asm
@@ -54,7 +56,7 @@ baseseg6.bin: bin/dd base.exe
 basemovement.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xae00 -count 0x1cd4
 baseseg8.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xcc00 -count 0x800
+	bin/dd <base.exe >$@ -skip 0xcc00 -count 0x620
 basedigits.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xd400 -count 0x150
 

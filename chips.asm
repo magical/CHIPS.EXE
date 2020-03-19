@@ -313,7 +313,9 @@ Segment7:
     INCBIN "movement.bin"
     INCBIN "base.exe", 0xae00+0x1cd4, 300
 
-Segment8: INCBIN "base.exe", 0xcc00, 0x800
+Segment8:
+    INCBIN "sound.bin"
+    INCBIN "base.exe", 0xcc00+0x620, 0x1e0
 
 ; d400
 ; Segment 9
