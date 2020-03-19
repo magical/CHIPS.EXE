@@ -10,6 +10,7 @@ hwndCounter                         equ 0x16
 hwndInventory                       equ 0x1C
 hwndHint                            equ 0x1E
 GamePaused                          equ 0x24
+hMenu                               equ 0x26
 PickUpToolSoundKey                  equ 0x336
 OpenDoorSoundKey                    equ 0x346
 ChipDeathSoundKey                   equ 0x354
@@ -64,6 +65,8 @@ Level130Message                     equ 0x1291
 Level140Message                     equ 0x1315
 Chipend                             equ 0x1352
 Chipend2                            equ 0x135A
+s_MIDI_Error_on_file_s              equ 0x1370
+s_None_of_the_MIDI_files_specified___ equ 0x1388
 MusicEnabled                        equ 0x13C6
 SoundEnabled                        equ 0x13C8
 MusicMenuItemEnabled                equ 0x13CA
@@ -72,6 +75,7 @@ fpSndPlaySound                      equ 0x13CE
 fpMciSendCommand                    equ 0x13D2
 fpMciGetErrorString                 equ 0x13D6
 hmoduleMMSystem                     equ 0x13DA
+NumMIDIFiles                        equ 0x13DC
 s_MMSYSTEM_DLL                      equ 0x13DE
 s_sndPlaySound                      equ 0x13EB
 s_mciSendCommand                    equ 0x13F8
@@ -80,6 +84,8 @@ s_midiOutGetNumDevs                 equ 0x1419
 s_waveOutGetNumDevs                 equ 0x142B
 s_sequencer                         equ 0x143D
 EmptyStringForMciSendCommand        equ 0x1447
+s_The_MIDI_Mapper_is_not_available_Continue? equ 0x1449
+s_Unknown_Error                     equ 0x1475
 GameStatePtr                        equ 0x1680
 BlueKeyCount                        equ 0x1682
 RedKeyCount                         equ 0x1684

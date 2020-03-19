@@ -118,7 +118,7 @@ func InitGraphics
     mov [0x172e],ax
 
     ; Check or uncheck the 'Color' menu item as appropriate.
-    push word [0x26]        ; hMenu
+    push word [hMenu]        ; hMenu
     push byte ID_COLOR      ; uIDCheckItem
     cmp word [0xa18],byte +0x1
     jz .label12

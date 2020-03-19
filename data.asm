@@ -26,7 +26,7 @@ hwndHint     dw 0 ; 0x1e
     dw 0 ; 0x20 ; inventory changed
     dw 0 ; 0x22 *
 GamePaused   dw 0 ; 0x24
-    dw 0 ; 0x26 HMENU
+hMenu        dw 0 ; 0x26 HMENU
     dw 0 ; 0x28
     dw 0 ; 0x2a
     dw 0 ; 0x2c
@@ -402,8 +402,8 @@ Chipend db "chipend", 0
 Chipend2 db "chipend", 0
 db "DLG_COMPLETE", 0
 db 0
-db "MIDI Error on file %s: ", 0
-db "None of the MIDI files specified in entpack.ini were found.", 0
+s_MIDI_Error_on_file_s db "MIDI Error on file %s: ", 0
+s_None_of_the_MIDI_files_specified___ db "None of the MIDI files specified in entpack.ini were found.", 0
 
 dw 0 ; 13c4
 MusicEnabled dw 1 ; 13c6
@@ -415,7 +415,7 @@ fpMciSendCommand dw 0, 0 ; 13d2
 fpMciGetErrorString dw 0, 0 ; 13d6
 
 hmoduleMMSystem dw 0 ; 13da
-dw 0 ; 13dc
+NumMIDIFiles dw 0 ; 13dc
 
 ; 13de
 
@@ -429,9 +429,10 @@ s_waveOutGetNumDevs db "waveOutGetNumDevs", 0
 s_sequencer db "sequencer", 0 ; 143d
 EmptyStringForMciSendCommand db 0, 0
 
-db "The MIDI Mapper is not available. Continue?", 0
-db "Unknown Error", 0
-times 13 db 0
+s_The_MIDI_Mapper_is_not_available_Continue? db "The MIDI Mapper is not available. Continue?", 0
+s_Unknown_Error db "Unknown Error", 0
+
+times 13 db 0 ; 1482
 dw 1, -1, 0, 0, 1, 0
 db "_C_FILE_INFO=", 0
 

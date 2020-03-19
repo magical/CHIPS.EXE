@@ -2,7 +2,7 @@ SEGMENT CODE ; 8
 
 ; Sound & music
 
-;%include "constants.asm"
+%include "constants.asm"
 ;%include "structs.asm"
 %include "variables.asm"
 %include "func.mac"
@@ -176,8 +176,8 @@ func FUN_8_0110
     jz .label5 ; ↓
     push byte +0x4
     push ds
-    push word 0x1449
-    push word [0x10]
+    push word s_The_MIDI_Mapper_is_not_available_Continue?
+    push word [hwndMain]
     call 0x2c7:0x0 ; 1c0 2:0 ShowMessageBox
     add sp,byte +0x8
     cmp ax,0x7
@@ -225,8 +225,8 @@ func FUN_8_022a
     push byte +0x1
     push byte +0x0
     push byte +0x0
-    push word [0x10]
-    call 0x33a:0x110 ; 241 8:110
+    push word [hwndMain]
+    call 0x33a:FUN_8_0110 ; 241 8:110
     add sp,byte +0x8
     or dx,ax
     jnz .label0 ; ↓
@@ -239,13 +239,13 @@ endfunc
 
 ; 25c
 
-func FUN_8_025c
+func ShowMIDIError
     sub sp,0x11a
     push si
-    push word [bp+0xc]
-    push word [bp+0xa]
+    push word [bp+0xc] ; filename seg
+    push word [bp+0xa] ; filename
     push ds
-    push word 0x1370
+    push word s_MIDI_Error_on_file_s
     lea ax,[bp-0x11a]
     push ss
     push ax
@@ -276,9 +276,9 @@ func FUN_8_025c
 .label0: ; 2ba
     push byte +0x30
     push ds
-    push word 0x1475
+    push word s_Unknown_Error
 .label1: ; 2c0
-    push word [0x10]
+    push word [hwndMain]
     call 0xffff:0x0 ; 2c4 2:0 ShowMessageBox
     add sp,byte +0x8
     pop si
@@ -307,28 +307,30 @@ func FUN_8_0308
     sub sp,byte +0x12
     push di
     push si
+    ; some preliminary checks
     cmp word [MusicEnabled],byte +0x0
-    jnz .label0 ; ↓
-    jmp .label12 ; ↓
-.label0: ; 321
+    jnz .musicEnabled ; ↓
+    jmp .returnZero ; ↓
+.musicEnabled: ; 321
     mov ax,[fpMciSendCommand+2]
     or ax,[fpMciSendCommand]
-    jnz .label1 ; ↓
-    jmp .label12 ; ↓
-.label1: ; 32d
-    cmp word [0x13dc],byte +0x0
-    jnz .label2 ; ↓
-    jmp .label12 ; ↓
-.label2: ; 337
-    call 0x3a9:0x2d4 ; 337 8:2d4
-    mov ax,[bp+0x6]
+    jnz .mciSendCommandExists ; ↓
+    jmp .returnZero ; ↓
+.mciSendCommandExists: ; 32d
+    cmp word [NumMIDIFiles],byte +0x0
+    jnz .haveSomeMIDIFiles ; ↓
+    jmp .returnZero ; ↓
+.haveSomeMIDIFiles: ; 337
+    call 0x3a9:FUN_8_02d4 ; 337 8:2d4
+    mov ax,[bp+0x6] ; level number
     cwd
-    idiv word [0x13dc]
+    idiv word [NumMIDIFiles]
     mov si,dx
-.label3: ; 346
-    mov ax,[0x13dc]
+
+.loop: ; 346
+    mov ax,[NumMIDIFiles]
     shl ax,1
-    add ax,0x16c6
+    add ax,0x16c8-2
     mov [bp-0x6],ax
 .label4: ; 351
     mov bx,si
@@ -337,13 +339,13 @@ func FUN_8_0308
     jmp .label9 ; ↓
 .label5: ; 35d
     lea cx,[si+0x1]
-    cmp cx,[0x13dc]
+    cmp cx,[NumMIDIFiles]
     jnl .label7 ; ↓
     mov [bp-0xc],si
     mov bx,cx
     shl bx,1
-    add bx,0x16c6
-    mov dx,[0x13dc]
+    add bx,0x16c8-2
+    mov dx,[NumMIDIFiles]
     sub dx,cx
     mov [bp-0x4],cx
 .label6: ; 37a
@@ -357,15 +359,15 @@ func FUN_8_0308
     mov bx,[bp-0x6]
     sub word [bp-0x6],byte +0x2
     mov word [bx],0x0
-    dec word [0x13dc]
-    cmp [0x13dc],si
+    dec word [NumMIDIFiles]
+    cmp [NumMIDIFiles],si
     jnz .label8 ; ↓
     xor si,si
 .label8: ; 39f
-    cmp word [0x13dc],byte +0x0
+    cmp word [NumMIDIFiles],byte +0x0
     jnz .label4 ; ↑
-    call 0xffff:0x2d4 ; 3a6 8:2d4
-    push word [0x10]
+    call 0xffff:FUN_8_02d4 ; 3a6 8:2d4
+    push word [hwndMain]
     push word 0x111
     push byte +0x75
     push byte +0x0
@@ -373,15 +375,15 @@ func FUN_8_0308
     call 0x0:0x482 ; 3b8 USER.SendMessage
     push byte +0x30
     push ds
-    push word 0x1388
-    push word [0x10]
+    push word s_None_of_the_MIDI_files_specified___
+    push word [hwndMain]
     call 0x4c5:0x0 ; 3c7 2:0 ShowMessageBox
     add sp,byte +0x8
-    push word [0x26]
-    push byte +0x75
+    push word [hMenu]
+    push byte ID_BGM
     push byte +0x1
     call 0x0:0xffff ; 3d7 USER.EnableMenuItem
-    jmp .label12 ; ↓
+    jmp .returnZero ; ↓
     nop
 .label9: ; 3e0
     shl bx,1
@@ -392,10 +394,10 @@ func FUN_8_0308
     mov [bp-0xe],ds
     push byte +0x0
     push byte +0x0
-    push word 0x7f02
+    push word 0x7f02 ; hourglass
     call 0x0:0xffff ; 3f7 USER.LoadCursor
     mov [bp-0x8],ax
-    push word [0x10]
+    push word [hwndMain]
     call 0x0:0xffff ; 403 USER.SetCapture
     push word [bp-0x8]
     call 0x0:0x42f ; 40b USER.SetCursor
@@ -403,8 +405,8 @@ func FUN_8_0308
     push byte +0x0
     push word [bp-0xe]
     push di
-    push word [0x10]
-    call 0x46f:0x110 ; 41d 8:110
+    push word [hwndMain]
+    call 0x46f:FUN_8_0110 ; 41d 8:110
     add sp,byte +0x8
     mov [bp-0x6],ax
     mov [bp-0x4],dx
@@ -415,24 +417,25 @@ func FUN_8_0308
     or ax,[bp-0x6]
     jz .label11 ; ↓
     cmp word [bp-0x6],0x113
-    jnz .label10 ; ↓
+    jnz .break ; ↓
     cmp word [bp-0x4],byte +0x0
-    jnz .label10 ; ↓
+    jnz .break ; ↓
     mov bx,[bp-0x12]
     push word [bx]
     call 0x0:0x5e8 ; 452 KERNEL.LocalFree
     mov bx,[bp-0x12]
     mov word [bx],0x0
-    jmp .label3 ; ↑
+    jmp .loop ; ↑
     nop
-.label10: ; 462
-    push word [bp-0xe]
+
+.break: ; 462
+    push word [bp-0xe] ; filename
     push di
     push word [bp-0x4]
     push word [bp-0x6]
-    call 0x244:0x25c ; 46c 8:25c
+    call 0x244:ShowMIDIError ; 46c 8:25c
     add sp,byte +0x8
-    push word [0x10]
+    push word [hwndMain]
     push word 0x111
     push byte +0x75
     push byte +0x0
@@ -441,11 +444,11 @@ func FUN_8_0308
 .label11: ; 486
     mov ax,[bp-0x4]
     or ax,[bp-0x6]
-    jnz .label12 ; ↓
+    jnz .returnZero ; ↓
     mov ax,0x1
     jmp short .label13 ; ↓
     nop
-.label12: ; 494
+.returnZero: ; 494
     xor ax,ax
 .label13: ; 496
     pop si
@@ -499,13 +502,13 @@ func FUN_8_04a0
     call 0x519:0x198e ; 507 2:198e
     add sp,byte +0x2
 .label3: ; 50f
-    mov [0x13dc],ax
+    mov [NumMIDIFiles],ax
     push ax
     push word 0xcb
     call 0x539:0x19ca ; 516 2:19ca
     add sp,byte +0x4
     xor di,di
-    cmp [0x13dc],di
+    cmp [NumMIDIFiles],di
     jng .label6 ; ↓
     mov si,0x16c8
 .label4: ; 529
@@ -532,7 +535,7 @@ func FUN_8_04a0
 .label5: ; 558
     add si,byte +0x2
     inc di
-    cmp di,[0x13dc]
+    cmp di,[NumMIDIFiles]
     jl .label4 ; ↑
 .label6: ; 562
     pop si
@@ -593,7 +596,7 @@ func FUN_8_05b8
     cmp si,0x16c0
     jc .label1 ; ↑
     xor di,di
-    cmp [0x13dc],di
+    cmp [NumMIDIFiles],di
     jng .label5 ; ↓
     mov si,0x16c8
 .label3: ; 600
@@ -604,7 +607,7 @@ func FUN_8_05b8
 .label4: ; 60c
     add si,byte +0x2
     inc di
-    cmp di,[0x13dc]
+    cmp di,[NumMIDIFiles]
     jl .label3 ; ↑
 .label5: ; 616
     pop si
