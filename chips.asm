@@ -48,6 +48,9 @@ ALIGN 512, db 0
 ; NE header and tables
 ; See ftp://ftp.microsoft.com/Softlib/MSLFILES/EXEFMT.EXE
 
+%define SectorShift 9
+%define SectorSize (1<<SectorShift)
+
 ; 400
 ; NE header
 NEHeader:
@@ -86,16 +89,16 @@ NEHeader:
 NESegmentLen equ 10
 NESegmentTab:
     ; sector, length, flags, alloc
-    dw 0x5, 0x952, 0x1d50, 0x952 ; Segment 1
-    dw 0xb, 0x2dca, 0x1d50, 0x2dca ; Segment 2
-    dw 0x31, 0x2a70, 0x1d10, 0x2a70 ; Segment 3
-    dw 0x47, 0x1208, 0x1d10, 0x1208 ; Segment 4
-    dw 0x51, 0x1bc, 0x1d10, 0x1bc ; Segment 5
-    dw 0x53, 0x75b, 0x1d10, 0x75c ; Segment 6
-    dw 0x57, 0x1cd4, 0x1d10, 0x1cd4 ; Segment 7
-    dw 0x66, 0x620, 0x1d10, 0x620 ; Segment 8
-    dw 0x6a, 0x150, 0x1d10, 0x150 ; Segment 9
-    dw 0x24, 0x1738, 0x0c51, 0x1738 ; Segment 10
+    dw (Segment1-$$)>>SectorShift, 0x952, 0x1d50, 0x952 ; Segment 1
+    dw (Segment2-$$)>>SectorShift, 0x2dca, 0x1d50, 0x2dca ; Segment 2
+    dw (Logic-$$)>>SectorShift,    0x2a70, 0x1d10, 0x2a70 ; Segment 3
+    dw (Segment4-$$)>>SectorShift, 0x1208, 0x1d10, 0x1208 ; Segment 4
+    dw (Segment5-$$)>>SectorShift, 0x1bc, 0x1d10, 0x1bc ; Segment 5
+    dw (Segment6-$$)>>SectorShift, 0x75b, 0x1d10, 0x75c ; Segment 6
+    dw (Segment7-$$)>>SectorShift, 0x1cd4, 0x1d10, 0x1cd4 ; Segment 7
+    dw (Segment8-$$)>>SectorShift, 0x620, 0x1d10, 0x620 ; Segment 8
+    dw (Digits-$$)>>SectorShift,   0x150, 0x1d10, 0x150 ; Segment 9
+    dw (Data-$$)>>SectorShift,     0x1738, 0x0c51, 0x1738 ; Segment 10
 
 ; 490
 NEResourceTab:
@@ -108,29 +111,29 @@ NEResourceTab:
     %define RT_RCDATA 0x800a
     %define RT_VERSIONINFO 0x800e
 
-    dw 9    ; Shift amount
+    dw SectorShift    ; Shift amount
 
     dw RT_VERSIONINFO, 1, 0, 0
         ; Offset, Length, Flags, ID, Reserved
-        dw 0x6b, 1, 0x1c30, 0x8100, 0, 0
+        dw (VERSION-$$)>>SectorShift, 1, 0x1c30, 0x8100, 0, 0
 
     dw RT_BITMAP, 7, 0, 0
-        dw 0x6c, 0x90, 0xc30, .OBJ32_4-NEResourceTab, 0, 0
-        dw 0xfc, 0x84, 0xc30, .OBJ32_4E-NEResourceTab, 0, 0
-        dw 0x180, 0x35, 0xc30, .OBJ32_1-NEResourceTab, 0, 0
-        dw 0x1b5, 0xd, 0xc30, .BACKGROUND-NEResourceTab, 0, 0
-        dw 0x1c2, 0xe, 0xc30, 0x80c8, 0, 0
-        dw 0x1d0, 0xc, 0xc30, .INFOWND-NEResourceTab, 0, 0
-        dw 0x1dc, 0x22, 0xc30, .CHIPEND-NEResourceTab, 0, 0
+        dw (OBJ32_4-$$)>>SectorShift, 0x90, 0xc30, .OBJ32_4-NEResourceTab, 0, 0
+        dw (OBJ32_4E-$$)>>SectorShift, 0x84, 0xc30, .OBJ32_4E-NEResourceTab, 0, 0
+        dw (OBJ32_1-$$)>>SectorShift, 0x35, 0xc30, .OBJ32_1-NEResourceTab, 0, 0
+        dw (BACKGROUND-$$)>>SectorShift, 0xd, 0xc30, .BACKGROUND-NEResourceTab, 0, 0
+        dw (DigitsBitmap-$$)>>SectorShift, 0xe, 0xc30, 0x80c8, 0, 0
+        dw (INFOWND-$$)>>SectorShift, 0xc, 0xc30, .INFOWND-NEResourceTab, 0, 0
+        dw (CHIPEND-$$)>>SectorShift, 0x22, 0xc30, .CHIPEND-NEResourceTab, 0, 0
 
     dw RT_MENU, 1, 0, 0
         dw 0x1fe, 0x1, 0x1c30, .CHIPSMENU-NEResourceTab, 0, 0
 
     dw RT_DIALOG, 4, 0, 0
-        dw 0x1ff, 0x1, 0x1c30, .DLG_GOTO-NEResourceTab, 0, 0
-        dw 0x200, 0x1, 0x1c30, .DLG_PASSWORD-NEResourceTab, 0, 0
-        dw 0x201, 0x1, 0x1c30, .DLG_BESTTIMES-NEResourceTab, 0, 0
-        dw 0x202, 0x1, 0x1c30, .DLG_COMPLETE-NEResourceTab, 0, 0
+        dw (DLGGOTO-$$)>>SectorShift, 0x1, 0x1c30, .DLG_GOTO-NEResourceTab, 0, 0
+        dw (DLGPASSWORD-$$)>>SectorShift, 0x1, 0x1c30, .DLG_PASSWORD-NEResourceTab, 0, 0
+        dw (DLGBESTTIME-$$)>>SectorShift, 0x1, 0x1c30, .DLG_BESTTIMES-NEResourceTab, 0, 0
+        dw (DLGCOMPLETE-$$)>>SectorShift, 0x1, 0x1c30, .DLG_COMPLETE-NEResourceTab, 0, 0
 
     dw RT_STRING, 1, 0, 0
         dw 0x203, 0x1, 0x1c30, 0x8011, 0, 0
@@ -139,10 +142,10 @@ NEResourceTab:
         dw 0x204, 1, 0xc30, .CHIPSMENU2-NEResourceTab, 0, 0
 
     dw RT_RCDATA, 4, 0, 0
-        dw 0x205, 1, 0x1c30, .DLGINCLUDE1-NEResourceTab, 0, 0
-        dw 0x206, 1, 0x1c30, .DLGINCLUDE2-NEResourceTab, 0, 0
-        dw 0x207, 1, 0x1c30, .DLGINCLUDE3-NEResourceTab, 0, 0
-        dw 0x208, 1, 0x1c30, .DLGINCLUDE4-NEResourceTab, 0, 0
+        dw (DlgIncludeGoto-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE1-NEResourceTab, 0, 0
+        dw (DlgIncludePassword-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE2-NEResourceTab, 0, 0
+        dw (DlgIncludeBesttime-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE3-NEResourceTab, 0, 0
+        dw (DlgIncludeComplete-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE4-NEResourceTab, 0, 0
 
     dw RT_ICON, 1, 0, 0
         dw 0x209, 2, 0x1c10, 0x8001, 0, 0
@@ -330,8 +333,9 @@ Digits:
 ; d600
 ; RT_VERSION
 ; Mysterious resource is mysterious
-dw 0, 1, 1, 0x2020, 0x10, 1, 0x4, 0x2e8, 0, 1
-ALIGN 512, db 0
+VERSION:
+    dw 0, 1, 1, 0x2020, 0x10, 1, 0x4, 0x2e8, 0, 1
+    ALIGN 512, db 0
 
 ; d800
 ; Bitmaps
@@ -425,7 +429,11 @@ ALIGN 512, db 0
 ; 3fe00
 ; RT_DIALOGs
 
-INCBIN "base.exe", 0x3fe00, 0x40600-0x3fe00
+; 3fe00
+DLGGOTO     INCBIN "base.exe", 0x3fe00, SectorSize
+DLGPASSWORD INCBIN "base.exe", 0x40000, SectorSize
+DLGBESTTIME INCBIN "base.exe", 0x40200, SectorSize
+DLGCOMPLETE INCBIN "base.exe", 0x40400, SectorSize
 
 ; 40600
 ; RT_STRING
@@ -473,18 +481,22 @@ ALIGN 512, db 0
 
 ; https://support.microsoft.com/kb/91697
 
+DlgIncludeGoto:
 db "GOTO.H", 0
 ALIGN 512, db 0
 
 ; 40c00
+DlgIncludePassword:
 db "PASSWORD.H", 0
 ALIGN 512, db 0
 
 ; 40e00
+DlgIncludeBesttime:
 db "BESTTIME.H", 0
 ALIGN 512, db 0
 
 ; 41000
+DlgIncludeComplete:
 db "COMPLETE.H", 0
 ALIGN 512, db 0
 
