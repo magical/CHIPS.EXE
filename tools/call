@@ -73,11 +73,11 @@ def main():
                 sym = ""
                 if target in symbols:
                     sym = symbols[target]
-                else:
-                    sym = "FUN_{}_{:04x}".format(target_segment, addr)
 
                 if same_segment and sym:
                     operand = "{}:{}".format(m.group(1), sym)
+                elif same_segment:
+                    operand = "{}:FUN_{}_{:04x}".format(m.group(1), target_segment, addr)
                 else:
                     operand = "{}:{}".format(m.group(1), m.group(2))
 
