@@ -4,14 +4,16 @@ SEGMENT DATA ; 10
 
 ; Variables
 
-    dw 0 ; 0x0
-    dw 0 ; 0x2
-    dw 5 ; 0x4
-    dw 0 ; 0x6
-    dw 0 ; 0x8
-    dw 0 ; 0xa
-    dw 0 ; 0xc
-    dw 0 ; 0xe
+; INSTANCEDATA -
+; a data structure used by the windows kernel
+; to track local allocations and stuff
+    dw 0 ; 0x0 null
+    dd 0x50000 ; 0x2 old stack pointer
+    dw 0 ; 0x6 heap pointer
+    dw 0 ; 0x8 atom table pointer
+    dw 0 ; 0xa top of stack
+    dw 0 ; 0xc lowest stack address used
+    dw 0 ; 0xe bottom of stack
 
 hwndMain     dw 0 ; 0x10 HWND main window
 hwndBoard    dw 0 ; 0x12 HWND board window
@@ -20,7 +22,6 @@ hwndCounter  dw 0 ; 0x16 level counter
 hwndCounter2 dw 0 ; 0x18 time counter
 hwndCounter3 dw 0 ; 0x1a chips left counter
 hwndInventory  dw 0 ; 0x1c
-
 hwndHint     dw 0 ; 0x1e
 
     dw 0 ; 0x20 ; inventory changed
@@ -506,6 +507,13 @@ times 44 dw 0 ; 1698
 ;   16c0            horizontal resolution
 ;   16c2            vertical resolution
 ;   172e    BOOL    records whether windows version >= 3.10
+
+; sounds.asm
+;   13c4            whether music is playing?
+;   13dc            number of midi files
+;   16a2-16c0       array of sound effect handles?
+;   16c8            array of midi handles?
+;   1736            some sort of midi playback handle
 
 ; Digit image pointers
 times 24 dw 0 ; 16f0
