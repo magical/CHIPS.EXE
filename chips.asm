@@ -254,9 +254,13 @@ NENonResidentNameSize equ $-NENonResidentNameTab
 ALIGN 512, db 0
 TIMES 512  db 0
 
-Segment1: INCBIN "base.exe", 0xa00, 0xc00
-Segment2: INCBIN "base.exe", 0x1600, 0x2dca+0x2ba
-ALIGN 512, db 0
+Segment1:
+    INCBIN "base.exe", 0xa00, 0xc00
+
+Segment2:
+    INCBIN "seg2.bin"
+    INCBIN "base.exe", 0x1600+0x2dca, 0x2ba
+    ALIGN 512, db 0
 
 ; 4800
 ; Segment 10
