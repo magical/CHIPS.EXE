@@ -1298,11 +1298,10 @@ FUN_2_0b9a:
     dw .label5 ; ↓
     dw .label6 ; ↓
 .label0: ; bd4
-    dw 0x7cb8
-    dw 0xeb05
-    dw 0x9022
+    mov ax,0x57c
+    jmp short .label7 ; ↓
+    nop
 .label1: ; bda
-; 0xbda
     mov ax,0x176
     jmp short .label7 ; ↓
     nop
