@@ -2,7 +2,7 @@ SEGMENT CODE ; 5
 
 ; UI Code
 
-;%include "constants.asm"
+%include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
 %include "func.mac"
@@ -1020,18 +1020,18 @@ FUN_2_08e8:
     add ax,0xa0
     mov [bp-0x12],ax
     lea ax,[bp-0x16]
-    push ss
+    push ss                                             ; lpRect
     push ax
-    push word 0x2cf
-    push dx
-    push byte +0x1
+    push word (WS_CLIPCHILDREN | WS_TILEDWINDOW)>>16    ; dwStyle
+    push dx ; 0
+    push byte +0x1                                      ; bMenu
     call 0x0:0xffff ; 984 USER.AdjustWindowRect
     push ds
     push word 0x527
     push ds
     push word 0x516
-    push word 0x2cf
-    push byte +0x0
+    push word (WS_CLIPCHILDREN | WS_TILEDWINDOW)>>16
+    push byte (WS_CLIPCHILDREN | WS_TILEDWINDOW)&0xffff
     push word 0x8000
     push word 0x8000
     mov ax,[bp-0x12]

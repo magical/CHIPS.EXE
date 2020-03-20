@@ -176,4 +176,7 @@ ID_COLOR        equ 0x7A
 ID_HOWTOPLAY    equ 0x78
 ID_COMMANDS     equ 0x79
 
+WS_CLIPCHILDREN equ 0x200<<16
+WS_TILEDWINDOW  equ 0x0cf<<16
+
 ; vim: syntax=nasm

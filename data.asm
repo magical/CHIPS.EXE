@@ -499,11 +499,25 @@ TimeRemaining dw 0 ; 1694
 
 TotalScore dw 0 ; 1696
 
-times 44 dw 0 ; 1698
+    dw 0 ; 1698
+    dw 0 ; 169a
+    dw 0 ; 169c
+    dw 0 ; 169e
+    dw 0 ; 16a0
+
+times 15 dw 0 ; 16a2
+
+HorizontalResolution    dw 0 ; 16c0
+VerticalResolution      dw 0 ; 16c2
+
+    dw 0 ; 16c4
+    dw 0 ; 16c6
+
+times 20 dw 0 ; 16c8
 
 ; seg5.asm
-;   169e    ???
-;   16a0            0x20 or 8, depending on vertical resolution
+;   169e            initial x coord of main window (always 0x20)
+;   16a0            initial y coord of main window (0x20 or 8, depending on vertical resolution)
 ;   16c0            horizontal resolution
 ;   16c2            vertical resolution
 ;   172e    BOOL    records whether windows version >= 3.10

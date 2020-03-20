@@ -30,12 +30,12 @@ func InitGraphics
     push ax
     push byte +0x8 ; HORZRES
     call 0x0:0x2c ; 1e GDI.GetDeviceCaps
-    mov [0x16c0],ax
+    mov [HorizontalResolution],ax
 
     push word [hDC]
     push byte +0xa ; VERTRES
     call 0x0:0x71 ; 2b GDI.GetDeviceCaps
-    mov [0x16c2],ax
+    mov [VerticalResolution],ax
 
     mov word [0x169e],0x20 ;???
 
@@ -83,7 +83,7 @@ func InitGraphics
     mov word [0xa18],0x4
     jmp short .releaseDC
 .checkVertRes: ; a0
-    cmp word [0x16c2],350
+    cmp word [VerticalResolution],350
     jg .useHicolor
     mov ax,0x2
     jmp short .setColors
