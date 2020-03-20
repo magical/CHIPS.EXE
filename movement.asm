@@ -394,7 +394,7 @@ func DoTick
     neg word [bx+SlideX]
     mov si,[GameStatePtr]
     neg word [si+SlideY]
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push ax ; 0
     mov ax,[GameStatePtr]
     add ax,SlideY
@@ -423,7 +423,7 @@ func DoTick
     neg word [si+SlideX]
     mov si,[GameStatePtr]
     neg word [si+SlideY]
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push ax ; 0
     mov ax,[GameStatePtr]
     add ax,SlideY
@@ -2513,7 +2513,7 @@ func MoveChip
 
 
 .action5: ; 1592
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push byte +0x0 ; chip
     lea ax,[ydir]
     push ax
@@ -2574,7 +2574,7 @@ func MoveChip
     push word [hDC]
     call 0x16b0:0x276a ; 162b
     add sp,byte +0xc
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push byte +0x0 ; chip
     lea ax,[ydir]
     push ax

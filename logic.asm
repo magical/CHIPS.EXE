@@ -2387,7 +2387,7 @@ func SlipLoop
     ; reverse the move direction and try again
     neg word [xdir]
     neg word [ydir]
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push byte +0x2
     lea ax,[ydir]
     push ax
@@ -2484,7 +2484,7 @@ func SlipLoop
     neg word [ydir]
 
 .label8: ; 15e6
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push byte +0x2
     jmp word .label13
 
@@ -2534,7 +2534,7 @@ func SlipLoop
 .label15: ; 166b
     neg word [xdir]
     neg word [ydir]
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push byte +0x1
     lea ax,[ydir]
     push ax
@@ -2560,7 +2560,7 @@ func SlipLoop
     neg word [xdir]
     neg word [ydir]
 .label16: ; 16b6
-    push word 0xc6c
+    push word DummyVarForSlideMovement
     push byte +0x1
 .label13: ; 16bb
     lea ax,[ydir]
