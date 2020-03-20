@@ -113,6 +113,7 @@ endfunc
 
 ; 110
 
+; start midi
 func FUN_8_0110
     sub sp,byte +0x5e
     cmp word [bp+0xc],byte +0x0
@@ -286,6 +287,7 @@ endfunc
 
 ; 2d4
 
+; stop music?
 func FUN_8_02d4
     sub sp,byte +0x2
     cmp word [0x13c4],byte +0x0
@@ -303,6 +305,7 @@ endfunc
 
 ; 308
 
+; change level
 func FUN_8_0308
     sub sp,byte +0x12
     push di
