@@ -42,7 +42,7 @@ bin/res: tools/res/res.go
 	go build -o bin/res ./tools/res
 
 baseseg1.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xa00 -count 0xc00
+	bin/dd <base.exe >$@ -skip 0xa00 -count 0x952
 baseseg2.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x1600 -count 0x2dca
 basedata.bin: bin/dd base.exe
