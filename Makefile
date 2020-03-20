@@ -26,7 +26,7 @@ movement.bin: constants.asm structs.asm variables.asm func.mac
 seg5.bin: constants.asm variables.asm func.mac
 digits.bin: func.mac
 sound.bin: constants.asm variables.asm func.mac
-seg2.bin: variables.asm func.mac
+seg2.bin: structs.asm variables.asm func.mac
 
 variables.asm: data.asm genvars.sh Makefile
 	sh genvars.sh >variables.asm

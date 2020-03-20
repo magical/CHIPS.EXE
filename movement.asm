@@ -663,7 +663,7 @@ func DoTick
     ; clean up, timer
 
     add sp,byte +0x2
-    push word [0x12]
+    push word [hwndBoard]
     push word [hDC]
     call 0x0:0xffff ; 5b8 USER.ReleaseDC
 

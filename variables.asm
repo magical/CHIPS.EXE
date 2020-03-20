@@ -7,6 +7,8 @@ hwndMain                            equ 0x10
 hwndBoard                           equ 0x12
 hwndInfo                            equ 0x14
 hwndCounter                         equ 0x16
+hwndCounter2                        equ 0x18
+hwndCounter3                        equ 0x1A
 hwndInventory                       equ 0x1C
 hwndHint                            equ 0x1E
 GamePaused                          equ 0x24

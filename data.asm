@@ -16,9 +16,9 @@ SEGMENT DATA ; 10
 hwndMain     dw 0 ; 0x10 HWND main window
 hwndBoard    dw 0 ; 0x12 HWND board window
 hwndInfo     dw 0 ; 0x14
-hwndCounter  dw 0 ; 0x16
-    dw 0 ; 0x18
-    dw 0 ; 0x1a
+hwndCounter  dw 0 ; 0x16 level counter
+hwndCounter2 dw 0 ; 0x18 time counter
+hwndCounter3 dw 0 ; 0x1a chips left counter
 hwndInventory  dw 0 ; 0x1c
 
 hwndHint     dw 0 ; 0x1e
