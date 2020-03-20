@@ -50,11 +50,11 @@ basedata.bin: bin/dd base.exe
 baselogic.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x6200 -count 0x2a70
 baseseg4.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0x8e00 -count 0x1400
+	bin/dd <base.exe >$@ -skip 0x8e00 -count 0x1208
 baseseg5.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xa200 -count 0x1bc
 baseseg6.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xa600 -count 0x800
+	bin/dd <base.exe >$@ -skip 0xa600 -count 0x75b
 basemovement.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xae00 -count 0x1cd4
 baseseg8.bin: bin/dd base.exe

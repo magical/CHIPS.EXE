@@ -255,28 +255,34 @@ ALIGN 512, db 0
 TIMES 512  db 0
 
 Segment1:
-    INCBIN "base.exe", 0xa00, 0xc00
+    INCBIN "base.exe", 0xa00, 0x952
+    INCBIN "base.exe", 0xa00+0x952, 162
+    ALIGN SectorSize, db 0
+    TIMES SectorSize  db 0
 
 Segment2:
     INCBIN "seg2.bin"
     INCBIN "base.exe", 0x1600+0x2dca, 0x2ba
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; 4800
 ; Segment 10
 Data:
     INCBIN "data.bin"
-    ALIGN 512, db 0
-    TIMES 512  db 0
+    ALIGN SectorSize, db 0
+    TIMES SectorSize  db 0
 
 ; 6200
 ; Segment 3
 Logic:
     INCBIN "logic.bin"
     INCBIN "base.exe", 0x8c70, 0x52
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
-Segment4: INCBIN "base.exe", 0x8e00, 0x1400
+Segment4:
+    INCBIN "base.exe", 0x8e00, 0x1208
+    INCBIN "base.exe", 0x8e00+0x1208, 0x10a
+    ALIGN SectorSize, db 0
 
 ; a200
 Segment5:
@@ -311,9 +317,12 @@ Segment5:
     reloc_ordinal 0xc2, 3, 0x44 ; USER.ReleaseDC
     reloc_ordinal 0x1f, 2, 0x50 ; GDI.GetDeviceCaps
 
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
-Segment6: INCBIN "base.exe", 0xa600, 0x800
+Segment6:
+    INCBIN "base.exe", 0xa600, 0x75b
+    INCBIN "base.exe", 0xa600+0x75b, 130
+    ALIGN SectorSize, db 0
 
 ; 0xae00
 Segment7:
@@ -329,7 +338,7 @@ Segment8:
 Digits:
     INCBIN "digits.bin"
     INCBIN "base.exe", 0xd550, 0x3a
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; d600
 ; Resources
@@ -339,7 +348,7 @@ Digits:
 ; Mysterious resource is mysterious
 VERSION:
     dw 0, 1, 1, 0x2020, 0x10, 1, 0x4, 0x2e8, 0, 1
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; d800
 ; Bitmaps
@@ -349,41 +358,41 @@ VERSION:
 OBJ32_4:
     INCBIN "res/OBJ32_4.bmp", 14
     TIMES 0x22 db 0xFF ; ???
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 
 ; 1f800
 OBJ32_4E:
     INCBIN "res/OBJ32_4E.bmp", 14
     TIMES 0x1c db 0xFF
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; 30000
 OBJ32_1:
     INCBIN "res/OBJ32_1.bmp", 14
     db 0x04, 0x04, 0x88, 0x10, 0x0F, 0xFF, 0xF0, 0x00,
     db 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x8D, 0xBF, 0xD2
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; 36a00
 BACKGROUND:
     INCBIN "res/BACKGROUND.bmp", 14
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; 38400
 DigitsBitmap:
     INCBIN "res/200.bmp", 14
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; 3a000
 INFOWND:
     INCBIN "res/INFOWND.bmp", 14
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; 3b800
 CHIPEND:
     INCBIN "res/CHIPEND.bmp", 14
-    ALIGN 512, db 0
+    ALIGN SectorSize, db 0
 
 ; 3fc00
 ; RT_MENU
@@ -428,7 +437,7 @@ POPUP "&Help", MF_END
     MENUITEM "", 0
     MENUITEM "&About Chip's Challenge...", ID_ABOUT, MF_END
 
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; 3fe00
 ; RT_DIALOGs
@@ -447,7 +456,7 @@ db 0x10, "Chip's Challenge"
 db 0x24, "By Tony Krueger", 10
 db       "Artwork by Ed Halley"
 
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; 40800
 ; RT_ACCELERATOR
@@ -471,7 +480,7 @@ ACCEL VK_F1, ID_HELP, VIRTKEY
 ACCEL VK_F2, ID_NEWGAME, VIRTKEY
 ACCEL VK_F3, ID_PAUSE, VIRTKEY|LAST
 
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; 40a00
 ; RT_RCDATA
@@ -487,26 +496,26 @@ ALIGN 512, db 0
 
 DlgIncludeGoto:
 db "GOTO.H", 0
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; 40c00
 DlgIncludePassword:
 db "PASSWORD.H", 0
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; 40e00
 DlgIncludeBesttime:
 db "BESTTIME.H", 0
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; 41000
 DlgIncludeComplete:
 db "COMPLETE.H", 0
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; 41200
 ; RT_ICON
 INCBIN "chips.ico", 0x16
-ALIGN 512, db 0
+ALIGN SectorSize, db 0
 
 ; vim: syntax=nasm
