@@ -54,12 +54,13 @@ db "Chip's Challenge", 0, 0
 db "Not enough system timers are available.", 0
 db "Starting a new game will begin you back at level 1, reset your score to zero, and forget the passwords to any levels you have visited.", 10, "Is this what you want?", 0
 db "There is not enough memory to load Chip's Challenge.", 0, 0
-db "Ooops! Don't step in the fire without fire boots!", 0
-db "Ooops! Chip can't swim without flippers!", 0, 0
-db "Ooops! Don't touch the bombs!", 0
-db "Ooops! Watch out for moving blocks!", 0
-db "Ooops! Look out for creatures!", 0, 0
-db "Ooops! Out of time!", 0
+
+FireDeathMessage        db "Ooops! Don't step in the fire without fire boots!", 0
+WaterDeathMessage       db "Ooops! Chip can't swim without flippers!", 0, 0
+BombDeathMessage        db "Ooops! Don't touch the bombs!", 0
+BlockDeathMessage       db "Ooops! Watch out for moving blocks!", 0
+MonsterDeathMessage     db "Ooops! Look out for creatures!", 0, 0
+TimeDeathMessage        db "Ooops! Out of time!", 0
 
 db "Contents", 0, 0
 db "How To Play", 0
@@ -164,7 +165,7 @@ db "CounterClass", 0
 db "CounterClass", 0
 db "CounterClass", 0
 db "InventoryClass", 0
-db "Ooops!", 0
+s_Ooops db "Ooops!", 0
 db "HintClass", 0
 db "background", 0
 db "Arial", 0
@@ -314,8 +315,10 @@ db 0,0,1,1,1,0  ; 0x6d ChipW
 db 0,0,1,1,1,0  ; 0x6e ChipS
 db 0,0,1,1,1,0  ; 0x6f ChipE
 
-db "You seem to be having trouble with this level.", 10
-db "Would you like to skip to the next level?", 0, 0
+MelindaMessage:
+    db "You seem to be having trouble with this level.", 10
+    db "Would you like to skip to the next level?", 0, 0
+
 db "Corrupt or inaccessible CHIPS.DAT file.", 0, 0
 db ": ", 0, 0
 db "%s%s%s", 0
@@ -377,27 +380,27 @@ db "You can still improve your score, by completing levels that you skipped, and
 ; Decade messages
 ; 0xEC2
 DecadeMessages:
-    dw Level50Message
-    dw Level60Message
-    dw Level70Message
-    dw Level80Message
-    dw Level90Message
-    dw Level100Message
-    dw Level110Message
-    dw Level120Message
-    dw Level130Message
-    dw Level140Message
+    dw .level50
+    dw .level60
+    dw .level70
+    dw .level80
+    dw .level90
+    dw .level100
+    dw .level110
+    dw .level120
+    dw .level130
+    dw .level140
 
-Level50Message db "Picking up chips is what the challenge is all about. But on the ice, Chip gets chapped and feels like a chump instead of a champ.", 0
-Level60Message db "Chip hits the ice and decides to chill out. Then he runs into a fake wall and turns the maze into a thrash-a-thon!", 0
-Level70Message db "Chip is halfway through the world's hardest puzzle. If he succeeds, maybe the kids will stop calling him computer breath!", 0
-Level80Message db "Chip used to spend his time programming computer games and making models. But that was just practice for this brain-buster!", 0
-Level90Message db "'I can do it! I know I can!' Chip thinks as the going gets tougher. Besides, Melinda the Mental Marvel waits at the end!", 0
-Level100Message db "Besides being an angel on earth, Melinda is the top scorer in the Challenge--and the president of the Bit Busters.", 0
-Level110Message db "Chip can't wait to join the Bit Busters! The club's already figured out the school's password and accessed everyone's grades!", 0
-Level120Message db "If Chip's grades aren't as good as Melinda's, maybe she'll come over to his house and help him study!", 0
-Level130Message db "'I've made it this far,' Chip thinks. 'Totally fair, with my mega-brain.' Then he starts the next maze. 'Totally unfair!' he yelps.", 0
-Level140Message db "Groov-u-loids! Chip makes it almost to the end. He's stoked!", 0
+.level50 db "Picking up chips is what the challenge is all about. But on the ice, Chip gets chapped and feels like a chump instead of a champ.", 0
+.level60 db "Chip hits the ice and decides to chill out. Then he runs into a fake wall and turns the maze into a thrash-a-thon!", 0
+.level70 db "Chip is halfway through the world's hardest puzzle. If he succeeds, maybe the kids will stop calling him computer breath!", 0
+.level80 db "Chip used to spend his time programming computer games and making models. But that was just practice for this brain-buster!", 0
+.level90 db "'I can do it! I know I can!' Chip thinks as the going gets tougher. Besides, Melinda the Mental Marvel waits at the end!", 0
+.level100 db "Besides being an angel on earth, Melinda is the top scorer in the Challenge--and the president of the Bit Busters.", 0
+.level110 db "Chip can't wait to join the Bit Busters! The club's already figured out the school's password and accessed everyone's grades!", 0
+.level120 db "If Chip's grades aren't as good as Melinda's, maybe she'll come over to his house and help him study!", 0
+.level130 db "'I've made it this far,' Chip thinks. 'Totally fair, with my mega-brain.' Then he starts the next maze. 'Totally unfair!' he yelps.", 0
+.level140 db "Groov-u-loids! Chip makes it almost to the end. He's stoked!", 0
 
 Chipend db "chipend", 0
 Chipend2 db "chipend", 0

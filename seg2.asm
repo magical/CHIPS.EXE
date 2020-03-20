@@ -1256,14 +1256,7 @@ FUN_2_08e8:
 
 ; b9a
 
-FUN_2_0b9a:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func ShowDeathMessage
     sub sp,byte +0x6
     push si
     mov si,[SoundEnabled]
@@ -1275,39 +1268,40 @@ FUN_2_0b9a:
     ja .label0 ; ↓
     shl ax,1
     xchg ax,bx
-    jmp [cs:bx+0xbc8]
-    dw .label1 ; ↓
-    dw .label2 ; ↓
-    dw .label3 ; ↓
-    dw .label4 ; ↓
-    dw .label5 ; ↓
-    dw .label6 ; ↓
+    jmp [cs:bx+.jumpTable]
+.jumpTable:
+    dw .label1 ; Burned
+    dw .label2 ; Drowned
+    dw .label3 ; Bombed
+    dw .label4 ; Squished
+    dw .label5 ; Eaten
+    dw .label6 ; OutOfTime
 .label0: ; bd4
-    mov ax,0x57c
+    mov ax,s_Ooops
     jmp short .label7 ; ↓
     nop
 .label1: ; bda
-    mov ax,0x176
+    mov ax,FireDeathMessage
     jmp short .label7 ; ↓
     nop
 .label2: ; be0
-    mov ax,0x1a8
+    mov ax,WaterDeathMessage
     jmp short .label7 ; ↓
     nop
 .label3: ; be6
-    mov ax,0x1d2
+    mov ax,BombDeathMessage
     jmp short .label7 ; ↓
     nop
 .label4: ; bec
-    mov ax,0x1f0
+    mov ax,BlockDeathMessage
     jmp short .label7 ; ↓
     nop
 .label5: ; bf2
-    mov ax,0x214
+    mov ax,MonsterDeathMessage
     jmp short .label7 ; ↓
     nop
 .label6: ; bf8
-    mov ax,0x234
+    mov ax,TimeDeathMessage
 .label7: ; bfb
     mov cx,ax
     push byte +0x0
@@ -1318,12 +1312,7 @@ FUN_2_0b9a:
     add sp,byte +0x8
     mov [SoundEnabled],si
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; c1a
 
@@ -1373,17 +1362,10 @@ ShowHint:
 
 ; c7e
 
-HideHint:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func HideHint
     sub sp,byte +0x2
     cmp word [hwndHint],byte +0x0
-    jz .label0 ; ↓
+    jz .end ; ↓
     push word [hwndHint]
     call 0x0:0xffff ; c96 USER.DestroyWindow
     mov word [hwndHint],0x0
@@ -1393,12 +1375,8 @@ HideHint:
     push word [hwndInventory]
     push byte +0x5
     call 0x0:0xffff ; cb2 USER.ShowWindow
-.label0: ; cb7
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+.end: ; cb7
+endfunc
 
 ; cbe
 
@@ -3629,7 +3607,7 @@ MenuItemCallback:
     nop
 .label21: ; 1fda
     call 0x201e:PauseGame ; 1fda 2:17da PauseGame
-    push word 0x20ca
+    push word 0x20ca ; 1fdd 6:18e BESTTIMESMSGPROC
     push word 0x18e
     push word [0x172a]
     call 0x0:0x20d4 ; 1fe9 KERNEL.MakeProcInstance
@@ -3713,7 +3691,7 @@ MenuItemCallback:
     nop
 .label29: ; 20c4
     call 0x210e:PauseGame ; 20c4 2:17da PauseGame
-    push word 0xffff
+    push word 0xffff ; 20c7 6:0 GOTOLEVELMSGPROC
     push word 0x0
     push word [0x172a]
     call 0x0:0xffff ; 20d3 KERNEL.MakeProcInstance
