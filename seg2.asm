@@ -4,15 +4,9 @@ SEGMENT CODE ; 5
 
 ;%include "constants.asm"
 %include "variables.asm"
+%include "func.mac"
 
-ShowMessageBox:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func ShowMessageBox
     sub sp,byte +0x2
     push si
     call 0x6d:FUN_2_17a2 ; e 2:17a2 FUN_2_17a2
@@ -57,12 +51,7 @@ ShowMessageBox:
     call 0x1e2:FUN_2_17ba ; 6a 2:17ba FUN_2_17ba
     mov ax,si
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 7a
 
@@ -714,14 +703,8 @@ FUN_2_056e:
 
 ; 628
 
-WinMain:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func WinMain
+    %assign %$argsize 0xa
     sub sp,byte +0x14
     push word 0x218
     call 0x0:0xffff ; 638 WEP4UTIL.2
@@ -781,11 +764,7 @@ WinMain:
 .label4: ; 6bc
     mov ax,[bp-0x10]
 .label5: ; 6bf
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
+endfunc
 
 ; 6c8
 
@@ -3886,14 +3865,8 @@ MenuItemCallback:
 
 ; 225c
 
-MAINWNDPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func MAINWNDPROC
+    %assign %$argsize 0xa
     sub sp,byte +0x26
     push di
     push si
@@ -4394,23 +4367,12 @@ MAINWNDPROC:
 .label69: ; 2742
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
-    nop
+endfunc
 
 ; 274e
 
-BOARDWNDPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func BOARDWNDPROC
+    %assign %$argsize 0xa
     sub sp,byte +0x22
     push si
     mov ax,[bp+0xc]
@@ -4506,23 +4468,12 @@ BOARDWNDPROC:
     cwd
 .label9: ; 285b
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
-    nop
+endfunc
 
 ; 2866
 
-INFOWNDPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func INFOWNDPROC
+    %assign %$argsize 0xa
     sub sp,byte +0x26
     push di
     push si
@@ -4621,23 +4572,12 @@ INFOWNDPROC:
 .label6: ; 295e
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
-    nop
+endfunc
 
 ; 296a
 
-COUNTERWNDPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func COUNTERWNDPROC
+    %assign %$argsize 0xa
     sub sp,byte +0x36
     push di
     push si
@@ -4760,22 +4700,12 @@ COUNTERWNDPROC:
 .label5: ; 2a8f
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
+endfunc
 
 ; 2a9a
 
-INVENTORYWNDPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func INVENTORYWNDPROC
+    %assign %$argsize 0xa
     sub sp,byte +0x22
     push si
     mov ax,[bp+0xc]
@@ -4885,22 +4815,12 @@ INVENTORYWNDPROC:
     cwd
 .label1: ; 2bb4
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
+endfunc
 
 ; 2bbe
 
-HINTWNDPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func HINTWNDPROC
+    %assign %$argsize 0xa
     sub sp,0xc8
     push di
     push si
@@ -5098,11 +5018,7 @@ HINTWNDPROC:
 .label11: ; 2dbf
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
+endfunc
 
 ; 2dc7
 

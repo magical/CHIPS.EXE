@@ -3,6 +3,7 @@
 %1:
     %push func
     %stacksize small
+    %assign %$argsize 0
     ; Standard function prologue
     ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
     mov ax,ds
@@ -19,7 +20,11 @@
     pop ds
     pop bp
     dec bp
+    %if %$argsize
+    retf %$argsize
+    %else
     retf
+    %endif
     align 2
     %pop func
 %endmacro
