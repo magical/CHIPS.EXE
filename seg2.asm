@@ -1,4 +1,9 @@
-; 0
+SEGMENT CODE ; 5
+
+; UI Code
+
+;%include "constants.asm"
+%include "variables.asm"
 
 ShowMessageBox:
     mov ax,ds
@@ -71,7 +76,7 @@ IsCoordOnscreen:
     mov ds,ax
     sub sp,byte +0x2
     mov dx,[bp+0x6]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp [bx+0xa24],dx
     jg .label0 ; ↓
     mov ax,[bx+0xa24]
@@ -227,12 +232,12 @@ UpdateTile:
     mov ax,si
     shl si,byte 0x5
     add si,[bp+0x8]
-    add si,[0x1680]
+    add si,[GameStatePtr]
     mov cl,[si+0x400]
     push cx
     mov cl,[si]
     push cx
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     sub ax,[bx+0xa26]
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
@@ -297,7 +302,7 @@ FUN_2_025a:
     jz .label0 ; ↓
     push word [bp+0x6]
     mov ax,[bp+0x8]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     sub ax,[bx+0xa24]
     sub ax,[bx+0xa2c]
     shl ax,byte 0x5
@@ -350,7 +355,7 @@ FUN_2_02b2:
     movsw
     movsw
     movsw
-    push word [0x12]
+    push word [hwndBoard]
     lea ax,[bp-0xa]
     push ss
     push ax
@@ -386,7 +391,7 @@ FUN_2_0306:
     jnz .label0 ; ↓
     jmp .label20 ; ↓
 .label0: ; 324
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov si,di
     sub si,[bx+0xa2c]
     shl si,byte 0x5
@@ -394,12 +399,12 @@ FUN_2_0306:
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
     mov [bp-0xc],ax
-    push word [0x12]
+    push word [hwndBoard]
     lea ax,[bp-0x18]
     push ss
     push ax
     call 0x0:0xffff ; 347 USER.GetClientRect
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa28]
     sub ax,[bx+0xa2c]
     mov cx,[bp-0x14]
@@ -413,7 +418,7 @@ FUN_2_0306:
 .label1: ; 369
     mov [bp-0x4],ax
     mov ax,bx
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov cx,[bx+0xa2a]
     sub cx,[bx+0xa2e]
     mov bx,[bp-0x12]
@@ -444,7 +449,7 @@ FUN_2_0306:
     push word [bp+0x6]
     call 0x3f5:UpdateTile ; 3b2 2:1ca UpdateTile
     add sp,byte +0x6
-    push word [0x12]
+    push word [hwndBoard]
     mov ax,si
     neg ax
     push ax
@@ -456,10 +461,10 @@ FUN_2_0306:
     push byte +0x0
     push byte +0x0
     call 0x0:0xffff ; 3d1 USER.ScrollWindow
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     add [bx+0xa24],di
     mov ax,[bp+0xa]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     add [bx+0xa26],ax
     push word [bp+0xe]
     push word [bp+0xc]
@@ -482,7 +487,7 @@ FUN_2_0306:
     mov bx,di
     neg bx
 .label7: ; 41b
-    mov si,[0x1680]
+    mov si,[GameStatePtr]
     mov ax,[si+0xa26]
     mov [bp-0x4],ax
     mov [bp-0x8],bx
@@ -497,7 +502,7 @@ FUN_2_0306:
     mov di,[bp+0x6]
 .label9: ; 43e
     push word [bp-0x4]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa24]
     add ax,[bx+0xa2c]
     add ax,si
@@ -509,7 +514,7 @@ FUN_2_0306:
     cmp si,[bp-0x8]
     jl .label9 ; ↑
 .label10: ; 45f
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa26]
     add ax,[bx+0xa2a]
     inc word [bp-0x4]
@@ -522,7 +527,7 @@ FUN_2_0306:
     mov ax,[bp-0x8]
     shl ax,byte 0x5
     mov [bp-0x14],ax
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa2e]
     shl ax,byte 0x5
     neg ax
@@ -531,7 +536,7 @@ FUN_2_0306:
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
     mov [bp-0x12],ax
-    push word [0x12]
+    push word [hwndBoard]
     lea ax,[bp-0x18]
     push ss
     push ax
@@ -553,7 +558,7 @@ FUN_2_0306:
     neg ax
 .label15: ; 4cf
     mov [bp-0x4],ax
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa24]
     mov [bp-0x6],ax
     mov cx,ax
@@ -567,7 +572,7 @@ FUN_2_0306:
     jnl .label18 ; ↓
     mov di,[bp+0x6]
 .label17: ; 4f5
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa26]
     add ax,[bx+0xa2e]
     add ax,si
@@ -580,7 +585,7 @@ FUN_2_0306:
     cmp si,[bp-0x4]
     jl .label17 ; ↑
 .label18: ; 516
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa24]
     add ax,[bx+0xa28]
     inc word [bp-0x6]
@@ -601,7 +606,7 @@ FUN_2_0306:
     mov ax,[bp-0x4]
     shl ax,byte 0x5
     mov [bp-0x12],ax
-    push word [0x12]
+    push word [hwndBoard]
     lea ax,[bp-0x18]
     push ss
     push ax
@@ -628,7 +633,7 @@ FUN_2_056e:
     mov ds,ax
     sub sp,byte +0x6
     push si
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0xa28]
     mov cx,ax
     sub ax,0x20
@@ -755,7 +760,7 @@ WinMain:
     jz .label3 ; ↑
     cmp word [bp-0x12],byte +0x12
     jz .label4 ; ↓
-    push word [0x10]
+    push word [hwndMain]
     push word [0x28]
     lea ax,[bp-0x14]
     push ss
@@ -999,12 +1004,12 @@ FUN_2_08e8:
     push ds
     push word 0x50c
     call 0x0:0xffff ; 90d USER.LoadMenu
-    mov [0x26],ax
+    mov [hMenu],ax
     push byte +0x40
     push word 0xa42
     call 0x0:0xffff ; 91a KERNEL.LocalAlloc
     mov [0x1722],ax
-    mov [0x1680],ax
+    mov [GameStatePtr],ax
     or ax,ax
     jnz .label1 ; ↓
 .label0: ; 929
@@ -1056,12 +1061,12 @@ FUN_2_08e8:
     sub ax,[bp-0x14]
     push ax
     push byte +0x0
-    push word [0x26]
+    push word [hMenu]
     push si
     push byte +0x0
     push byte +0x0
     call 0x0:0x9f1 ; 9b5 USER.CreateWindow
-    mov [0x10],ax
+    mov [hwndMain],ax
     or ax,ax
     jnz .label2 ; ↓
     jmp .label0 ; ↑
@@ -1080,13 +1085,13 @@ FUN_2_08e8:
     mov ax,[bp-0x8]
     sub ax,[bp-0xc]
     push ax
-    push word [0x10]
+    push word [hwndMain]
     push byte +0x1
     push si
     push byte +0x0
     push byte +0x0
     call 0x0:0xa2c ; 9f0 USER.CreateWindow
-    mov [0x12],ax
+    mov [hwndBoard],ax
     or ax,ax
     jnz .label3 ; ↓
     jmp .label0 ; ↑
@@ -1105,7 +1110,7 @@ FUN_2_08e8:
     push ax
     push word 0x9a
     push word 0x12c
-    push word [0x10]
+    push word [hwndMain]
     push byte +0x7
     push si
     push byte +0x0
@@ -1132,7 +1137,7 @@ FUN_2_08e8:
     push byte +0x0
     push byte +0x0
     call 0x0:0xa87 ; a57 USER.CreateWindow
-    mov [0x16],ax
+    mov [hwndCounter],ax
     or ax,ax
     jnz .label5 ; ↓
     jmp .label0 ; ↑
@@ -1195,7 +1200,7 @@ FUN_2_08e8:
     push byte +0x0
     push byte +0x0
     call 0x0:0xffff ; ae7 USER.CreateWindow
-    mov [0x1c],ax
+    mov [hwndInventory],ax
     or ax,ax
     jnz .label8 ; ↓
     jmp .label0 ; ↑
@@ -1211,10 +1216,10 @@ FUN_2_08e8:
     call 0x3b5:FUN_2_17a2 ; b08 2:17a2 FUN_2_17a2
     inc word [0x24]
 .label10: ; b11
-    push word [0x10]
+    push word [hwndMain]
     push di
     call 0x0:0xc67 ; b16 USER.ShowWindow
-    push word [0x10]
+    push word [hwndMain]
     call 0x0:0xffff ; b1f USER.UpdateWindow
     push word 0xc9
     call 0xb40:FUN_2_198e ; b27 2:198e FUN_2_198e
@@ -1283,7 +1288,7 @@ FUN_2_0b9a:
     push si
     mov si,[0x13c8]
     mov word [0x13c8],0x0
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0x816]
     dec ax
     cmp ax,0x5
@@ -1328,7 +1333,7 @@ FUN_2_0b9a:
     push byte +0x0
     push ds
     push cx
-    push word [0x10]
+    push word [hwndMain]
     call 0xdae:ShowMessageBox ; c05 2:0 ShowMessageBox
     add sp,byte +0x8
     mov [0x13c8],si
@@ -1351,7 +1356,7 @@ ShowHint:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    cmp word [0x1e],byte +0x0
+    cmp word [hwndHint],byte +0x0
     jnz .label0 ; ↓
     push ds
     push word 0x583
@@ -1369,13 +1374,13 @@ ShowHint:
     push byte +0x0
     push byte +0x0
     call 0x0:0x9b6 ; c54 USER.CreateWindow
-    mov [0x1e],ax
+    mov [hwndHint],ax
     or ax,ax
     jz .label0 ; ↓
     push word [0x1a]
     push byte +0x0
     call 0x0:0xc72 ; c66 USER.ShowWindow
-    push word [0x1c]
+    push word [hwndInventory]
     push byte +0x0
     call 0x0:0xca8 ; c71 USER.ShowWindow
 .label0: ; c76
@@ -1397,15 +1402,15 @@ HideHint:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    cmp word [0x1e],byte +0x0
+    cmp word [hwndHint],byte +0x0
     jz .label0 ; ↓
-    push word [0x1e]
+    push word [hwndHint]
     call 0x0:0xffff ; c96 USER.DestroyWindow
-    mov word [0x1e],0x0
+    mov word [hwndHint],0x0
     push word [0x1a]
     push byte +0x5
     call 0x0:0xcb3 ; ca7 USER.ShowWindow
-    push word [0x1c]
+    push word [hwndInventory]
     push byte +0x5
     call 0x0:0xffff ; cb2 USER.ShowWindow
 .label0: ; cb7
@@ -1475,12 +1480,12 @@ FUN_2_0cbe:
 .label2: ; d52
     test si,0x20
     jz .label3 ; ↓
-    push word [0x16]
+    push word [hwndCounter]
     push byte +0x0
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     call 0x0:0xffff ; d66 USER.SetWindowWord
-    push word [0x16]
+    push word [hwndCounter]
     push byte +0x0
     push byte +0x0
     push byte +0x0
@@ -1488,7 +1493,7 @@ FUN_2_0cbe:
 .label3: ; d7a
     test si,0x4
     jz .label4 ; ↓
-    push word [0x1c]
+    push word [hwndInventory]
     push byte +0x0
     push byte +0x0
     push byte +0x0
@@ -1497,7 +1502,7 @@ FUN_2_0cbe:
     mov ax,si
     test al,0x8
     jz .label6 ; ↓
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov si,[bx+0x80a]
     shl si,byte 0x5
     add si,[bx+0x808]
@@ -2001,7 +2006,7 @@ FUN_2_10ce:
     jmp .label42 ; ↓
     nop
 .label7: ; 1226
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp word [bx+0xa36],byte +0x0
     jz .label8 ; ↓
     push byte +0x1
@@ -2049,7 +2054,7 @@ FUN_2_10ce:
     mov bx,cx
     add cx,dx
     mov dx,bx
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     add cx,[bx+0xa2e]
     dec ax
     cmp cx,ax
@@ -2062,7 +2067,7 @@ FUN_2_10ce:
     mov bx,dx
     add dx,ax
     mov ax,bx
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     add dx,[bx+0xa2e]
     cmp dx,ax
     jnl .label14 ; ↓
@@ -2096,7 +2101,7 @@ FUN_2_10ce:
     mov si,[bp+0x8]
 .label19: ; 130d
     mov dx,[bp-0x4]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     sub dx,[bx+0xa24]
     sub dx,[bx+0xa2c]
     inc dx
@@ -2137,7 +2142,7 @@ FUN_2_10ce:
     push byte +0x42
     call 0x0:0x15c7 ; 136f GDI.PatBlt
 .label21: ; 1374
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp word [bx+0x810],byte +0x0
     jnz .label22 ; ↓
     jmp .label43 ; ↓
@@ -2232,7 +2237,7 @@ FUN_2_10ce:
     xor ax,ax
     mov [bp-0xa],ax
     mov [bp-0x6],ax
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov cx,[bx+0xa28]
     shl cx,byte 0x5
     mov [bp-0x8],cx
@@ -2281,7 +2286,7 @@ FUN_2_10ce:
     sub ax,[bp-0x24]
     mov [bp-0xa],ax
 .label32: ; 14e9
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp byte [bx+0xa1a],0x1
     sbb ax,ax
     inc ax
@@ -2349,7 +2354,7 @@ FUN_2_10ce:
 .label37: ; 158d
     mov ax,[bp-0x4]
     imul word [bp-0xc]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov cx,[bx+0xa2a]
     shl cx,byte 0x5
     sub cx,ax
@@ -2378,7 +2383,7 @@ FUN_2_10ce:
     mov [bp-0x22],ax
     or di,di
     jz .label38 ; ↓
-    mov ax,[0x1680]
+    mov ax,[GameStatePtr]
     add ax,0x95a
     push ds
     push ax
@@ -2407,7 +2412,7 @@ FUN_2_10ce:
 .label38: ; 1621
     or si,si
     jz .label39 ; ↓
-    mov ax,[0x1680]
+    mov ax,[GameStatePtr]
     add ax,0xa1a
     push ds
     push ax
@@ -2522,7 +2527,7 @@ FUN_2_16fa:
 .label1: ; 1720
     mov si,0xdc
 .label2: ; 1723
-    mov cx,[0x12]
+    mov cx,[hwndBoard]
 .label3: ; 1727
     push cx
     push word [bp+0x6]
@@ -2535,10 +2540,10 @@ FUN_2_16fa:
     push byte +0x30
     push ds
     push word 0x7a
-    push word [0x10]
+    push word [hwndMain]
     call 0x17ea:ShowMessageBox ; 1743 2:0 ShowMessageBox
     add sp,byte +0x8
-    push word [0x10]
+    push word [hwndMain]
     push word 0x111
     push byte +0x6a
     push byte +0x0
@@ -2581,7 +2586,7 @@ FUN_2_176e:
     mov cx,[bp-0x4]
     jmp short .label2 ; ↓
 .label1: ; 178e
-    mov cx,[0x12]
+    mov cx,[hwndBoard]
 .label2: ; 1792
     push cx
     push si
@@ -2648,7 +2653,7 @@ PauseGame:
     mov ds,ax
     sub sp,byte +0x2
     call 0x1893:FUN_2_17a2 ; 17e7 2:17a2 FUN_2_17a2
-    push word [0x26]
+    push word [hMenu]
     push byte +0x74
     inc word [0x24]
     cmp word [0x24],byte +0x0
@@ -2660,12 +2665,12 @@ PauseGame:
 .label1: ; 1804
     push ax
     call 0x0:0x1860 ; 1805 USER.CheckMenuItem
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
-    push word [0x10]
+    push word [hwndMain]
     call 0x187c:0x134 ; 1816 4:134 UpdateWindowTitle
     add sp,byte +0x4
-    push word [0x12]
+    push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
@@ -2687,7 +2692,7 @@ UnpauseGame:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    push word [0x26]
+    push word [hMenu]
     push byte +0x74
     mov ax,[0x24]
     dec ax
@@ -2705,14 +2710,14 @@ UnpauseGame:
 .label2: ; 185e
     push ax
     call 0x0:0xffff ; 185f USER.CheckMenuItem
-    push word [0x10]
+    push word [hwndMain]
     call 0x0:0xffff ; 1868 USER.DrawMenuBar
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
-    push word [0x10]
+    push word [hwndMain]
     call 0xb77:0x134 ; 1879 4:134 UpdateWindowTitle
     add sp,byte +0x4
-    push word [0x12]
+    push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
@@ -2756,7 +2761,7 @@ FUN_2_18b6:
     sub sp,byte +0x2
     cmp word [0x13c6],byte +0x0
     jz .label0 ; ↓
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     call 0xffff:0x308 ; 18d2 8:308 FUN_8_0308
 .label0: ; 18d7
@@ -3219,7 +3224,7 @@ FUN_2_1c1c:
     push word [bp+0xc]
     push word [bp+0xa]
     push si
-    mov ax,[0x1680]
+    mov ax,[GameStatePtr]
     add ax,0xa1a
     push ds
     push ax
@@ -3233,7 +3238,7 @@ FUN_2_1c1c:
     jmp short .label1 ; ↓
     nop
 .label0: ; 1c68
-    mov ax,[0x1680]
+    mov ax,[GameStatePtr]
     add ax,0xa1a
     push ds
     push ax
@@ -3535,7 +3540,7 @@ MenuItemCallback:
     call 0x0:0xffff ; 1ed2 WEP4UTIL.5
     jmp .label42 ; ↓
 .label6: ; 1eda
-    push word [0x26]
+    push word [hMenu]
     push byte +0x6c
     cmp word [0x2e],byte +0x1
     sbb ax,ax
@@ -3548,7 +3553,7 @@ MenuItemCallback:
     and ax,0x8
     push ax
     call 0x0:0x20a0 ; 1ef6 USER.CheckMenuItem
-    push word [0x10]
+    push word [hwndMain]
     call 0x0:0x20a9 ; 1eff USER.DrawMenuBar
     jmp .label42 ; ↓
     nop
@@ -3562,7 +3567,7 @@ MenuItemCallback:
     jmp short .label5 ; ↑
     nop
 .label9: ; 1f1e
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0x800]
     inc ax
     push ax
@@ -3574,7 +3579,7 @@ MenuItemCallback:
     jmp .label42 ; ↓
 .label10: ; 1f3a
     push byte +0x0
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0x800]
     inc ax
 .label11: ; 1f45
@@ -3586,7 +3591,7 @@ MenuItemCallback:
     jmp .label42 ; ↓
     nop
 .label14: ; 1f52
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp word [bx+0x800],byte +0x1
     jg .label15 ; ↓
     jmp .label42 ; ↓
@@ -3606,7 +3611,7 @@ MenuItemCallback:
     jmp .label42 ; ↓
 .label17: ; 1f80
     push byte +0x0
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0x800]
     dec ax
     jns .label11 ; ↑
@@ -3615,7 +3620,7 @@ MenuItemCallback:
     nop
 .label18: ; 1f92
     push byte +0x1
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     jmp short .label12 ; ↑
 .label19: ; 1f9e
@@ -3627,7 +3632,7 @@ MenuItemCallback:
     push byte +0x24
     push ds
     push word 0xa2
-    push word [0x10]
+    push word [hwndMain]
     call 0x1fc9:ShowMessageBox ; 1fb6 2:0 ShowMessageBox
     add sp,byte +0x8
     cmp ax,0x6
@@ -3653,7 +3658,7 @@ MenuItemCallback:
     push word [0x172a]
     push ds
     push word 0x623
-    push word [0x10]
+    push word [hwndMain]
     mov ax,dx
     push ax
     push si
@@ -3685,7 +3690,7 @@ MenuItemCallback:
     jmp short .label26 ; ↓
     nop
 .label25: ; 204a
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     call 0x20be:0x308 ; 2052 8:308 FUN_8_0308
     add sp,byte +0x2
@@ -3694,7 +3699,7 @@ MenuItemCallback:
     push byte +0x75
     call 0x2088:FUN_2_19ca ; 2060 2:19ca FUN_2_19ca
     add sp,byte +0x4
-    push word [0x26]
+    push word [hMenu]
     push byte +0x75
     cmp word [0x13c6],byte +0x1
     jmp .label7 ; ↑
@@ -3707,7 +3712,7 @@ MenuItemCallback:
     push byte +0x76
     call 0x20c7:FUN_2_19ca ; 2085 2:19ca FUN_2_19ca
     add sp,byte +0x4
-    push word [0x26]
+    push word [hMenu]
     push byte +0x76
     cmp word [0x13c8],byte +0x1
     cmc
@@ -3715,7 +3720,7 @@ MenuItemCallback:
     and ax,0x8
     push ax
     call 0x0:0x1806 ; 209f USER.CheckMenuItem
-    push word [0x10]
+    push word [hwndMain]
     call 0x0:0x1869 ; 20a8 USER.DrawMenuBar
     cmp word [0x13c8],byte +0x0
     jnz .label28 ; ↓
@@ -3734,12 +3739,12 @@ MenuItemCallback:
     call 0x0:0xffff ; 20d3 KERNEL.MakeProcInstance
     mov si,ax
     mov [bp-0x6],dx
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov di,[bx+0x800]
     push word [0x172a]
     push ds
     push word 0x61a
-    push word [0x10]
+    push word [hwndMain]
     mov ax,dx
     push ax
     push si
@@ -3750,7 +3755,7 @@ MenuItemCallback:
     push word [bp-0xc]
     call 0x0:0xffff ; 2106 KERNEL.FreeProcInstance
     call 0x19e0:UnpauseGame ; 210b 2:1834 UnpauseGame
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov ax,[bx+0x800]
     mov [bp-0x4],ax
     mov [bx+0x800],di
@@ -3788,7 +3793,7 @@ MenuItemCallback:
     push word 0x7f02
     call 0x0:0x7b1 ; 216d USER.LoadCursor
     mov si,ax
-    push word [0x10]
+    push word [hwndMain]
     call 0x0:0xffff ; 2178 USER.SetCapture
     push si
     call 0x0:0x2247 ; 217e USER.SetCursor
@@ -3817,19 +3822,19 @@ MenuItemCallback:
     call 0x0:0x2428 ; 21c1 GDI.DeleteObject
     mov ax,[bp-0x6]
     mov [0x172c],ax
-    push word [0x12]
+    push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call 0x0:0x21e6 ; 21d6 USER.InvalidateRect
-    push word [0x1c]
+    push word [hwndInventory]
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call 0x0:0x21fc ; 21e5 USER.InvalidateRect
-    cmp word [0x1e],byte +0x0
+    cmp word [hwndHint],byte +0x0
     jz .label37 ; ↓
-    push word [0x1e]
+    push word [hwndHint]
     push byte +0x0
     push byte +0x0
     push byte +0x0
@@ -3850,7 +3855,7 @@ MenuItemCallback:
     push byte +0x7a
     call 0x2339:FUN_2_19ca ; 2219 2:19ca FUN_2_19ca
     add sp,byte +0x4
-    push word [0x26]
+    push word [hMenu]
     push byte +0x7a
     cmp word [0xa18],byte +0x1
     jz .label40 ; ↓
@@ -3862,7 +3867,7 @@ MenuItemCallback:
 .label41: ; 2236
     push ax
     call 0x0:0x236b ; 2237 USER.CheckMenuItem
-    push word [0x10]
+    push word [hwndMain]
     call 0x0:0x23b2 ; 2240 USER.DrawMenuBar
     push di
     call 0x0:0xffff ; 2246 USER.SetCursor
@@ -3990,7 +3995,7 @@ MAINWNDPROC:
     mov [0x13c8],ax
     call 0x2356:0x0 ; 234e 8:0 InitSound
     call 0x23e3:0x4a0 ; 2353 8:4a0 FUN_8_04a0
-    push word [0x26]
+    push word [hMenu]
     push byte +0x75
     cmp word [0x13c6],byte +0x1
     cmc
@@ -3998,7 +4003,7 @@ MAINWNDPROC:
     and ax,0x8
     push ax
     call 0x0:0x2382 ; 236a USER.CheckMenuItem
-    push word [0x26]
+    push word [hMenu]
     push byte +0x76
     cmp word [0x13c8],byte +0x1
     cmc
@@ -4006,14 +4011,14 @@ MAINWNDPROC:
     and ax,0x8
     push ax
     call 0x0:0x1ef7 ; 2381 USER.CheckMenuItem
-    push word [0x26]
+    push word [hMenu]
     push byte +0x75
     cmp word [0x13ca],byte +0x1
     sbb ax,ax
     neg ax
     push ax
     call 0x0:0x23ac ; 2396 USER.EnableMenuItem
-    push word [0x26]
+    push word [hMenu]
     push byte +0x76
     cmp word [0x13cc],byte +0x1
     sbb ax,ax
@@ -4044,7 +4049,7 @@ MAINWNDPROC:
     call 0x23f3:FUN_2_176e ; 23d8 2:176e FUN_2_176e
     add sp,byte +0x2
     call 0x2442:0x2d4 ; 23e0 8:2d4 FUN_8_02d4
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     push word 0xc9
     call 0x2492:FUN_2_19ca ; 23f0 2:19ca FUN_2_19ca
@@ -4172,16 +4177,16 @@ MAINWNDPROC:
     jmp short .label31 ; ↑
     nop
 .label33: ; 2540
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp word [bx+0x810],byte +0x0
     jz .label34 ; ↓
     mov word [bx+0x810],0x0
-    push word [0x12]
+    push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call 0x0:0x2806 ; 255b USER.InvalidateRect
-    push word [0x12]
+    push word [hwndBoard]
     call 0x0:0x280f ; 2564 USER.UpdateWindow
     call 0x26dc:FUN_2_17ba ; 2569 2:17ba FUN_2_17ba
 .label34: ; 256e
@@ -4253,7 +4258,7 @@ MAINWNDPROC:
     mov word [bp-0x4],0x0
     mov word [bp-0x6],0x1
 .label48: ; 25fc
-    push word [0x12]
+    push word [hwndBoard]
     call 0x0:0x22f3 ; 2600 USER.GetDC
     mov si,ax
     or si,si
@@ -4267,7 +4272,7 @@ MAINWNDPROC:
     push si
     call 0x27d3:0x1184 ; 2619 7:1184 FUN_7_1184
     add sp,byte +0xa
-    push word [0x12]
+    push word [hwndBoard]
     push si
     call 0x0:0x230c ; 2626 USER.ReleaseDC
     jmp .label67 ; ↓
@@ -4316,7 +4321,7 @@ MAINWNDPROC:
     jz .label60 ; ↓
     jmp .label67 ; ↓
 .label60: ; 268e
-    push word [0x26]
+    push word [hMenu]
     push byte +0x0
     call 0x0:0xffff ; 2694 USER.GetSubMenu
     mov si,ax
@@ -4452,7 +4457,7 @@ BOARDWNDPROC:
     jz .label3 ; ↓
     jmp .label8 ; ↓
 .label3: ; 27c3
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp word [bx+0xa36],byte +0x0
     jz .label5 ; ↓
     push byte +0x0
@@ -4467,34 +4472,34 @@ BOARDWNDPROC:
     jmp short .label4 ; ↑
     nop
 .label6: ; 27ea
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp word [bx+0x810],byte +0x0
     jz .label7 ; ↓
     mov word [bx+0x810],0x0
-    push word [0x12]
+    push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call 0x0:0x21d7 ; 2805 USER.InvalidateRect
-    push word [0x12]
+    push word [hwndBoard]
     call 0x0:0xb20 ; 280e USER.UpdateWindow
     call 0x221c:FUN_2_17ba ; 2813 2:17ba FUN_2_17ba
 .label7: ; 2818
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov word [bx+0xa38],0x1
     mov ax,[bp+0x6]
     shr ax,byte 0x5
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     add ax,[bx+0xa24]
     add ax,[bx+0xa2c]
     mov [bx+0xa3a],ax
     mov ax,[bp+0x8]
     shr ax,byte 0x5
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     add ax,[bx+0xa26]
     add ax,[bx+0xa2e]
     mov [bx+0xa3c],ax
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov word [bx+0x80e],0x0
 .label8: ; 2858
     xor ax,ax
@@ -4974,7 +4979,7 @@ HINTWNDPROC:
     call 0x0:0x2dab ; 2c88 GDI.SetBkColor
     mov [bp-0x14],ax
     mov [bp-0x12],dx
-    mov ax,[0x1680]
+    mov ax,[GameStatePtr]
     add ax,0x99a
     push ds
     push ax
@@ -5100,3 +5105,5 @@ HINTWNDPROC:
     retf 0xa
 
 ; 2dc7
+
+; vim: syntax=nasm
