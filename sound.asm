@@ -115,15 +115,20 @@ endfunc
 
 ; start midi
 func FUN_8_0110
+    %arg hWnd:word
+    %arg param_8:word
+    %arg param_a:word
+    %arg param_c:word
+    ; return value in dx:ax
     sub sp,byte +0x5e
-    cmp word [bp+0xc],byte +0x0
+    cmp word [param_c],byte +0x0
     jz .label0 ; ↓
     jmp .label5 ; ↓
 .label0: ; 126
     mov word [bp-0x56], s_sequencer
     mov [bp-0x54],ds
-    mov ax,[bp+0x8]
-    mov dx,[bp+0xa]
+    mov ax,[param_8]
+    mov dx,[param_a]
     mov [bp-0x52],ax
     mov [bp-0x50],dx
     mov word [bp-0x4e],EmptyStringForMciSendCommand
@@ -140,10 +145,10 @@ func FUN_8_0110
     mov [bp-0x4],dx
     or dx,ax
     jz .label2 ; ↓
-.label1: ; 15f
+.returnSomething: ; 15f
     mov ax,[bp-0x6]
     mov dx,[bp-0x4]
-    jmp .label7 ; ↓
+    jmp .return ; ↓
 .label2: ; 168
     mov word [bp-0x42],0x4003
     mov word [bp-0x40],0x0
@@ -170,7 +175,7 @@ func FUN_8_0110
     push byte +0x0
     call far [fpMciSendCommand] ; 1a3
     mov word [0x13c4],0x0
-    jmp short .label1 ; ↑
+    jmp short .returnSomething ; ↑
     nop
 .label4: ; 1b0
     cmp word [bp-0x46],byte -0x1
@@ -191,10 +196,10 @@ func FUN_8_0110
     push byte +0x0
     call far [fpMciSendCommand] ; 1dc
     mov word [0x13c4],0x0
-    jmp short .label6 ; ↓
+    jmp short .returnZero ; ↓
 .label5: ; 1e8
     mov word [0x13c4],0x1
-    mov ax,[bp+0x6]
+    mov ax,[hWnd]
     mov [bp-0x3a],ax
     mov [bp-0x38],ds
     sub ax,ax
@@ -211,12 +216,12 @@ func FUN_8_0110
     mov [bp-0x6],ax
     mov [bp-0x4],dx
     or dx,ax
-    jz .label6 ; ↓
+    jz .returnZero ; ↓
     jmp .label3 ; ↑
-.label6: ; 21f
+.returnZero: ; 21f
     xor ax,ax
     cwd
-.label7: ; 222
+.return: ; 222
 endfunc
 
 ; 22a
@@ -230,12 +235,12 @@ func FUN_8_022a
     call 0x33a:FUN_8_0110 ; 241 8:110
     add sp,byte +0x8
     or dx,ax
-    jnz .label0 ; ↓
+    jnz .returnZero ; ↓
     mov ax,0x1
-    jmp short .label1 ; ↓
-.label0: ; 252
+    jmp short .end ; ↓
+.returnZero: ; 252
     xor ax,ax
-.label1: ; 254
+.end: ; 254
 endfunc
 
 ; 25c
@@ -466,7 +471,7 @@ func FUN_8_04a0
     push si
     xor di,di
     mov si,SoundArray
-.label0: ; 4b5
+.soundLoop: ; 4b5
     push byte +0x0
     push byte +0x1
     push word 0x100
@@ -480,18 +485,18 @@ func FUN_8_04a0
     call 0x0:0x541 ; 4cc KERNEL.LocalAlloc
     mov [si],ax
     or ax,ax
-    jz .label1 ; ↓
+    jz .nextSound ; ↓
     push ds
     push ax
     lea ax,[bp-0x102]
     push ss
     push ax
     call 0x0:0x554 ; 4df KERNEL.lstrcpy
-.label1: ; 4e4
+.nextSound: ; 4e4
     inc di
     add si,byte +0x2
     cmp si,SoundArray.end
-    jc .label0 ; ↑
+    jc .soundLoop ; ↑
     push word 0xcb
     call 0x50a:0x198e ; 4f1 2:198e
     add sp,byte +0x2
@@ -514,7 +519,7 @@ func FUN_8_04a0
     cmp [NumMIDIFiles],di
     jng .label6 ; ↓
     mov si,MIDIArray
-.label4: ; 529
+.midiLoop: ; 529
     push byte +0x0
     push byte +0x0
     push word 0x100
@@ -528,18 +533,18 @@ func FUN_8_04a0
     call 0x0:0xffff ; 540 KERNEL.LocalAlloc
     mov [si],ax
     or ax,ax
-    jz .label5 ; ↓
+    jz .nextMidiFile ; ↓
     push ds
     push ax
     lea ax,[bp-0x102]
     push ss
     push ax
     call 0x0:0xffff ; 553 KERNEL.lstrcpy
-.label5: ; 558
+.nextMidiFile: ; 558
     add si,byte +0x2
     inc di
     cmp di,[NumMIDIFiles]
-    jl .label4 ; ↑
+    jl .midiLoop ; ↑
 .label6: ; 562
     pop si
     pop di
