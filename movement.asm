@@ -717,15 +717,14 @@ func SlideMovement
     push di
     push si
 
-
-    %define xsrc (bp+0x6)
-    %define ysrc (bp+0x8)
-    %define xdest (bp+0xa)
-    %define ydest (bp+0xc)
-    ;  e xdirptr
-    ; 10 ydirptr
-    %define flag (bp+0x12)
-    %define facing (bp+0x14)
+    %arg xsrc:word ; +6
+    %arg ysrc:word ; +8
+    %arg xdest:word ; +10
+    %arg ydest:word ; +c
+    %arg xdirptr:word ; +e
+    %arg ydirptr:word ; +10
+    %arg flag:word ; +12
+    %arg facing:word ; +14
 
     ; -4 (si) far pointer to x dir
     ; -6 seg
@@ -736,11 +735,15 @@ func SlideMovement
     %define slipseg (bp-0x10) ; far pointer to slip list entry
     %define slipptr (bp-0x12)
 
+    ; TODO
+    ;%define xdirptr si
+    ;%define ydirptr di
+
     ; fetch *xdirptr and *ydirptr
-    mov bx,[bp+0xe]
+    mov bx,[xdirptr]
     mov ax,[bx]
     mov [xdir],ax
-    mov bx,[bp+0x10]
+    mov bx,[ydirptr]
     mov ax,[bx]
     mov [ydir],ax
 
@@ -1014,11 +1017,11 @@ func SlideMovement
 .label15: ; 85e
     mov es,[bp-0x4]
     mov ax,[es:si]
-    mov bx,[bp+0xe]
+    mov bx,[xdirptr]
     mov [bx],ax
     mov es,[bp-0x8]
     mov ax,[es:di]
-    mov bx,[bp+0x10]
+    mov bx,[ydirptr]
     mov [bx],ax
 
     cmp word [flag],byte +0x1
@@ -1140,38 +1143,42 @@ func DrawStretchedTile
     sub sp,byte +0xa
 
     ; args
-    ; 0 hDC
-    ; 2 x position (px)?
-    ; 4 y position (px)?
-    ; 6 width?
-    ; 8 height?
-    ; 10 tile
-    ; 12 tile
+    %arg hDC:word ; +6
+    %arg xpos:word ; +8
+    %arg ypos:word ; +a
+    %arg width:word ; +c
+    %arg height:word ; +e
+    %arg uppertile:byte ; +10
+    %arg lowertile:byte ; +12
 
-    cmp byte [bp+0x12],Floor
+    %local unused:dword
+    %local tileypos:word ; -8
+    %local tilexpos:word ; -a
+
+    cmp byte [lowertile],Floor
     jnz .label0
     jmp word .label1
 .label0: ; 97c
-    cmp byte [bp+0x10],FirstTransparent
+    cmp byte [uppertile],FirstTransparent
     jnc .label2
     jmp word .label1
 .label2: ; 985
-    cmp byte [bp+0x10],LastTransparent
+    cmp byte [uppertile],LastTransparent
     jna .label3
     jmp word .label1
 .label3: ; 98e
     push byte +0x20
     call 0x9a5:0x2a3e ; 990 GetTileImagePos
     add sp,byte +0x2
-    mov [bp-0xa],ax
-    mov [bp-0x8],dx
-    mov al,[bp+0x12]
+    mov [tilexpos],ax
+    mov [tileypos],dx
+    mov al,[lowertile]
     push ax
     call 0x9d1:0x2a3e ; 9a2 GetTileImagePos
     add sp,byte +0x2
     push word [0x1734]
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [tilexpos]
+    push word [tileypos]
     push byte +0x20
     push byte +0x20
     push word [0x1734]
@@ -1180,14 +1187,14 @@ func DrawStretchedTile
     push word 0xcc
     push byte +0x20
     call 0x0:0x9f1 ; 9c3 GDI.BitBlt
-    mov al,[bp+0x10]
+    mov al,[uppertile]
     add al,0x60
     push ax
     call 0x9fe:0x2a3e ; 9ce GetTileImagePos
     add sp,byte +0x2
     push word [0x1734]
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [tilexpos]
+    push word [tileypos]
     push byte +0x20
     push byte +0x20
     push word [0x1734]
@@ -1196,14 +1203,14 @@ func DrawStretchedTile
     push word 0xee
     push word 0x86
     call 0x0:0xa1e ; 9f0 GDI.BitBlt
-    mov al,[bp+0x10]
+    mov al,[uppertile]
     add al,0x30
     push ax
     call 0xa45:0x2a3e ; 9fb GetTileImagePos
     add sp,byte +0x2
     push word [0x1734]
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [tilexpos]
+    push word [tileypos]
     push byte +0x20
     push byte +0x20
     push word [0x1734]
@@ -1212,26 +1219,26 @@ func DrawStretchedTile
     push word 0x88
     push word 0xc6
     call 0x0:0xffff ; a1d GDI.BitBlt
-    push word [bp+0x6]
-    push word [bp+0x8]
-    push word [bp+0xa]
-    push word [bp+0xc]
-    push word [bp+0xe]
+    push word [hDC]
+    push word [xpos]
+    push word [ypos]
+    push word [width]
+    push word [height]
     push word [0x1734]
-    push word [bp-0xa]
-    push word [bp-0x8]
+    push word [tilexpos]
+    push word [tileypos]
     jmp short .label4
     nop
 .label1: ; a3e
-    mov al,[bp+0x10]
+    mov al,[uppertile]
     push ax
     call 0x5ac:0x2a3e ; a42 GetTileImagePos
     add sp,byte +0x2
-    push word [bp+0x6]
-    push word [bp+0x8]
-    push word [bp+0xa]
-    push word [bp+0xc]
-    push word [bp+0xe]
+    push word [hDC]
+    push word [xpos]
+    push word [ypos]
+    push word [width]
+    push word [height]
     push word [0x1734]
     push ax
     push dx
@@ -1252,9 +1259,14 @@ func EndGame
     push di
     push si
 
-    %define hDC (bp-8)
-    %define flag (bp+0x6)
-    %define nLevelsCompleted (bp-0x4)
+    %arg flag:word ; +6
+
+    %define exitTile (bp-3)
+    %local nLevelsCompleted:word ; -4
+    %local hBitmap:word ; -6
+    %local hDC:word ; -8
+    %local local_c:dword ; -c
+    %define msgbuf (bp-0x19e) ; length = 0x192 = 402
 
     push word [hwndBoard]
     call 0x0:0x14 ; a88 USER.GetDC
@@ -1265,7 +1277,8 @@ func EndGame
     jge .atLeast32
 
 .lessThanOrEqualTo32:
-    ; set bp-0x3 to an exit tile depending on EndingTick % 3
+    ; select an exit tile depending on EndingTick % 3
+    ; and store in [exitTile]
     mov si,[bx+EndingTick]
     mov ax,si
     mov cx,0x3
@@ -1283,16 +1296,16 @@ func EndGame
     nop
     nop
 .case0: ; aba
-    mov byte [bp-0x3], Exit
+    mov byte [exitTile], Exit
     jmp short .label4
 .case1: ; ac0
-    mov byte [bp-0x3], Exit2
+    mov byte [exitTile], Exit2
     jmp short .label4
 .case2: ; ac6
-    mov byte [bp-0x3], Exit3
+    mov byte [exitTile], Exit3
 
 .label4: ; aca
-    mov al,[bp-0x3]
+    mov al,[exitTile]
     push ax
     push byte ChipS
     lea ax,[si+0x20] ; (_a36 * 8 + 32)
@@ -1358,7 +1371,7 @@ func EndGame
     sbb al,al
     and al,0x35
     add al,ChipExit
-    mov [bp-0x3],al
+    mov [exitTile],al
     push ax
 
     push word 0x120
@@ -1387,7 +1400,7 @@ func EndGame
     push ds
     push word Chipend
     call 0x0:0xc59 ; b8e USER.LoadBitmap
-    mov [bp-0x6],ax
+    mov [hBitmap],ax
     or ax,ax
     jz .loadBitmapFailed
     push word [0x1734]
@@ -1408,7 +1421,7 @@ func EndGame
     push word [0x1734]
     push si
     call 0x0:0xc69 ; bca GDI.SelectObject
-    push word [bp-0x6]
+    push word [hBitmap]
     call 0x0:0xc9a ; bd2 GDI.DeleteObject
 .loadBitmapFailed: ; bd7
     push byte +0x0
@@ -1421,7 +1434,7 @@ func EndGame
     mov si,0x1
     mov di,[nLevelsCompleted]
 .levelLoop: ; bef
-    lea ax,[bp-0xc]
+    lea ax,[local_c]
     push ax
     push byte +0x0
     push byte +0x0
@@ -1430,9 +1443,9 @@ func EndGame
     add sp,byte +0x8
     or ax,ax
     jz .label15
-    cmp word [bp-0xc],byte -0x1
+    cmp word [local_c],byte -0x1
     jnz .label16
-    cmp word [bp-0xa],byte -0x1
+    cmp word [local_c+2],byte -0x1
     jz .label15
 .label16: ; c10
     inc di
@@ -1446,13 +1459,13 @@ func EndGame
     push di
     push ds
     push word YouCompletedNLevelsMsg
-    lea ax,[bp-0x19e]
+    lea ax,[msgbuf]
     push ss
     push ax
     call 0x0:0xffff ; c2b USER._wsprintf
     add sp,byte +0xe
     push byte +0x0
-    lea ax,[bp-0x19e]
+    lea ax,[msgbuf]
     push ss
     push ax
     push word [hwndMain]
@@ -1522,6 +1535,8 @@ func EndLevel
     push di
     push si
 
+    %arg hWnd:word
+
     call 0xd51:0x17a2 ; cd9 2:0x17a2
 
     ; Show level completed dialog
@@ -1533,7 +1548,7 @@ func EndLevel
     push word [0x172a]  ; hInstance
     push ds
     push word 0x1362    ; "DLG_COMPLETE"
-    push word [bp+0x6]  ; hWndParent
+    push word [hWnd]  ; hWndParent
     mov ax,dx
     push ax
     push si             ; lpDialogFunc
@@ -1609,21 +1624,21 @@ func MoveBlock
     sub sp,byte +0xe
     push si
 
-    ; bp+0x12 pointer set to 1 if the block hit a button
-
-    %define dc (bp+0x6) dc
-    %define xsrc (bp+0x8)
-    %define ysrc (bp+0xa)
-    %define xdir (bp+0xc)
-    %define ydir (bp+0xe)
-    %define blockTile (bp+0x10)
-    %define ptr (bp+0x12)
+    %arg hDC:word
+    %arg xsrc:word
+    %arg ysrc:word
+    %arg xdir:word
+    %arg ydir:word
+    %arg blockTile:byte
+    %arg ptr:word ; bp+0x12 pointer set to 1 if the block hit a button
 
     %define tile (bp-0x3)
-    %define ydest (bp-0x6)
-    %define xdest (bp-0x8)
-    %define action (bp-0xa)
-    %define srcidx (bp-0xc)
+    %local local_4:byte ; -4
+    %local ydest:word ; -6
+    %local xdest:word ; -8
+    %local action:word ; -a
+    %local srcidx:word ; -c
+    %local local_e:byte ; -e
 
     mov ax,[ydir]
     add ax,[ysrc]
@@ -1853,7 +1868,7 @@ func MoveBlock
     push ax
     lea cx,[xdest]
     push cx
-    push word [bp+0x6]
+    push word [hDC]
     call 0x10a2:0x276a ; fbf
     add sp,byte +0xc
     lea ax,[blockTile]
@@ -1892,7 +1907,7 @@ func MoveBlock
     mov [bx+si+Upper],al
     push word [ydest]
     push word [xdest]
-    push word [bp+0x6]
+    push word [hDC]
     call 0x105c:0x1ca ; 1021
     add sp,byte +0x6
 
@@ -1914,7 +1929,7 @@ func MoveBlock
 ; update src tile
     push word [ysrc]
     push word [xsrc]
-    push word [bp+0x6]
+    push word [hDC]
     call 0xb81:0x1ca ; 1059
     add sp,byte +0x6
 
@@ -1948,7 +1963,7 @@ func MoveBlock
     nop
     nop
 .toggleButton: ; 109c
-    push word [bp+0x6]
+    push word [hDC]
     call 0x10b8:0x1fac ; 109f 3:0x1fac PressToggleButton
     add sp,byte +0x2
     jmp short .label34
@@ -1957,7 +1972,7 @@ func MoveBlock
     push byte +0x0
     push word [ydest]
     push word [xdest]
-    push word [bp+0x6]
+    push word [hDC]
     call 0x10cb:0x2442 ; 10b5
     add sp,byte +0x8
     jmp short .label34
@@ -1971,7 +1986,7 @@ func MoveBlock
     jmp short .label34
 .tankButton: ; 10d2
     push byte +0x0
-    push word [bp+0x6]
+    push word [hDC]
     call 0x1174:0x1e6a ; 10d7
     add sp,byte +0x4
     jmp short .label34
@@ -2010,15 +2025,15 @@ func MoveBlock
     add si,[xdest]
     mov bx,[GameStatePtr]
     mov al,[bx+si+Lower]
-    mov [bp-0xe],al
+    mov [local_e],al
     cmp al,ChipN
     jb .label36
     cmp al,ChipE
     jna .label37
 .label36: ; 1137
-    cmp byte [bp-0xe],SwimN
+    cmp byte [local_e],SwimN
     jb .return1
-    cmp byte [bp-0xe],SwimE
+    cmp byte [local_e],SwimE
     ja .return1
 .label37: ; 1143
     mov word [bx+Autopsy],Squished
@@ -2053,23 +2068,27 @@ endfunc
 
 ; Move chip
 func MoveChip
-    %define hDC (bp+0x6)
-    %define xdir (bp+0x8)
-    %define ydir (bp+0xa)
-    %define flag1 (bp+0xc) ; 0 if sliding (forced move), 1 if not
-    %define flag2 (bp+0xe)
+    %arg hDC:word ; +6
+    %arg xdir:word ; +8
+    %arg ydir:word ; +a
+    %arg flag1:word ; +c ; 0 if sliding (forced move), 1 if not
+    %arg flag2:word ; +e
 
     %define tile1 (bp-0x3)
-    %define blocktmp (bp-0x4)
-    %define xdest (bp-0x8)
-    %define ydest (bp-0xa)
+    %local blocktmp:word ; -4
+    %local local_6:word ; -6
+    %local xdest:word ; -8
+    %local ydest:word ; -a
     %define tile2 (bp-0xb)
-    %define action (bp-0xe)
-    %define canenter (bp-0x10)
-    %define buttonY (bp-0x12)
-    %define buttonX (bp-0x14)
-    %define buttonPressed (bp-0x16)
-    %define tmp (bp-0x1a)
+    %local local_c:word
+    %local action:word ; -e
+    %local canenter:word ; -10
+    %local buttonY:word ; -12
+    %local buttonX:word ; -14
+    %local buttonPressed:word ; -16
+    %local local_18:word
+    %local tmp:word ; -1a
+    %local local_1c:word ; -1c
 
     sub sp,byte +0x1c
 
@@ -2261,7 +2280,7 @@ func MoveChip
     mov bx,[GameStatePtr]
     mov si,[bx+ChipX]
     mov di,[bx+ChipY]
-    mov word [bp-0x16],0x0
+    mov word [buttonPressed],0x0
     mov ax,[ydest]
     shl ax,byte 0x5
     add ax,[xdest]
@@ -2288,7 +2307,7 @@ func MoveChip
     add bx,ax
     ; can't push a block in the same direction as it's slipping
     mov ax,[es:bx+Monster.xdir]
-    mov [bp-0x6],ax
+    mov [local_6],ax
     mov cx,[es:bx+Monster.ydir]
     cmp ax,[xdir]
     jnz .checkOtherDirection
@@ -2459,7 +2478,7 @@ func MoveChip
     shl bx,byte 0x5
     add bx,[xdest]
     add bx,[GameStatePtr]
-    mov [bp-0x18],bx
+    mov [local_18],bx
     mov al,[bx+Lower]
     sub ah,ah
     sub ax,Water
@@ -2840,7 +2859,7 @@ func MoveChip
     mov si,[GameStatePtr]
     add bx,[si+ChipX]
     add bx,si
-    mov [bp-0x1c],bx
+    mov [local_1c],bx
     cmp byte [bx+Lower],Water
     jnz .label70
     mov al,SwimN
@@ -2853,7 +2872,7 @@ func MoveChip
     call 0x1956:0x486 ; 1891 SetTileDir
     add sp,byte +0x6
     ; set it
-    mov bx,[bp-0x1c]
+    mov bx,[local_1c]
     mov [bx+Upper],al
 
     mov bx,[GameStatePtr]
@@ -2882,13 +2901,6 @@ endfunc
 
 ; Move monster
 ; Called repeatedly in the big freaking monster loop.
-; Parameters:
-;   HDC
-;   x pos
-;   y pos
-;   x dir
-;   y dir
-;   facing (previous monster tile, if applicable, or 0xff)
 ; Return value:
 ;   0 - blocked
 ;   1 - success
@@ -2898,24 +2910,25 @@ func MoveMonster
     push di ; xsrc
     push si ; ysrc
 
-    %define unknown (bp+0x6) ; probably hDC
-    %define xptr (bp+0x8)
-    %define yptr (bp+0xa)
-    %define xdirptr (bp+0xc)
-    %define ydirptr (bp+0xe)
-    %define facing (bp+0x10)
+    %arg hDC:word ; +6
+    %arg xptr:word ; +8
+    %arg yptr:word ; +a
+    %arg xdirptr:word ; +c
+    %arg ydirptr:word ; +e
+    %arg facing:word ; +10 ; previous monster tile, if applicable, or 0xff
 
     %define tile (bp-0x3)
-    %define ydir (bp-0x6)
-    %define trap (bp-0x8)
-    %define xdir (bp-0xa)
-    %define ysrc (bp-0xc)
-    %define xsrc (bp-0xe)
-    %define xdest (bp-0x10)
-    %define ydest (bp-0x12)
-    %define action (bp-0x14)
-    %define dead (bp-0x16)
-    %define srcidx (bp-0x18)
+    %local local_4:byte
+    %local ydir:word ; -6
+    %local trap:word ; -8
+    %local xdir:word ; -a
+    %local ysrc:word ; -c
+    %local xsrc:word ; -e
+    %local xdest:word ; -10
+    %local ydest:word ; -12
+    %local action:word ; -14
+    %local dead:word ; -16
+    %local srcidx:word ; -18
 
     ; xdir = *xdirptr
     ; ydir = *ydirptr
@@ -3006,8 +3019,8 @@ func MoveMonster
     jnz .label9
 .label8: ; 1994
     push byte +0x0 ; exit
-    push word [bp-0x6]
-    push word [bp-0xa]
+    push word [ydir]
+    push word [xdir]
     mov al,[tile]
     push ax
     call 0x19d2:0x1934 ; 19a0 3:0x1934 CanEnterOrExitPanelWalls
@@ -3139,7 +3152,7 @@ func MoveMonster
     push ax
     lea cx,[xdest]
     push cx
-    push word [unknown]
+    push word [hDC]
     call 0x1b76:0x276a ; 1aa5 3:0x276a
     add sp,byte +0xc
     lea ax,[facing]
@@ -3173,7 +3186,7 @@ func MoveMonster
     mov [bx+Upper],al
     push word [ydest]
     push word [xdest]
-    push word [unknown]
+    push word [hDC]
     call 0x1b36:0x1ca ; 1aff 2:0x1ca
     add sp,byte +0x6
 
@@ -3196,7 +3209,7 @@ func MoveMonster
 .label19: ; 1b2e
     push si ; ysrc
     push di ; xsrc
-    push word [unknown]
+    push word [hDC]
     call 0x16ce:0x1ca ; 1b33 2:0x1ca
     add sp,byte +0x6
     cmp word [action],byte +0x1
@@ -3222,7 +3235,7 @@ func MoveMonster
     jz .tankButton
     jmp word .autopsy
 .toggleButton: ; 1b70
-    push word [unknown]
+    push word [hDC]
     call 0x1b8c:0x1fac ; 1b73 3:0x1fac PressToggleButton
     add sp,byte +0x2
     jmp word .autopsy
@@ -3230,7 +3243,7 @@ func MoveMonster
     push byte +0x0
     push word [ydest]
     push word [xdest]
-    push word [unknown]
+    push word [hDC]
     call 0x1b9f:0x2442 ; 1b89 3:0x2442
     add sp,byte +0x8
     jmp word .autopsy
@@ -3280,7 +3293,7 @@ func MoveMonster
     mov [es:bx+Monster.ydir],ax
 .notFound: ; 1c13
     push byte +0x0
-    push word [unknown]
+    push word [hDC]
     call 0x1cc4:0x1e6a ; 1c18 3:0x1e6a
     add sp,byte +0x4
     cmp si,byte -0x1
