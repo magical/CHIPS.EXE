@@ -311,7 +311,10 @@ endfunc
 
 ; 228
 func NewMonster
-    %arg tile:byte, x:word, y:word, xdir:word, ydir:word, cloning:word
+    %arg tile:byte
+    %arg x:word, y:word
+    %arg xdir:word, ydir:word
+    %arg cloning:word
     %define pos (bp-6)
     %define lowerTile (bp-3)
 
@@ -678,9 +681,13 @@ func InitBoard
     push di
     push si
 
-    %define coords (bp-6)
     %define tile (bp-3)
-    %define y (bp-0xa)
+    %local local_4:byte ; -4
+    %local coords:word ; -6
+    %define xoff (bp-0x6)
+    %local yoff:word ; -8
+    %local y:word ; -a
+
 
     ; Loop over initial monster list
     ; and add entries to actual monster list
@@ -757,12 +764,11 @@ func InitBoard
 .noMonsters: ; 5dc
 
     ; Loop over the game board
-    %define yoff (bp-8)
     xor di,di
     mov [yoff],di
 .loopY: ; 5e1
     xor si,si
-    mov [bp-0x6],di ; unused
+    mov [xoff],di ; unused
 .loopX: ; 5e6
     ; Get tile at x,y
     mov bx,[GameStatePtr]
@@ -925,25 +931,31 @@ endfunc
 ; Big freaking monster loop
 ; Loop through the monster list and move each monster.
 func MonsterLoop
-    ; Look at all these locals!
-    %define tile (bp-3)
-    %define xdir (bp-6)
-    %define ydir (bp-8)
-    %define deadflag (bp-0xa)
-    %define i (bp-0xc)
-    %define ynewdir (bp-0xe)
-    %define xnewdir (bp-0x10)
-    %define x (bp-0x12)
-    %define y (bp-0x14)
-    %define len (bp-0x16)
-    %define xdistance (bp-0x18)
-    %define ydistance (bp-0x1a)
-    %define p (bp-0x1e)
-    %define offset (bp-0x20)
-
     sub sp,byte +0x20
     push di
     push si
+
+    %arg hDC:word ; +6
+    %arg isEvenTick:word ; +8
+
+    ; Look at all these locals!
+    %define tile (bp-3)
+    %local local_4:byte ; -4
+    %local xdir:word ; -6
+    %local ydir:word ; -8
+    %local deadflag:word ; -a
+    %local i:word ; -c
+    %local ynewdir:word ; -e
+    %local xnewdir:word ; -10
+    %local x:word ; -12
+    %local y:word ; -14
+    %local len:word ; -16
+    %local xdistance:word ; -18
+    %local ydistance:word ; -1a
+    %local local_1c:word ; -1c
+    %local p:word ; -1e
+    %local offset:word ; -20
+
     mov bx,[GameStatePtr]
     mov ax,[bx+MonsterListLen]
     mov [len],ax
@@ -1001,7 +1013,7 @@ func MonsterLoop
 .isAMonster: ; 7e6
     shl ax,1
     xchg ax,bx
-    jmp word near [cs:bx+.jmpTable]
+    jmp word near [cs:.jmpTable+bx]
 
 .jmpTable:
     ; Jump table
@@ -1059,7 +1071,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x909:0x18da ; 899 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1109,7 +1121,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x991:0x18da ; 906 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1171,7 +1183,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xa01:0x18da ; 98e 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1221,7 +1233,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xadb:0x18da ; 9fe 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1232,7 +1244,7 @@ func MonsterLoop
 .tank.blocked: ; a10
     push word [y]
     push word [x]
-    push word [bp+0x6]
+    push word [hDC]
     call 0xffff:0x1ca ; a19 2:0x1ca
     add sp,byte +0x6
     mov bx,[GameStatePtr]
@@ -1304,7 +1316,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xffff:0x18da ; ad8 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1358,7 +1370,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xc3e:0x18da ; b53 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1381,7 +1393,7 @@ func MonsterLoop
         ; TEETH
 .TeethMovement:
     ; Teeth move only on even ticks.
-    cmp word [bp+0x8],byte +0x0
+    cmp word [isEvenTick],byte +0x0
     jnz .label27
     jmp word .next
 .label27: ; b85
@@ -1466,7 +1478,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xcec:0x18da ; c3b 7:0x18da
     add sp,byte +0xc
     ; Check if we succeeded
@@ -1541,7 +1553,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xdd9:0x18da ; ce9 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1607,7 +1619,7 @@ func MonsterLoop
     mov [es:bx+si+Monster.tile],al
     push word [y]
     push word [x]
-    push word [bp+0x6]
+    push word [hDC]
     call 0xa1c:0x1ca ; d93 2:0x1ca
     add sp,byte +0x6
     jmp word .next
@@ -1636,7 +1648,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xebf:0x18da ; dd6 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1752,7 +1764,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x89c:0x18da ; ebc 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1765,7 +1777,7 @@ func MonsterLoop
 
         ;;; BLOB ;;;
 .BlobMovement:
-    cmp word [bp+0x8],byte +0x0
+    cmp word [isEvenTick],byte +0x0
     jnz .label58
     jmp word .next
 .label58: ; edb
@@ -1807,7 +1819,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x1001:0x18da ; f39 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1892,7 +1904,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x107a:0x18da ; ffe 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1942,7 +1954,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x10d9:0x18da ; 1077 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -1982,7 +1994,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x1132:0x18da ; 10d6 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -2019,7 +2031,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x1188:0x18da ; 112f 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -2053,7 +2065,7 @@ func MonsterLoop
     push ax
     lea ax,[x]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0xb56:0x18da ; 1185 7:0x18da
     add sp,byte +0xc
     mov [deadflag],ax
@@ -2179,6 +2191,8 @@ func DeleteSlipperAt
     sub sp,byte +0x6
     push di
     push si
+
+    %arg unused:word, x:word, y:word
     mov bx,[GameStatePtr]
     cmp word [bx+SlipListLen],byte +0x0
     jnz .nonzero
@@ -2187,8 +2201,8 @@ func DeleteSlipperAt
     jmp word .end
     nop
 .nonzero: ; 12de
-    push word [bp+0xa]
-    push word [bp+0x8]
+    push word [y]
+    push word [x]
     call 0x1316:FindSlipper ; 12e4 3:58
     add sp,byte +0x4
     mov di,ax
@@ -2205,8 +2219,8 @@ func DeleteSlipperAt
     ; then find it and turn off its slipping flag
     cmp word [es:bx+si+Monster.slipping],byte +0x0
     jz .notAMonster
-    push word [bp+0xa]
-    push word [bp+0x8]
+    push word [y]
+    push word [x]
     call 0x13ac:FindMonster ; 1313 3:0
     add sp,byte +0x4
     mov bx,ax
@@ -2261,14 +2275,16 @@ endfunc
 
 func FindSlipperAt
     sub sp,byte +0x4
-    push word [bp+0xa]
-    push word [bp+0x8]
+    %arg unused:word, x:word, y:word
+    %local slipperIdx:word
+    push word [y]
+    push word [x]
     call 0x1431:FindSlipper ; 13a9 3:0x58
     add sp,byte +0x4
-    mov [bp-0x4],ax
+    mov [slipperIdx],ax
     inc ax
     jz .returnZero
-    mov ax,[bp-0x4]
+    mov ax,[slipperIdx]
     mov cx,ax
     shl ax,byte 0x2
     add ax,cx
@@ -2288,12 +2304,17 @@ endfunc
 ; 13de
 
 func SlipLoop
-    %define previousSlipListLen (bp-0x8)
-    %define i (bp-0xa)
-    %define x (bp-0xc)
-    %define y (bp-0xe)
-    %define xdir (bp-0x10)
-    %define ydir (bp-0x12)
+    %arg hWnd:word
+    %local monsterIndex:word
+    %local monsterStatus:word
+    %local previousSlipListLen:word ; -8
+    %local i:word ; -a
+    %local x:word ; -c
+    %local y:word ; -e
+    %local xdir:word ; -10
+    %local ydir:word ; -12
+    %local local_14:byte
+    %local local_16:word
 
     sub sp,byte +0x16
     push di
@@ -2305,7 +2326,7 @@ func SlipLoop
     jmp word .break
 .start: ; 1400
     xor si,si
-    mov di,[bp+0x6]
+    mov di,[hWnd]
 .loop: ; 1405
     mov ax,[bx+SlipListLen]
     mov [previousSlipListLen],ax
@@ -2322,7 +2343,7 @@ func SlipLoop
     push word [es:bx+Monster.x]
     call 0x148d:FindMonster ; 142e 3:0x0
     add sp,byte +0x4
-    mov [bp-0x4],ax
+    mov [monsterIndex],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
     mov ax,[es:bx+si+Monster.xdir]
@@ -2361,7 +2382,7 @@ func SlipLoop
     push di  ; wnd
     call 0x14fe:0x18da ; 14a4 MoveMonster
     add sp,byte +0xc
-    mov [bp-0x6],ax
+    mov [monsterStatus],ax
     or ax,ax
     jz .label4
     jmp word .success
@@ -2373,7 +2394,7 @@ func SlipLoop
     add bx,[x]
     add bx,[GameStatePtr]
     mov al,[bx+Lower]
-    mov [bp-0x14],al
+    mov [local_14],al
     cmp al,Ice
     jz .label6
     cmp al,IceWallNW
@@ -2421,7 +2442,7 @@ func SlipLoop
     push di ; hDC
     call 0xf3c:0x18da ; 1533 7:18da MoveMonster
     add sp,byte +0xc
-    mov [bp-0x6],ax
+    mov [monsterStatus],ax
     or ax,ax
     jnz .success
     jmp word .label9
@@ -2432,7 +2453,7 @@ func SlipLoop
     jmp word .label11
 .label10: ; 154d
     mov ax,[x]
-    mov cx,[bp-0x4]
+    mov cx,[monsterIndex]
     mov dx,cx
     shl cx,byte 0x2
     add cx,dx
@@ -2465,17 +2486,17 @@ func SlipLoop
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
     push ax
-    mov [bp-0x16],cx
+    mov [local_16],cx
     call 0x15d8:SetTileDir ; 15b8 3:486
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
-    add bx,[bp-0x16]
+    add bx,[local_16]
     mov [es:bx+Monster.tile],al
     jmp word .next
     nop
 .label11: ; 15d2
-    push word [bp-0x4]
+    push word [monsterIndex]
     call 0xee0:0x3b4 ; 15d5
     add sp,byte +0x2
     jmp word .next
@@ -2524,7 +2545,7 @@ func SlipLoop
     add bx,[x]
     add bx,[GameStatePtr]
     mov al,[bx+Lower]
-    mov [bp-0x14],al
+    mov [local_14],al
     cmp al,Ice
     jz .label15
     cmp al,IceWallNW
@@ -2580,9 +2601,9 @@ func SlipLoop
     cmp [bx+SlipListLen],ax
     jnz .label17
     add si,byte Monster_size
-    inc word [bp-0xa]
+    inc word [i]
 .label17: ; 16ea
-    mov ax,[bp-0xa]
+    mov ax,[i]
     cmp [bx+SlipListLen],ax
     jng .break
     jmp word .loop
@@ -2632,8 +2653,9 @@ endfunc
 ; 1770
 
 func PickUpKeyOrBoot
+    %arg tile:byte
     sub sp,byte +0x2
-    mov al,[bp+0x6]
+    mov al,[tile]
     sub ah,ah
     cmp ax,SuctionBoots
     jz .suctionBoots ; ↓
@@ -2723,7 +2745,7 @@ func CanOpenDoor
 .blueDoor: ; 1826
     cmp word [BlueKeyCount],byte +0x0
     jz .no ; ↓
-    cmp word [bp+0x8],byte +0x0
+    cmp word [consume],byte +0x0
     jz .yes ; ↓
     dec word [BlueKeyCount]
 .yes: ; 1837
@@ -2735,7 +2757,7 @@ func CanOpenDoor
 .redDoor: ; 1840
     cmp word [RedKeyCount],byte +0x0
     jz .no ; ↓
-    cmp word [bp+0x8],byte +0x0
+    cmp word [consume],byte +0x0
     jz .yes ; ↑
     dec word [RedKeyCount]
     jmp short .yes ; ↑
@@ -2751,7 +2773,7 @@ func CanOpenDoor
 .yellowDoor: ; 185e
     cmp word [YellowKeyCount],byte +0x0
     jz .no ; ↓
-    cmp word [bp+0x8],byte +0x0
+    cmp word [consume],byte +0x0
     jz .yes ; ↑
     dec word [YellowKeyCount]
     jmp short .yes ; ↑
@@ -2766,8 +2788,9 @@ endfunc
 
 ; force floors, ice, fire, water
 func HaveBootsForTile
+    %arg tile:byte
     sub sp,byte +0x2
-    mov al,[bp+0x6]
+    mov al,[tile]
     sub ah,ah
     sub ax,Water
     cmp ax,ForceRandom-Water
@@ -3028,13 +3051,13 @@ func ChipCanEnterTile
     push di
     push si
 
-    %define x (bp+0x6)
-    %define y (bp+0x8)
-    %define xdir (bp+0xa)
-    %define ydir (bp+0xc)
-    %define ptr (bp+0xe)
-    %define flag1 (bp+0x10)
-    %define upperOrLower (bp+0x12) ; 1=upper 0=lower
+    %arg x:word ; +6
+    %arg y:word ; +8
+    %arg xdir:word ; +a
+    %arg ydir:word ; +c
+    %arg ptr:word ; +e
+    %arg flag1:word ; +10
+    %arg upperOrLower:word ; +12 1=upper 0=lower
 
     %define tile (bp-0x3)
     %define tileTableRow (bp-0xa)
@@ -3339,21 +3362,23 @@ func BlockCanEnterTile
     push di
     push si
 
-    %arg tile:byte, x:word, y:word, xdir:word, ydir:word, outPtr:byte
+    %arg blockTile:byte, x:word, y:word, xdir:word, ydir:word, outPtr:byte
+    %define tile (bp-0x3)
     %define tileTableRow (bp-0xa)
+    %define tilePointer (bp-0xc)
 
     mov bx,[y]
     shl bx,byte 0x5
     add bx,[x]
     add bx,[GameStatePtr]
-    mov [bp-0xc],bx
+    mov [tilePointer],bx
 
     ; Can't enter clone machines
     cmp byte [bx+Lower],CloneMachine
     jz .nope ; ↓
 
     mov al,[bx+Upper]
-    mov [bp-0x3],al
+    mov [tile],al
 
     mov bl,al
     sub bh,bh
@@ -3387,7 +3412,7 @@ func BlockCanEnterTile
 .label1: ; 1d00
     cmp byte [tileTableRow+2],0x2
     jnz .nope ; ↓
-    mov al,[bp-0x3]
+    mov al,[tile]
     sub ah,ah
     cmp ax,PanelSE
     jz .checkPanelWallsOrIceWalls ; ↓
@@ -3404,7 +3429,7 @@ func BlockCanEnterTile
     push byte +0x1
     push word [ydir]
     push word [xdir]
-    mov al,[bp-0x3]
+    mov al,[tile]
     push ax
     call 0x1284:CheckPanelWalls ; 1d2e 3:1934
     add sp,byte +0x8
@@ -3426,8 +3451,10 @@ func MonsterCanEnterTile
     push di
     push si
 
-    %arg tile:byte, x:word, y:word, xdir:word, ydir:word, outPtr:byte
+    %arg monster:byte, x:word, y:word, xdir:word, ydir:word, outPtr:byte
+    %define tile (bp-0x3)
     %define tileTableRow (bp-0xa)
+    %define tilePointer (bp-0xc)
 
     mov di,[y]
     mov si,[x]
@@ -3435,33 +3462,33 @@ func MonsterCanEnterTile
     shl bx,byte 0x5
     add bx,[GameStatePtr]
     add bx,si
-    mov [bp-0xc],bx
+    mov [tilePointer],bx
 
-; if tile is on a clone machine, return
+; if monster is on a clone machine, return
     cmp byte [bx+Lower],CloneMachine
     jnz .notACloneMachine ; ↓
     jmp word .clearOutAndReturnZero ; ↓
 
 .notACloneMachine: ; 1d77
     mov al,[bx+Upper]
-    mov [bp-0x3],al
+    mov [tile],al
     cmp al,ChipN
     jb .checkSwimmingChip ; ↓
     cmp al,ChipE
     jna .getBottomTile ; ↓
 .checkSwimmingChip: ; 1d84
-    cmp byte [bp-0x3],SwimN
+    cmp byte [tile],SwimN
     jb .label3 ; ↓
-    cmp byte [bp-0x3],SwimE
+    cmp byte [tile],SwimE
     ja .label3 ; ↓
 
 ; creature is chip or swimming chip
 .getBottomTile: ; 1d90
     mov al,[bx+Lower]
-    mov [bp-0x3],al
+    mov [tile],al
 
 .label3: ; 1d97
-    mov bl,[bp-0x3]
+    mov bl,[tile]
     sub bh,bh
     ; multiply by 6
     mov ax,bx
@@ -3502,7 +3529,7 @@ func MonsterCanEnterTile
 ; other stuff ==>
 .label6: ; 1dd1
     mov si,[outPtr]
-    mov al,[bp-0x3]
+    mov al,[tile]
     sub ah,ah
     cmp ax,PanelSE
     jz .thinWalls ; ↓
@@ -3529,7 +3556,7 @@ func MonsterCanEnterTile
     jmp short .clearOutAndReturnZero ; ↓
 
 .water: ; 1e00
-    mov al,[tile]
+    mov al,[monster]
     sub ah,ah
     sub ax,GliderN
     jl .returnTrue ; ↑
@@ -3542,7 +3569,7 @@ func MonsterCanEnterTile
     nop
 
 .fire: ; 1e18
-    mov al,[tile]
+    mov al,[monster]
     sub ah,ah
     sub ax,BugN
     jl .returnTrue ; ↑
@@ -3564,7 +3591,7 @@ func MonsterCanEnterTile
     push byte +0x1
     push word [ydir]
     push word [xdir]
-    mov al,[bp-0x3]
+    mov al,[tile]
     push ax
     call 0x1edc:CheckPanelWalls ; 1e4a 3:0x1934
     add sp,byte +0x8
@@ -3586,11 +3613,15 @@ func PressTankButton
     sub sp,byte +0xc
     push di
     push si
-    %define x (bp-0x6)
-    %define index (bp-0x8)
-    %define xdir (bp-0xc)
-    %define ydir (bp-0xa)
+
+    %arg hDC:word
     %define tile (bp-0x3)
+    %local local_4:byte
+    %local x:word ; -6
+    %local index:word ; -8
+    %local ydir:word ; -a
+    %local xdir:word ; -c
+
     push word [bp+0x8]
     push byte SwitchSound
     call 0x2130:0x56c ; 1e7e 8:0x56c PlaySoundEffect
@@ -3656,7 +3687,7 @@ func PressTankButton
     ; update display?
     push word [x]
     push cx ; y
-    push word [bp+0x6]
+    push word [hDC]
     mov di,bx
     call 0x204d:0x1ca ; 1f22 2:0x1ca
     add sp,byte +0x6
@@ -3712,8 +3743,10 @@ func PressToggleButton
     sub sp,byte +0xa
     push di
     push si
-    %define x (bp-0x4)
-    %define y (bp-0x6)
+    %arg hDC:word
+    %local x:word ; -4
+    %local y:word ; -6
+    %define tile (bp-0x7)
     xor di,di
     mov bx,[GameStatePtr]
     cmp [bx+ToggleListLen],di
@@ -3736,7 +3769,7 @@ func PressToggleButton
     add bx,ax
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
-    mov [bp-0x7],al
+    mov [tile],al
     cmp al,ToggleWall
     jnz .upperIsNotAWall ; ↓
 .setUpperFloor:
@@ -3747,7 +3780,7 @@ func PressToggleButton
     mov byte [bx+Upper],ToggleFloor
     jmp short .toggleLower ; ↓
 .upperIsNotAWall: ; 2004
-    cmp byte [bp-0x7],ToggleFloor
+    cmp byte [tile],ToggleFloor
     jnz .toggleLower ; ↓
     mov bx,cx
     shl bx,byte 0x5
@@ -3762,14 +3795,14 @@ func PressToggleButton
     add bx,[GameStatePtr]
     add bh,(Lower>>8)
     mov al,[bx]
-    mov [bp-0x7],al
+    mov [tile],al
     cmp al,ToggleWall
     jnz .lowerIsNotAWall ; ↓
     mov byte [bx],ToggleFloor
     jmp short .label5 ; ↓
     nop
 .lowerIsNotAWall: ; 2038
-    cmp byte [bp-0x7],ToggleFloor
+    cmp byte [tile],ToggleFloor
     jnz .label5 ; ↓
     mov byte [bx],ToggleWall
 
@@ -3777,7 +3810,7 @@ func PressToggleButton
     ; update display?
     push word [y]
     push word [x]
-    push word [bp+0x6]
+    push word [hDC]
     call 0x1c1c:0x1ca ; 204a 2:0x1ca
     add sp,byte +0x6
     ; check loop condition
@@ -3944,9 +3977,11 @@ func EnterTrap
     sub sp,byte +0xa
     push di
     push si
-    %arg xdest:word, ydest:word, xsrc:word, ysrc:word
-    %define firstTrap (bp-0x6)
-    %define lastTrap (bp-0x4)
+    %arg xdest:word, ydest:word
+    %arg xsrc:word, ysrc:word
+    %local lastTrap:word ; -4
+    %local firstTrap:word ; -6
+    %local index:word
 
     lea ax,[lastTrap]
     push ax
@@ -3964,7 +3999,7 @@ func EnterTrap
     mov cx,[firstTrap]
     cmp cx,[lastTrap]
     jg .label4 ; ↓
-    mov [bp-0x8],di
+    mov [index],di
     ;
     mov si,[GameStatePtr]
     mov ax,[si+TrapListPtr]
@@ -4002,7 +4037,7 @@ func EnterTrap
     inc cx
     cmp cx,[lastTrap]
     jng .loop1 ; ↑
-    mov di,[bp-0x8]
+    mov di,[index]
     jmp short .label4 ; ↓
     nop
 .break1: ; 223a
@@ -4017,7 +4052,7 @@ func EnterTrap
     shl bx,byte 0x2
     add bx,ax
     shl bx,1
-    mov [bp-0x8],di
+    mov [index],di
 .loop2: ; 2252
     mov si,[GameStatePtr]
     les si,[si+TrapListPtr]
@@ -4222,16 +4257,16 @@ endfunc
 ; 2442
 
 func PressCloneButton
-    %arg unused:word, buttonX:word, buttonY:word
+    %arg hDC:word, buttonX:word, buttonY:word
+    %define cloneTile (bp-0x3)
+    %local local_4:byte ; -4
+    %local monsterX:word ; -6
+    %local monsterY:word ; -8
+    %local ydir:word ; -a
+    %local xdir:word ; -c
+    %local dummyVar:word ; -e
     %define destX buttonX
     %define destY buttonY
-    %local cloneTile:byte
-    %define cloneTile (bp-0x3)
-    %local monsterX:word
-    %local monsterY:word
-    %local ydir:word
-    %local xdir:word
-    %local blockStatus:word
     sub sp,byte %$localsize
     push di
     push si
@@ -4310,7 +4345,7 @@ func PressCloneButton
     jmp .end ; ↓
 .inBounds: ; 24ea
     ; Is the monster allowed to enter the destination tile?
-    lea ax,[bp-0xe]
+    lea ax,[dummyVar]
     push ax
     push word [ydir]
     push word [xdir]
@@ -4407,7 +4442,7 @@ func PressCloneButton
     jnl .end ; ↓
     ; Check if the block is allowed to enter the destination tile
     ; if not, return
-    lea ax,[blockStatus]
+    lea ax,[dummyVar]
     push ax
     push word [ydir]
     push word [xdir]
@@ -4429,7 +4464,7 @@ func PressCloneButton
     mov ax,[destX]
     sub ax,[xdir]
     push ax
-    push word [bp+0x6]
+    push word [hDC]
     call 0x2855:0xdae ; 25fd 7:dae MoveBlock
     add sp,byte +0xe
 .end: ; 2605
@@ -4887,20 +4922,22 @@ endfunc
 ; Return the bitmap coordinates of the specified tile.
 func GetTileImagePos
     sub sp,byte +0x6
+    %arg tile:byte
+    %local ypos:word ; -4
+    %local xpos:word ; -6
 
     ; ax = a/16 * 32
     ; dx = a%16 * 32
-
-    mov al,[bp+0x6]
+    mov al,[tile]
     and ax,0xf0
     shl ax,1
-    mov [bp-0x6],ax
-    mov al,[bp+0x6]
+    mov [xpos],ax
+    mov al,[tile]
     and ax,0xf
     shl ax,byte 0x5
-    mov [bp-0x4],ax
-    mov ax,[bp-0x6]
-    mov dx,[bp-0x4]
+    mov [ypos],ax
+    mov ax,[xpos]
+    mov dx,[ypos]
 endfunc
 
 ; 2a70
