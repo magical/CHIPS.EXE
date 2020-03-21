@@ -28,7 +28,7 @@ digits.bin: func.mac
 sound.bin: constants.asm variables.asm func.mac
 seg2.bin: structs.asm variables.asm func.mac
 
-variables.asm: data.asm genvars.sh Makefile
+variables.asm: data.bin genvars.sh Makefile
 	sh genvars.sh >variables.asm
 
 movement.svg: tools/graph movement.asm
