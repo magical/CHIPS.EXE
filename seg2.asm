@@ -1268,7 +1268,7 @@ func ShowDeathMessage
     ja .label0 ; ↓
     shl ax,1
     xchg ax,bx
-    jmp [cs:bx+.jumpTable]
+    jmp [cs:.jumpTable+bx]
 .jumpTable:
     dw .label1 ; Burned
     dw .label2 ; Drowned
@@ -3436,7 +3436,8 @@ MenuItemCallback:
     ja .label0 ; ↓
     shl ax,1
     xchg ax,bx
-    jmp [cs:bx+0x1e4a]
+    jmp [cs:.jumpTable+bx]
+.jumpTable:
     dw .label1 ; ↓
     dw .label0 ; ↓
     dw .label0 ; ↓

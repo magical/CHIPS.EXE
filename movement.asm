@@ -3060,7 +3060,7 @@ func MoveMonster
     ja .jumpDefault
     shl ax,1
     xchg ax,bx
-    jmp word [cs:bx+.jumpTable]
+    jmp word [cs:.jumpTable+bx]
 
 .jumpTable:
     dw .jump0

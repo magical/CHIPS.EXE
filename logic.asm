@@ -2799,8 +2799,9 @@ func HaveBootsForTile
 .label0: ; 1899
     shl ax,1
     xchg ax,bx
-    jmp word [cs:bx+0x18a2]
+    jmp word [cs:.jumpTable+bx]
     nop
+.jumpTable:
     dw .water ; ↓
     dw .fire ; ↓
     dw .none ; ↓
@@ -3145,7 +3146,7 @@ func ChipCanEnterTile
 .label8: ; 1afb
     shl ax,1
     xchg ax,bx
-    jmp word [cs:bx+.jumpTable]
+    jmp word [cs:.jumpTable+bx]
     nop
 .jumpTable:
     dw .label9          ; Water
