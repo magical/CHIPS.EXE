@@ -109,8 +109,11 @@ SuctionBootCount                    equ 0x1690
 ChipsRemainingCount                 equ 0x1692
 TimeRemaining                       equ 0x1694
 TotalScore                          equ 0x1696
+SoundArray                          equ 0x16A2
+SoundArray.end                      equ 0x16C0
 HorizontalResolution                equ 0x16C0
 VerticalResolution                  equ 0x16C2
+MIDIArray                           equ 0x16C8
 fpWaveOutGetNumDevs                 equ 0x1726
 fpMidiOutGetNumDevs                 equ 0x1730
 

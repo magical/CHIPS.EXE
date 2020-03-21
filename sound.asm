@@ -333,11 +333,11 @@ func FUN_8_0308
 .loop: ; 346
     mov ax,[NumMIDIFiles]
     shl ax,1
-    add ax,0x16c8-2
+    add ax,MIDIArray-2
     mov [bp-0x6],ax
 .label4: ; 351
     mov bx,si
-    cmp word [bx+si+0x16c8],byte +0x0
+    cmp word [bx+si+MIDIArray],byte +0x0
     jz .label5 ; ↓
     jmp .label9 ; ↓
 .label5: ; 35d
@@ -347,7 +347,7 @@ func FUN_8_0308
     mov [bp-0xc],si
     mov bx,cx
     shl bx,1
-    add bx,0x16c8-2
+    add bx,MIDIArray-2
     mov dx,[NumMIDIFiles]
     sub dx,cx
     mov [bp-0x4],cx
@@ -390,7 +390,7 @@ func FUN_8_0308
     nop
 .label9: ; 3e0
     shl bx,1
-    add bx,0x16c8
+    add bx,MIDIArray
     mov [bp-0x12],bx
     mov ax,[bx]
     mov di,ax
@@ -465,7 +465,7 @@ func FUN_8_04a0
     push di
     push si
     xor di,di
-    mov si,0x16a2
+    mov si,SoundArray
 .label0: ; 4b5
     push byte +0x0
     push byte +0x1
@@ -490,7 +490,7 @@ func FUN_8_04a0
 .label1: ; 4e4
     inc di
     add si,byte +0x2
-    cmp si,0x16c0
+    cmp si,SoundArray.end
     jc .label0 ; ↑
     push word 0xcb
     call 0x50a:0x198e ; 4f1 2:198e
@@ -513,7 +513,7 @@ func FUN_8_04a0
     xor di,di
     cmp [NumMIDIFiles],di
     jng .label6 ; ↓
-    mov si,0x16c8
+    mov si,MIDIArray
 .label4: ; 529
     push byte +0x0
     push byte +0x0
@@ -556,7 +556,7 @@ func PlaySoundEffect
     jz .label0 ; ↓
     mov bx,[bp+0x6]
     shl bx,1
-    mov ax,[0x16a2+bx]
+    mov ax,[SoundArray+bx]
     mov dx,ds
     mov cx,ax
     mov [bp-0x4],dx
@@ -587,7 +587,7 @@ func FUN_8_05b8
     push byte +0x0
     call far [fpSndPlaySound] ; 5d6
 .label0: ; 5da
-    mov si,0x16a2
+    mov si,SoundArray
     mov di,[bp-0x4]
 .label1: ; 5e0
     cmp word [si],byte +0x0
@@ -596,12 +596,12 @@ func FUN_8_05b8
     call 0x0:0x608 ; 5e7 KERNEL.LocalFree
 .label2: ; 5ec
     add si,byte +0x2
-    cmp si,0x16c0
+    cmp si,SoundArray.end
     jc .label1 ; ↑
     xor di,di
     cmp [NumMIDIFiles],di
     jng .label5 ; ↓
-    mov si,0x16c8
+    mov si,MIDIArray
 .label3: ; 600
     cmp word [si],byte +0x0
     jz .label4 ; ↓

@@ -505,7 +505,10 @@ TotalScore dw 0 ; 1696
     dw 0 ; 169e
     dw 0 ; 16a0
 
-times 15 dw 0 ; 16a2
+SoundArray:
+    ; XXX what type are these?
+    times 15 dw 0 ; 16a2
+.end:
 
 HorizontalResolution    dw 0 ; 16c0
 VerticalResolution      dw 0 ; 16c2
@@ -513,6 +516,7 @@ VerticalResolution      dw 0 ; 16c2
     dw 0 ; 16c4
     dw 0 ; 16c6
 
+MIDIArray: ; XXX how long is this?
 times 20 dw 0 ; 16c8
 
 ; seg5.asm
