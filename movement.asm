@@ -319,7 +319,7 @@ func DoTick
 
 .monsterloop: ; 253
     mov bx,[GameStatePtr]
-    cmp word [bx+0x928],byte +0x0
+    cmp word [bx+MonsterListLen],byte +0x0
     jz .doChipSlideMovement
     mov al,[tick]
     and ax,0x3
@@ -771,13 +771,13 @@ func SlideMovement
     ; flag == 0
 .label0: ; 66c
     mov bx,[GameStatePtr]
-    mov word [bx+0x80c],0x1 ; issliding?
+    mov word [bx+IsSliding],0x1
     mov ax,[GameStatePtr]
-    add ax,SlideX ; chip slide x?
+    add ax,SlideX
     mov si,ax
     mov [bp-0x4],ds
     mov ax,[GameStatePtr]
-    add ax,SlideY ; chip slide y?
+    add ax,SlideY
     mov di,ax
     mov [bp-0x8],ds
     jmp short .label3
@@ -1139,6 +1139,11 @@ endfunc
 
 ; 966
 
+; Tile sizes
+; TODO: move these somewhere more global
+TileWidth       equ 32
+TileHeight      equ 32
+
 func DrawStretchedTile
     sub sp,byte +0xa
 
@@ -1179,8 +1184,8 @@ func DrawStretchedTile
     push word [0x1734]
     push word [tilexpos]
     push word [tileypos]
-    push byte +0x20
-    push byte +0x20
+    push byte TileHeight
+    push byte TileWidth
     push word [0x1734]
     push ax
     push dx
@@ -1195,8 +1200,8 @@ func DrawStretchedTile
     push word [0x1734]
     push word [tilexpos]
     push word [tileypos]
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word [0x1734]
     push ax
     push dx
@@ -1211,8 +1216,8 @@ func DrawStretchedTile
     push word [0x1734]
     push word [tilexpos]
     push word [tileypos]
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word [0x1734]
     push ax
     push dx
@@ -1243,8 +1248,8 @@ func DrawStretchedTile
     push ax
     push dx
 .label4: ; a5f
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word 0xcc
     push byte +0x20
     call 0x0:0xffff ; a68 GDI.StretchBlt
@@ -1451,7 +1456,7 @@ func EndGame
     inc di
 .label15: ; c11
     inc si
-    cmp si,0x95
+    cmp si,LastLevel
     jng .levelLoop
 
     push word [TotalScore+2]
@@ -1469,7 +1474,7 @@ func EndGame
     push ss
     push ax
     push word [hwndMain]
-    call 0xcdc:0x0 ; c3f 2:0
+    call 0xcdc:0x0 ; c3f 2:0 ShowMessageBox
     add sp,byte +0x8
     jmp short .done
     nop
@@ -1800,7 +1805,7 @@ func MoveBlock
     cmp word [action],byte +0x6
     jz .label21
     mov bx,[GameStatePtr]
-    cmp word [bx+0x91e],byte +0x0
+    cmp word [bx+SlipListLen],byte +0x0
     jz .label21
     push byte +0x1
     push word [ysrc]
@@ -2012,11 +2017,12 @@ func MoveBlock
     mov [si+0x4],ax ; Button.y
     jmp short .label34
 
+    ; if ptr != NULL, set it to zero
 .label28: ; 1110
     mov bx,[ptr]
     or bx,bx
     jz .label34
-    mov word [bx+0x0],0x0
+    mov word [bx],0x0
 
     ; check if the block landed on chip!
 .label34: ; 111b
