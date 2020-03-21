@@ -493,7 +493,7 @@ func DeleteMonster
     push si
 
     %arg    idx:word
-    %define offset (bp-4)
+    %local  offset:word
 
     ; Get a pointer to the requested monster
     mov si,[idx]
@@ -4222,15 +4222,17 @@ endfunc
 ; 2442
 
 func PressCloneButton
-    %arg _:word, buttonX:word, buttonY:word
+    %arg unused:word, buttonX:word, buttonY:word
     %define destX buttonX
     %define destY buttonY
+    %local cloneTile:byte
     %define cloneTile (bp-0x3)
-    %define monsterX (bp-0x6)
-    %define monsterY (bp-0x8)
-    %define ydir (bp-0xa)
-    %define xdir (bp-0xc)
-    sub sp,byte +0xe
+    %local monsterX:word
+    %local monsterY:word
+    %local ydir:word
+    %local xdir:word
+    %local blockStatus:word
+    sub sp,byte %$localsize
     push di
     push si
     ; Play the button sound
@@ -4405,7 +4407,7 @@ func PressCloneButton
     jnl .end ; ↓
     ; Check if the block is allowed to enter the destination tile
     ; if not, return
-    lea ax,[bp-0xe]
+    lea ax,[blockStatus]
     push ax
     push word [ydir]
     push word [xdir]

@@ -4,6 +4,8 @@
     %push func
     %stacksize small
     %assign %$argsize 0
+    %assign %$localsize 0 ; for %local
+    %local saved_ds:word
     ; Standard function prologue
     ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
     mov ax,ds

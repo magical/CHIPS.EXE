@@ -20,12 +20,12 @@ func DoTick
     push di
     push si
 
-    ; args
-    ; +6 tick
+    %arg tick:word
 
-    %define hDC (bp-0xa)
-    %define xdir (bp-0x6)
-    %define ydir (bp-0x4)
+    %local ydir:word
+    %local xdir:word
+    %local local_8:word
+    %local hDC:word
 
     ; get the device context
     push word [hwndBoard]    ; hWnd
@@ -33,7 +33,7 @@ func DoTick
     mov [hDC],ax
 
     ; check whether we're on an even tick or an odd tick
-    test byte [bp+0x6],0x1
+    test byte [tick],0x1
     jz .evenTick
     jmp word .oddTick
 
@@ -150,13 +150,13 @@ func DoTick
     jz .label18
     or di,di
     jz .label18
-    mov word [bp-0x8],0x0
+    mov word [local_8],0x0
     jmp short .label19
     nop
 .label18: ; 108
-    mov word [bp-0x8],0x1
+    mov word [local_8],0x1
 .label19: ; 10d
-    push word [bp-0x8]
+    push word [local_8]
     push byte +0x1
     push word [ydir]
     push word [xdir]
@@ -321,7 +321,7 @@ func DoTick
     mov bx,[GameStatePtr]
     cmp word [bx+0x928],byte +0x0
     jz .doChipSlideMovement
-    mov al,[bp+0x6]
+    mov al,[tick]
     and ax,0x3
     cmp ax,0x1
     sbb ax,ax
@@ -543,13 +543,13 @@ func DoTick
     jz .label57
     or di,di
     jz .label57
-    mov word [bp-0x8],0x0
+    mov word [local_8],0x0
     jmp short .label58
     nop
 .label57: ; 4a2
-    mov word [bp-0x8],0x1
+    mov word [local_8],0x1
 .label58: ; 4a7
-    push word [bp-0x8]
+    push word [local_8]
     push byte +0x1
     push word [ydir]
     push word [xdir]
@@ -670,9 +670,9 @@ func DoTick
     ; countdown timer?
     cmp word [TimeRemaining],byte +0x0
     jng .end
-    cmp word [bp+0x6],byte +0x0
+    cmp word [tick],byte +0x0
     jz .end
-    mov ax,[bp+0x6]
+    mov ax,[tick]
     mov cx,0xa
     sub dx,dx
     div cx
