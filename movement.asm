@@ -882,13 +882,13 @@ func SlideMovement
     jmp word .setSlideNorth
 .notForceN: ; 75f
     dec al
-    jnz .notForceW
-    jmp word .forceE
-.notForceW: ; 766
-    dec al
     jnz .notForceE
+    jmp word .forceE
+.notForceE: ; 766
+    dec al
+    jnz .notForceW
     jmp word .forceW
-.notForceE: ; 76d
+.notForceW: ; 76d
     jmp word .label15
 
 .label17: ; 770
@@ -1053,7 +1053,7 @@ func SlideMovement
     ; Force Random
 .forceRandom: ; 8ae
     push byte +0x4
-    call 0x91e:0x72e ; 8b0 Rand
+    call 0x91e:0x72e ; 8b0 RandInt
     add sp,byte +0x2
     or ax,ax
     jnz .label44
