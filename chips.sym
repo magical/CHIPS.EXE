@@ -20,6 +20,8 @@
 2:0c7e    HideHint
 2:17da    PauseGame
 2:1834    UnpauseGame
+2:189c    PauseMusic
+2:18b6    UnpauseMusic
 2:1e28    MenuItemCallback
 2:225c    MAINWNDPROC
 2:274e    BOARDWNDPROC

@@ -8,30 +8,33 @@ SEGMENT CODE ; 5
 %include "func.mac"
 
 func ShowMessageBox
+    %arg hWnd:word ; +6
+    %arg message:dword ; +8
+    %arg flags:word ; +c
     sub sp,byte +0x2
     push si
     call 0x6d:FUN_2_17a2 ; e 2:17a2 FUN_2_17a2
     cmp word [SoundEnabled],byte +0x0
     jz .label4 ; ↓
-    test byte [bp+0xc],0x30
+    test byte [flags],0x30
     jz .label0 ; ↓
     mov si,0x30
     jmp short .label3 ; ↓
     nop
 .label0: ; 26
-    test byte [bp+0xc],0x40
+    test byte [flags],0x40
     jz .label1 ; ↓
     mov si,0x40
     jmp short .label3 ; ↓
     nop
 .label1: ; 32
-    test byte [bp+0xc],0x10
+    test byte [flags],0x10
     jz .label2 ; ↓
     mov si,0x10
     jmp short .label3 ; ↓
     nop
 .label2: ; 3e
-    mov al,[bp+0xc]
+    mov al,[flags]
     and ax,0x20
     cmp ax,0x1
     cmc
@@ -41,12 +44,12 @@ func ShowMessageBox
     push si
     call 0x0:0xffff ; 4e USER.MessageBeep
 .label4: ; 53
-    push word [bp+0x6]
-    push word [bp+0xa]
-    push word [bp+0x8]
+    push word [hWnd]
+    push word [message+2] ; segment
+    push word [message]
     push ds
-    push word 0x68
-    push word [bp+0xc]
+    push word MessageBoxCaption
+    push word [flags]
     call 0x0:0xffff ; 63 USER.MessageBox
     mov si,ax
     call 0x1e2:FUN_2_17ba ; 6a 2:17ba FUN_2_17ba
@@ -2497,7 +2500,7 @@ FUN_2_16fa:
     jnz .label4 ; ↓
     push byte +0x30
     push ds
-    push word 0x7a
+    push word SystemTimerErrorMsg
     push word [hwndMain]
     call 0x17ea:ShowMessageBox ; 1743 2:0 ShowMessageBox
     add sp,byte +0x8
@@ -2689,7 +2692,7 @@ UnpauseGame:
 
 ; 189c
 
-FUN_2_189c:
+PauseMusic:
     mov ax,ds
     nop
     inc bp
@@ -2708,7 +2711,7 @@ FUN_2_189c:
 
 ; 18b6
 
-FUN_2_18b6:
+UnpauseMusic:
     mov ax,ds
     nop
     inc bp
@@ -3433,36 +3436,36 @@ MenuItemCallback:
     mov ax,[bp+0xa]
     sub ax,0x64
     cmp ax,0x16
-    ja .label0 ; ↓
+    ja .default ; ↓
     shl ax,1
     xchg ax,bx
     jmp [cs:.jumpTable+bx]
 .jumpTable:
-    dw .label1 ; ↓
-    dw .label0 ; ↓
-    dw .label0 ; ↓
-    dw .label0 ; ↓
-    dw .label0 ; ↓
-    dw .label0 ; ↓
-    dw .label3 ; ↓
-    dw .label4 ; ↓
-    dw .label6 ; ↓
-    dw .label8 ; ↓
-    dw .label9 ; ↓
-    dw .label14 ; ↓
-    dw .label0 ; ↓
-    dw .label18 ; ↓
-    dw .label19 ; ↓
-    dw .label21 ; ↓
-    dw .label22 ; ↓
-    dw .label24 ; ↓
-    dw .label27 ; ↓
-    dw .label29 ; ↓
-    dw .label31 ; ↓
-    dw .label32 ; ↓
-    dw .label33 ; ↓
-.label0: ; 1e78
-; 0x1e78
+    dw .label1 ; 100 ID_ABOUT
+    dw .default ; 101
+    dw .default ; 102
+    dw .default ; 103
+    dw .default ; 104
+    dw .default ; 105
+    dw .label3 ; 106 ID_QUIT
+    dw .label4 ; 107 ID_HELP
+    dw .label6 ; 108 ID_CHEAT
+    dw .label8 ; 109 ID_METAHELP
+    dw .label9 ; 110 ID_NEXT
+    dw .label14 ; 111 ID_PREVIOUS
+    dw .default ; 112
+    dw .label18 ; 113 ID_RESTART
+    dw .label19 ; 114 ID_NEWGAME
+    dw .label21 ; 115 ID_BESTTIMES
+    dw .label22 ; 116 ID_PAUSE
+    dw .label24 ; 117 ID_BGM
+    dw .label27 ; 118 ID_SOUND
+    dw .label29 ; 119 ID_GOTO
+    dw .label31 ; 120 ID_HOWTOPLAY
+    dw .label32 ; 121 ID_COMMANDS
+    dw .label33 ; 122 ID_COLOR
+
+.default: ; 1e78
     push word [bp+0x6]
     push word [bp+0x8]
     push word [bp+0xa]
@@ -3471,6 +3474,7 @@ MenuItemCallback:
     call 0x0:0xffff ; 1e87 USER.DefWindowProc
     jmp .label43 ; ↓
     nop
+
 .label1: ; 1e90
     call 0x1ea4:PauseGame ; 1e90 2:17da PauseGame
     push word [0x172a]
@@ -3480,6 +3484,7 @@ MenuItemCallback:
     call 0x1fa4:UnpauseGame ; 1ea1 2:1834 UnpauseGame
     jmp .label42 ; ↓
     nop
+
 .label3: ; 1eaa
     mov si,[bp+0x6]
     push si
@@ -3488,6 +3493,7 @@ MenuItemCallback:
     push si
     call 0x0:0xc97 ; 1eb6 USER.DestroyWindow
     jmp .label42 ; ↓
+
 .label4: ; 1ebe
     mov word [0x2a],0x1
     push word [0x172a]
@@ -3498,6 +3504,7 @@ MenuItemCallback:
 .label5: ; 1ed2
     call 0x0:0xffff ; 1ed2 WEP4UTIL.5
     jmp .label42 ; ↓
+
 .label6: ; 1eda
     push word [hMenu]
     push byte +0x6c
@@ -3516,6 +3523,7 @@ MenuItemCallback:
     call 0x0:0x20a9 ; 1eff USER.DrawMenuBar
     jmp .label42 ; ↓
     nop
+
 .label8: ; 1f08
     mov word [0x2a],0x1
     push word [0x172a]
@@ -3525,6 +3533,7 @@ MenuItemCallback:
     push byte +0x0
     jmp short .label5 ; ↑
     nop
+
 .label9: ; 1f1e
     mov bx,[GameStatePtr]
     mov ax,[bx+LevelNumber]
@@ -3549,6 +3558,7 @@ MenuItemCallback:
     add sp,byte +0x4
     jmp .label42 ; ↓
     nop
+
 .label14: ; 1f52
     mov bx,[GameStatePtr]
     cmp word [bx+LevelNumber],byte +0x1
@@ -3577,11 +3587,13 @@ MenuItemCallback:
     xor ax,ax
     jmp short .label11 ; ↑
     nop
+
 .label18: ; 1f92
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     jmp short .label12 ; ↑
+
 .label19: ; 1f9e
     push word 0xc8
     call 0x1fb9:FUN_2_198e ; 1fa1 2:198e FUN_2_198e
@@ -3590,7 +3602,7 @@ MenuItemCallback:
     jz .label20 ; ↓
     push byte +0x24
     push ds
-    push word 0xa2
+    push word NewGamePrompt
     push word [hwndMain]
     call 0x1fc9:ShowMessageBox ; 1fb6 2:0 ShowMessageBox
     add sp,byte +0x8
@@ -3606,6 +3618,7 @@ MenuItemCallback:
     push byte +0x1
     jmp .label12 ; ↑
     nop
+
 .label21: ; 1fda
     call 0x201e:PauseGame ; 1fda 2:17da PauseGame
     push word 0x20ca ; 1fdd 6:18e BESTTIMESMSGPROC
@@ -3627,17 +3640,19 @@ MenuItemCallback:
     push si
     call 0x0:0x2107 ; 200c KERNEL.FreeProcInstance
     jmp .label2 ; ↑
+
 .label22: ; 2014
     cmp word [GamePaused],byte +0x0
     jz .label23 ; ↓
-    call 0x2027:FUN_2_18b6 ; 201b 2:18b6 FUN_2_18b6
+    call 0x2027:UnpauseMusic ; 201b 2:18b6 UnpauseMusic
     jmp .label2 ; ↑
     nop
 .label23: ; 2024
-    call 0x202c:FUN_2_189c ; 2024 2:189c FUN_2_189c
+    call 0x202c:PauseMusic ; 2024 2:189c PauseMusic
     call 0x2063:PauseGame ; 2029 2:17da PauseGame
     jmp .label42 ; ↓
     nop
+
 .label24: ; 2032
     cmp word [MusicEnabled],byte +0x1
     sbb ax,ax
@@ -3662,6 +3677,7 @@ MenuItemCallback:
     push byte +0x75
     cmp word [MusicEnabled],byte +0x1
     jmp .label7 ; ↑
+
 .label27: ; 2076
     cmp word [SoundEnabled],byte +0x1
     sbb ax,ax
@@ -3690,6 +3706,7 @@ MenuItemCallback:
     call 0x18ac:0x56c ; 20bb 8:56c PlaySoundEffect
     jmp .label13 ; ↑
     nop
+
 .label29: ; 20c4
     call 0x210e:PauseGame ; 20c4 2:17da PauseGame
     push word 0xffff ; 20c7 6:0 GOTOLEVELMSGPROC
@@ -3726,6 +3743,7 @@ MenuItemCallback:
     push word [bp-0x4]
     jmp .label12 ; ↑
     nop
+
 .label31: ; 2130
     mov word [0x2a],0x1
     push word [0x172a]
@@ -3735,6 +3753,7 @@ MenuItemCallback:
     push word 0x252
     jmp .label5 ; ↑
     nop
+
 .label32: ; 2148
     mov word [0x2a],0x1
     push word [0x172a]
@@ -3744,6 +3763,7 @@ MenuItemCallback:
     push word 0x25e
     jmp .label5 ; ↑
     nop
+
 .label33: ; 2160
     mov ax,[0xa18]
     mov [bp-0x4],ax
@@ -3831,6 +3851,7 @@ MenuItemCallback:
     push di
     call 0x0:0xffff ; 2246 USER.SetCursor
     call 0x0:0xffff ; 224b USER.ReleaseCapture
+
 .label42: ; 2250
     xor ax,ax
     cwd
@@ -4099,11 +4120,11 @@ func MAINWNDPROC
     jnz .label29 ; ↓
     cmp [bp+0xa],ax
     jnz .label28 ; ↓
-    call 0x2500:FUN_2_189c ; 24f8 2:189c FUN_2_189c
+    call 0x2500:PauseMusic ; 24f8 2:189c PauseMusic
     call 0x2507:PauseGame ; 24fd 2:17da PauseGame
     jmp short .label29 ; ↓
 .label28: ; 2504
-    call 0x250c:FUN_2_18b6 ; 2504 2:18b6 FUN_2_18b6
+    call 0x250c:UnpauseMusic ; 2504 2:18b6 UnpauseMusic
     call 0x256c:UnpauseGame ; 2509 2:1834 UnpauseGame
 .label29: ; 250e
     cmp word [0x172e],byte +0x0
@@ -4318,7 +4339,7 @@ func MAINWNDPROC
     jz .label65 ; ↓
     jmp short .label68 ; ↓
 .label64: ; 26fa
-    call 0x2702:FUN_2_189c ; 26fa 2:189c FUN_2_189c
+    call 0x2702:PauseMusic ; 26fa 2:189c PauseMusic
     call 0x2715:PauseGame ; 26ff 2:17da PauseGame
     jmp short .label68 ; ↓
 .label65: ; 2706
@@ -4326,7 +4347,7 @@ func MAINWNDPROC
     call 0x0:0x24eb ; 2709 USER.IsIconic
     or ax,ax
     jz .label68 ; ↓
-    call 0x271a:FUN_2_18b6 ; 2712 2:18b6 FUN_2_18b6
+    call 0x271a:UnpauseMusic ; 2712 2:18b6 UnpauseMusic
     call 0x279c:UnpauseGame ; 2717 2:1834 UnpauseGame
     jmp short .label68 ; ↓
 .label66: ; 271e

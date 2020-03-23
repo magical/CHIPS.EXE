@@ -13,6 +13,9 @@ hwndInventory                       equ 0x1C
 hwndHint                            equ 0x1E
 GamePaused                          equ 0x24
 hMenu                               equ 0x26
+MessageBoxCaption                   equ 0x68
+SystemTimerErrorMsg                 equ 0x7A
+NewGamePrompt                       equ 0xA2
 FireDeathMessage                    equ 0x176
 WaterDeathMessage                   equ 0x1A8
 BombDeathMessage                    equ 0x1D2

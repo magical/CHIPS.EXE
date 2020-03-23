@@ -51,9 +51,9 @@ hMenu        dw 0 ; 0x26 HMENU
 times 13 dw 0
 
 ; 0x68
-db "Chip's Challenge", 0, 0
-db "Not enough system timers are available.", 0
-db "Starting a new game will begin you back at level 1, reset your score to zero, and forget the passwords to any levels you have visited.", 10, "Is this what you want?", 0
+MessageBoxCaption db "Chip's Challenge", 0, 0
+SystemTimerErrorMsg db "Not enough system timers are available.", 0
+NewGamePrompt db "Starting a new game will begin you back at level 1, reset your score to zero, and forget the passwords to any levels you have visited.", 10, "Is this what you want?", 0
 db "There is not enough memory to load Chip's Challenge.", 0, 0
 
 FireDeathMessage        db "Ooops! Don't step in the fire without fire boots!", 0
