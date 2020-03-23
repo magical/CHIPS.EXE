@@ -149,6 +149,8 @@ HicolorTiles                        equ 0xA1A
 LocolorTiles                        equ 0xA22
 MonochromeTiles                     equ 0xA2B
 DebugModeEnabled                    equ 0xA34
+s_You_have_completed_d_levels       equ 0xAF5
+FullsecOddStep                      equ 0xAF7
 DummyVarForSlideMovement            equ 0xC6C
 GreatJobChipMsg                     equ 0xC6E
 MelindaHerselfMsg                   equ 0xCA8

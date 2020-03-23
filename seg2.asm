@@ -4199,7 +4199,7 @@ func MAINWNDPROC
 .label39: ; 25a6
     sub al,0x9
     jnz .label40 ; ↓
-    jmp .label54 ; ↓
+    jmp .fullsec1 ; ↓
 .label40: ; 25ad
     sub al,0x10
     jz .label50 ; ↓
@@ -4256,6 +4256,7 @@ func MAINWNDPROC
     call far USER.ReleaseDC ; 2626
     jmp .label67 ; ↓
 
+.fullsec1:
 .label50: ; 262e
     push byte VK_CONTROL
     call far USER.GetKeyState ; 2630
@@ -4271,6 +4272,7 @@ func MAINWNDPROC
     call far USER.GetKeyState ; 2646
     or ax,ax
     jl .label53 ; ↓
+.fullsec2:
     jmp .label67 ; ↓
 .label53: ; 2652
     or byte [CheatKeys],0x4
@@ -4279,9 +4281,9 @@ func MAINWNDPROC
 .label54: ; 265a
     push byte VK_CONTROL
     call far USER.GetKeyState ; 265c
-    or ax,ax
-    jl .label55 ; ↓
-    jmp .label67 ; ↓
+    ; toggle odd step
+    xor byte [FullsecOddStep],0x20
+    jmp short .fullsec2
 .label55: ; 2668
     or byte [CheatKeys],0x1
 .label56: ; 266d

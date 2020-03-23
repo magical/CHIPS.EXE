@@ -376,7 +376,7 @@ db "Level %d:  %d seconds, %li points", 0
 db "Level %d:  not completed", 0
 db "s", 0
 db 0
-db "You have completed %d level%s.", 0
+s_You_have_completed_d_levels db "You have completed %d level%s.", 0
 db "Your total score is %li points.", 0
 db "Yowser! First Try!", 0
 db "Go Bit Buster!", 0
@@ -395,6 +395,8 @@ db 0
 db "You increased your score on this level by %li point%s!", 0
 db "Total Score:  %li", 0
 db 0
+
+FullsecOddStep equ s_You_have_completed_d_levels+2
 
 ; Used as a pointer argument to SlideMovement when we don't care about its value
 DummyVarForSlideMovement dw 0xFF ; c6c

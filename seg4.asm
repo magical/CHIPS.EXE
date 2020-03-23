@@ -1011,30 +1011,37 @@ FUN_4_0950:
     push si
     mov si,[bp+0x6]
     push si
-    lea ax,[bp-0x4]
+    lea ax,[bp-0x6]
     push ss
     push ax
-    push byte +0x2
+    push byte +0x4
     call far KERNEL._lread ; 969
-    cmp ax,0x2
+    cmp ax,0x4
     jnb .label1 ; ↓
 .label0: ; 973
     xor ax,ax
     jmp short .label2 ; ↓
-    nop
-.label1: ; 978
-    cmp word [bp-0x4],0xaaac
-    jnz .label0 ; ↑
-    push si
-    lea ax,[bp-0x4]
-    push ss
-    push ax
-    push byte +0x2
+
+.label1: ; 977
+.fullsec.start:
+    ; fullsec: when we start reading a level, set tick to 0
+    ; or 10 if in odd step mode
+    xor ax , ax ; protect from fixmov.awk
+    test byte [FullsecOddStep],0x20
+    jnz .fullsec.evenmode
+    mov al,0xa
+.fullsec.evenmode:
+    mov [CurrentTick],ax
+    jmp short .fullsec.done
+
+    ; ignored
     call far KERNEL._lread ; 987
     cmp ax,0x2
     jb .label0 ; ↑
     cmp word [bp-0x4],byte +0x2
     jnz .label0 ; ↑
+
+.fullsec.done:
     push si
     lea ax,[bp-0x4]
     push ss
