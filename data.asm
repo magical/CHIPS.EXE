@@ -550,7 +550,12 @@ times 3 dw 0 ; 1720
 fpWaveOutGetNumDevs dw 0, 0 ; 1726
 OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
     dw 0 ; 172c
+
+; If the game is running on Windows 3.1 or higher,
+; it uses Arial instead of Helv[etica] as its font
+; and fiddles with the KeyboardDelay setting.
 IsWin31             dw 0 ; 172e
+
 fpMidiOutGetNumDevs dw 0, 0; 1730
 times 2 dw 0 ; 1734
 
