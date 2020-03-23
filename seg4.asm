@@ -447,6 +447,17 @@ func FUN_4_0356
 .noMusic: ; 45c
     ; Set up the board and viewport
     call far InitBoard ; 45c 3:54c
+.fullsec.start:
+    ; fullsec: when we start reading a level, set tick to 0
+    ; or 10 if in odd step mode
+    xor ax,ax
+    test byte [FullsecOddStep],0x20
+    jnz .fullsec.evenstep
+.fullsec.oddstep:
+    mov al,byte 0xa
+.fullsec.evenstep:
+    mov [CurrentTick],ax
+.fullsec.done:
     cmp word [DebugModeEnabled],byte +0x0
     if nz
         ; if debug mode is enabled, show the whole game board
@@ -455,16 +466,14 @@ func FUN_4_0356
         mov bx,[GameStatePtr]
         mov ax,[bx+ViewportY]
         mov [bx+ViewportX],ax
-        mov bx,[GameStatePtr]
         mov word [bx+UnusedOffsetY],0x0
-        mov bx,[GameStatePtr]
         mov ax,[bx+UnusedOffsetY]
         mov [bx+UnusedOffsetX],ax
-        mov bx,[GameStatePtr]
         mov word [bx+ViewportWidth],0x20
-        mov bx,[GameStatePtr]
         mov word [bx+ViewportHeight],0x20
         jmp .doneWithViewportStuff ; ↓
+        nop
+        nop
         nop
     endif ; 4ac
     ; normal mode: 9x9 viewport

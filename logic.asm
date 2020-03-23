@@ -963,7 +963,10 @@ func MonsterLoop
     %local p:dword ; -1e
     %local offset:word ; -20
 
-    mov bx,[GameStatePtr]
+    jmp ..@fullsec3
+    nop
+    ;mov bx,[GameStatePtr]
+..@fullsec3r:
     mov ax,[bx+MonsterListLen]
     mov [len],ax
     mov word [i],0x0
@@ -1018,21 +1021,42 @@ func MonsterLoop
     if a
         jmp word .next ; not a monster
     endif ; 7e6
-    shl ax,1
+    and al,0xfc
+    shr ax,1
     xchg ax,bx
     jmp word near [cs:.jmpTable+bx]
 
 .jmpTable:
     ; Jump table
-    times 4 dw .BugMovement
-    times 4 dw .FireballMovement
-    times 4 dw .BallMovement
-    times 4 dw .TankMovement
-    times 4 dw .GliderMovement
-    times 4 dw .TeethMovement
-    times 4 dw .WalkerMovement
+    dw .BugMovement
+    dw .FireballMovement
+    dw .BallMovement
+    dw .TankMovement
+    dw .GliderMovement
+    dw .TeethMovement
+    dw .WalkerMovement
+    dw .BlobMovement
+    dw .ParameciumMovement
+
+..@fullsec3:
+    mov ax,[bp+0x22]
+    mov [CurrentTick],ax
+    mov bx,[GameStatePtr]
+    jmp ..@fullsec3r
+
+..@fullsec4:
+    mov bx,[CurrentTick]
+    cmp bx,[bp+0x20]
+    if nz
+        mov word [bp+0x20], 0
+    endif
+    mov bx,[GameStatePtr]
+    jmp ..@fullsec4r
+
+    dw .WalkerMovement
     times 4 dw .BlobMovement
     times 4 dw .ParameciumMovement
+
 
         ;;; BUG ;;;
 .BugMovement:
@@ -2344,7 +2368,10 @@ func SlipLoop
     push di
     push si
     mov word [i],0x0
-    mov bx,[GameStatePtr]
+    jmp ..@fullsec4
+    nop
+    ;mov bx,[GameStatePtr]
+..@fullsec4r:
     cmp word [bx+SlipListLen],byte +0x0
     if le
         jmp word .break

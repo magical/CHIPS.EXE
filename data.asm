@@ -397,6 +397,8 @@ s_You_increased_your_score db "You increased your score on this level by %li poi
 s_Total_Score_li db "Total Score:  %li", 0
 align 2, db 0
 
+FullsecOddStep equ s_You_have_completed_d_levels+2
+
 ; c6c
 ; movement.asm strings & data
 

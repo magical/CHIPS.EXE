@@ -178,6 +178,7 @@ s_plural_3                          equ 0xC1F
 s_singular_3                        equ 0xC21
 s_You_increased_your_score          equ 0xC22
 s_Total_Score_li                    equ 0xC59
+FullsecOddStep                      equ 0xAF7
 DummyVarForSlideMovement            equ 0xC6C
 GreatJobChipMsg                     equ 0xC6E
 MelindaHerselfMsg                   equ 0xCA8
