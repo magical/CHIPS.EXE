@@ -549,7 +549,7 @@ times 24 dw 0 ; 16f0
 
 times 3 dw 0 ; 1720
 fpWaveOutGetNumDevs dw 0, 0 ; 1726
-    dw 0 ; 172a
+OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
     dw 0 ; 172c
 IsWin31             dw 0 ; 172e
 fpMidiOutGetNumDevs dw 0, 0; 1730

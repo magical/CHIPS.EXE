@@ -709,6 +709,10 @@ FUN_2_056e:
 
 func WinMain
     %assign %$argsize 0xa
+    %arg nCmdShow:word ; +6
+    %arg lpCmdLine:dword ; +8
+    %arg hPrevInstance:word ; +c
+    %arg hInstance:word ; +e
     sub sp,byte +0x14
     push word 0x218
     call 0x0:0xffff ; 638 WEP4UTIL.2
@@ -719,17 +723,17 @@ func WinMain
     jmp short .label5 ; ↓
     nop
 .label1: ; 646
-    cmp word [bp+0xc],byte +0x0
+    cmp word [hPrevInstance],byte +0x0
     jnz .label2 ; ↓
-    push word [bp+0xe]
-    call 0x664:CreateWindowsAndClasses ; 64f 2:6c8 CreateWindowsAndClasses
+    push word [hInstance]
+    call 0x664:CreateClasses ; 64f 2:6c8 CreateClasses
     add sp,byte +0x2
     or ax,ax
     jz .label0 ; ↑
 .label2: ; 65b
-    push word [bp+0x6]
-    push word [bp+0xe]
-    call 0x6e6:FUN_2_08e8 ; 661 2:8e8 FUN_2_08e8
+    push word [nCmdShow]
+    push word [hInstance]
+    call 0x6e6:CreateWindows ; 661 2:8e8 CreateWindows
     add sp,byte +0x4
     or ax,ax
     jz .label0 ; ↑
@@ -772,7 +776,7 @@ endfunc
 
 ; 6c8
 
-CreateWindowsAndClasses:
+CreateClasses:
     mov ax,ds
     nop
     inc bp
@@ -968,21 +972,16 @@ CreateWindowsAndClasses:
 
 ; 8e8
 
-FUN_2_08e8:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func CreateWindows
     sub sp,byte +0x16
     push di
     push si
-    mov si,[bp+0x6]
+    %arg hInstance:word ; +6
+    %arg nCmdShow:word ; +8
+    mov si,[hInstance]
     mov word [bp-0x6],0x0
     mov word [bp-0x4],0x2cf
-    mov [0x172a],si
+    mov [OurHInstance],si
     push si
     push ds
     push word s_ChipsMenu
@@ -1099,7 +1098,7 @@ FUN_2_08e8:
     push byte +0x0
     push byte +0x0
     call 0x0:0xa58 ; a2b USER.CreateWindow
-    mov [0x14],ax
+    mov [hwndInfo],ax
     or ax,ax
     jnz .label4 ; ↓
     jmp .label0 ; ↑
@@ -1135,7 +1134,7 @@ FUN_2_08e8:
     push byte +0x60
     push byte +0x37
     push byte +0x1d
-    push word [0x14]
+    push word [hwndInfo]
     push byte +0x3
     push si
     push byte +0x0
@@ -1156,7 +1155,7 @@ FUN_2_08e8:
     push word 0xba
     push byte +0x37
     push byte +0x1d
-    push word [0x14]
+    push word [hwndInfo]
     push byte +0x4
     push si
     push byte +0x0
@@ -1177,7 +1176,7 @@ FUN_2_08e8:
     push word 0xdd
     push word 0x80
     push byte +0x40
-    push word [0x14]
+    push word [hwndInfo]
     push byte +0x5
     push si
     push byte +0x0
@@ -1188,7 +1187,7 @@ FUN_2_08e8:
     jnz .label8 ; ↓
     jmp .label0 ; ↑
 .label8: ; af6
-    mov di,[bp+0x8]
+    mov di,[nCmdShow]
     cmp di,byte +0x6
     jz .label9 ; ↓
     cmp di,byte +0x2
@@ -1251,11 +1250,7 @@ FUN_2_08e8:
 .label16: ; b91
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; b9a
 
@@ -1340,9 +1335,9 @@ ShowHint:
     push word 0x8b
     push word 0x80
     push word 0x92
-    push word [0x14]
+    push word [hwndInfo]
     push byte +0x6
-    push word [0x172a]
+    push word [OurHInstance]
     push byte +0x0
     push byte +0x0
     call 0x0:0x9b6 ; c54 USER.CreateWindow
@@ -1496,7 +1491,7 @@ FUN_2_0dc6:
     sub sp,byte +0x20
     push di
     push si
-    push word [0x172a]
+    push word [OurHInstance]
     push ds
     push word s_background
     call 0x0:0xffff ; ddd USER.LoadBitmap
@@ -3477,7 +3472,7 @@ MenuItemCallback:
 
 .label1: ; 1e90
     call 0x1ea4:PauseGame ; 1e90 2:17da PauseGame
-    push word [0x172a]
+    push word [OurHInstance]
     push word [bp+0x6]
     call 0x0:0xffff ; 1e9c WEP4UTIL.4
 .label2: ; 1ea1
@@ -3496,7 +3491,7 @@ MenuItemCallback:
 
 .label4: ; 1ebe
     mov word [0x2a],0x1
-    push word [0x172a]
+    push word [OurHInstance]
     push word [bp+0x6]
     push word 0x101
     push ds
@@ -3526,7 +3521,7 @@ MenuItemCallback:
 
 .label8: ; 1f08
     mov word [0x2a],0x1
-    push word [0x172a]
+    push word [OurHInstance]
     push word [bp+0x6]
     push byte +0x4
     push byte +0x0
@@ -3623,11 +3618,11 @@ MenuItemCallback:
     call 0x201e:PauseGame ; 1fda 2:17da PauseGame
     push word 0x20ca ; 1fdd 6:18e BESTTIMESMSGPROC
     push word 0x18e
-    push word [0x172a]
+    push word [OurHInstance]
     call 0x0:0x20d4 ; 1fe9 KERNEL.MakeProcInstance
     mov si,ax
     mov [bp-0x4],dx
-    push word [0x172a]
+    push word [OurHInstance]
     push ds
     push word s_DLG_BESTTIMES
     push word [hwndMain]
@@ -3711,13 +3706,13 @@ MenuItemCallback:
     call 0x210e:PauseGame ; 20c4 2:17da PauseGame
     push word 0xffff ; 20c7 6:0 GOTOLEVELMSGPROC
     push word 0x0
-    push word [0x172a]
+    push word [OurHInstance]
     call 0x0:0xffff ; 20d3 KERNEL.MakeProcInstance
     mov si,ax
     mov [bp-0x6],dx
     mov bx,[GameStatePtr]
     mov di,[bx+LevelNumber]
-    push word [0x172a]
+    push word [OurHInstance]
     push ds
     push word s_DLG_GOTO
     push word [hwndMain]
@@ -3746,7 +3741,7 @@ MenuItemCallback:
 
 .label31: ; 2130
     mov word [0x2a],0x1
-    push word [0x172a]
+    push word [OurHInstance]
     push word [bp+0x6]
     push word 0x101
     push ds
@@ -3756,7 +3751,7 @@ MenuItemCallback:
 
 .label32: ; 2148
     mov word [0x2a],0x1
-    push word [0x172a]
+    push word [OurHInstance]
     push word [bp+0x6]
     push word 0x101
     push ds
@@ -3789,7 +3784,7 @@ MenuItemCallback:
     push byte +0x1
     lea ax,[bp-0x6]
     push ax
-    push word [0x172a]
+    push word [OurHInstance]
     call 0x22e2:0x112 ; 21a8 5:112 LoadTiles
     add sp,byte +0x6
     or ax,ax
@@ -3915,7 +3910,7 @@ func MAINWNDPROC
     jmp .label68 ; ↓
     nop
 .label10: ; 22bc
-    push word [0x172a]
+    push word [OurHInstance]
     push ds
     push word 0x643
     call 0x0:0xffff ; 22c4 USER.LoadAccelerators
@@ -3927,7 +3922,7 @@ func MAINWNDPROC
     mov si,[bp+0xe]
     push byte +0x0
     push word 0x172c
-    push word [0x172a]
+    push word [OurHInstance]
     call 0x243d:0x112 ; 22df 5:112 LoadTiles
     add sp,byte +0x6
     or ax,ax
@@ -4031,7 +4026,7 @@ func MAINWNDPROC
     call 0x1f2e:0x240 ; 23f8 4:240 FUN_4_0240
     cmp word [0x2a],byte +0x0
     jz .label19 ; ↓
-    push word [0x172a]
+    push word [OurHInstance]
     push word [bp+0xe]
     push byte +0x2
     push byte +0x0
@@ -4500,7 +4495,7 @@ func INFOWNDPROC
     push ss
     push ax
     call 0x0:0x2486 ; 289c USER.BeginPaint
-    push word [0x172a]
+    push word [OurHInstance]
     push ds
     push word 0x650
     call 0x0:0xdde ; 28a9 USER.LoadBitmap

@@ -14,7 +14,8 @@
 2:01ca    UpdateTile
 2:0232    DrawInventoryTile
 2:0628    WinMain
-2:06c8    CreateWindowsAndClasses
+2:06c8    CreateClasses
+2:08e8    CreateWindows
 2:0b9a    ShowDeathMessage
 2:0c1a    ShowHint
 2:0c7e    HideHint

@@ -1401,7 +1401,7 @@ func EndGame
     push word [hwndMain]
     call 0xbe4:0x0 ; b7e 2:0
     add sp,byte +0x8
-    push word [0x172a]
+    push word [OurHInstance]
     push ds
     push word Chipend
     call 0x0:0xc59 ; b8e USER.LoadBitmap
@@ -1484,7 +1484,7 @@ func EndGame
     jz .else
 
 .showEndGraphic:
-    push word [0x172a]
+    push word [OurHInstance]
     push ds
     push word 0x135a
     call 0x0:0xffff ; c58 USER.LoadBitmap
@@ -1547,10 +1547,10 @@ func EndLevel
     ; Show level completed dialog
     push word 0xffff ; 6:
     push word 0x3c6  ; CompleteMsgProc
-    push word [0x172a]
+    push word [OurHInstance]
     call 0x0:0xffff ; ce8  KERNEL.MakeProcInstance
     mov si,ax
-    push word [0x172a]  ; hInstance
+    push word [OurHInstance]  ; hInstance
     push ds
     push word 0x1362    ; "DLG_COMPLETE"
     push word [hWnd]  ; hWndParent

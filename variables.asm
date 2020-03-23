@@ -158,6 +158,7 @@ HorizontalResolution                equ 0x16C0
 VerticalResolution                  equ 0x16C2
 MIDIArray                           equ 0x16C8
 fpWaveOutGetNumDevs                 equ 0x1726
+OurHInstance                        equ 0x172A
 IsWin31                             equ 0x172E
 fpMidiOutGetNumDevs                 equ 0x1730
 
