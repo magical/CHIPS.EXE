@@ -4431,8 +4431,8 @@ func BOARDWNDPROC
     add sp,byte +0x2
     jmp short .label8 ; ↓
 .label5: ; 27da
-    inc word [0x64e]
-    push word [0x64e]
+    inc word [CurrentTick]
+    push word [CurrentTick]
     call 0x1236:0x0 ; 27e2 7:0 DoTick
     jmp short .label4 ; ↑
     nop

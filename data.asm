@@ -204,7 +204,7 @@ s_DLG_GOTO      db "DLG_GOTO", 0
 s_DLG_BESTTIMES db "DLG_BESTTIMES", 0
 CheatMenuText   db "&Ignore Passwords", 0
 db "ChipsMenu", 0, 0
-dw 0
+CurrentTick     dw 0
 db "infownd", 0
 db "Hint: %s", 0
 s_Arial3        db "Arial", 0

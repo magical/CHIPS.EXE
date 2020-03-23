@@ -98,6 +98,7 @@ s_Helv2                             equ 0x5B0
 s_DLG_GOTO                          equ 0x61A
 s_DLG_BESTTIMES                     equ 0x623
 CheatMenuText                       equ 0x631
+CurrentTick                         equ 0x64E
 s_Arial3                            equ 0x661
 s_Helv3                             equ 0x667
 TileTable                           equ 0x66C
