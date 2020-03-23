@@ -31,10 +31,10 @@ hMenu        dw 0 ; 0x26 HMENU
     dw 0 ; 0x28
     dw 0 ; 0x2a
     dw 0 ; 0x2c
-    dw 0 ; 0x2e ; passwords disabled
 
-    dw 0 ; 0x30
-    dw 0 ; 0x32
+IgnorePasswords dw 0 ; 0x2e passwords disabled
+CheatVisible    dw 0 ; 0x30 whether the ignore passwords menu option is visible
+CheatKeys       dw 0 ; 0x32 bitset of cheat keys that have been pressed
 
 KeyboardDelay   dw -1 ; 0x34
 
@@ -202,7 +202,7 @@ db "$", 0
 db "Level%d", 0
 s_DLG_GOTO      db "DLG_GOTO", 0
 s_DLG_BESTTIMES db "DLG_BESTTIMES", 0
-db "&Ignore Passwords", 0
+CheatMenuText   db "&Ignore Passwords", 0
 db "ChipsMenu", 0, 0
 dw 0
 db "infownd", 0

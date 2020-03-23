@@ -13,6 +13,9 @@ hwndInventory                       equ 0x1C
 hwndHint                            equ 0x1E
 GamePaused                          equ 0x24
 hMenu                               equ 0x26
+IgnorePasswords                     equ 0x2E
+CheatVisible                        equ 0x30
+CheatKeys                           equ 0x32
 KeyboardDelay                       equ 0x34
 LOGFONT                             equ 0x36
 LOGFONT.lfWeight                    equ 0x3E
@@ -94,6 +97,7 @@ s_Arial2                            equ 0x5AA
 s_Helv2                             equ 0x5B0
 s_DLG_GOTO                          equ 0x61A
 s_DLG_BESTTIMES                     equ 0x623
+CheatMenuText                       equ 0x631
 s_Arial3                            equ 0x661
 s_Helv3                             equ 0x667
 TileTable                           equ 0x66C

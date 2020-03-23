@@ -3502,11 +3502,11 @@ MenuItemCallback:
 
 .label6: ; 1eda
     push word [hMenu]
-    push byte +0x6c
-    cmp word [0x2e],byte +0x1
+    push byte ID_CHEAT
+    cmp word [IgnorePasswords],byte +0x1
     sbb ax,ax
     neg ax
-    mov [0x2e],ax
+    mov [IgnorePasswords],ax
     cmp ax,0x1
 .label7: ; 1eef
     cmc
@@ -4248,6 +4248,7 @@ func MAINWNDPROC
     push si
     call 0x0:0x230c ; 2626 USER.ReleaseDC
     jmp .label67 ; ↓
+
 .label50: ; 262e
     push byte VK_CONTROL
     call 0x0:0x2647 ; 2630 USER.GetKeyState
@@ -4255,7 +4256,7 @@ func MAINWNDPROC
     jl .label51 ; ↓
     jmp .label67 ; ↓
 .label51: ; 263c
-    or byte [0x32],0x2
+    or byte [CheatKeys],0x2
     jmp short .label56 ; ↓
     nop
 .label52: ; 2644
@@ -4265,7 +4266,7 @@ func MAINWNDPROC
     jl .label53 ; ↓
     jmp .label67 ; ↓
 .label53: ; 2652
-    or byte [0x32],0x4
+    or byte [CheatKeys],0x4
     jmp short .label56 ; ↓
     nop
 .label54: ; 265a
@@ -4275,9 +4276,9 @@ func MAINWNDPROC
     jl .label55 ; ↓
     jmp .label67 ; ↓
 .label55: ; 2668
-    or byte [0x32],0x1
+    or byte [CheatKeys],0x1
 .label56: ; 266d
-    cmp word [0x32],byte +0x1
+    cmp word [CheatKeys],byte +0x1
     jnz .label57 ; ↓
     mov ax,0x1
     jmp short .label58 ; ↓
@@ -4289,7 +4290,7 @@ func MAINWNDPROC
     jnz .label59 ; ↓
     jmp .label67 ; ↓
 .label59: ; 2684
-    cmp word [0x30],byte +0x0
+    cmp word [CheatVisible],byte +0x0
     jz .label60 ; ↓
     jmp .label67 ; ↓
 .label60: ; 268e
@@ -4303,14 +4304,14 @@ func MAINWNDPROC
 .label61: ; 26a2
     push si
     push byte +0x0
-    push byte +0x6c
+    push byte ID_CHEAT
     push ds
-    push word 0x631
+    push word CheatMenuText
     call 0x0:0xffff ; 26ab USER.AppendMenu
-    mov word [0x30],0x1
+    mov word [CheatVisible],0x1
     push word [bp+0xe]
     push word 0x111
-    push byte +0x6c
+    push byte ID_CHEAT
     push byte +0x0
     push byte +0x0
     call 0x0:0xffff ; 26c2 USER.SendMessage

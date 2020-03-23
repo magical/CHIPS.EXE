@@ -160,6 +160,7 @@ LastLevel     equ 149
 ID_ABOUT        equ 0x64
 ID_QUIT         equ 0x6A
 ID_HELP         equ 0x6B
+ID_CHEAT        equ 0x6C
 ID_METAHELP     equ 0x6D
 
 ID_NEXT         equ 0x6E
