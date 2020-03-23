@@ -115,7 +115,7 @@ func InitGraphics
 .label10: ; e0
     xor ax,ax
 .label11: ; e2
-    mov [0x172e],ax
+    mov [IsWin31],ax
 
     ; Check or uncheck the 'Color' menu item as appropriate.
     push word [hMenu]        ; hMenu

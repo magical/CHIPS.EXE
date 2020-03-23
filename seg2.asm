@@ -806,7 +806,7 @@ CreateWindowsAndClasses:
     sub ax,ax
     mov [bp-0x56],ax
     mov [bp-0x58],ax
-    mov word [bp-0x54],0x4c7
+    mov word [bp-0x54],MainClassName
     mov [bp-0x52],ds
     lea ax,[bp-0x6a]
     push ss
@@ -837,7 +837,7 @@ CreateWindowsAndClasses:
     sub ax,ax
     mov [bp-0x56],ax
     mov [bp-0x58],ax
-    mov word [bp-0x54],0x4d1
+    mov word [bp-0x54],BoardClassName
     mov [bp-0x52],ds
     lea ax,[bp-0x6a]
     push ss
@@ -985,7 +985,7 @@ FUN_2_08e8:
     mov [0x172a],si
     push si
     push ds
-    push word 0x50c
+    push word s_ChipsMenu
     call 0x0:0xffff ; 90d USER.LoadMenu
     mov [hMenu],ax
     push byte +0x40
@@ -1030,9 +1030,9 @@ FUN_2_08e8:
     push byte +0x1                                      ; bMenu
     call 0x0:0xffff ; 984 USER.AdjustWindowRect
     push ds
-    push word 0x527
+    push word s_MainClass
     push ds
-    push word 0x516
+    push word MainWindowCaption ; "Chip's Challenge"
     push word (WS_CLIPCHILDREN | WS_TILEDWINDOW)>>16
     push byte (WS_CLIPCHILDREN | WS_TILEDWINDOW)&0xffff
     push word 0x8000
@@ -1055,7 +1055,7 @@ FUN_2_08e8:
     jmp .label0 ; ↑
 .label2: ; 9c4
     push ds
-    push word 0x531
+    push word s_BoardClass
     push byte +0x0
     push byte +0x0
     push word 0x5000
@@ -1080,7 +1080,7 @@ FUN_2_08e8:
     jmp .label0 ; ↑
 .label3: ; 9ff
     push ds
-    push word 0x53c
+    push word s_InfoClass
     push byte +0x0
     push byte +0x0
     push word 0x5200
@@ -1105,7 +1105,7 @@ FUN_2_08e8:
     jmp .label0 ; ↑
 .label4: ; a3a
     push ds
-    push word 0x546
+    push word s_CounterClass1
     push byte +0x0
     push byte +0x0
     push word 0x5400
@@ -1126,7 +1126,7 @@ FUN_2_08e8:
     jmp .label0 ; ↑
 .label5: ; a66
     push ds
-    push word 0x553
+    push word s_CounterClass2
     push byte +0x0
     push byte +0x0
     push word 0x5400
@@ -1147,7 +1147,7 @@ FUN_2_08e8:
     jmp .label0 ; ↑
 .label6: ; a95
     push ds
-    push word 0x560
+    push word s_CounterClass3
     push byte +0x0
     push byte +0x0
     push word 0x5400
@@ -1168,7 +1168,7 @@ FUN_2_08e8:
     jmp .label0 ; ↑
 .label7: ; ac5
     push ds
-    push word 0x56d
+    push word s_InventoryClass
     push byte +0x0
     push byte +0x0
     push word 0x5400
@@ -1331,7 +1331,7 @@ ShowHint:
     cmp word [hwndHint],byte +0x0
     jnz .label0 ; ↓
     push ds
-    push word 0x583
+    push word s_HintClass
     push byte +0x0
     push byte +0x0
     push word 0x5400
@@ -1498,7 +1498,7 @@ FUN_2_0dc6:
     push si
     push word [0x172a]
     push ds
-    push word 0x58d
+    push word s_background
     call 0x0:0xffff ; ddd USER.LoadBitmap
     mov si,ax
     or si,si
@@ -1873,22 +1873,22 @@ FUN_2_10ce:
     call 0x0:0xe9c ; 111c GDI.PatBlt
     push byte -0x20
     push word [si]
-    push byte +0x5a
+    push byte +0x5a ; LOGPIXELSY
     call 0x0:0xffff ; 1127 GDI.GetDeviceCaps
     push ax
     push byte +0x48
     call 0x0:0xffff ; 112f GDI.MulDiv
     mov [0x36],ax
-    mov word [0x3e],0x190
-    mov byte [0x40],0x0
+    mov word [LOGFONT.lfWeight],400
+    mov byte [LOGFONT.lfItalic],0
     push ds
-    push word 0x48
-    cmp word [0x172e],byte +0x0
+    push word LOGFONT.lfFaceName ; Arial
+    cmp word [IsWin31],byte +0x0
     jz .label2 ; ↓
-    mov ax,0x598
+    mov ax,s_Arial1
     jmp short .label3 ; ↓
 .label2: ; 1152
-    mov ax,0x59e
+    mov ax,s_Helv1
 .label3: ; 1155
     mov [bp-0x6],ax
     mov [bp-0x4],ds
@@ -1896,7 +1896,7 @@ FUN_2_10ce:
     push ax
     call 0x0:0xffff ; 115d KERNEL.lstrcpy
     push ds
-    push word 0x36
+    push word LOGFONT
     call 0x0:0xffff ; 1166 GDI.CreateFontIndirect
     mov di,ax
     or di,di
@@ -1938,7 +1938,7 @@ FUN_2_10ce:
     mov bx,[bp-0xc8]
     push word [bx]
     push ds
-    push word 0x5a3
+    push word s_PAUSED
     push byte +0x6
     lea ax,[bp-0x26]
     push ss
@@ -2152,23 +2152,23 @@ FUN_2_10ce:
     push ax
     mov bx,[bp+0x8]
     push word [bx]
-    push byte +0x5a
+    push byte +0x5a ; LOGPIXELSY
     call 0x0:0x1128 ; 13fa GDI.GetDeviceCaps
     push ax
     push byte +0x48
     call 0x0:0x1130 ; 1402 GDI.MulDiv
     mov [0x36],ax
-    mov word [0x3e],0x2bc
-    mov byte [0x40],0x0
+    mov word [LOGFONT.lfWeight],700
+    mov byte [LOGFONT.lfItalic],0
     push ds
-    push word 0x48
-    cmp word [0x172e],byte +0x0
+    push word LOGFONT.lfFaceName
+    cmp word [IsWin31],byte +0x0
     jz .label28 ; ↓
-    mov ax,0x5aa
+    mov ax,s_Arial2
     jmp short .label29 ; ↓
     nop
 .label28: ; 1426
-    mov ax,0x5b0
+    mov ax,s_Helv2
 .label29: ; 1429
     mov si,ax
     mov [bp-0x4],ds
@@ -2176,7 +2176,7 @@ FUN_2_10ce:
     push ax
     call 0x0:0x115e ; 1430 KERNEL.lstrcpy
     push ds
-    push word 0x36
+    push word LOGFONT
     call 0x0:0x1167 ; 1439 GDI.CreateFontIndirect
     mov [bp-0x10],ax
     or ax,ax
@@ -2210,15 +2210,15 @@ FUN_2_10ce:
     jz .label32 ; ↓
     mov [bp-0x26],ax
     mov [bp-0x24],ax
-    mov cx,0x3e8
+    mov cx,1000
     mov [bp-0x22],cx
     mov [bp-0x20],cx
     mov cx,bx
-    add cx,0x95a
+    add cx,0x95a ; bx+95a = level title?
     push ds
     push cx
     push ds
-    push word 0x5b5
+    push word 0x5b5 ; " %s "
     lea cx,[bp-0xc6]
     push ss
     push cx
@@ -2257,7 +2257,7 @@ FUN_2_10ce:
     xor ax,ax
     mov [bp-0x26],ax
     mov [bp-0x24],ax
-    mov ax,0x3e8
+    mov ax,1000
     mov [bp-0x22],ax
     mov [bp-0x20],ax
     mov ax,bx
@@ -2851,12 +2851,12 @@ FUN_2_198e:
     mov si,ax
     mov [bp-0x4],dx
     push ds
-    push word 0x274
+    push word IniSectionName
     push dx
     push si
     push word [bp-0x8]
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0xffff ; 19bd KERNEL.GetPrivateProfileInt
     pop si
     lea sp,[bp-0x2]
@@ -2892,14 +2892,14 @@ FUN_2_19ca:
     call 0x0:0x1a4e ; 19f6 USER._wsprintf
     add sp,byte +0xa
     push ds
-    push word 0x274
+    push word IniSectionName
     push word [bp-0x4]
     push si
     lea ax,[bp-0x16]
     push ss
     push ax
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0x1acf ; 1a0f KERNEL.WritePrivateProfileString
     pop si
     lea sp,[bp-0x2]
@@ -2939,7 +2939,7 @@ FUN_2_1a1c:
     call 0x0:0x1ab6 ; 1a4d USER._wsprintf
     add sp,byte +0xc
     push ds
-    push word 0x274
+    push word IniSectionName
     push word [bp-0x4]
     push si
     lea ax,[bp-0x18]
@@ -2950,7 +2950,7 @@ FUN_2_1a1c:
     push ax
     push byte +0x10
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0x1b18 ; 1a6d KERNEL.GetPrivateProfileString
     lea ax,[bp-0x28]
     push ax
@@ -2991,14 +2991,14 @@ FUN_2_1a86:
     call 0x0:0x1af8 ; 1ab5 USER._wsprintf
     add sp,byte +0xc
     push ds
-    push word 0x274
+    push word IniSectionName
     push word [bp-0x4]
     push si
     lea ax,[bp-0x16]
     push ss
     push ax
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0x1c94 ; 1ace KERNEL.WritePrivateProfileString
     pop si
     lea sp,[bp-0x2]
@@ -3023,14 +3023,14 @@ FUN_2_1adc:
     push si
     push word [bp+0x6]
     push ds
-    push word 0x5e8
+    push word 0x5e8 ; "Level%d"
     lea ax,[bp-0x10]
     push ss
     push ax
     call 0x0:0x1c3a ; 1af7 USER._wsprintf
     add sp,byte +0xa
     push ds
-    push word 0x274
+    push word IniSectionName
     lea ax,[bp-0x10]
     push ss
     push ax
@@ -3041,7 +3041,7 @@ FUN_2_1adc:
     push ax
     push byte +0x13
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0x1cee ; 1b17 KERNEL.GetPrivateProfileString
     mov di,ax
     cmp di,byte +0x4
@@ -3212,7 +3212,7 @@ FUN_2_1c1c:
     add sp,byte +0xc
 .label1: ; 1c81
     push ds
-    push word 0x274
+    push word IniSectionName
     lea ax,[bp-0xc]
     push ss
     push ax
@@ -3220,7 +3220,7 @@ FUN_2_1c1c:
     push ss
     push ax
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0xffff ; 1c93 KERNEL.WritePrivateProfileString
     pop si
     lea sp,[bp-0x2]
@@ -3261,7 +3261,7 @@ FUN_2_1ca0:
     lea di,[bp-0x16]
 .label1: ; 1cd8
     push ds
-    push word 0x274
+    push word IniSectionName
     push ds
     push di
     push ds
@@ -3270,10 +3270,10 @@ FUN_2_1ca0:
     push word [bp+0x8]
     push word [bp+0xa]
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0xffff ; 1ced KERNEL.GetPrivateProfileString
     mov bx,[bp+0x8]
-    cmp byte [bx],0x24
+    cmp byte [bx],'$'
     jz .label2 ; ↓
     jmp .label9 ; ↓
 .label2: ; 1cfd
@@ -3296,7 +3296,7 @@ FUN_2_1ca0:
     mov bx,[bp+0x6]
     shl bx,1
     push ds
-    push word [bx+0x312]
+    push word [SoundDefaultArray+bx]
     jmp short .label8 ; ↓
 .label5: ; 1d2e
     mov ax,bx
@@ -3308,7 +3308,7 @@ FUN_2_1ca0:
     mov bx,[bp+0x6]
     shl bx,1
     push ds
-    push word [bx+0x330]
+    push word [MidiFileDefaultArray+bx]
     call 0x0:0xffff ; 1d45 KERNEL.lstrlen
     sub ax,[bp+0xa]
     neg ax
@@ -3333,17 +3333,17 @@ FUN_2_1ca0:
     mov bx,[bp+0x6]
     shl bx,1
     push ds
-    push word [bx+0x330]
+    push word [bx+MidiFileDefaultArray]
 .label8: ; 1d81
     call 0x0:0x1431 ; 1d81 KERNEL.lstrcpy
     push ds
-    push word 0x274
+    push word IniSectionName
     push ds
     push word [bp-0x6]
     push ds
     push word [bp+0x8]
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0x1df9 ; 1d96 KERNEL.WritePrivateProfileString
 .label9: ; 1d9b
     push ds
@@ -3389,14 +3389,14 @@ FUN_2_1dae:
     call 0x0:0x19f7 ; 1ddf USER._wsprintf
     add sp,byte +0xa
     push ds
-    push word 0x274
+    push word IniSectionName
     lea ax,[bp-0xe]
     push ss
     push ax
     push byte +0x0
     push byte +0x0
     push ds
-    push word 0x268
+    push word IniFileName
     call 0x0:0x1a10 ; 1df8 KERNEL.WritePrivateProfileString
     inc si
     cmp si,di
@@ -3500,7 +3500,7 @@ MenuItemCallback:
     push word [bp+0x6]
     push word 0x101
     push ds
-    push word 0x248
+    push word s_Contents
 .label5: ; 1ed2
     call 0x0:0xffff ; 1ed2 WEP4UTIL.5
     jmp .label42 ; ↓
@@ -3629,7 +3629,7 @@ MenuItemCallback:
     mov [bp-0x4],dx
     push word [0x172a]
     push ds
-    push word 0x623
+    push word s_DLG_BESTTIMES
     push word [hwndMain]
     mov ax,dx
     push ax
@@ -3719,7 +3719,7 @@ MenuItemCallback:
     mov di,[bx+LevelNumber]
     push word [0x172a]
     push ds
-    push word 0x61a
+    push word s_DLG_GOTO
     push word [hwndMain]
     mov ax,dx
     push ax
@@ -3750,7 +3750,7 @@ MenuItemCallback:
     push word [bp+0x6]
     push word 0x101
     push ds
-    push word 0x252
+    push word s_How_To_Play
     jmp .label5 ; ↑
     nop
 
@@ -3760,7 +3760,7 @@ MenuItemCallback:
     push word [bp+0x6]
     push word 0x101
     push ds
-    push word 0x25e
+    push word s_Commands
     jmp .label5 ; ↑
     nop
 
@@ -3872,43 +3872,43 @@ func MAINWNDPROC
     push di
     push si
     mov ax,[bp+0xc]
-    cmp ax,0x1c
+    cmp ax,0x1c ; WM_SHOWWINDOW
     jnz .label0 ; ↓
     jmp .label27 ; ↓
 .label0: ; 2276
     ja .label5 ; ↓
-    cmp ax,0x1a
+    cmp ax,0x1a ; WM_WININICHANGE
     jnz .label1 ; ↓
     jmp .label23 ; ↓
 .label1: ; 2280
     jna .label2 ; ↓
     jmp .label68 ; ↓
 .label2: ; 2285
-    dec al
+    dec al ; WM_CREATE
     jz .label10 ; ↓
-    dec al
+    dec al ; WM_DESTROY
     jnz .label3 ; ↓
     jmp .label18 ; ↓
 .label3: ; 2290
-    sub al,0xd
+    sub al,0xf-2 ; WM_PAINT
     jnz .label4 ; ↓
     jmp .label22 ; ↓
 .label4: ; 2297
     jmp .label68 ; ↓
 .label5: ; 229a
-    sub ax,0x100
+    sub ax,0x100 ; WM_KEYDOWN
     jnz .label6 ; ↓
     jmp .label33 ; ↓
 .label6: ; 22a2
-    sub ax,0x11
+    sub ax,0x111-0x100 ; WM_COMMAND
     jnz .label7 ; ↓
     jmp .label62 ; ↓
 .label7: ; 22aa
-    dec ax
+    dec ax ; WM_SYSCOMMAND
     jnz .label8 ; ↓
     jmp .label63 ; ↓
 .label8: ; 22b0
-    sub ax,0x2a7
+    sub ax,0x2a7 ; MM_MCINOTIFY
     jnz .label9 ; ↓
     jmp .label66 ; ↓
 .label9: ; 22b8
@@ -4008,9 +4008,9 @@ func MAINWNDPROC
 .label16: ; 23bd
     push si
     push ds
-    push word 0x140
+    push word NotEnoughMemoryErrorMsg
     push ds
-    push word 0x68
+    push word MessageBoxCaption
     push word 0x1030
     call 0x0:0x64 ; 23c9 USER.MessageBox
     mov ax,0xffff
@@ -4049,10 +4049,10 @@ func MAINWNDPROC
     call 0x941:0x17c ; 243a 5:17c FUN_5_017c
     call 0x2447:0x5b8 ; 243f 8:5b8 FUN_8_05b8
     call 0x2045:0xe6 ; 2444 8:e6 TeardownSound
-    cmp word [0x172e],byte +0x0
+    cmp word [IsWin31],byte +0x0
     jz .label20 ; ↓
-    push byte +0x17
-    push word [0x34]
+    push byte +0x17     ; uiAction = SPI_SETKEYBOARDDELAY
+    push word [KeyboardDelay]
     push byte +0x0
     push byte +0x0
     push byte +0x0
@@ -4087,12 +4087,12 @@ func MAINWNDPROC
     jmp .label67 ; ↓
     nop
 .label23: ; 24a6
-    cmp word [0x172e],byte +0x0
+    cmp word [IsWin31],byte +0x0
     jnz .label24 ; ↓
     jmp .label67 ; ↓
 .label24: ; 24b0
     push ds
-    push word 0x2c6
+    push word s_KeyboardDelay
     push word [bp+0x8]
     push word [bp+0x6]
     call 0x0:0xffff ; 24ba USER.lstrcmpi
@@ -4103,12 +4103,12 @@ func MAINWNDPROC
     jz .label25 ; ↓
     jmp .label67 ; ↓
 .label25: ; 24ce
-    push byte +0x16
-    push byte +0x0
+    push byte +0x16     ; uiAction = SPI_GETKEYBOARDDELAY
+    push byte +0x0      ; uiParam
     push ds
-    push word 0x34
+    push word KeyboardDelay ; pvParam
 .label26: ; 24d6
-    push byte +0x0
+    push byte +0x0      ; fWinIni
     call 0x0:0xffff ; 24d8 USER.SystemParametersInfo
     jmp .label67 ; ↓
 .label27: ; 24e0
@@ -4127,24 +4127,24 @@ func MAINWNDPROC
     call 0x250c:UnpauseMusic ; 2504 2:18b6 UnpauseMusic
     call 0x256c:UnpauseGame ; 2509 2:1834 UnpauseGame
 .label29: ; 250e
-    cmp word [0x172e],byte +0x0
+    cmp word [IsWin31],byte +0x0
     jnz .label30 ; ↓
     jmp .label67 ; ↓
 .label30: ; 2518
     cmp word [bp+0xa],byte +0x0
     jnz .label32 ; ↓
     push byte +0x17
-    push word [0x34]
+    push word [KeyboardDelay]
 .label31: ; 2524
     push byte +0x0
     push byte +0x0
     jmp short .label26 ; ↑
 .label32: ; 252a
-    push byte +0x16
-    push byte +0x0
+    push byte +0x16     ; uiAction = SPI_GETKEYBOARDDELAY
+    push byte +0x0      ; uiParam
     push ds
-    push word 0x34
-    push byte +0x0
+    push word KeyboardDelay ; pvParam
+    push byte +0x0      ; fWinIni
     call 0x0:0x245d ; 2534 USER.SystemParametersInfo
     push byte +0x17
     push byte +0x0
@@ -4206,6 +4206,7 @@ func MAINWNDPROC
 .label41: ; 25b8
     jmp .label67 ; ↓
     nop
+
 .label42: ; 25bc
     push word [bp+0xe]
     push word 0x112
@@ -4215,6 +4216,7 @@ func MAINWNDPROC
     call 0x0:0x1759 ; 25c9 USER.PostMessage
     jmp .label67 ; ↓
     nop
+
 .label43: ; 25d2
     mov word [bp-0x4],0xffff
 .label44: ; 25d7
@@ -4238,6 +4240,7 @@ func MAINWNDPROC
     or si,si
     jnz .label49 ; ↓
     jmp .label67 ; ↓
+
 .label49: ; 260e
     push byte +0x1
     push byte +0x1
@@ -4251,7 +4254,7 @@ func MAINWNDPROC
     call 0x0:0x230c ; 2626 USER.ReleaseDC
     jmp .label67 ; ↓
 .label50: ; 262e
-    push byte +0x11
+    push byte VK_CONTROL
     call 0x0:0x2647 ; 2630 USER.GetKeyState
     or ax,ax
     jl .label51 ; ↓
@@ -4261,7 +4264,7 @@ func MAINWNDPROC
     jmp short .label56 ; ↓
     nop
 .label52: ; 2644
-    push byte +0x11
+    push byte VK_CONTROL
     call 0x0:0x265d ; 2646 USER.GetKeyState
     or ax,ax
     jl .label53 ; ↓
@@ -4271,7 +4274,7 @@ func MAINWNDPROC
     jmp short .label56 ; ↓
     nop
 .label54: ; 265a
-    push byte +0x11
+    push byte VK_CONTROL
     call 0x0:0xffff ; 265c USER.GetKeyState
     or ax,ax
     jl .label55 ; ↓
@@ -4318,6 +4321,7 @@ func MAINWNDPROC
     call 0x0:0xffff ; 26c2 USER.SendMessage
     jmp short .label67 ; ↓
     nop
+
 .label62: ; 26ca
     push word [bp+0x8]
     push word [bp+0x6]
@@ -4350,11 +4354,13 @@ func MAINWNDPROC
     call 0x271a:UnpauseMusic ; 2712 2:18b6 UnpauseMusic
     call 0x279c:UnpauseGame ; 2717 2:1834 UnpauseGame
     jmp short .label68 ; ↓
+
 .label66: ; 271e
     mov ax,[bp+0xa]
     dec ax
     jnz .label67 ; ↓
     call 0x2351:0x22a ; 2724 8:22a FUN_8_022a
+
 .label67: ; 2729
     xor ax,ax
     jmp .label17 ; ↑
@@ -4919,22 +4925,22 @@ func HINTWNDPROC
     neg ax
     push ax
     push word [bp-0x48]
-    push byte +0x5a
+    push byte +0x5a ; LOGPIXELSY
     call 0x0:0x13fb ; 2cc5 GDI.GetDeviceCaps
     push ax
     push byte +0x48
     call 0x0:0x1403 ; 2ccd GDI.MulDiv
     mov [0x36],ax
-    mov word [0x3e],0x2bc
-    mov byte [0x40],0x1
+    mov word [LOGFONT.lfWeight],700
+    mov byte [LOGFONT.lfItalic],1
     push ds
     push word 0x48
-    cmp word [0x172e],byte +0x0
+    cmp word [IsWin31],byte +0x0
     jz .label4 ; ↓
-    mov ax,0x661
+    mov ax,s_Arial3
     jmp short .label5 ; ↓
 .label4: ; 2cf0
-    mov ax,0x667
+    mov ax,s_Helv3
 .label5: ; 2cf3
     mov si,ax
     mov [bp-0xa],ds

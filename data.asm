@@ -35,26 +35,33 @@ hMenu        dw 0 ; 0x26 HMENU
 
     dw 0 ; 0x30
     dw 0 ; 0x32
-    dw -1 ; 0x34
-    dw 0 ; 0x36
-    dw 0 ; 0x38
-    dw 0 ; 0x3a
-    dw 0 ; 0x3c
-    dw 0 ; 0x3e
 
-    dw 0 ; 0x40
-    dw 0 ; 0x42
-    dw 0 ; 0x44
-    dw 0x2202 ; 0x46
-    db "Arial", 0 ; 0x48
+KeyboardDelay   dw -1 ; 0x34
 
-times 13 dw 0
+; LOGFONT struct
+LOGFONT:
+    dw 0 ; 0x36 lfHeight
+    dw 0 ; 0x38 lfWidth
+    dw 0 ; 0x3a lfEscapement
+    dw 0 ; 0x3c lfOrientation
+.lfWeight       dw 0 ; 0x3e lfWeight
+.lfItalic       db 0 ; 0x40 lfItalic
+    db 0 ; 0x41 lfUnderline
+    db 0 ; 0x42 lfStrikeOut
+    db 0 ; 0x43 lfCharSet
+    db 0 ; 0x44 lfOutPrecision
+    db 0 ; 0x45 lfClipPrecision
+    db 0x02 ; 0x46 lfQuality
+    db 0x22 ; 0x47 lfPitchAndFamily
+.lfFaceName:
+    db "Arial" ; 0x48 char[32] lfFaceName
+    times 32-5 db 0
 
 ; 0x68
 MessageBoxCaption db "Chip's Challenge", 0, 0
 SystemTimerErrorMsg db "Not enough system timers are available.", 0
 NewGamePrompt db "Starting a new game will begin you back at level 1, reset your score to zero, and forget the passwords to any levels you have visited.", 10, "Is this what you want?", 0
-db "There is not enough memory to load Chip's Challenge.", 0, 0
+NotEnoughMemoryErrorMsg db "There is not enough memory to load Chip's Challenge.", 0, 0
 
 FireDeathMessage        db "Ooops! Don't step in the fire without fire boots!", 0
 WaterDeathMessage       db "Ooops! Chip can't swim without flippers!", 0, 0
@@ -63,19 +70,19 @@ BlockDeathMessage       db "Ooops! Watch out for moving blocks!", 0
 MonsterDeathMessage     db "Ooops! Look out for creatures!", 0, 0
 TimeDeathMessage        db "Ooops! Out of time!", 0
 
-db "Contents", 0, 0
-db "How To Play", 0
-db "Commands", 0, 0
+s_Contents      db "Contents", 0, 0
+s_How_To_Play   db "How To Play", 0
+s_Commands      db "Commands", 0, 0
 
-db "entpack.ini", 0
-db "Chip's Challenge", 0, 0
+IniFileName     db "entpack.ini", 0
+IniSectionName  db "Chip's Challenge", 0, 0
 db "MIDI", 0, 0
 db "Sounds", 0, 0
 db "Highest Level", 0
 db "Current Level", 0
 db "Current Score", 0
 db "Color", 0, 0, 0
-db "KeyboardDelay", 0
+s_KeyboardDelay db "KeyboardDelay", 0
 db "CHIPS.DAT", 0
 db "Number of Midi Files", 0, 0
 
@@ -95,6 +102,7 @@ dw TeleportSoundKey
 dw TickSoundKey
 dw ChipDeathByTimeSoundKey
 
+SoundDefaultArray:
 dw PickUpToolSoundDefault
 dw OpenDoorSoundDefault
 dw ChipDeathSoundDefault
@@ -111,6 +119,7 @@ dw TeleportSoundDefault
 dw TickSoundDefault
 dw ChipDeathByTimeSoundDefault
 
+MidiFileDefaultArray:
 dw MidiFileDefault1
 dw MidiFileDefault2
 dw MidiFileDefault3
@@ -151,29 +160,31 @@ MidiFileDefault1 db "chip01.mid", 0
 MidiFileDefault2 db "chip02.mid", 0
 MidiFileDefault3 db "canyon.mid", 0
 
-db "MainClass", 0
-db "BoardClass", 0
-db "InfoClass", 0
-db "CounterClass", 0
-db "InventoryClass", 0
-db "HintClass", 0
-db "ChipsMenu", 0
-db "Chip's Challenge", 0
-db "MainClass", 0
-db "BoardClass", 0
-db "InfoClass", 0
-db "CounterClass", 0
-db "CounterClass", 0
-db "CounterClass", 0
-db "InventoryClass", 0
-s_Ooops db "Ooops!", 0
-db "HintClass", 0
-db "background", 0
-db "Arial", 0
-db "Helv", 0
-db "PAUSED", 0
-db "Arial", 0
-db "Helv", 0
+MainClassName   db "MainClass", 0
+BoardClassName  db "BoardClass", 0
+InfoClassName   db "InfoClass", 0
+CounterClassName db "CounterClass", 0
+InventoryClassName db "InventoryClass", 0
+HintClassName   db "HintClass", 0
+
+s_ChipsMenu     db "ChipsMenu", 0
+MainWindowCaption db "Chip's Challenge", 0
+s_MainClass     db "MainClass", 0
+s_BoardClass    db "BoardClass", 0
+s_InfoClass     db "InfoClass", 0
+s_CounterClass1 db "CounterClass", 0
+s_CounterClass2 db "CounterClass", 0
+s_CounterClass3 db "CounterClass", 0
+s_InventoryClass db "InventoryClass", 0
+s_Ooops         db "Ooops!", 0
+s_HintClass     db "HintClass", 0
+
+s_background    db "background", 0
+s_Arial1        db "Arial", 0
+s_Helv1         db "Helv", 0
+s_PAUSED        db "PAUSED", 0
+s_Arial2        db "Arial", 0
+s_Helv2         db "Helv", 0
 
 db " %s ", 0
 db " Password: %s ", 0
@@ -189,15 +200,15 @@ db "%s", 0
 db "MidiFile%d", 0
 db "$", 0
 db "Level%d", 0
-db "DLG_GOTO", 0
-db "DLG_BESTTIMES", 0
+s_DLG_GOTO      db "DLG_GOTO", 0
+s_DLG_BESTTIMES db "DLG_BESTTIMES", 0
 db "&Ignore Passwords", 0
 db "ChipsMenu", 0, 0
 dw 0
 db "infownd", 0
 db "Hint: %s", 0
-db "Arial", 0
-db "Helv", 0
+s_Arial3        db "Arial", 0
+s_Helv3         db "Helv", 0
 
 ; Tile table (0x66c)
 ; Columns: Chip, ??, Block, ??, Monsters, ??
@@ -538,7 +549,9 @@ times 24 dw 0 ; 16f0
 
 times 3 dw 0 ; 1720
 fpWaveOutGetNumDevs dw 0, 0 ; 1726
-times 3 dw 0 ; 172a
+    dw 0 ; 172a
+    dw 0 ; 172c
+IsWin31             dw 0 ; 172e
 fpMidiOutGetNumDevs dw 0, 0; 1730
 times 2 dw 0 ; 1734
 

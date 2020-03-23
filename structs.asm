@@ -70,7 +70,7 @@ TeleportListHandle    equ 0x954
 TeleportListPtr       equ 0x956
 TeleportListSeg       equ 0x958
 
-; 95a ???
+; 95a title?
 ; 99a hint? limit: 128
 
 ; a1a Password limit: 10
