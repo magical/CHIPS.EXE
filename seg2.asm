@@ -1231,8 +1231,8 @@ func CreateWindows
     call 0xc08:FUN_2_1a1c ; b5f 2:1a1c FUN_2_1a1c
     add sp,byte +0x2
 .label14: ; b67
-    mov [0x1696],ax
-    mov [0x1698],dx
+    mov [TotalScore],ax
+    mov [TotalScore+2],dx
     cmp si,byte +0x1
     jng .label15 ; ↓
     push si
@@ -1873,7 +1873,7 @@ FUN_2_10ce:
     push ax
     push byte +0x48
     call 0x0:0xffff ; 112f GDI.MulDiv
-    mov [0x36],ax
+    mov [LOGFONT],ax
     mov word [LOGFONT.lfWeight],400
     mov byte [LOGFONT.lfItalic],0
     push ds
@@ -2152,7 +2152,7 @@ FUN_2_10ce:
     push ax
     push byte +0x48
     call 0x0:0x1130 ; 1402 GDI.MulDiv
-    mov [0x36],ax
+    mov [LOGFONT],ax
     mov word [LOGFONT.lfWeight],700
     mov byte [LOGFONT.lfItalic],0
     push ds
@@ -3607,8 +3607,8 @@ MenuItemCallback:
 .label20: ; 1fc6
     call 0x1fdd:FUN_2_1dae ; 1fc6 2:1dae FUN_2_1dae
     sub ax,ax
-    mov [0x1698],ax
-    mov [0x1696],ax
+    mov [TotalScore+2],ax
+    mov [TotalScore],ax
     push ax
     push byte +0x1
     jmp .label12 ; ↑
@@ -3982,14 +3982,14 @@ func MAINWNDPROC
     call 0x0:0x1ef7 ; 2381 USER.CheckMenuItem
     push word [hMenu]
     push byte +0x75
-    cmp word [0x13ca],byte +0x1
+    cmp word [MusicMenuItemEnabled],byte +0x1
     sbb ax,ax
     neg ax
     push ax
     call 0x0:0x23ac ; 2396 USER.EnableMenuItem
     push word [hMenu]
     push byte +0x76
-    cmp word [0x13cc],byte +0x1
+    cmp word [SoundMenuItemEnabled],byte +0x1
     sbb ax,ax
     neg ax
     push ax
@@ -4729,7 +4729,7 @@ func INVENTORYWNDPROC
     push ss
     push ax
     call 0x0:0x2bf7 ; 2ad1 USER.BeginPaint
-    cmp word [0x1684],byte +0x1
+    cmp word [RedKeyCount],byte +0x1
     cmc
     sbb al,al
     and al,0x65
@@ -4739,7 +4739,7 @@ func INVENTORYWNDPROC
     push word [bp-0x22]
     call 0x2b05:DrawInventoryTile ; 2ae8 2:232 DrawInventoryTile
     add sp,byte +0x8
-    cmp word [0x1682],byte +0x1
+    cmp word [BlueKeyCount],byte +0x1
     cmc
     sbb al,al
     and al,0x64
@@ -4749,7 +4749,7 @@ func INVENTORYWNDPROC
     push word [bp-0x22]
     call 0x2b1f:DrawInventoryTile ; 2b02 2:232 DrawInventoryTile
     add sp,byte +0x8
-    cmp word [0x1688],byte +0x1
+    cmp word [YellowKeyCount],byte +0x1
     cmc
     sbb al,al
     and al,0x67
@@ -4759,7 +4759,7 @@ func INVENTORYWNDPROC
     push word [bp-0x22]
     call 0x2b39:DrawInventoryTile ; 2b1c 2:232 DrawInventoryTile
     add sp,byte +0x8
-    cmp word [0x1686],byte +0x1
+    cmp word [GreenKeyCount],byte +0x1
     cmc
     sbb al,al
     and al,0x66
@@ -4769,7 +4769,7 @@ func INVENTORYWNDPROC
     push word [bp-0x22]
     call 0x2b53:DrawInventoryTile ; 2b36 2:232 DrawInventoryTile
     add sp,byte +0x8
-    cmp word [0x168e],byte +0x1
+    cmp word [IceSkateCount],byte +0x1
     cmc
     sbb al,al
     and al,0x6a
@@ -4779,7 +4779,7 @@ func INVENTORYWNDPROC
     push word [bp-0x22]
     call 0x2b6d:DrawInventoryTile ; 2b50 2:232 DrawInventoryTile
     add sp,byte +0x8
-    cmp word [0x1690],byte +0x1
+    cmp word [SuctionBootCount],byte +0x1
     cmc
     sbb al,al
     and al,0x6b
@@ -4789,7 +4789,7 @@ func INVENTORYWNDPROC
     push word [bp-0x22]
     call 0x2b87:DrawInventoryTile ; 2b6a 2:232 DrawInventoryTile
     add sp,byte +0x8
-    cmp word [0x168c],byte +0x1
+    cmp word [FireBootCount],byte +0x1
     cmc
     sbb al,al
     and al,0x69
@@ -4799,7 +4799,7 @@ func INVENTORYWNDPROC
     push word [bp-0x22]
     call 0x2ba1:DrawInventoryTile ; 2b84 2:232 DrawInventoryTile
     add sp,byte +0x8
-    cmp word [0x168a],byte +0x1
+    cmp word [FlipperCount],byte +0x1
     cmc
     sbb al,al
     and al,0x68
@@ -4926,7 +4926,7 @@ func HINTWNDPROC
     push ax
     push byte +0x48
     call 0x0:0x1403 ; 2ccd GDI.MulDiv
-    mov [0x36],ax
+    mov [LOGFONT],ax
     mov word [LOGFONT.lfWeight],700
     mov byte [LOGFONT.lfItalic],1
     push ds
