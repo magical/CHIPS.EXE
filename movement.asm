@@ -326,7 +326,7 @@ func DoTick
     cmp ax,0x1
     sbb ax,ax
     neg ax
-    push ax
+    push ax ; tick&3 == 0
     push word [hDC]
     call 0xffff:0x74e ; 26f Monster loop
     add sp,byte +0x4

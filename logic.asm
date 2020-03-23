@@ -936,7 +936,7 @@ func MonsterLoop
     push si
 
     %arg hDC:word ; +6
-    %arg isEvenTick:word ; +8
+    %arg isEvenTurn:word ; +8
 
     ; Look at all these locals!
     %define tile (bp-3)
@@ -1392,8 +1392,8 @@ func MonsterLoop
 
         ; TEETH
 .TeethMovement:
-    ; Teeth move only on even ticks.
-    cmp word [isEvenTick],byte +0x0
+    ; Teeth move only on even turns.
+    cmp word [isEvenTurn],byte +0x0
     jnz .label27
     jmp word .next
 .label27: ; b85
@@ -1777,7 +1777,7 @@ func MonsterLoop
 
         ;;; BLOB ;;;
 .BlobMovement:
-    cmp word [isEvenTick],byte +0x0
+    cmp word [isEvenTurn],byte +0x0
     jnz .label58
     jmp word .next
 .label58: ; edb
