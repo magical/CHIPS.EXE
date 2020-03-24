@@ -8,7 +8,8 @@ SEGMENT DATA ; 10
 ; a data structure used by the windows kernel
 ; to track local allocations and stuff
     dw 0 ; 0x0 null
-    dd 0x50000 ; 0x2 old stack pointer
+    dw 0 ; 0x2 old stack pointer
+    dw 5 ; 0x4 old stack segment
     dw 0 ; 0x6 heap pointer
     dw 0 ; 0x8 atom table pointer
     dw 0 ; 0xa top of stack
