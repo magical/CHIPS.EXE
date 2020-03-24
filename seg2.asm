@@ -4235,14 +4235,13 @@ func MAINWNDPROC
     or si,si
     jnz .label49 ; ↓
     jmp .label67 ; ↓
-
 .label49: ; 260e
     push byte +0x1
     push byte +0x1
     push word [bp-0x6]
     push word [bp-0x4]
     push si
-    call 0x27d3:0x1184 ; 2619 7:1184
+    call 0x27d3:0x1184 ; 2619 7:1184 MoveChip
     add sp,byte +0xa
     push word [hwndBoard]
     push si

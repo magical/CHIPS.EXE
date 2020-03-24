@@ -4,7 +4,7 @@
 1:00c4    srand
 1:00dc    rand
 1:0110    div32_probably
-1:05cb    exit
+1:05c5    exit
 1:060e    atol_common
 1:0662    mul32
 
@@ -98,8 +98,8 @@
 7:0a74    EndGame
 7:0cca    EndLevel
 7:0dae    MoveBlock
-7:1183    MoveChip
-7:18d9    MoveMonster
+7:1184    MoveChip
+7:18da    MoveMonster
 
 8:0000    InitSound
 8:00e6    TeardownSound
