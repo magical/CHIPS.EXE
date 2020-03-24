@@ -11,6 +11,7 @@ hwndCounter2                        equ 0x18
 hwndCounter3                        equ 0x1A
 hwndInventory                       equ 0x1C
 hwndHint                            equ 0x1E
+InventoryDirty                      equ 0x20
 Var22                               equ 0x22
 GamePaused                          equ 0x24
 hMenu                               equ 0x26

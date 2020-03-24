@@ -2795,7 +2795,7 @@ func MoveChip
 
 ; Invalidate the inventory window if the inventory changed
 .label61: ; 17e3
-    cmp word [0x20],byte +0x0
+    cmp word [InventoryDirty],byte +0x0
     jz .label66
     push byte +0x6
     call 0x18b0:0xcbe ; 17ec 2:cbc

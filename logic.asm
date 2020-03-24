@@ -2647,7 +2647,7 @@ func ResetInventory
     mov [FireBootCount],ax
     mov [IceSkateCount],ax
     mov [SuctionBootCount],ax
-    mov word [0x20],0x1 ; ???
+    mov word [InventoryDirty],0x1
 endfunc
 
 ; 1770
@@ -2717,7 +2717,7 @@ func PickUpKeyOrBoot
     xor cx,cx ; PickUpToolSound
 .playSound: ; 17f0
     mov ax,0x1
-    mov [0x20],ax
+    mov [InventoryDirty],ax
     push ax
     push cx
     call 0x122b:0x56c ; 17f8 8:56c
@@ -2750,7 +2750,7 @@ func CanOpenDoor
     dec word [BlueKeyCount]
 .yes: ; 1837
     mov ax,0x1
-    mov [0x20],ax
+    mov [InventoryDirty],ax
     jmp short .label6 ; ↓
     nop
 
@@ -2858,7 +2858,7 @@ func HaveBootsForTile
     jz .returnZero ; ↓
     ; return True and set something mysterious
     mov ax,0x1
-    mov [0x20],ax
+    mov [InventoryDirty],ax
     jmp short .end ; ↓
     nop
 

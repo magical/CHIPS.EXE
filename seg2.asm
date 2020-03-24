@@ -1471,7 +1471,7 @@ FUN_2_0cbe:
 .label5: ; db2
     call 0x79b:HideHint ; db2 2:c7e HideHint
 .label6: ; db7
-    mov word [0x20],0x0
+    mov word [InventoryDirty],0x0
     pop si
     pop di
     lea sp,[bp-0x2]

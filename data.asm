@@ -24,7 +24,7 @@ hwndCounter3 dw 0 ; 0x1a chips left counter
 hwndInventory  dw 0 ; 0x1c
 hwndHint     dw 0 ; 0x1e
 
-    dw 0 ; 0x20 ; inventory changed
+InventoryDirty dw 0 ; 0x20
 Var22        dw 0 ; 0x22 *
 GamePaused   dw 0 ; 0x24
 hMenu        dw 0 ; 0x26 HMENU
