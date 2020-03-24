@@ -94,6 +94,9 @@ type Dialog struct {
 	Height uint16
 	Menu   uint8
 	Class  uint8
+	//Caption string
+	//FontSize uint16
+	//Font string
 }
 
 // Read a zero-terminated string from f
@@ -116,15 +119,15 @@ func readCString(r *bufio.Reader) (string, error) {
 }
 
 type Item struct {
-	// names are all tentative
 	X      uint16
 	Y      uint16
 	Width  uint16
 	Height uint16
 	ID     int16
-	V1     uint8
-	V2     uint16
-	V3     uint16
+	Style  uint32
+	Class  uint8
+	//Title string
+	//0
 }
 
 type nasmstr string
