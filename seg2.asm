@@ -1866,6 +1866,11 @@ FUN_2_10ce:
     push byte +0x0
     push byte +0x42
     call 0x0:0xe9c ; 111c GDI.PatBlt
+    ; computes font height by multiplying the desired point size by the screen's DPI,
+    ; as suggested by Microsoft's documentation:
+    ; (https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfonta)
+    ;
+    ;    lfHeight = MulDiv(-32, GetDeviceCaps(hDC, LOGPIXELSY), 72)
     push byte -0x20
     push word [si]
     push byte +0x5a ; LOGPIXELSY
@@ -1873,7 +1878,7 @@ FUN_2_10ce:
     push ax
     push byte +0x48
     call 0x0:0xffff ; 112f GDI.MulDiv
-    mov [LOGFONT],ax
+    mov [LOGFONT.lfHeight],ax
     mov word [LOGFONT.lfWeight],400
     mov byte [LOGFONT.lfItalic],0
     push ds
@@ -2152,7 +2157,7 @@ FUN_2_10ce:
     push ax
     push byte +0x48
     call 0x0:0x1130 ; 1402 GDI.MulDiv
-    mov [LOGFONT],ax
+    mov [LOGFONT.lfHeight],ax
     mov word [LOGFONT.lfWeight],700
     mov byte [LOGFONT.lfItalic],0
     push ds
@@ -4949,11 +4954,11 @@ func HINTWNDPROC
     push ax
     push byte +0x48
     call 0x0:0x1403 ; 2ccd GDI.MulDiv
-    mov [LOGFONT],ax
+    mov [LOGFONT.lfHeight],ax
     mov word [LOGFONT.lfWeight],700
     mov byte [LOGFONT.lfItalic],1
     push ds
-    push word 0x48
+    push word LOGFONT.lfFaceName
     cmp word [IsWin31],byte +0x0
     jz .label4 ; ↓
     mov ax,s_Arial3
@@ -4967,7 +4972,7 @@ func HINTWNDPROC
     push ax
     call 0x0:0x1b54 ; 2cfa KERNEL.lstrcpy
     push ds
-    push word 0x36
+    push word LOGFONT
     call 0x0:0x143a ; 2d03 GDI.CreateFontIndirect
     mov [bp-0x4],ax
     or ax,ax

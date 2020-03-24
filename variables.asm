@@ -19,6 +19,7 @@ CheatVisible                        equ 0x30
 CheatKeys                           equ 0x32
 KeyboardDelay                       equ 0x34
 LOGFONT                             equ 0x36
+LOGFONT.lfHeight                    equ 0x36
 LOGFONT.lfWeight                    equ 0x3E
 LOGFONT.lfItalic                    equ 0x40
 LOGFONT.lfFaceName                  equ 0x48

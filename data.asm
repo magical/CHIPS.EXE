@@ -40,7 +40,7 @@ KeyboardDelay   dw -1 ; 0x34
 
 ; LOGFONT struct
 LOGFONT:
-    dw 0 ; 0x36 lfHeight
+.lfHeight       dw 0 ; 0x36 lfHeight
     dw 0 ; 0x38 lfWidth
     dw 0 ; 0x3a lfEscapement
     dw 0 ; 0x3c lfOrientation
@@ -51,8 +51,8 @@ LOGFONT:
     db 0 ; 0x43 lfCharSet
     db 0 ; 0x44 lfOutPrecision
     db 0 ; 0x45 lfClipPrecision
-    db 0x02 ; 0x46 lfQuality
-    db 0x22 ; 0x47 lfPitchAndFamily
+    db 0x02 ; 0x46 lfQuality PROOF_QUALITY
+    db 0x22 ; 0x47 lfPitchAndFamily FF_SWISS | VARIABLE_PITCH
 .lfFaceName:
     db "Arial" ; 0x48 char[32] lfFaceName
     times 32-5 db 0
