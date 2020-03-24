@@ -171,5 +171,6 @@ fpWaveOutGetNumDevs                 equ 0x1726
 OurHInstance                        equ 0x172A
 IsWin31                             equ 0x172E
 fpMidiOutGetNumDevs                 equ 0x1730
+MCIDeviceID                         equ 0x1736
 
 ; vim: syntax=nasm

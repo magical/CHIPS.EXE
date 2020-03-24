@@ -153,7 +153,7 @@ func FUN_8_0110
     mov word [bp-0x42],0x4003
     mov word [bp-0x40],0x0
     mov ax,[bp-0x5a]
-    mov [0x1736],ax
+    mov [MCIDeviceID],ax
     push ax
     push word 0x814
     push byte +0x0
@@ -167,7 +167,7 @@ func FUN_8_0110
     or dx,ax
     jz .label4 ; ↓
 .label3: ; 194
-    push word [0x1736]
+    push word [MCIDeviceID]
     push word 0x804
     push byte +0x0
     push byte +0x0
@@ -188,7 +188,7 @@ func FUN_8_0110
     add sp,byte +0x8
     cmp ax,0x7
     jnz .label5 ; ↓
-    push word [0x1736]
+    push word [MCIDeviceID]
     push word 0x804
     push byte +0x0
     push byte +0x0
@@ -205,7 +205,7 @@ func FUN_8_0110
     sub ax,ax
     mov [bp-0x34],ax
     mov [bp-0x36],ax
-    push word [0x1736]
+    push word [MCIDeviceID]
     push word 0x806
     push ax
     push byte +0x5
@@ -297,7 +297,7 @@ func FUN_8_02d4
     sub sp,byte +0x2
     cmp word [0x13c4],byte +0x0
     jz .label0 ; ↓
-    push word [0x1736]
+    push word [MCIDeviceID]
     push word 0x804
     push byte +0x0
     push byte +0x0

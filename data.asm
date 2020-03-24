@@ -558,8 +558,8 @@ OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
 ; it uses Arial instead of Helv[etica] as its font
 ; and fiddles with the KeyboardDelay setting.
 IsWin31             dw 0 ; 172e
-
 fpMidiOutGetNumDevs dw 0, 0; 1730
-times 2 dw 0 ; 1734
+    dw 0 ; 1734 HDC
+MCIDeviceID         dw 0 ; 1736 MCIDEVICEID
 
 ; vim: syntax=nasm
