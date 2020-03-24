@@ -3863,10 +3863,14 @@ MenuItemCallback:
 
 func MAINWNDPROC
     %assign %$argsize 0xa
+    %arg lParam:dword ; +6
+    %arg wParam:word ; +a
+    %arg uMsg:word ; +c
+    %arg hwnd:word ; +e
     sub sp,byte +0x26
     push di
     push si
-    mov ax,[bp+0xc]
+    mov ax,[uMsg]
     cmp ax,0x1c ; WM_SHOWWINDOW
     jnz .label0 ; ↓
     jmp .label27 ; ↓
@@ -3919,7 +3923,7 @@ func MAINWNDPROC
     jnz .label11 ; ↓
     jmp .label15 ; ↓
 .label11: ; 22d3
-    mov si,[bp+0xe]
+    mov si,[hwnd]
     push byte +0x0
     push word 0x172c
     push word [OurHInstance]
@@ -3929,7 +3933,7 @@ func MAINWNDPROC
     jnz .label12 ; ↓
     jmp .label16 ; ↓
 .label12: ; 22ee
-    mov si,[bp+0xe]
+    mov si,[hwnd]
     push si
     call 0x0:0xffff ; 22f2 USER.GetDC
     mov di,ax
@@ -3999,7 +4003,7 @@ func MAINWNDPROC
     jmp .label67 ; ↓
     nop
 .label15: ; 23ba
-    mov si,[bp+0xe]
+    mov si,[hwnd]
 .label16: ; 23bd
     push si
     push ds
@@ -4027,7 +4031,7 @@ func MAINWNDPROC
     cmp word [0x2a],byte +0x0
     jz .label19 ; ↓
     push word [OurHInstance]
-    push word [bp+0xe]
+    push word [hwnd]
     push byte +0x2
     push byte +0x0
     push byte +0x0
@@ -4063,7 +4067,7 @@ func MAINWNDPROC
     jmp .label67 ; ↓
     nop
 .label22: ; 247c
-    mov si,[bp+0xe]
+    mov si,[hwnd]
     push si
     lea ax,[bp-0x26]
     push ss
@@ -4088,13 +4092,13 @@ func MAINWNDPROC
 .label24: ; 24b0
     push ds
     push word s_KeyboardDelay
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [lParam+2]
+    push word [lParam]
     call 0x0:0xffff ; 24ba USER.lstrcmpi
     or ax,ax
     jz .label25 ; ↓
-    mov ax,[bp+0x8]
-    or ax,[bp+0x6]
+    mov ax,[lParam+2]
+    or ax,[lParam]
     jz .label25 ; ↓
     jmp .label67 ; ↓
 .label25: ; 24ce
@@ -4109,11 +4113,11 @@ func MAINWNDPROC
 .label27: ; 24e0
     cmp word [0x2c],byte +0x0
     jz .label29 ; ↓
-    push word [bp+0xe]
+    push word [hwnd]
     call 0x0:0xffff ; 24ea USER.IsIconic
     or ax,ax
     jnz .label29 ; ↓
-    cmp [bp+0xa],ax
+    cmp [wParam],ax
     jnz .label28 ; ↓
     call 0x2500:PauseMusic ; 24f8 2:189c PauseMusic
     call 0x2507:PauseGame ; 24fd 2:17da PauseGame
@@ -4126,7 +4130,7 @@ func MAINWNDPROC
     jnz .label30 ; ↓
     jmp .label67 ; ↓
 .label30: ; 2518
-    cmp word [bp+0xa],byte +0x0
+    cmp word [wParam],byte +0x0
     jnz .label32 ; ↓
     push byte +0x17
     push word [KeyboardDelay]
@@ -4159,7 +4163,7 @@ func MAINWNDPROC
     call 0x0:0x280f ; 2564 USER.UpdateWindow
     call 0x26dc:FUN_2_17ba ; 2569 2:17ba
 .label34: ; 256e
-    mov ax,[bp+0xa]
+    mov ax,[wParam]
     cmp ax,0x74
     jnz .label35 ; ↓
     jmp .label54 ; ↓
@@ -4203,7 +4207,7 @@ func MAINWNDPROC
     nop
 
 .label42: ; 25bc
-    push word [bp+0xe]
+    push word [hwnd]
     push word 0x112
     push word 0xf020
     push byte +0x0
@@ -4308,7 +4312,7 @@ func MAINWNDPROC
     push word CheatMenuText
     call 0x0:0xffff ; 26ab USER.AppendMenu
     mov word [CheatVisible],0x1
-    push word [bp+0xe]
+    push word [hwnd]
     push word 0x111
     push byte ID_CHEAT
     push byte +0x0
@@ -4318,17 +4322,17 @@ func MAINWNDPROC
     nop
 
 .label62: ; 26ca
-    push word [bp+0x8]
-    push word [bp+0x6]
-    push word [bp+0xa]
-    push word [bp+0xc]
-    push word [bp+0xe]
+    push word [lParam+2]
+    push word [lParam]
+    push word [wParam]
+    push word [uMsg]
+    push word [hwnd]
     call 0x26fd:MenuItemCallback ; 26d9 2:1e28 MenuItemCallback
     add sp,byte +0xa
     jmp short .label69 ; ↓
     nop
 .label63: ; 26e4
-    mov ax,[bp+0xa]
+    mov ax,[wParam]
     and al,0xf0
     sub ax,0xf020
     jz .label64 ; ↓
@@ -4342,7 +4346,7 @@ func MAINWNDPROC
     call 0x2715:PauseGame ; 26ff 2:17da PauseGame
     jmp short .label68 ; ↓
 .label65: ; 2706
-    push word [bp+0xe]
+    push word [hwnd]
     call 0x0:0x24eb ; 2709 USER.IsIconic
     or ax,ax
     jz .label68 ; ↓
@@ -4351,7 +4355,7 @@ func MAINWNDPROC
     jmp short .label68 ; ↓
 
 .label66: ; 271e
-    mov ax,[bp+0xa]
+    mov ax,[wParam]
     dec ax
     jnz .label67 ; ↓
     call 0x2351:0x22a ; 2724 8:22a
@@ -4360,11 +4364,11 @@ func MAINWNDPROC
     xor ax,ax
     jmp .label17 ; ↑
 .label68: ; 272e
-    push word [bp+0xe]
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [hwnd]
+    push word [uMsg]
+    push word [wParam]
+    push word [lParam+2]
+    push word [lParam]
     call 0x0:0x277e ; 273d USER.DefWindowProc
 .label69: ; 2742
     pop si
@@ -4375,25 +4379,29 @@ endfunc
 
 func BOARDWNDPROC
     %assign %$argsize 0xa
+    %arg lParam:dword ; +6
+    %arg wParam:word ; +a
+    %arg uMsg:word ; +c
+    %arg hwnd:word ; +e
     sub sp,byte +0x22
     push si
-    mov ax,[bp+0xc]
+    mov ax,[uMsg]
     sub ax,0xf
     jz .label0 ; ↓
     sub ax,0x104
     jz .label1 ; ↓
     sub ax,0xee
     jz .label6 ; ↓
-    push word [bp+0xe]
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [hwnd]
+    push word [uMsg]
+    push word [wParam]
+    push word [lParam+2]
+    push word [lParam]
     call 0x0:0x288d ; 277d USER.DefWindowProc
     jmp .label9 ; ↓
     nop
 .label0: ; 2786
-    mov si,[bp+0xe]
+    mov si,[hwnd]
     push si
     lea ax,[bp-0x22]
     push ss
@@ -4416,7 +4424,7 @@ func BOARDWNDPROC
     jz .label2 ; ↓
     jmp .label8 ; ↓
 .label2: ; 27ba
-    mov ax,[bp+0xa]
+    mov ax,[wParam]
     dec ax
     jz .label3 ; ↓
     jmp .label8 ; ↓
@@ -4451,13 +4459,13 @@ func BOARDWNDPROC
 .label7: ; 2818
     mov bx,[GameStatePtr]
     mov word [bx+HaveMouseTarget],0x1
-    mov ax,[bp+0x6]
+    mov ax,[lParam]
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
     add ax,[bx+0xa24]
     add ax,[bx+0xa2c]
     mov [bx+MouseTargetX],ax
-    mov ax,[bp+0x8]
+    mov ax,[lParam+2]
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
     add ax,[bx+0xa26]
@@ -4476,21 +4484,25 @@ endfunc
 
 func INFOWNDPROC
     %assign %$argsize 0xa
+    %arg lParam:dword ; +6
+    %arg wParam:word ; +a
+    %arg uMsg:word ; +c
+    %arg hwnd:word ; +e
     sub sp,byte +0x26
     push di
     push si
-    mov ax,[bp+0xc]
+    mov ax,[uMsg]
     sub ax,0xf
     jz .label0 ; ↓
-    push word [bp+0xe]
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [hwnd]
+    push word [uMsg]
+    push word [wParam]
+    push word [lParam+2]
+    push word [lParam]
     call 0x0:0x1e88 ; 288c USER.DefWindowProc
     jmp .label6 ; ↓
 .label0: ; 2894
-    push word [bp+0xe]
+    push word [hwnd]
     lea ax,[bp-0x24]
     push ss
     push ax
@@ -4564,7 +4576,7 @@ func INFOWNDPROC
     push word [bp-0x4]
     call 0x0:0x21bc ; 2949 GDI.SelectObject
 .label5: ; 294e
-    push word [bp+0xe]
+    push word [hwnd]
     lea ax,[bp-0x24]
     push ss
     push ax
@@ -4580,21 +4592,25 @@ endfunc
 
 func COUNTERWNDPROC
     %assign %$argsize 0xa
+    %arg lParam:dword ; +6
+    %arg wParam:word ; +a
+    %arg uMsg:word ; +c
+    %arg hwnd:word ; +e
     sub sp,byte +0x36
     push di
     push si
-    mov ax,[bp+0xc]
+    mov ax,[uMsg]
     sub ax,0xf
     jz .label0 ; ↓
-    push word [bp+0xe]
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [hwnd]
+    push word [uMsg]
+    push word [wParam]
+    push word [lParam+2]
+    push word [lParam]
     call 0x0:0x2ac0 ; 2990 USER.DefWindowProc
     jmp .label5 ; ↓
 .label0: ; 2998
-    mov di,[bp+0xe]
+    mov di,[hwnd]
     push di
     lea ax,[bp-0x36]
     push ss
@@ -4708,21 +4724,25 @@ endfunc
 
 func INVENTORYWNDPROC
     %assign %$argsize 0xa
+    %arg lParam:dword ; +6
+    %arg wParam:word ; +a
+    %arg uMsg:word ; +c
+    %arg hwnd:word ; +e
     sub sp,byte +0x22
     push si
-    mov ax,[bp+0xc]
+    mov ax,[uMsg]
     sub ax,0xf
     jz .label0 ; ↓
-    push word [bp+0xe]
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [hwnd]
+    push word [uMsg]
+    push word [wParam]
+    push word [lParam+2]
+    push word [lParam]
     call 0x0:0x2be6 ; 2abf USER.DefWindowProc
     jmp .label1 ; ↓
     nop
 .label0: ; 2ac8
-    mov si,[bp+0xe]
+    mov si,[hwnd]
     push si
     lea ax,[bp-0x22]
     push ss
@@ -4823,27 +4843,31 @@ endfunc
 
 func HINTWNDPROC
     %assign %$argsize 0xa
+    %arg lParam:dword ; +6
+    %arg wParam:word ; +a
+    %arg uMsg:word ; +c
+    %arg hwnd:word ; +e
     sub sp,0xc8
     push di
     push si
-    mov ax,[bp+0xc]
+    mov ax,[uMsg]
     sub ax,0xf
     jz .label0 ; ↓
-    push word [bp+0xe]
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push word [bp+0x6]
+    push word [hwnd]
+    push word [uMsg]
+    push word [wParam]
+    push word [lParam+2]
+    push word [lParam]
     call 0x0:0x273e ; 2be5 USER.DefWindowProc
     jmp .label11 ; ↓
     nop
 .label0: ; 2bee
-    push word [bp+0xe]
+    push word [hwnd]
     lea ax,[bp-0x48]
     push ss
     push ax
     call 0x0:0x2790 ; 2bf6 USER.BeginPaint
-    push word [bp+0xe]
+    push word [hwnd]
     lea ax,[bp-0x20]
     push ss
     push ax
@@ -5010,7 +5034,7 @@ func HINTWNDPROC
     push word [bp-0x12]
     push word [bp-0x14]
     call 0x0:0x16c5 ; 2daa GDI.SetBkColor
-    push word [bp+0xe]
+    push word [hwnd]
     lea ax,[bp-0x48]
     push ss
     push ax
