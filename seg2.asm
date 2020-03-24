@@ -3200,14 +3200,13 @@ FUN_2_1c1c:
     call 0x0:0x1cce ; 1c5d USER._wsprintf
     add sp,byte +0x12
     mov bx,ss
-    mov ax,si
     jmp short .label1 ; ↓
     nop
 
 ..@patch:
     ; 15 bytes
     or ax,ax
-    jnz .wait
+    jz .wait
     jmp ..@patchreturn
 .wait:
     ..@newcall call 0:0xffff ; xxxx USER.WaitMessage
@@ -3218,6 +3217,7 @@ FUN_2_1c1c:
     mov ax,[GameStatePtr]
     add ax,LevelPassword
     mov bx,ds
+    mov si,ax
 
 .label1: ; 1c81
     push ds
