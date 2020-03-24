@@ -42,7 +42,7 @@ func FindMonster
     cmp [es:bx+Monster.y-1],ax
     jz .found
 .next:
-    add bx,byte +0xB
+    add bx,byte Monster_size
     inc cx
     cmp [si+MonsterListLen],cx
     jg .loop
@@ -2135,7 +2135,7 @@ func MonsterLoop
     call 0xd96:0xb9a ; 1230 2:0xb9a ShowDeathMessage
     push byte +0x1
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     call 0xffff:0x356 ; 123f 4:0x356
     add sp,byte +0x4
 .notDeadYet: ; 1247
@@ -2634,7 +2634,8 @@ endfunc
 func ResetInventory
     sub sp,byte +0x2
     ; if arg is nonzero, only reset boots, not keys
-    cmp word [bp+0x6],byte +0x0
+    %arg bootsOnly:word
+    cmp word [bootsOnly],byte +0x0
     jnz .resetBoots ; ↓
     xor ax,ax
     mov [BlueKeyCount],ax
@@ -2729,8 +2730,8 @@ endfunc
 ; and possibly decrement the inventory count.
 func CanOpenDoor
     sub sp,byte +0x2
-    %arg tile:byte, consume:word
-    mov al,[bp+0x6]
+    %arg tile:byte, consumeKey:word
+    mov al,[tile]
     sub ah,ah
     sub ax,BlueDoor
     jz .blueDoor ; ↓
@@ -2745,7 +2746,7 @@ func CanOpenDoor
 .blueDoor: ; 1826
     cmp word [BlueKeyCount],byte +0x0
     jz .no ; ↓
-    cmp word [consume],byte +0x0
+    cmp word [consumeKey],byte +0x0
     jz .yes ; ↓
     dec word [BlueKeyCount]
 .yes: ; 1837
@@ -2757,7 +2758,7 @@ func CanOpenDoor
 .redDoor: ; 1840
     cmp word [RedKeyCount],byte +0x0
     jz .no ; ↓
-    cmp word [consume],byte +0x0
+    cmp word [consumeKey],byte +0x0
     jz .yes ; ↑
     dec word [RedKeyCount]
     jmp short .yes ; ↑
@@ -2773,7 +2774,7 @@ func CanOpenDoor
 .yellowDoor: ; 185e
     cmp word [YellowKeyCount],byte +0x0
     jz .no ; ↓
-    cmp word [consume],byte +0x0
+    cmp word [consumeKey],byte +0x0
     jz .yes ; ↑
     dec word [YellowKeyCount]
     jmp short .yes ; ↑
@@ -4079,28 +4080,28 @@ func FindTrapByButton
     xor cx,cx
     mov bx,[GameStatePtr]
     cmp [bx+TrapListLen],cx
-    jng .label3 ; ↓
+    jng .notfound ; ↓
     mov si,bx
     les bx,[si+TrapListPtr]
-    mov di,[bp+0x6]
-.label0: ; 2294
-    cmp [es:bx],di
+    mov di,[x]
+.loop: ; 2294
+    cmp [es:bx+Connection.fromX],di
     jnz .label1 ; ↓
-    mov ax,[bp+0x8]
-    cmp [es:bx+0x2],ax
-    jz .label2 ; ↓
+    mov ax,[y]
+    cmp [es:bx+Connection.fromY],ax
+    jz .found ; ↓
 .label1: ; 22a2
-    add bx,byte +0xa
+    add bx,byte Connection_size
     inc cx
     cmp [si+TrapListLen],cx
-    jg .label0 ; ↑
-    jmp short .label3 ; ↓
-.label2: ; 22ae
+    jg .loop ; ↑
+    jmp short .notfound ; ↓
+.found: ; 22ae
     mov ax,cx
-    jmp short .label4 ; ↓
-.label3: ; 22b2
-    mov ax,0xffff
-.label4: ; 22b5
+    jmp short .end ; ↓
+.notfound: ; 22b2
+    mov ax, -1
+.end: ; 22b5
     pop si
     pop di
 endfunc
@@ -4795,18 +4796,19 @@ func FindTeleport
     sub sp,byte +0x2
     push di
     push si
+    %arg x:word, y:word
     xor cx,cx
     mov bx,[GameStatePtr]
     cmp [bx+TeleportListLen],cx
     jng .label3 ; ↓
     mov si,bx
     les bx,[si+TeleportListPtr]
-    mov di,[bp+0x6]
+    mov di,[x]
 .label0: ; 2934
-    cmp [es:bx],di
+    cmp [es:bx+Point.x],di
     jnz .label1 ; ↓
-    mov ax,[bp+0x8]
-    cmp [es:bx+0x2],ax
+    mov ax,[y]
+    cmp [es:bx+Point.y],ax
     jz .label2 ; ↓
 .label1: ; 2942
     add bx,byte +0x4
