@@ -151,24 +151,24 @@ func LoadTiles
     jz .monochrome
     dec ax
     jz .lowcolor
-; hicolor
+.hicolor:
     mov si,[hBitmapOut]
     push word [hInstance]
     push ds
-    push word 0xa1a ; "obj32_4"
+    push word HicolorTiles ; "obj32_4"
     jmp short .loadBitmap
     nop
 .monochrome: ; 13c
     mov si,[hBitmapOut]
     push word [hInstance]
     push ds
-    push word 0xa2b ; "obj32_1"
+    push word MonochromeTiles ; "obj32_1"
     jmp short .loadBitmap
 .lowcolor: ; 148
     mov si,[hBitmapOut]
     push word [hInstance]
     push ds
-    push word 0xa22 ; "obj32_4E"
+    push word LocolorTiles ; "obj32_4E"
 
 .loadBitmap: ; 152
     call 0x0:0xffff ; 152 USER.LoadBitmap

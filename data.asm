@@ -187,27 +187,29 @@ s_PAUSED        db "PAUSED", 0
 s_Arial2        db "Arial", 0
 s_Helv2         db "Helv", 0
 
-db " %s ", 0
-db " Password: %s ", 0
-db " %s ", 0
-db " Password: %s ", 0
-db "%d", 0
-db "%li", 0
-db "%li", 0
-db "Level%d", 0
-db "Level%d", 0
-db "%s,%d,%li", 0
-db "%s", 0
-db "MidiFile%d", 0
-db "$", 0
-db "Level%d", 0
+; TODO: come up with some imaginative names for these
+s_5b5 db " %s ", 0
+s_5ba db " Password: %s ", 0
+s_5c9 db " %s ", 0
+s_5ce db " Password: %s ", 0
+s_5dd db "%d", 0
+s_5e0 db "%li", 0
+s_5e4 db "%li", 0
+s_5e8 db "Level%d", 0
+s_5f0 db "Level%d", 0
+s_5f8 db "%s,%d,%li", 0
+s_602 db "%s", 0
+s_605 db "MidiFile%d", 0
+s_610 db "$", 0
+s_612 db "Level%d", 0
+
 s_DLG_GOTO      db "DLG_GOTO", 0
 s_DLG_BESTTIMES db "DLG_BESTTIMES", 0
 CheatMenuText   db "&Ignore Passwords", 0
-db "ChipsMenu", 0, 0
+s_ChipsMenu2    db "ChipsMenu", 0, 0
 CurrentTick     dw 0
 s_infownd       db "infownd", 0
-db "Hint: %s", 0
+s_658           db "Hint: %s", 0
 s_Arial3        db "Arial", 0
 s_Helv3         db "Helv", 0
 

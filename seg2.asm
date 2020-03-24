@@ -2220,7 +2220,7 @@ FUN_2_10ce:
     push ds
     push cx
     push ds
-    push word 0x5b5 ; " %s "
+    push word s_5b5 ; " %s "
     lea cx,[bp-0xc6]
     push ss
     push cx
@@ -2267,7 +2267,7 @@ FUN_2_10ce:
     push ds
     push ax
     push ds
-    push word 0x5ba
+    push word s_5ba ; " Password: %s "
     lea ax,[bp-0xc6]
     push ss
     push ax
@@ -2351,7 +2351,7 @@ FUN_2_10ce:
     push ds
     push ax
     push ds
-    push word 0x5c9
+    push word s_5c9 ; " %s "
     lea ax,[bp-0xc6]
     push ss
     push ax
@@ -2380,7 +2380,7 @@ FUN_2_10ce:
     push ds
     push ax
     push ds
-    push word 0x5ce
+    push word s_5ce ; " Password: %s "
     lea ax,[bp-0xc6]
     push ss
     push ax
@@ -2887,7 +2887,7 @@ FUN_2_19ca:
     mov [bp-0x4],dx
     push word [bp+0x8]
     push ds
-    push word 0x5dd
+    push word s_5dd ; "%d"
     lea ax,[bp-0x16]
     push ss
     push ax
@@ -2934,7 +2934,7 @@ FUN_2_1a1c:
     push dx
     push ax
     push ds
-    push word 0x5e0
+    push word s_5e0 ; "%li"
     lea ax,[bp-0x18]
     push ss
     push ax
@@ -2986,7 +2986,7 @@ FUN_2_1a86:
     push word [bp+0xa]
     push word [bp+0x8]
     push ds
-    push word 0x5e4
+    push word s_5e4 ; "%li"
     lea ax,[bp-0x16]
     push ss
     push ax
@@ -3025,7 +3025,7 @@ FUN_2_1adc:
     push si
     push word [bp+0x6]
     push ds
-    push word 0x5e8 ; "Level%d"
+    push word s_5e8 ; "Level%d"
     lea ax,[bp-0x10]
     push ss
     push ax
@@ -3176,7 +3176,7 @@ FUN_2_1c1c:
     mov si,[bp+0x8]
     push word [bp+0x6]
     push ds
-    push word 0x5f0
+    push word s_5f0 ; "Level%d"
     lea ax,[bp-0xc]
     push ss
     push ax
@@ -3192,7 +3192,7 @@ FUN_2_1c1c:
     push ds
     push ax
     push ds
-    push word 0x5f8
+    push word s_5f8 ; "%s,%d,%li"
     lea ax,[bp-0x4c]
     push ss
     push ax
@@ -3203,10 +3203,11 @@ FUN_2_1c1c:
 .label0: ; 1c68
     mov ax,[GameStatePtr]
     add ax,LevelPassword
+    ; TODO: could remove this printf call...
     push ds
     push ax
     push ds
-    push word 0x602
+    push word s_602 ; "%s"
     lea ax,[bp-0x4c]
     push ss
     push ax
@@ -3254,7 +3255,7 @@ FUN_2_1ca0:
     mov si,[bp+0x6]
     push si
     push ds
-    push word 0x605
+    push word s_605 ; "MidiFile%d"
     lea ax,[bp-0x16]
     push ss
     push ax
@@ -3267,7 +3268,7 @@ FUN_2_1ca0:
     push ds
     push di
     push ds
-    push word 0x610
+    push word s_610 ; "$"
     push ds
     push word [bp+0x8]
     push word [bp+0xa]
@@ -3384,7 +3385,7 @@ FUN_2_1dae:
 .label0: ; 1dd5
     push si
     push ds
-    push word 0x612
+    push word s_612 ; "Level%d"
     lea ax,[bp-0xe]
     push ss
     push ax
@@ -3923,7 +3924,7 @@ func MAINWNDPROC
 .label10: ; 22bc
     push word [OurHInstance]
     push ds
-    push word 0x643
+    push word s_ChipsMenu2
     call 0x0:0xffff ; 22c4 USER.LoadAccelerators
     mov [0x28],ax
     or ax,ax
@@ -4937,7 +4938,7 @@ func HINTWNDPROC
     push ds
     push ax
     push ds
-    push word 0x658
+    push word s_658 ; "Hint: %s"
     lea ax,[bp-0xc8]
     push ss
     push ax
