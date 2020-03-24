@@ -34,6 +34,8 @@ variables.asm: data.bin genvars.sh Makefile
 movement.svg: tools/graph movement.asm
 	tools/graph <movement.asm | dot -Tsvg >movement.svg
 
+bin/dialog: tools/dialog/dialog.go
+	go build -o bin/dialog ./tools/dialog
 bin/dd: tools/dd/dd.go
 	go build -o bin/dd ./tools/dd
 bin/label: tools/label/label.go
