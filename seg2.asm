@@ -2099,7 +2099,7 @@ FUN_2_10ce:
     call 0x0:0x15c7 ; 136f GDI.PatBlt
 .label21: ; 1374
     mov bx,[GameStatePtr]
-    cmp word [bx+0x810],byte +0x0
+    cmp word [bx+Unknown810],byte +0x0
     jnz .label22 ; ↓
     jmp .label43 ; ↓
 .label22: ; 1382
@@ -2566,7 +2566,7 @@ FUN_2_17a2:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    inc word [0x22]
+    inc word [Var22]
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -2584,12 +2584,12 @@ FUN_2_17ba:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    mov ax,[0x22]
+    mov ax,[Var22]
     dec ax
     jns .label0 ; ↓
     xor ax,ax
 .label0: ; 17cf
-    mov [0x22],ax
+    mov [Var22],ax
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -4147,9 +4147,9 @@ func MAINWNDPROC
     nop
 .label33: ; 2540
     mov bx,[GameStatePtr]
-    cmp word [bx+0x810],byte +0x0
+    cmp word [bx+Unknown810],byte +0x0
     jz .label34 ; ↓
-    mov word [bx+0x810],0x0
+    mov word [bx+Unknown810],0x0
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
@@ -4412,7 +4412,7 @@ func BOARDWNDPROC
     jmp .label8 ; ↓
     nop
 .label1: ; 27b0
-    cmp word [0x22],byte +0x0
+    cmp word [Var22],byte +0x0
     jz .label2 ; ↓
     jmp .label8 ; ↓
 .label2: ; 27ba

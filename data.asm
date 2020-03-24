@@ -25,7 +25,7 @@ hwndInventory  dw 0 ; 0x1c
 hwndHint     dw 0 ; 0x1e
 
     dw 0 ; 0x20 ; inventory changed
-    dw 0 ; 0x22 *
+Var22        dw 0 ; 0x22 *
 GamePaused   dw 0 ; 0x24
 hMenu        dw 0 ; 0x26 HMENU
     dw 0 ; 0x28
