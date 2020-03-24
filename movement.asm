@@ -697,11 +697,11 @@ func DoTick
     add sp,byte +0x4
     mov bx,[GameStatePtr]
     mov word [bx+Autopsy],OutOfTime
-    call 0x24e:0xb9a ; 616 2:b9a
+    call 0x24e:0xb9a ; 616 2:b9a ShowDeathMessage
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xffff:0x356 ; 625 4:356
+    call 0xffff:0x356 ; 625 4:356 load level
     add sp,byte +0x4
 .end: ; 62d
     pop si
@@ -2527,11 +2527,11 @@ func MoveChip
     push word [hDC]
     call 0x157a:0x1ca ; 156f 2:1ca UpdateTile
     add sp,byte +0x6
-    call 0x1024:0xb9a ; 1577 2:b9a
+    call 0x1024:0xb9a ; 1577 2:b9a ShowDeathMessage
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xd6a:0x356 ; 1586 4:356
+    call 0xd6a:0x356 ; 1586 4:356 load level
     add sp,byte +0x4
     jmp word .returnZero
     nop

@@ -86,6 +86,7 @@ s_KeyboardDelay db "KeyboardDelay", 0
 db "CHIPS.DAT", 0
 db "Number of Midi Files", 0, 0
 
+SoundKeyArray:
 dw PickUpToolSoundKey
 dw OpenDoorSoundKey
 dw ChipDeathSoundKey
@@ -205,7 +206,7 @@ s_DLG_BESTTIMES db "DLG_BESTTIMES", 0
 CheatMenuText   db "&Ignore Passwords", 0
 db "ChipsMenu", 0, 0
 CurrentTick     dw 0
-db "infownd", 0
+s_infownd       db "infownd", 0
 db "Hint: %s", 0
 s_Arial3        db "Arial", 0
 s_Helv3         db "Helv", 0

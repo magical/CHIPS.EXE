@@ -2132,7 +2132,7 @@ func MonsterLoop
     push byte ChipDeathSound
     call 0xffff:0x56c ; 1228 8:0x56c
     add sp,byte +0x4
-    call 0xd96:0xb9a ; 1230 2:0xb9a
+    call 0xd96:0xb9a ; 1230 2:0xb9a ShowDeathMessage
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+0x800]
@@ -2618,7 +2618,7 @@ func SlipLoop
     push byte ChipDeathSound
     call 0x17fb:0x56c ; 170b
     add sp,byte +0x4
-    call 0x121f:0xb9a ; 1713
+    call 0x121f:0xb9a ; 1713 ShowDeathMessage
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]

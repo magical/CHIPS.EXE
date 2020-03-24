@@ -39,6 +39,7 @@ s_Commands                          equ 0x25E
 IniFileName                         equ 0x268
 IniSectionName                      equ 0x274
 s_KeyboardDelay                     equ 0x2C6
+SoundKeyArray                       equ 0x2F4
 SoundDefaultArray                   equ 0x312
 MidiFileDefaultArray                equ 0x330
 PickUpToolSoundKey                  equ 0x336
@@ -101,6 +102,7 @@ s_DLG_GOTO                          equ 0x61A
 s_DLG_BESTTIMES                     equ 0x623
 CheatMenuText                       equ 0x631
 CurrentTick                         equ 0x64E
+s_infownd                           equ 0x650
 s_Arial3                            equ 0x661
 s_Helv3                             equ 0x667
 TileTable                           equ 0x66C

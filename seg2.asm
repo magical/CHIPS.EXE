@@ -718,9 +718,9 @@ func WinMain
     call 0x0:0xffff ; 638 WEP4UTIL.2
     or ax,ax
     jnz .label1 ; ↓
-.label0: ; 641
+.returnZero: ; 641
     xor ax,ax
-    jmp short .label5 ; ↓
+    jmp short .end ; ↓
     nop
 .label1: ; 646
     cmp word [hPrevInstance],byte +0x0
@@ -729,14 +729,14 @@ func WinMain
     call 0x664:CreateClasses ; 64f 2:6c8 CreateClasses
     add sp,byte +0x2
     or ax,ax
-    jz .label0 ; ↑
+    jz .returnZero
 .label2: ; 65b
     push word [nCmdShow]
     push word [hInstance]
     call 0x6e6:CreateWindows ; 661 2:8e8 CreateWindows
     add sp,byte +0x4
     or ax,ax
-    jz .label0 ; ↑
+    jz .returnZero
     mov word [0x2c],0x1
 .label3: ; 673
     lea ax,[bp-0x14]
@@ -748,6 +748,7 @@ func WinMain
     push byte +0x1
     call 0x0:0xffff ; 680 USER.PeekMessage
     or ax,ax
+    ; FIXME: call WaitMessage if ax==0
     jz .label3 ; ↑
     cmp word [bp-0x12],byte +0x12
     jz .label4 ; ↓
@@ -771,7 +772,7 @@ func WinMain
     nop
 .label4: ; 6bc
     mov ax,[bp-0x10]
-.label5: ; 6bf
+.end: ; 6bf
 endfunc
 
 ; 6c8
@@ -988,7 +989,7 @@ func CreateWindows
     call 0x0:0xffff ; 90d USER.LoadMenu
     mov [hMenu],ax
     push byte +0x40
-    push word 0xa42
+    push word GameStateSize
     call 0x0:0xffff ; 91a KERNEL.LocalAlloc
     mov [0x1722],ax
     mov [GameStatePtr],ax
@@ -1378,6 +1379,7 @@ endfunc
 
 ; cbe
 
+; refresh timer, chip counter, inventory and hint box
 FUN_2_0cbe:
     mov ax,ds
     nop
@@ -2615,7 +2617,7 @@ PauseGame:
     sub sp,byte +0x2
     call 0x1893:FUN_2_17a2 ; 17e7 2:17a2
     push word [hMenu]
-    push byte +0x74
+    push byte ID_PAUSE
     inc word [GamePaused]
     cmp word [GamePaused],byte +0x0
     jng .label0 ; ↓
@@ -2654,7 +2656,7 @@ UnpauseGame:
     mov ds,ax
     sub sp,byte +0x2
     push word [hMenu]
-    push byte +0x74
+    push byte ID_PAUSE
     mov ax,[GamePaused]
     dec ax
     jns .label0 ; ↓
@@ -3684,7 +3686,7 @@ MenuItemCallback:
     neg ax
     mov [SoundEnabled],ax
     push ax
-    push byte +0x76
+    push byte ID_SOUND
     call 0x20c7:FUN_2_19ca ; 2085 2:19ca
     add sp,byte +0x4
     push word [hMenu]
@@ -3974,7 +3976,7 @@ func MAINWNDPROC
     call 0x2356:0x0 ; 234e 8:0 InitSound
     call 0x23e3:0x4a0 ; 2353 8:4a0
     push word [hMenu]
-    push byte +0x75
+    push byte ID_BGM
     cmp word [MusicEnabled],byte +0x1
     cmc
     sbb ax,ax
@@ -3982,7 +3984,7 @@ func MAINWNDPROC
     push ax
     call 0x0:0x2382 ; 236a USER.CheckMenuItem
     push word [hMenu]
-    push byte +0x76
+    push byte ID_SOUND
     cmp word [SoundEnabled],byte +0x1
     cmc
     sbb ax,ax
@@ -3990,14 +3992,14 @@ func MAINWNDPROC
     push ax
     call 0x0:0x1ef7 ; 2381 USER.CheckMenuItem
     push word [hMenu]
-    push byte +0x75
+    push byte ID_BGM
     cmp word [MusicMenuItemEnabled],byte +0x1
     sbb ax,ax
     neg ax
     push ax
     call 0x0:0x23ac ; 2396 USER.EnableMenuItem
     push word [hMenu]
-    push byte +0x76
+    push byte ID_SOUND
     cmp word [SoundMenuItemEnabled],byte +0x1
     sbb ax,ax
     neg ax
@@ -4514,7 +4516,7 @@ func INFOWNDPROC
     call 0x0:0x2486 ; 289c USER.BeginPaint
     push word [OurHInstance]
     push ds
-    push word 0x650
+    push word s_infownd
     call 0x0:0xdde ; 28a9 USER.LoadBitmap
     mov si,ax
     or si,si
