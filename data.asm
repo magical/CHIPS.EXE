@@ -341,7 +341,7 @@ db "DLG_PASSWORD", 0, 0
 
 dw 0 ; a14 tile bitmap handle
 dw 0 ; a16 tile bitmap data?
-dw 0 ; a18 which bitmap to load: 1, 2, 3, or 4(?)
+ColorMode       dw 0 ; a18 which bitmap to load: 1, 2, 3, or 4(?)
 HicolorTiles    db "obj32_4", 0
 LocolorTiles    db "obj32_4E", 0
 MonochromeTiles db "obj32_1", 0, 0
@@ -523,8 +523,7 @@ SoundArray:
 HorizontalResolution    dw 0 ; 16c0
 VerticalResolution      dw 0 ; 16c2
 
-    dw 0 ; 16c4
-    dw 0 ; 16c6
+DigitBitmapData         dd 0 ; 16c4 far pointer
 
 MIDIArray: ; XXX how long is this?
 times 20 dw 0 ; 16c8
@@ -543,14 +542,18 @@ times 20 dw 0 ; 16c8
 ;   16c8            array of midi handles?
 ;   1736            some sort of midi playback handle
 
-; Digit image pointers
-times 24 dw 0 ; 16f0
 
-times 3 dw 0 ; 1720
+; Digit image pointers
+DigitPtrArray:
+    times 24 dw 0 ; 16f0
+.end:
+
+DigitResourceHandle dw 0 ; 1720 HGLOBAL
+    dw 0 ; 1722 copy of GameStatePtr used for deallocation
+    dw 0 ; 1724 HGDIOBJ
 fpWaveOutGetNumDevs dw 0, 0 ; 1726
 OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
-    dw 0 ; 172c
-
+    dw 0 ; 172c HGDIOBJ
 ; If the game is running on Windows 3.1 or higher,
 ; it uses Arial instead of Helv[etica] as its font
 ; and fiddles with the KeyboardDelay setting.

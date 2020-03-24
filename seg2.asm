@@ -1915,7 +1915,7 @@ FUN_2_10ce:
     push word [si]
     mov [bp-0xc8],si
     mov [bp-0xca],di
-    cmp word [0xa18],byte +0x1
+    cmp word [ColorMode],byte +0x1
     jnz .label5 ; ↓
     mov ax,0xffff
     mov dx,0xff
@@ -2109,7 +2109,7 @@ FUN_2_10ce:
     jnz .label23 ; ↓
     jmp .label43 ; ↓
 .label23: ; 1393
-    cmp word [0xa18],byte +0x1
+    cmp word [ColorMode],byte +0x1
     jnz .label25 ; ↓
     mov ax,0xffff
     mov dx,0xff
@@ -3760,7 +3760,7 @@ MenuItemCallback:
     nop
 
 .label33: ; 2160
-    mov ax,[0xa18]
+    mov ax,[ColorMode]
     mov [bp-0x4],ax
     push byte +0x0
     push byte +0x0
@@ -3772,9 +3772,9 @@ MenuItemCallback:
     push si
     call 0x0:0x2247 ; 217e USER.SetCursor
     mov di,ax
-    cmp word [0xa18],byte +0x1
+    cmp word [ColorMode],byte +0x1
     jz .label34 ; ↓
-    mov word [0xa18],0x1
+    mov word [ColorMode],0x1
     jmp short .label35 ; ↓
 .label34: ; 2194
     push byte +0x0
@@ -3816,9 +3816,9 @@ MenuItemCallback:
     jmp short .label37 ; ↓
 .label36: ; 2202
     mov ax,[bp-0x4]
-    mov [0xa18],ax
+    mov [ColorMode],ax
 .label37: ; 2208
-    cmp word [0xa18],byte +0x1
+    cmp word [ColorMode],byte +0x1
     jz .label38 ; ↓
     mov ax,0x1
     jmp short .label39 ; ↓
@@ -3830,8 +3830,8 @@ MenuItemCallback:
     call 0x2339:FUN_2_19ca ; 2219 2:19ca
     add sp,byte +0x4
     push word [hMenu]
-    push byte +0x7a
-    cmp word [0xa18],byte +0x1
+    push byte ID_COLOR
+    cmp word [ColorMode],byte +0x1
     jz .label40 ; ↓
     mov ax,0x8
     jmp short .label41 ; ↓
@@ -4882,7 +4882,7 @@ func HINTWNDPROC
     push byte -0x1
     call 0x0:0x2c12 ; 2c5a USER.InflateRect
     push word [bp-0x48]
-    cmp word [0xa18],byte +0x1
+    cmp word [ColorMode],byte +0x1
     jnz .label1 ; ↓
     mov ax,0xffff
     jmp short .label2 ; ↓

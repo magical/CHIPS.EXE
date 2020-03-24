@@ -10,6 +10,7 @@ SEGMENT CODE ; 9
 ;
 ;   a18     Color mode
 
+%include "variables.asm"
 %include "func.mac"
 
 %define DigitWidth 17
@@ -19,7 +20,7 @@ func FindBitmap
     %arg name:word
     sub sp,byte +0x2
 
-    push word [0x172a]  ; hModule
+    push word [OurHInstance]  ; hModule
     mov ax,[name]       ; lpName
     sub dx,dx
     push dx
@@ -66,34 +67,34 @@ func LoadDigits
     add sp,byte +0x2
     mov si,ax
 
-    push word [0x172a]  ; hModule
+    push word [OurHInstance]  ; hModule
     push si             ; hResInfo
     call 0x0:0xffff ; 6f KERNEL.LoadResource
-    mov [0x1720],ax
+    mov [DigitResourceHandle],ax
 
     or ax,ax
     jz .end
     push ax             ; hResInfo
     call 0x0:0xffff ; 7c KERNEL.LockResource
-    mov [0x16c4],ax
-    mov [0x16c6],dx
+    mov [DigitBitmapData],ax
+    mov [DigitBitmapData+2],dx
 
     push byte DigitHeight ; y dimension of digits
     push byte DigitWidth ; x dimension of digits
     call 0xffff:0x28 ; 8c 9:0x28 BitmapSize
     add sp,byte +0x4
 
-    ; Store near pointers to digits at 0x16f0
+    ; Store near pointers to digits in DigitPtrArray
     mov si,ax
     mov di,0x68 ; bitmap header length
-    mov word [bp-0x4],0x16f0
+    mov word [bp-0x4],DigitPtrArray
     mov bx,[bp-0x4]
     mov dx,si
 .loop: ; a3
     mov [bx],di
     add di,dx
     add bx,byte +0x2
-    cmp bx,0x1720
+    cmp bx,DigitPtrArray.end
     jc .loop
     mov ax,0x1
 .end: ; b3
@@ -105,11 +106,11 @@ endfunc
 
 func FreeDigits
     sub sp,byte +0x2
-    cmp word [0x1720],byte +0x0
+    cmp word [DigitResourceHandle],byte +0x0
     jz .null
-    push word [0x1720]
+    push word [DigitResourceHandle]
     call 0x0:0xffff ; d4 KERNEL.GlobalUnlock
-    push word [0x1720]
+    push word [DigitResourceHandle]
     call 0x0:0xffff ; dd KERNEL.FreeResource
 .null: ; e2
 endfunc
@@ -124,7 +125,7 @@ func DrawDigit
 
     cmp word [color],byte +0x0
     jnz .label3
-    cmp word [0xa18],byte +0x1
+    cmp word [ColorMode],byte +0x1
     jz .label3
     mov word [colorOffset],0x0
     jmp short .label4
@@ -146,13 +147,13 @@ func DrawDigit
     mov bx,[digit]
     add bx,[colorOffset]
     shl bx,1
-    mov ax,[bx+0x16f0]
-    add ax,[0x16c4]
-    mov dx,[0x16c6]
+    mov ax,[DigitPtrArray+bx]
+    add ax,[DigitBitmapData]
+    mov dx,[DigitBitmapData+2]
     push dx             ; lpvBits
     push ax
     push dx             ; lpbmi
-    push word [0x16c4]
+    push word [DigitBitmapData]
     push byte +0x0      ; fuColorUse
     call 0x0:0xffff ; 143 GDI.SetDIBitsToDevice
 endfunc

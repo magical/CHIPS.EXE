@@ -80,7 +80,7 @@ func InitGraphics
     call 0x0:0xffff ; 8e GDI.GetDeviceCaps
     cmp ax,0x100
     jl .checkVertRes
-    mov word [0xa18],0x4
+    mov word [ColorMode],0x4
     jmp short .releaseDC
 .checkVertRes: ; a0
     cmp word [VerticalResolution],350
@@ -91,10 +91,10 @@ func InitGraphics
 .useHicolor: ; ae
     mov ax,0x3
 .setColors: ; b1
-    mov [0xa18],ax ; bitmap to use
+    mov [ColorMode],ax ; bitmap to use
     jmp short .releaseDC
 .useMonochrome: ; b6
-    mov word [0xa18],0x1
+    mov word [ColorMode],0x1
 .releaseDC: ; bc
     push byte +0x0
     push word [hDC]
@@ -120,7 +120,7 @@ func InitGraphics
     ; Check or uncheck the 'Color' menu item as appropriate.
     push word [hMenu]        ; hMenu
     push byte ID_COLOR      ; uIDCheckItem
-    cmp word [0xa18],byte +0x1
+    cmp word [ColorMode],byte +0x1
     jz .label12
     mov ax,0x8  ; MF_CHECKED
     jmp short .label13
@@ -146,7 +146,7 @@ func LoadTiles
     push si
 
     mov word [0xa14],0x0
-    mov ax,[0xa18]
+    mov ax,[ColorMode]
     dec ax
     jz .monochrome
     dec ax

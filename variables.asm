@@ -103,6 +103,7 @@ s_Arial3                            equ 0x661
 s_Helv3                             equ 0x667
 TileTable                           equ 0x66C
 MelindaMessage                      equ 0x90C
+ColorMode                           equ 0xA18
 HicolorTiles                        equ 0xA1A
 LocolorTiles                        equ 0xA22
 MonochromeTiles                     equ 0xA2B
@@ -161,7 +162,11 @@ SoundArray                          equ 0x16A2
 SoundArray.end                      equ 0x16C0
 HorizontalResolution                equ 0x16C0
 VerticalResolution                  equ 0x16C2
+DigitBitmapData                     equ 0x16C4
 MIDIArray                           equ 0x16C8
+DigitPtrArray                       equ 0x16F0
+DigitPtrArray.end                   equ 0x1720
+DigitResourceHandle                 equ 0x1720
 fpWaveOutGetNumDevs                 equ 0x1726
 OurHInstance                        equ 0x172A
 IsWin31                             equ 0x172E
