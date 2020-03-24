@@ -13,7 +13,7 @@ func ShowMessageBox
     %arg flags:word ; +c
     sub sp,byte +0x2
     push si
-    call 0x6d:FUN_2_17a2 ; e 2:17a2 FUN_2_17a2
+    call 0x6d:FUN_2_17a2 ; e 2:17a2
     cmp word [SoundEnabled],byte +0x0
     jz .label4 ; ↓
     test byte [flags],0x30
@@ -52,7 +52,7 @@ func ShowMessageBox
     push word [flags]
     call 0x0:0xffff ; 63 USER.MessageBox
     mov si,ax
-    call 0x1e2:FUN_2_17ba ; 6a 2:17ba FUN_2_17ba
+    call 0x1e2:FUN_2_17ba ; 6a 2:17ba
     mov ax,si
     pop si
 endfunc
@@ -338,7 +338,7 @@ FUN_2_02b2:
     jz .label0 ; ↓
     push word [bp+0x8]
     push word [bp+0x6]
-    call 0xffff:0x0 ; 2d9 4:0 FUN_4_0000
+    call 0xffff:0x0 ; 2d9 4:0
     add sp,byte +0x4
     lea di,[bp-0xa]
     mov si,ax
@@ -694,7 +694,7 @@ FUN_2_056e:
     push ax
     push word [bp-0x6]
     push word [bp+0x6]
-    call 0x652:FUN_2_0306 ; 617 2:306 FUN_2_0306
+    call 0x652:FUN_2_0306 ; 617 2:306
     add sp,byte +0xe
 .label5: ; 61f
     pop si
@@ -1195,7 +1195,7 @@ func CreateWindows
     cmp di,byte +0x7
     jnz .label10 ; ↓
 .label9: ; b08
-    call 0x3b5:FUN_2_17a2 ; b08 2:17a2 FUN_2_17a2
+    call 0x3b5:FUN_2_17a2 ; b08 2:17a2
     inc word [GamePaused]
 .label10: ; b11
     push word [hwndMain]
@@ -1204,7 +1204,7 @@ func CreateWindows
     push word [hwndMain]
     call 0x0:0xffff ; b1f USER.UpdateWindow
     push word 0xc9
-    call 0xb40:FUN_2_198e ; b27 2:198e FUN_2_198e
+    call 0xb40:FUN_2_198e ; b27 2:198e
     add sp,byte +0x2
     cmp ax,0x1
     jnl .label11 ; ↓
@@ -1213,12 +1213,12 @@ func CreateWindows
     nop
 .label11: ; b3a
     push word 0xc9
-    call 0xb4d:FUN_2_198e ; b3d 2:198e FUN_2_198e
+    call 0xb4d:FUN_2_198e ; b3d 2:198e
     add sp,byte +0x2
     mov si,ax
 .label12: ; b47
     push word 0xca
-    call 0xb62:FUN_2_1a1c ; b4a 2:1a1c FUN_2_1a1c
+    call 0xb62:FUN_2_1a1c ; b4a 2:1a1c
     add sp,byte +0x2
     or dx,dx
     jnl .label13 ; ↓
@@ -1228,7 +1228,7 @@ func CreateWindows
     nop
 .label13: ; b5c
     push word 0xca
-    call 0xc08:FUN_2_1a1c ; b5f 2:1a1c FUN_2_1a1c
+    call 0xc08:FUN_2_1a1c ; b5f 2:1a1c
     add sp,byte +0x2
 .label14: ; b67
     mov [TotalScore],ax
@@ -1236,7 +1236,7 @@ func CreateWindows
     cmp si,byte +0x1
     jng .label15 ; ↓
     push si
-    call 0xb89:0xe48 ; b74 4:e48 FUN_4_0e48
+    call 0xb89:0xe48 ; b74 4:e48
     add sp,byte +0x2
     or ax,ax
     jnz .label15 ; ↓
@@ -1244,7 +1244,7 @@ func CreateWindows
 .label15: ; b83
     push byte +0x0
     push si
-    call 0x2dc:0x356 ; b86 4:356 FUN_4_0356
+    call 0x2dc:0x356 ; b86 4:356
     add sp,byte +0x4
     mov ax,0x1
 .label16: ; b91
@@ -1588,7 +1588,7 @@ FUN_2_0dc6:
     push word [bp-0x12]
     mov bx,[bp+0x8]
     push word [bx]
-    call 0xef7:FUN_2_1006 ; ec9 2:1006 FUN_2_1006
+    call 0xef7:FUN_2_1006 ; ec9 2:1006
     add sp,byte +0xc
     lea ax,[bp-0x12]
     push ss
@@ -1604,7 +1604,7 @@ FUN_2_0dc6:
     push word [bp-0x12]
     mov bx,[bp+0x8]
     push word [bx]
-    call 0xb2a:FUN_2_0f06 ; ef4 2:f06 FUN_2_0f06
+    call 0xb2a:FUN_2_0f06 ; ef4 2:f06
     add sp,byte +0xe
     pop si
     pop di
@@ -2413,7 +2413,7 @@ FUN_2_10ce:
     push word [bp-0x26]
     mov bx,[bp+0x8]
     push word [bx]
-    call 0x1746:FUN_2_0f06 ; 1695 2:f06 FUN_2_0f06
+    call 0x1746:FUN_2_0f06 ; 1695 2:f06
     add sp,byte +0xe
 .label40: ; 169d
     dec word [bp-0xe]
@@ -2608,7 +2608,7 @@ PauseGame:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    call 0x1893:FUN_2_17a2 ; 17e7 2:17a2 FUN_2_17a2
+    call 0x1893:FUN_2_17a2 ; 17e7 2:17a2
     push word [hMenu]
     push byte +0x74
     inc word [GamePaused]
@@ -2678,7 +2678,7 @@ UnpauseGame:
     push byte +0x0
     push byte +0x0
     call 0x0:0xd15 ; 188b USER.InvalidateRect
-    call 0x19a6:FUN_2_17ba ; 1890 2:17ba FUN_2_17ba
+    call 0x19a6:FUN_2_17ba ; 1890 2:17ba
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -2696,7 +2696,7 @@ PauseMusic:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    call 0x18d5:0x2d4 ; 18a9 8:2d4 FUN_8_02d4
+    call 0x18d5:0x2d4 ; 18a9 8:2d4
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -2719,7 +2719,7 @@ UnpauseMusic:
     jz .label0 ; ↓
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xffff:0x308 ; 18d2 8:308 FUN_8_0308
+    call 0xffff:0x308 ; 18d2 8:308
 .label0: ; 18d7
     lea sp,[bp-0x2]
     pop ds
@@ -2841,7 +2841,7 @@ FUN_2_198e:
     lea ax,[bp-0x8]
     push ax
     push word [bp+0x6]
-    call 0x12f5:FUN_2_18de ; 19a3 2:18de FUN_2_18de
+    call 0x12f5:FUN_2_18de ; 19a3 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2874,7 +2874,7 @@ FUN_2_19ca:
     push si
     push byte +0x0
     push word [bp+0x6]
-    call 0x1a34:FUN_2_18de ; 19dd 2:18de FUN_2_18de
+    call 0x1a34:FUN_2_18de ; 19dd 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2918,7 +2918,7 @@ FUN_2_1a1c:
     lea ax,[bp-0x8]
     push ax
     push word [bp+0x6]
-    call 0x1a9c:FUN_2_18de ; 1a31 2:18de FUN_2_18de
+    call 0x1a9c:FUN_2_18de ; 1a31 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2972,7 +2972,7 @@ FUN_2_1a86:
     push si
     push byte +0x0
     push word [bp+0x6]
-    call 0x1698:FUN_2_18de ; 1a99 2:18de FUN_2_18de
+    call 0x1698:FUN_2_18de ; 1a99 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -3368,7 +3368,7 @@ FUN_2_1dae:
     push si
     mov si,0x1
     push word 0xc8
-    call 0x1e0a:FUN_2_198e ; 1dc3 2:198e FUN_2_198e
+    call 0x1e0a:FUN_2_198e ; 1dc3 2:198e
     add sp,byte +0x2
     mov di,ax
     cmp di,byte +0x1
@@ -3399,12 +3399,12 @@ FUN_2_1dae:
 .label1: ; 1e02
     push byte +0x1
     push word 0xc8
-    call 0x1e19:FUN_2_19ca ; 1e07 2:19ca FUN_2_19ca
+    call 0x1e19:FUN_2_19ca ; 1e07 2:19ca
     add sp,byte +0x4
     push byte +0x0
     push byte +0x0
     push word 0xca
-    call 0x1e93:FUN_2_1a86 ; 1e16 2:1a86 FUN_2_1a86
+    call 0x1e93:FUN_2_1a86 ; 1e16 2:1a86
     add sp,byte +0x6
     pop si
     pop di
@@ -3535,7 +3535,7 @@ MenuItemCallback:
     inc ax
     push ax
     push word [bp+0x6]
-    call 0x1f49:0x115c ; 1f2b 4:115c FUN_4_115c
+    call 0x1f49:0x115c ; 1f2b 4:115c
     add sp,byte +0x4
     or ax,ax
     jnz .label10 ; ↓
@@ -3548,7 +3548,7 @@ MenuItemCallback:
 .label11: ; 1f45
     push ax
 .label12: ; 1f46
-    call 0x1f74:0x356 ; 1f46 4:356 FUN_4_0356
+    call 0x1f74:0x356 ; 1f46 4:356
 .label13: ; 1f4b
     add sp,byte +0x4
     jmp .label42 ; ↓
@@ -3568,7 +3568,7 @@ MenuItemCallback:
 .label16: ; 1f6d
     push ax
     push word [bp+0x6]
-    call 0x1819:0x115c ; 1f71 4:115c FUN_4_115c
+    call 0x1819:0x115c ; 1f71 4:115c
     add sp,byte +0x4
     or ax,ax
     jnz .label17 ; ↓
@@ -3591,7 +3591,7 @@ MenuItemCallback:
 
 .label19: ; 1f9e
     push word 0xc8
-    call 0x1fb9:FUN_2_198e ; 1fa1 2:198e FUN_2_198e
+    call 0x1fb9:FUN_2_198e ; 1fa1 2:198e
     add sp,byte +0x2
     dec ax
     jz .label20 ; ↓
@@ -3605,7 +3605,7 @@ MenuItemCallback:
     jz .label20 ; ↓
     jmp .label42 ; ↓
 .label20: ; 1fc6
-    call 0x1fdd:FUN_2_1dae ; 1fc6 2:1dae FUN_2_1dae
+    call 0x1fdd:FUN_2_1dae ; 1fc6 2:1dae
     sub ax,ax
     mov [TotalScore+2],ax
     mov [TotalScore],ax
@@ -3655,18 +3655,18 @@ MenuItemCallback:
     mov [MusicEnabled],ax
     or ax,ax
     jnz .label25 ; ↓
-    call 0x2055:0x2d4 ; 2042 8:2d4 FUN_8_02d4
+    call 0x2055:0x2d4 ; 2042 8:2d4
     jmp short .label26 ; ↓
     nop
 .label25: ; 204a
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0x20be:0x308 ; 2052 8:308 FUN_8_0308
+    call 0x20be:0x308 ; 2052 8:308
     add sp,byte +0x2
 .label26: ; 205a
     push word [MusicEnabled]
     push byte +0x75
-    call 0x2088:FUN_2_19ca ; 2060 2:19ca FUN_2_19ca
+    call 0x2088:FUN_2_19ca ; 2060 2:19ca
     add sp,byte +0x4
     push word [hMenu]
     push byte +0x75
@@ -3680,7 +3680,7 @@ MenuItemCallback:
     mov [SoundEnabled],ax
     push ax
     push byte +0x76
-    call 0x20c7:FUN_2_19ca ; 2085 2:19ca FUN_2_19ca
+    call 0x20c7:FUN_2_19ca ; 2085 2:19ca
     add sp,byte +0x4
     push word [hMenu]
     push byte +0x76
@@ -3827,7 +3827,7 @@ MenuItemCallback:
 .label39: ; 2216
     push ax
     push byte +0x7a
-    call 0x2339:FUN_2_19ca ; 2219 2:19ca FUN_2_19ca
+    call 0x2339:FUN_2_19ca ; 2219 2:19ca
     add sp,byte +0x4
     push word [hMenu]
     push byte +0x7a
@@ -3952,18 +3952,18 @@ func MAINWNDPROC
     call 0x0:0x241f ; 2322 GDI.SelectObject
     mov [0x1724],ax
     push byte +0x1
-    call 0x23fb:0x320 ; 232c 4:320 FUN_4_0320
+    call 0x23fb:0x320 ; 232c 4:320
     add sp,byte +0x2
     push byte +0x75
-    call 0x2346:FUN_2_198e ; 2336 2:198e FUN_2_198e
+    call 0x2346:FUN_2_198e ; 2336 2:198e
     add sp,byte +0x2
     mov [MusicEnabled],ax
     push byte +0x76
-    call 0x23db:FUN_2_198e ; 2343 2:198e FUN_2_198e
+    call 0x23db:FUN_2_198e ; 2343 2:198e
     add sp,byte +0x2
     mov [SoundEnabled],ax
     call 0x2356:0x0 ; 234e 8:0 InitSound
-    call 0x23e3:0x4a0 ; 2353 8:4a0 FUN_8_04a0
+    call 0x23e3:0x4a0 ; 2353 8:4a0
     push word [hMenu]
     push byte +0x75
     cmp word [MusicEnabled],byte +0x1
@@ -4015,15 +4015,15 @@ func MAINWNDPROC
     nop
 .label18: ; 23d6
     push byte +0x1
-    call 0x23f3:FUN_2_176e ; 23d8 2:176e FUN_2_176e
+    call 0x23f3:FUN_2_176e ; 23d8 2:176e
     add sp,byte +0x2
-    call 0x2442:0x2d4 ; 23e0 8:2d4 FUN_8_02d4
+    call 0x2442:0x2d4 ; 23e0 8:2d4
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     push word 0xc9
-    call 0x2492:FUN_2_19ca ; 23f0 2:19ca FUN_2_19ca
+    call 0x2492:FUN_2_19ca ; 23f0 2:19ca
     add sp,byte +0x4
-    call 0x1f2e:0x240 ; 23f8 4:240 FUN_4_0240
+    call 0x1f2e:0x240 ; 23f8 4:240
     cmp word [0x2a],byte +0x0
     jz .label19 ; ↓
     push word [OurHInstance]
@@ -4038,11 +4038,11 @@ func MAINWNDPROC
     call 0x0:0x16e6 ; 241e GDI.SelectObject
     push word [0x172c]
     call 0x0:0x16ec ; 2427 GDI.DeleteObject
-    call 0xffff:0xbc ; 242c 9:bc FUN_9_00bc
+    call 0xffff:0xbc ; 242c 9:bc
     push word [0x1734]
     call 0x0:0xffff ; 2435 GDI.DeleteDC
-    call 0x941:0x17c ; 243a 5:17c FUN_5_017c
-    call 0x2447:0x5b8 ; 243f 8:5b8 FUN_8_05b8
+    call 0x941:0x17c ; 243a 5:17c
+    call 0x2447:0x5b8 ; 243f 8:5b8
     call 0x2045:0xe6 ; 2444 8:e6 TeardownSound
     cmp word [IsWin31],byte +0x0
     jz .label20 ; ↓
@@ -4072,7 +4072,7 @@ func MAINWNDPROC
     lea ax,[bp-0x26]
     push ax
     push si
-    call 0x1dc6:FUN_2_0dc6 ; 248f 2:dc6 FUN_2_0dc6
+    call 0x1dc6:FUN_2_0dc6 ; 248f 2:dc6
     add sp,byte +0x4
     push si
     lea ax,[bp-0x26]
@@ -4157,7 +4157,7 @@ func MAINWNDPROC
     call 0x0:0x2806 ; 255b USER.InvalidateRect
     push word [hwndBoard]
     call 0x0:0x280f ; 2564 USER.UpdateWindow
-    call 0x26dc:FUN_2_17ba ; 2569 2:17ba FUN_2_17ba
+    call 0x26dc:FUN_2_17ba ; 2569 2:17ba
 .label34: ; 256e
     mov ax,[bp+0xa]
     cmp ax,0x74
@@ -4242,7 +4242,7 @@ func MAINWNDPROC
     push word [bp-0x6]
     push word [bp-0x4]
     push si
-    call 0x27d3:0x1184 ; 2619 7:1184 FUN_7_1184
+    call 0x27d3:0x1184 ; 2619 7:1184
     add sp,byte +0xa
     push word [hwndBoard]
     push si
@@ -4355,7 +4355,7 @@ func MAINWNDPROC
     mov ax,[bp+0xa]
     dec ax
     jnz .label67 ; ↓
-    call 0x2351:0x22a ; 2724 8:22a FUN_8_022a
+    call 0x2351:0x22a ; 2724 8:22a
 
 .label67: ; 2729
     xor ax,ax
@@ -4403,7 +4403,7 @@ func BOARDWNDPROC
     lea ax,[bp-0x22]
     push ax
     push si
-    call 0x2816:FUN_2_10ce ; 2799 2:10ce FUN_2_10ce
+    call 0x2816:FUN_2_10ce ; 2799 2:10ce
     add sp,byte +0x4
     push si
     lea ax,[bp-0x22]
@@ -4448,7 +4448,7 @@ func BOARDWNDPROC
     call 0x0:0x21d7 ; 2805 USER.InvalidateRect
     push word [hwndBoard]
     call 0x0:0xb20 ; 280e USER.UpdateWindow
-    call 0x221c:FUN_2_17ba ; 2813 2:17ba FUN_2_17ba
+    call 0x221c:FUN_2_17ba ; 2813 2:17ba
 .label7: ; 2818
     mov bx,[GameStatePtr]
     mov word [bx+0xa38],0x1
@@ -4862,7 +4862,7 @@ func HINTWNDPROC
     push word [bp-0x1e]
     push word [bp-0x20]
     push word [bp-0x48]
-    call 0x24fb:FUN_2_0f06 ; 2c29 2:f06 FUN_2_0f06
+    call 0x24fb:FUN_2_0f06 ; 2c29 2:f06
     add sp,byte +0xe
     push word [bp-0x48]
     push word [bp-0x20]
