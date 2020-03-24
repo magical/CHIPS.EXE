@@ -3210,7 +3210,7 @@ FUN_2_1c1c:
     jnz .wait
     jmp ..@patchreturn
 .wait:
-    call 0:0xffff ; xxxx USER.WaitMessage
+    ..@newcall call 0:0xffff ; xxxx USER.WaitMessage
     jmp ..@patchloop
     nop
 
@@ -5060,5 +5060,19 @@ func HINTWNDPROC
 endfunc
 
 ; 2dc7
+
+;; Relocation data
+
+dw 87+1
+INCBIN "base.exe", 0x1600+0x2dca+2, 0x2ba-2
+
+; New relocation for KERNEL.WaitMessage
+    db 3 ; relocation type = FARADDR
+    db 1 ; flags = IMPORTORDINAL
+    dw ..@newcall+1 ; offset to first relocation
+    ; USER.WaitMessage
+    dw 3 ; index into module reference table
+    dw 112 ; procedure ordinal number
+
 
 ; vim: syntax=nasm

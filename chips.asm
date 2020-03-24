@@ -264,7 +264,8 @@ Segment1:
 ; 1600
 Segment2:
     INCBIN "seg2.bin"
-    INCBIN "base.exe", 0x1600+0x2dca, 0x2ba
+    ; relocation data moved to seg2.asm
+    ;INCBIN "base.exe", 0x1600+0x2dca, 0x2ba
     ALIGN SectorSize, db 0
 
 ; 4800
