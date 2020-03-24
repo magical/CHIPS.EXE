@@ -739,6 +739,7 @@ func WinMain
     jz .returnZero
     mov word [0x2c],0x1
 .label3: ; 673
+..@patchloop:
     lea ax,[bp-0x14]
     push ss
     push ax
@@ -747,9 +748,9 @@ func WinMain
     push byte +0x0
     push byte +0x1
     call 0x0:0xffff ; 680 USER.PeekMessage
-    or ax,ax
-    ; FIXME: call WaitMessage if ax==0
-    jz .label3 ; ↑
+    jmp ..@patch
+    nop
+..@patchreturn:
     cmp word [bp-0x12],byte +0x12
     jz .label4 ; ↓
     push word [hwndMain]
@@ -3193,35 +3194,39 @@ FUN_2_1c1c:
     push ax
     push ds
     push word s_5f8 ; "%s,%d,%li"
-    lea ax,[bp-0x4c]
+    lea si,[bp-0x4c]
     push ss
-    push ax
-    call 0x0:0x1c7a ; 1c5d USER._wsprintf
+    push si
+    call 0x0:0x1cce ; 1c5d USER._wsprintf
     add sp,byte +0x12
+    mov bx,ss
+    mov ax,si
     jmp short .label1 ; ↓
     nop
+
+..@patch:
+    ; 15 bytes
+    or ax,ax
+    jnz .wait
+    jmp ..@patchreturn
+.wait:
+    call 0:0xffff ; xxxx USER.WaitMessage
+    jmp ..@patchloop
+    nop
+
 .label0: ; 1c68
     mov ax,[GameStatePtr]
     add ax,LevelPassword
-    ; TODO: could remove this printf call...
-    push ds
-    push ax
-    push ds
-    push word s_602 ; "%s"
-    lea ax,[bp-0x4c]
-    push ss
-    push ax
-    call 0x0:0x1cce ; 1c79 USER._wsprintf
-    add sp,byte +0xc
+    mov bx,ds
+
 .label1: ; 1c81
     push ds
     push word IniSectionName
     lea ax,[bp-0xc]
     push ss
     push ax
-    lea ax,[bp-0x4c]
-    push ss
-    push ax
+    push bx
+    push si
     push ds
     push word IniFileName
     call 0x0:0xffff ; 1c93 KERNEL.WritePrivateProfileString
