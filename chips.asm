@@ -254,12 +254,14 @@ NENonResidentNameSize equ $-NENonResidentNameTab
 ALIGN 512, db 0
 TIMES 512  db 0
 
+; a00
 Segment1:
     INCBIN "base.exe", 0xa00, 0x952
     INCBIN "base.exe", 0xa00+0x952, 162
     ALIGN SectorSize, db 0
     TIMES SectorSize  db 0
 
+; 1600
 Segment2:
     INCBIN "seg2.bin"
     INCBIN "base.exe", 0x1600+0x2dca, 0x2ba
@@ -279,6 +281,7 @@ Logic:
     INCBIN "base.exe", 0x8c70, 0x52
     ALIGN SectorSize, db 0
 
+; 8e00
 Segment4:
     INCBIN "base.exe", 0x8e00, 0x1208
     INCBIN "base.exe", 0x8e00+0x1208, 0x10a
@@ -319,16 +322,18 @@ Segment5:
 
     ALIGN SectorSize, db 0
 
+; a600
 Segment6:
     INCBIN "base.exe", 0xa600, 0x75b
     INCBIN "base.exe", 0xa600+0x75b, 130
     ALIGN SectorSize, db 0
 
-; 0xae00
+; ae00
 Segment7:
     INCBIN "movement.bin"
     INCBIN "base.exe", 0xae00+0x1cd4, 300
 
+; cc00
 Segment8:
     INCBIN "sound.bin"
     INCBIN "base.exe", 0xcc00+0x620, 0x1e0
@@ -444,8 +449,11 @@ ALIGN SectorSize, db 0
 
 ; 3fe00
 DLGGOTO     INCBIN "base.exe", 0x3fe00, SectorSize
+; 40000
 DLGPASSWORD INCBIN "base.exe", 0x40000, SectorSize
+; 40200
 DLGBESTTIME INCBIN "base.exe", 0x40200, SectorSize
+; 40400
 DLGCOMPLETE INCBIN "base.exe", 0x40400, SectorSize
 
 ; 40600
