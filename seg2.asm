@@ -1459,9 +1459,9 @@ FUN_2_0cbe:
     test al,0x8
     jz .label6 ; ↓
     mov bx,[GameStatePtr]
-    mov si,[bx+0x80a]
+    mov si,[bx+ChipY]
     shl si,byte 0x5
-    add si,[bx+0x808]
+    add si,[bx+ChipX]
     cmp byte [bx+si+0x400],0x2f
     jnz .label5 ; ↓
     call 0xdb5:ShowHint ; dab 2:c1a ShowHint
@@ -1963,7 +1963,7 @@ FUN_2_10ce:
     nop
 .label7: ; 1226
     mov bx,[GameStatePtr]
-    cmp word [bx+0xa36],byte +0x0
+    cmp word [bx+EndingTick],byte +0x0
     jz .label8 ; ↓
     push byte +0x1
     call 0xffff:0xa74 ; 1233 7:a74 EndGame
@@ -2103,9 +2103,9 @@ FUN_2_10ce:
     jnz .label22 ; ↓
     jmp .label43 ; ↓
 .label22: ; 1382
-    cmp byte [bx+0x95a],0x0
+    cmp byte [bx+LevelTitle],0x0
     jnz .label23 ; ↓
-    cmp byte [bx+0xa1a],0x0
+    cmp byte [bx+LevelPassword],0x0
     jnz .label23 ; ↓
     jmp .label43 ; ↓
 .label23: ; 1393
@@ -2197,7 +2197,7 @@ FUN_2_10ce:
     mov cx,[bx+0xa28]
     shl cx,byte 0x5
     mov [bp-0x8],cx
-    cmp byte [bx+0x95a],0x1
+    cmp byte [bx+LevelTitle],0x1
     sbb cx,cx
     inc cx
     mov di,cx
@@ -2209,7 +2209,7 @@ FUN_2_10ce:
     mov [bp-0x22],cx
     mov [bp-0x20],cx
     mov cx,bx
-    add cx,0x95a ; bx+95a = level title?
+    add cx,LevelTitle
     push ds
     push cx
     push ds
@@ -2243,7 +2243,7 @@ FUN_2_10ce:
     mov [bp-0xa],ax
 .label32: ; 14e9
     mov bx,[GameStatePtr]
-    cmp byte [bx+0xa1a],0x1
+    cmp byte [bx+LevelPassword],0x1
     sbb ax,ax
     inc ax
     mov si,ax
@@ -2256,7 +2256,7 @@ FUN_2_10ce:
     mov [bp-0x22],ax
     mov [bp-0x20],ax
     mov ax,bx
-    add ax,0xa1a
+    add ax,LevelPassword
     push ds
     push ax
     push ds
@@ -2340,7 +2340,7 @@ FUN_2_10ce:
     or di,di
     jz .label38 ; ↓
     mov ax,[GameStatePtr]
-    add ax,0x95a
+    add ax,LevelTitle
     push ds
     push ax
     push ds
@@ -2369,7 +2369,7 @@ FUN_2_10ce:
     or si,si
     jz .label39 ; ↓
     mov ax,[GameStatePtr]
-    add ax,0xa1a
+    add ax,LevelPassword
     push ds
     push ax
     push ds
@@ -3181,7 +3181,7 @@ FUN_2_1c1c:
     push word [bp+0xa]
     push si
     mov ax,[GameStatePtr]
-    add ax,0xa1a
+    add ax,LevelPassword
     push ds
     push ax
     push ds
@@ -3195,7 +3195,7 @@ FUN_2_1c1c:
     nop
 .label0: ; 1c68
     mov ax,[GameStatePtr]
-    add ax,0xa1a
+    add ax,LevelPassword
     push ds
     push ax
     push ds
@@ -4422,7 +4422,7 @@ func BOARDWNDPROC
     jmp .label8 ; ↓
 .label3: ; 27c3
     mov bx,[GameStatePtr]
-    cmp word [bx+0xa36],byte +0x0
+    cmp word [bx+EndingTick],byte +0x0
     jz .label5 ; ↓
     push byte +0x0
     call 0x27e5:0xa74 ; 27d0 7:a74 EndGame
@@ -4437,9 +4437,9 @@ func BOARDWNDPROC
     nop
 .label6: ; 27ea
     mov bx,[GameStatePtr]
-    cmp word [bx+0x810],byte +0x0
+    cmp word [bx+Unknown810],byte +0x0
     jz .label7 ; ↓
-    mov word [bx+0x810],0x0
+    mov word [bx+Unknown810],0x0
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
@@ -4450,21 +4450,21 @@ func BOARDWNDPROC
     call 0x221c:FUN_2_17ba ; 2813 2:17ba
 .label7: ; 2818
     mov bx,[GameStatePtr]
-    mov word [bx+0xa38],0x1
+    mov word [bx+HaveMouseTarget],0x1
     mov ax,[bp+0x6]
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
     add ax,[bx+0xa24]
     add ax,[bx+0xa2c]
-    mov [bx+0xa3a],ax
+    mov [bx+MouseTargetX],ax
     mov ax,[bp+0x8]
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
     add ax,[bx+0xa26]
     add ax,[bx+0xa2e]
-    mov [bx+0xa3c],ax
+    mov [bx+MouseTargetY],ax
     mov bx,[GameStatePtr]
-    mov word [bx+0x80e],0x0
+    mov word [bx+IsBuffered],0x0
 .label8: ; 2858
     xor ax,ax
     cwd
@@ -4902,7 +4902,7 @@ func HINTWNDPROC
     mov [bp-0x14],ax
     mov [bp-0x12],dx
     mov ax,[GameStatePtr]
-    add ax,0x99a
+    add ax,LevelHint
     push ds
     push ax
     push ds

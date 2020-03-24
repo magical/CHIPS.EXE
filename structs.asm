@@ -64,14 +64,15 @@ CloneListSeg        equ 0x94e
 
 ; Teleports
 ; x, y
-TeleportListLen       equ 0x950
-TeleportListCap       equ 0x952
-TeleportListHandle    equ 0x954
-TeleportListPtr       equ 0x956
-TeleportListSeg       equ 0x958
+TeleportListLen     equ 0x950
+TeleportListCap     equ 0x952
+TeleportListHandle  equ 0x954
+TeleportListPtr     equ 0x956
+TeleportListSeg     equ 0x958
 
-; 95a title?
-; 99a hint? limit: 128
+LevelTitle          equ 0x95a ; size: 64
+LevelHint           equ 0x99a ; size: 128
+LevelPassword       equ 0xa1a ; size: 10
 
 ; a1a Password limit: 10
 
