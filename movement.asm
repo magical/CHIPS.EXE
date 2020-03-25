@@ -1653,22 +1653,24 @@ func MoveBlock
     mov [xdest],ax
 
     ; check bounds
+    ; XXX patched to remove bounds check
     or ax,ax
     jnl .label0
-    jmp word .blocked
+    jmp word .inbounds
 .label0: ; dd5
     cmp word [ydest],byte +0x0
     jnl .label2
-    jmp word .blocked
+    jmp word .inbounds
 .label2: ; dde
     cmp ax,0x20
     jl .label3
-    jmp word .blocked
+    jmp word .inbounds
 .label3: ; de6
     cmp word [ydest],byte +0x20
     jl .label4
-    jmp word .blocked
+    jmp word .inbounds
 .label4: ; def
+.inbounds:
 
     ; get floor tile
     mov si,[ysrc]
@@ -2961,20 +2963,22 @@ func MoveMonster
 ; check that xdest and ydest are in [0,32)
     cmp word [xdest],byte +0x0
     jnl .yNotLessThan0
-    jmp word .deleteSlipperAndReturn
+    jmp word .inBounds
 .yNotLessThan0: ; 1920
     or ax,ax
     jnl .xNotLessThan0
-    jmp word .deleteSlipperAndReturn
+    jmp word .inBounds
 .xNotLessThan0: ; 1927
     cmp word [xdest],byte +0x20
     jl .yLessThan32
-    jmp word .deleteSlipperAndReturn
+    jmp word .inBounds
 .yLessThan32: ; 1930
     cmp ax,0x20
     jl .xLessThan32
-    jmp word .deleteSlipperAndReturn
+    jmp word .inBounds
 .xLessThan32: ; 1938
+
+.inBounds:
 
 ; get tile we're leaving from
     mov bx,si

@@ -4325,6 +4325,7 @@ func PressCloneButton
     jmp .cloneBlock ; ↓
 
 .cloneMonster: ; 24be
+    ; XXX patched to remove bounds check
     ; check if the destination tile is in bounds
     ; if not, return
     mov ax,[ydir]
@@ -4332,19 +4333,19 @@ func PressCloneButton
     mov ax,[xdir]
     add [destX],ax
     jns .label2 ; ↓
-    jmp .end ; ↓
+    jmp .inBounds ; ↓
 .label2: ; 24cf
     cmp word [destY],byte +0x0
     jnl .label3 ; ↓
-    jmp .end ; ↓
+    jmp .inBounds ; ↓
 .label3: ; 24d8
     cmp word [destX],byte +0x20
     jl .label4 ; ↓
-    jmp .end ; ↓
+    jmp .inBounds ; ↓
 .label4: ; 24e1
     cmp word [destY],byte +0x20
     jl .inBounds ; ↓
-    jmp .end ; ↓
+    jmp .inBounds ; ↓
 .inBounds: ; 24ea
     ; Is the monster allowed to enter the destination tile?
     lea ax,[dummyVar]
@@ -4429,21 +4430,23 @@ func PressCloneButton
 .default: ; 25a0
     ; cloneTile = Block
     mov byte [cloneTile],Block
+    ; XXX patched to remove bounds check
     ; check if the destination tile is in bounds
     ; if not, return
     mov ax,[ydir]
     add [destY],ax
     mov ax,[xdir]
     add [destX],ax
-    js .end ; ↓
+    js .continue ; ↓
     cmp word [destY],byte +0x0
-    jl .end ; ↓
+    jl .continue ; ↓
     cmp word [destX],byte +0x20
-    jnl .end ; ↓
+    jnl .continue ; ↓
     cmp word [destY],byte +0x20
-    jnl .end ; ↓
+    jnl .continue ; ↓
     ; Check if the block is allowed to enter the destination tile
     ; if not, return
+.continue:
     lea ax,[dummyVar]
     push ax
     push word [ydir]
@@ -4669,22 +4672,24 @@ func EnterTeleport
     jmp .label13 ; ↓
 .label4: ; 27f7
     mov si,[bp+0xc]
+    ; check bounds
+    ; XXX patched to remove bounds check
     add [bp-0x4],di
     add [bp-0x6],si
     jns .label5 ; ↓
-    jmp .label13 ; ↓
+    jmp .label8 ; ↓
 .label5: ; 2805
     cmp word [bp-0x4],byte +0x0
     jnl .label6 ; ↓
-    jmp .label13 ; ↓
+    jmp .label8 ; ↓
 .label6: ; 280e
     cmp word [bp-0x6],byte +0x20
     jl .label7 ; ↓
-    jmp .label13 ; ↓
+    jmp .label8 ; ↓
 .label7: ; 2817
     cmp word [bp-0x4],byte +0x20
     jl .label8 ; ↓
-    jmp .label13 ; ↓
+    jmp .label8 ; ↓
 .label8: ; 2820
     mov ax,[bp+0x10]
     or ax,ax
