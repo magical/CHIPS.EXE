@@ -529,8 +529,8 @@ ALIGN SectorSize, db 0
 
 db 0x5, "Chips"
 db 0x10, "Chip's Challenge"
-db 0x24, "By Tony Krueger", 10
-db       "Artwork by Ed Halley"
+db strend-$-1, "CPU Patch v1 beta"
+strend:
 
 ALIGN SectorSize, db 0
 
