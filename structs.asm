@@ -110,7 +110,7 @@ EndingTick          equ 0xa36 ; Controls the ending animation
 HaveMouseTarget     equ 0xa38
 MouseTargetX        equ 0xa3a
 MouseTargetY        equ 0xa3c
-; a3e idle timer?
+IdleTickCount       equ 0xa3e
 ChipHasMoved        equ 0xa40
 
 GameStateSize       equ 0xa42

@@ -284,8 +284,8 @@ func DoTick
 .standAroundLikeAnIdiot: ; 202
     ; We don't have a mouse target
     ; If chip is idle for 2 or more even ticks, face south
-    mov ax,[bx+0xa3e]
-    inc word [bx+0xa3e]
+    mov ax,[bx+IdleTickCount]
+    inc word [bx+IdleTickCount]
     cmp ax,0x2
     jl .monsterloop
     mov bx,[GameStatePtr]
@@ -372,7 +372,7 @@ func DoTick
     jmp word .doMonsterSlideMovement
 .label37: ; 2d1
     ; First off, clear the idle timer
-    mov word [bx+0xa3e],0x0
+    mov word [bx+IdleTickCount],0x0
     ; and then move chip in the direction he's sliding
     push byte +0x1
     push byte +0x0
@@ -2149,7 +2149,7 @@ func MoveChip
     mov word [bx+ChipHasMoved],0x1
 .label2: ; 1204 [flag1] == 0
     mov bx,[GameStatePtr]
-    mov word [bx+0xa3e],0x0
+    mov word [bx+IdleTickCount],0x0
 
 ; Check board bounds
     cmp word [xdest],byte +0x0
@@ -2811,9 +2811,9 @@ func MoveChip
     mov word [bx+IsSliding],0x0
 
 .label67: ; 180b
-    ; increment mystery variable
+    ; increment chip's step counter
     mov bx,[GameStatePtr]
-    inc word [bx+0xa34]
+    inc word [bx+StepCount]
 
     ; did chip make it to the exit? OMG!
     mov bx,[GameStatePtr]
