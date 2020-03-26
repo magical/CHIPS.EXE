@@ -14,36 +14,38 @@ func ShowMessageBox
     sub sp,byte +0x2
     push si
     call 0x6d:FUN_2_17a2 ; e 2:17a2
+    ; if sound is enabled, play a message beep before
+    ; popping the message box open
     cmp word [SoundEnabled],byte +0x0
-    jz .label4 ; ↓
+    jz .showMessage ; ↓
     test byte [flags],0x30
-    jz .label0 ; ↓
-    mov si,0x30
-    jmp short .label3 ; ↓
+    jz .checkInfo ; ↓
+    mov si,0x30 ; MB_ICONWARNING
+    jmp short .playBeep ; ↓
     nop
-.label0: ; 26
+.checkInfo: ; 26
     test byte [flags],0x40
-    jz .label1 ; ↓
-    mov si,0x40
-    jmp short .label3 ; ↓
+    jz .checkError ; ↓
+    mov si,0x40 ; MB_ICONINFORMATION
+    jmp short .playBeep ; ↓
     nop
-.label1: ; 32
+.checkError: ; 32
     test byte [flags],0x10
-    jz .label2 ; ↓
-    mov si,0x10
-    jmp short .label3 ; ↓
+    jz .checkQuestion ; ↓
+    mov si,0x10 ; MB_ICONERROR
+    jmp short .playBeep ; ↓
     nop
-.label2: ; 3e
+.checkQuestion: ; 3e
     mov al,[flags]
     and ax,0x20
     cmp ax,0x1
     cmc
     sbb si,si
-    and si,byte +0x20
-.label3: ; 4d
+    and si,byte +0x20 ; MB_ICONQUESTION
+.playBeep: ; 4d
     push si
     call 0x0:0xffff ; 4e USER.MessageBeep
-.label4: ; 53
+.showMessage: ; 53
     push word [hWnd]
     push word [message+2] ; segment
     push word [message]
