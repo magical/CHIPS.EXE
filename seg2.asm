@@ -61,41 +61,39 @@ endfunc
 
 ; 7a
 
-IsCoordOnscreen:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; BOOL IsCoordOnscreen(int x, int y)
+;
+; Reports whether the given coordinate lies within the viewport
+func IsCoordOnscreen
     sub sp,byte +0x2
-    mov dx,[bp+0x6]
+    %arg x:word ; x position in level
+    %arg y:word ; y position in level
+    ; ViewportX > x
+    mov dx,[x]
     mov bx,[GameStatePtr]
-    cmp [bx+0xa24],dx
-    jg .label0 ; ↓
-    mov ax,[bx+0xa24]
-    add ax,[bx+0xa28]
+    cmp [bx+ViewportX],dx
+    jg .no
+    ; ViewportX + ViewportWidth <= x
+    mov ax,[bx+ViewportX]
+    add ax,[bx+ViewportWidth]
     cmp ax,dx
-    jng .label0 ; ↓
-    mov dx,[bp+0x8]
-    cmp [bx+0xa26],dx
-    jg .label0 ; ↓
-    mov ax,[bx+0xa26]
-    add ax,[bx+0xa2a]
+    jng .no
+    ; ViewportY > y
+    mov dx,[y]
+    cmp [bx+ViewportY],dx
+    jg .no
+    ; ViewportY + ViewportHeight >= y
+    mov ax,[bx+ViewportY]
+    add ax,[bx+ViewportHeight]
     cmp ax,dx
-    jng .label0 ; ↓
+    jng .no
+.yes:
     mov ax,0x1
-    jmp short .label1 ; ↓
-.label0: ; ba
+    jmp short .end
+.no: ; ba
     xor ax,ax
-.label1: ; bc
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+.end: ; bc
+endfunc
 
 ; c4
 

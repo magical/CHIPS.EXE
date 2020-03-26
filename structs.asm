@@ -75,7 +75,18 @@ LevelTitle          equ 0x95a ; size: 64
 LevelHint           equ 0x99a ; size: 128
 LevelPassword       equ 0xa1a ; size: 10
 
-; a1a Password limit: 10
+; top left corner of the viewport
+ViewportX           equ 0xa24
+ViewportY           equ 0xa26
+; size of the viewport. always 9,9
+ViewportWidth       equ 0xa28
+ViewportHeight      equ 0xa2a
+
+; when the level starts and after each move,
+; the viewport position is set to
+;     viewportx = chipx - viewportwidth/2
+;     viewporty = chipy - viewportheight/2
+; and clamped to the range [0, 32-viewportsize]
 
 ; a24 viewport x
 ; a26 viewport y
