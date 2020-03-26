@@ -231,12 +231,12 @@ UpdateTile:
     mov cl,[si]
     push cx
     mov bx,[GameStatePtr]
-    sub ax,[bx+0xa26]
+    sub ax,[bx+ViewportY]
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
     push ax
     mov ax,[bp+0x8]
-    sub ax,[bx+0xa24]
+    sub ax,[bx+ViewportX]
     sub ax,[bx+0xa2c]
     shl ax,byte 0x5
     push ax
@@ -296,12 +296,12 @@ FUN_2_025a:
     push word [bp+0x6]
     mov ax,[bp+0x8]
     mov bx,[GameStatePtr]
-    sub ax,[bx+0xa24]
+    sub ax,[bx+ViewportX]
     sub ax,[bx+0xa2c]
     shl ax,byte 0x5
     push ax
     mov ax,[bp+0xa]
-    sub ax,[bx+0xa26]
+    sub ax,[bx+ViewportY]
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
     push ax
@@ -398,7 +398,7 @@ FUN_2_0306:
     push ax
     call 0x0:0xffff ; 347 USER.GetClientRect
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa28]
+    mov ax,[bx+ViewportWidth]
     sub ax,[bx+0xa2c]
     mov cx,[bp-0x14]
     sar cx,byte 0x5
@@ -412,7 +412,7 @@ FUN_2_0306:
     mov [bp-0x4],ax
     mov ax,bx
     mov bx,[GameStatePtr]
-    mov cx,[bx+0xa2a]
+    mov cx,[bx+ViewportHeight]
     sub cx,[bx+0xa2e]
     mov bx,[bp-0x12]
     sar bx,byte 0x5
@@ -455,10 +455,10 @@ FUN_2_0306:
     push byte +0x0
     call 0x0:0xffff ; 3d1 USER.ScrollWindow
     mov bx,[GameStatePtr]
-    add [bx+0xa24],di
+    add [bx+ViewportX],di
     mov ax,[bp+0xa]
     mov bx,[GameStatePtr]
-    add [bx+0xa26],ax
+    add [bx+ViewportY],ax
     push word [bp+0xe]
     push word [bp+0xc]
     push word [bp+0x6]
@@ -481,11 +481,11 @@ FUN_2_0306:
     neg bx
 .label7: ; 41b
     mov si,[GameStatePtr]
-    mov ax,[si+0xa26]
+    mov ax,[si+ViewportY]
     mov [bp-0x4],ax
     mov [bp-0x8],bx
     mov cx,ax
-    add ax,[si+0xa2a]
+    add ax,[si+ViewportHeight]
     cmp ax,cx
     jng .label11 ; ↓
 .label8: ; 433
@@ -496,7 +496,7 @@ FUN_2_0306:
 .label9: ; 43e
     push word [bp-0x4]
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa24]
+    mov ax,[bx+ViewportX]
     add ax,[bx+0xa2c]
     add ax,si
     push ax
@@ -508,8 +508,8 @@ FUN_2_0306:
     jl .label9 ; ↑
 .label10: ; 45f
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa26]
-    add ax,[bx+0xa2a]
+    mov ax,[bx+ViewportY]
+    add ax,[bx+ViewportHeight]
     inc word [bp-0x4]
     cmp ax,[bp-0x4]
     jg .label8 ; ↑
@@ -525,7 +525,7 @@ FUN_2_0306:
     shl ax,byte 0x5
     neg ax
     mov [bp-0x16],ax
-    mov ax,[bx+0xa2a]
+    mov ax,[bx+ViewportHeight]
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
     mov [bp-0x12],ax
@@ -552,10 +552,10 @@ FUN_2_0306:
 .label15: ; 4cf
     mov [bp-0x4],ax
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa24]
+    mov ax,[bx+ViewportX]
     mov [bp-0x6],ax
     mov cx,ax
-    add ax,[bx+0xa28]
+    add ax,[bx+ViewportWidth]
     cmp ax,cx
     jng .label19 ; ↓
     mov [bp-0x8],di
@@ -566,7 +566,7 @@ FUN_2_0306:
     mov di,[bp+0x6]
 .label17: ; 4f5
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa26]
+    mov ax,[bx+ViewportY]
     add ax,[bx+0xa2e]
     add ax,si
     push ax
@@ -579,8 +579,8 @@ FUN_2_0306:
     jl .label17 ; ↑
 .label18: ; 516
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa24]
-    add ax,[bx+0xa28]
+    mov ax,[bx+ViewportX]
+    add ax,[bx+ViewportWidth]
     inc word [bp-0x6]
     cmp ax,[bp-0x6]
     jg .label16 ; ↑
@@ -590,7 +590,7 @@ FUN_2_0306:
     shl ax,byte 0x5
     neg ax
     mov [bp-0x18],ax
-    mov ax,[bx+0xa28]
+    mov ax,[bx+ViewportWidth]
     sub ax,[bx+0xa2c]
     shl ax,byte 0x5
     mov [bp-0x14],ax
@@ -627,7 +627,7 @@ FUN_2_056e:
     sub sp,byte +0x6
     push si
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa28]
+    mov ax,[bx+ViewportWidth]
     mov cx,ax
     sub ax,0x20
     neg ax
@@ -647,10 +647,10 @@ FUN_2_056e:
     jng .label1 ; ↓
     mov ax,si
 .label1: ; 5a7
-    sub ax,[bx+0xa24]
+    sub ax,[bx+ViewportX]
     mov [bp-0x6],ax
     mov cx,ax
-    mov ax,[bx+0xa2a]
+    mov ax,[bx+ViewportHeight]
     mov dx,ax
     sub ax,0x20
     neg ax
@@ -669,7 +669,7 @@ FUN_2_056e:
     jng .label3 ; ↓
     mov ax,si
 .label3: ; 5d5
-    sub ax,[bx+0xa26]
+    sub ax,[bx+ViewportY]
     or cx,cx
     jnz .label4 ; ↓
     cmp ax,cx
@@ -1977,27 +1977,27 @@ FUN_2_10ce:
     add sp,byte +0x2
     jmp .label43 ; ↓
 .label8: ; 123e
-    cmp word [bx+0xa28],byte +0x0
+    cmp word [bx+ViewportWidth],byte +0x0
     jnz .label9 ; ↓
     jmp .label43 ; ↓
 .label9: ; 1248
-    cmp word [bx+0xa2a],byte +0x0
+    cmp word [bx+ViewportHeight],byte +0x0
     jnz .label10 ; ↓
     jmp .label43 ; ↓
 .label10: ; 1252
     mov si,[bp+0x8]
     mov ax,[si+0x4]
     sar ax,byte 0x5
-    add ax,[bx+0xa24]
+    add ax,[bx+ViewportX]
     add ax,[bx+0xa2c]
-    cmp ax,[bx+0xa24]
+    cmp ax,[bx+ViewportX]
     jnl .label11 ; ↓
-    mov ax,[bx+0xa24]
+    mov ax,[bx+ViewportX]
 .label11: ; 126d
     mov [bp-0x8],ax
-    mov ax,[bx+0xa24]
+    mov ax,[bx+ViewportX]
     mov cx,ax
-    add ax,[bx+0xa28]
+    add ax,[bx+ViewportWidth]
     mov di,[si+0x8]
     add di,byte +0x1f
     sar di,byte 0x5
@@ -2008,9 +2008,9 @@ FUN_2_10ce:
     jng .label12 ; ↓
     mov di,ax
 .label12: ; 1290
-    mov ax,[bx+0xa26]
+    mov ax,[bx+ViewportY]
     mov cx,ax
-    add ax,[bx+0xa2a]
+    add ax,[bx+ViewportHeight]
     mov dx,[si+0xa]
     add dx,byte +0x1f
     sar dx,byte 0x5
@@ -2065,13 +2065,13 @@ FUN_2_10ce:
 .label19: ; 130d
     mov dx,[bp-0x4]
     mov bx,[GameStatePtr]
-    sub dx,[bx+0xa24]
+    sub dx,[bx+ViewportX]
     sub dx,[bx+0xa2c]
     inc dx
     shl dx,byte 0x5
     mov [bp-0x8],dx
     mov di,[bp-0xa]
-    sub di,[bx+0xa26]
+    sub di,[bx+ViewportY]
     sub di,[bx+0xa2e]
     inc di
     shl di,byte 0x5
@@ -2201,7 +2201,7 @@ FUN_2_10ce:
     mov [bp-0xa],ax
     mov [bp-0x6],ax
     mov bx,[GameStatePtr]
-    mov cx,[bx+0xa28]
+    mov cx,[bx+ViewportWidth]
     shl cx,byte 0x5
     mov [bp-0x8],cx
     cmp byte [bx+LevelTitle],0x1
@@ -2318,7 +2318,7 @@ FUN_2_10ce:
     mov ax,[bp-0x4]
     imul word [bp-0xc]
     mov bx,[GameStatePtr]
-    mov cx,[bx+0xa2a]
+    mov cx,[bx+ViewportHeight]
     shl cx,byte 0x5
     sub cx,ax
     mov [bp-0x24],cx
@@ -4470,13 +4470,13 @@ func BOARDWNDPROC
     mov ax,[lParam]
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
-    add ax,[bx+0xa24]
+    add ax,[bx+ViewportX]
     add ax,[bx+0xa2c]
     mov [bx+MouseTargetX],ax
     mov ax,[lParam+2]
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
-    add ax,[bx+0xa26]
+    add ax,[bx+ViewportY]
     add ax,[bx+0xa2e]
     mov [bx+MouseTargetY],ax
     mov bx,[GameStatePtr]

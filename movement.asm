@@ -1324,7 +1324,7 @@ func EndGame
 
     mov bx,[GameStatePtr]
     mov cx,[bx+ChipY]
-    sub cx,[bx+0xa26]
+    sub cx,[bx+ViewportY]
     sub cx,[bx+0xa2e]
     shl cx,byte 0x5
     sub cx,ax
@@ -1334,7 +1334,7 @@ func EndGame
     push cx  ; y position
 
     mov cx,[bx+ChipX]
-    sub cx,[bx+0xa24]
+    sub cx,[bx+ViewportX]
     sub cx,[bx+0xa2c]
     shl cx,byte 0x5
     sub cx,ax
