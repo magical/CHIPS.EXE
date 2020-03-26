@@ -12,7 +12,9 @@ ChipX               equ 0x808
 ChipY               equ 0x80a
 IsSliding           equ 0x80c
 IsBuffered          equ 0x80e ; buffered move waiting
-Unknown810          equ 0x810
+; Whether the "Level Title / Password: ZORK"
+; box should be shown
+IsLevelPlacardVisible equ 0x810
 BufferedX           equ 0x812
 BufferedY           equ 0x814
 Autopsy             equ 0x816

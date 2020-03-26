@@ -789,7 +789,7 @@ CreateClasses:
     push si
     mov si,[bp+0x6]
     mov word [bp-0x6a],0x1000
-    mov word [bp-0x68],0x225c
+    mov word [bp-0x68],MAINWNDPROC
     mov word [bp-0x66],0x749
     xor ax,ax
     mov [bp-0x64],ax
@@ -824,7 +824,7 @@ CreateClasses:
     jmp .label5 ; ↓
 .label1: ; 73c
     mov word [bp-0x6a],0x8
-    mov word [bp-0x68],0x274e
+    mov word [bp-0x68],BOARDWNDPROC
     mov word [bp-0x66],0x11
     xor ax,ax
     mov [bp-0x64],ax
@@ -851,7 +851,7 @@ CreateClasses:
     or ax,ax
     jz .label0 ; ↑
     mov word [bp-0x6a],0x8
-    mov word [bp-0x68],0x2866
+    mov word [bp-0x68],INFOWNDPROC
     mov word [bp-0x66],0x7f0
     xor ax,ax
     mov [bp-0x64],ax
@@ -869,7 +869,7 @@ CreateClasses:
     sub ax,ax
     mov [bp-0x56],ax
     mov [bp-0x58],ax
-    mov word [bp-0x54],0x4dc
+    mov word [bp-0x54],InfoClassName
     mov [bp-0x52],ds
     lea ax,[bp-0x6a]
     push ss
@@ -880,7 +880,7 @@ CreateClasses:
     jmp .label0 ; ↑
 .label2: ; 7e3
     mov word [bp-0x6a],0x8
-    mov word [bp-0x68],0x296a
+    mov word [bp-0x68],COUNTERWNDPROC
     mov word [bp-0x66],0x849
     mov word [bp-0x64],0x0
     mov word [bp-0x62],0x4
@@ -898,7 +898,7 @@ CreateClasses:
     sub ax,ax
     mov [bp-0x56],ax
     mov [bp-0x58],ax
-    mov word [bp-0x54],0x4e6
+    mov word [bp-0x54],CounterClassName
     mov [bp-0x52],ds
     lea ax,[bp-0x6a]
     push ss
@@ -909,7 +909,7 @@ CreateClasses:
     jmp .label0 ; ↑
 .label3: ; 83c
     mov word [bp-0x6a],0x8
-    mov word [bp-0x68],0x2a9a
+    mov word [bp-0x68],INVENTORYWNDPROC
     mov word [bp-0x66],0x89e
     xor ax,ax
     mov [bp-0x64],ax
@@ -927,7 +927,7 @@ CreateClasses:
     sub ax,ax
     mov [bp-0x56],ax
     mov [bp-0x58],ax
-    mov word [bp-0x54],0x4f3
+    mov word [bp-0x54],InventoryClassName
     mov [bp-0x52],ds
     lea ax,[bp-0x6a]
     push ss
@@ -938,7 +938,7 @@ CreateClasses:
     jmp .label0 ; ↑
 .label4: ; 891
     mov word [bp-0x6a],0x8
-    mov word [bp-0x68],0x2bbe
+    mov word [bp-0x68],HINTWNDPROC
     mov word [bp-0x66],0xb0b
     xor ax,ax
     mov [bp-0x64],ax
@@ -956,7 +956,7 @@ CreateClasses:
     sub ax,ax
     mov [bp-0x56],ax
     mov [bp-0x58],ax
-    mov word [bp-0x54],0x502
+    mov word [bp-0x54],HintClassName
     mov [bp-0x52],ds
     lea ax,[bp-0x6a]
     push ss
@@ -2106,7 +2106,7 @@ FUN_2_10ce:
     call 0x0:0x15c7 ; 136f GDI.PatBlt
 .label21: ; 1374
     mov bx,[GameStatePtr]
-    cmp word [bx+Unknown810],byte +0x0
+    cmp word [bx+IsLevelPlacardVisible],byte +0x0
     jnz .label22 ; ↓
     jmp .label43 ; ↓
 .label22: ; 1382
@@ -4159,9 +4159,9 @@ func MAINWNDPROC
     nop
 .label33: ; 2540
     mov bx,[GameStatePtr]
-    cmp word [bx+Unknown810],byte +0x0
+    cmp word [bx+IsLevelPlacardVisible],byte +0x0
     jz .label34 ; ↓
-    mov word [bx+Unknown810],0x0
+    mov word [bx+IsLevelPlacardVisible],0x0
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
@@ -4453,9 +4453,9 @@ func BOARDWNDPROC
     nop
 .label6: ; 27ea
     mov bx,[GameStatePtr]
-    cmp word [bx+Unknown810],byte +0x0
+    cmp word [bx+IsLevelPlacardVisible],byte +0x0
     jz .label7 ; ↓
-    mov word [bx+Unknown810],0x0
+    mov word [bx+IsLevelPlacardVisible],0x0
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
