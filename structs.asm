@@ -26,8 +26,9 @@ InitialMonsterList  equ 0x81e
 ;   ... monsters ...
 ;   x, y
 
-; Probably
-; See Monster struct
+; Slip list
+; Array of Monster structs
+; Monster.slipping records whether the moving object is a block (yes, i should probably rename it).
 SlipListLen         equ 0x91e
 SlipListCap         equ 0x920
 SlipListHandle      equ 0x922
@@ -35,7 +36,7 @@ SlipListPtr         equ 0x924
 SlipListSeg         equ 0x926
 
 ; Monsters
-; See Monster struct
+; Array of Monster structs
 MonsterListLen      equ 0x928
 MonsterListCap      equ 0x92a
 MonsterListHandle   equ 0x92c
@@ -43,7 +44,7 @@ MonsterListPtr      equ 0x92e
 MonsterListSeg      equ 0x930
 
 ; Toggle walls and floors
-; x, y
+; Array of x, y points
 ToggleListLen       equ 0x932
 ToggleListCap       equ 0x934
 ToggleListHandle    equ 0x936
@@ -51,7 +52,8 @@ ToggleListPtr       equ 0x938
 ToggleListSeg       equ 0x93a
 
 ; Trap connections
-; See Connection
+; Array of Connection structs
+; Connection.flag records whether the trap is closed
 TrapListLen         equ 0x93c
 TrapListCap         equ 0x93e
 TrapListHandle      equ 0x940
@@ -59,6 +61,7 @@ TrapListPtr         equ 0x942
 TrapListSeg         equ 0x944
 
 ; Clone machine connections
+; Array of Connection structs
 CloneListLen        equ 0x946
 CloneListCap        equ 0x948
 CloneListHandle     equ 0x94a
@@ -66,7 +69,7 @@ CloneListPtr        equ 0x94c
 CloneListSeg        equ 0x94e
 
 ; Teleports
-; x, y
+; Array of x, y points
 TeleportListLen     equ 0x950
 TeleportListCap     equ 0x952
 TeleportListHandle  equ 0x954
