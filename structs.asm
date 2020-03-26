@@ -96,6 +96,14 @@ ViewportHeight      equ 0xa2a
 ; a2e ___ y?
 
 ; a34 incremented every time chip moves
+
+; Counts the number of times the level has been retried,
+; and progress towards the "You seem to be having trouble"
+; dialog box appearing.
+RestartCount        equ 0xa30
+MelindaCount        equ 0xa32
+
+StepCount           equ 0xa34 ; Incremented every time chip moves
 EndingTick          equ 0xa36 ; Controls the ending animation
 HaveMouseTarget     equ 0xa38
 MouseTargetX        equ 0xa3a
