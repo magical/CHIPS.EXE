@@ -1,4 +1,4 @@
-SEGMENT CODE ; 5
+SEGMENT CODE ; 2
 
 ; UI Code
 
