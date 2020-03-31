@@ -278,44 +278,37 @@ DrawInventoryTile:
 
 ; 25a
 
-FUN_2_025a:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; void InvertTile(hdc, x, y)
+; Invert the tile at the given coordinates. (unused)
+func InvertTile_Unused
     sub sp,byte +0x2
+    ; if the coordinate isn't onscreen, do nothing
     push word [bp+0xa]
     push word [bp+0x8]
     call 0x2ca:IsCoordOnscreen ; 26d 2:7a IsCoordOnscreen
     add sp,byte +0x4
     or ax,ax
-    jz .label0 ; ↓
+    jz .end ; ↓
+    ; PatBlt(hdc, (x-ViewportX)*32, (y-ViewportY)*32, 32, 32, DSTINVERT)
     push word [bp+0x6]
     mov ax,[bp+0x8]
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportX]
     sub ax,[bx+0xa2c]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     push ax
     mov ax,[bp+0xa]
     sub ax,[bx+ViewportY]
     sub ax,[bx+0xa2e]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     push ax
-    push byte +0x20
-    push byte +0x20
-    push byte +0x55
+    push byte TileWidth
+    push byte TileHeight
+    push byte +0x55 ; DSTINVERT
     push byte +0x9
     call 0x0:0xffff ; 2a6 GDI.PatBlt
-.label0: ; 2ab
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+.end: ; 2ab
+endfunc
 
 ; 2b2
 

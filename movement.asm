@@ -1139,11 +1139,6 @@ endfunc
 
 ; 966
 
-; Tile sizes
-; TODO: move these somewhere more global
-TileWidth       equ 32
-TileHeight      equ 32
-
 func DrawStretchedTile
     sub sp,byte +0xa
 

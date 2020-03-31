@@ -177,6 +177,12 @@ ID_COLOR        equ 0x7A
 ID_HOWTOPLAY    equ 0x78
 ID_COMMANDS     equ 0x79
 
+; Tile sizes
+TileWidth       equ 32
+TileHeight      equ 32
+TileShift       equ 5
+
+
 ;;; Windows stuff
 
 ; Window styles
