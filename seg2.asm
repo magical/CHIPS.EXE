@@ -13,7 +13,7 @@ func ShowMessageBox
     %arg flags:word ; +c
     sub sp,byte +0x2
     push si
-    call 0x6d:FUN_2_17a2 ; e 2:17a2
+    call 0x6d:PauseTimer ; e 2:17a2
     ; if sound is enabled, play a message beep before
     ; popping the message box open
     cmp word [SoundEnabled],byte +0x0
@@ -54,7 +54,7 @@ func ShowMessageBox
     push word [flags]
     call 0x0:0xffff ; 63 USER.MessageBox
     mov si,ax
-    call 0x1e2:FUN_2_17ba ; 6a 2:17ba
+    call 0x1e2:UnpauseTimer ; 6a 2:17ba
     mov ax,si
     pop si
 endfunc
@@ -1189,7 +1189,7 @@ func CreateWindows
     cmp di,byte +0x7
     jnz .label10 ; ↓
 .label9: ; b08
-    call 0x3b5:FUN_2_17a2 ; b08 2:17a2
+    call 0x3b5:PauseTimer ; b08 2:17a2
     inc word [GamePaused]
 .label10: ; b11
     push word [hwndMain]
@@ -2545,7 +2545,13 @@ FUN_2_176e:
 
 ; 17a2
 
-FUN_2_17a2:
+; void PauseTimer()
+;
+; Stops the game tick from advancing.
+; This function can be called multiple times;
+; the timer will only resume when a matching number of
+; calls to UnpauseTimer are made.
+PauseTimer:
     mov ax,ds
     nop
     inc bp
@@ -2563,7 +2569,8 @@ FUN_2_17a2:
 
 ; 17ba
 
-FUN_2_17ba:
+; void UnpauseTimer()
+UnpauseTimer:
     mov ax,ds
     nop
     inc bp
@@ -2596,7 +2603,7 @@ PauseGame:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    call 0x1893:FUN_2_17a2 ; 17e7 2:17a2
+    call 0x1893:PauseTimer ; 17e7 2:17a2
     push word [hMenu]
     push byte ID_PAUSE
     inc word [GamePaused]
@@ -2666,7 +2673,7 @@ UnpauseGame:
     push byte +0x0
     push byte +0x0
     call 0x0:0xd15 ; 188b USER.InvalidateRect
-    call 0x19a6:FUN_2_17ba ; 1890 2:17ba
+    call 0x19a6:UnpauseTimer ; 1890 2:17ba
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -4150,7 +4157,7 @@ func MAINWNDPROC
     call 0x0:0x2806 ; 255b USER.InvalidateRect
     push word [hwndBoard]
     call 0x0:0x280f ; 2564 USER.UpdateWindow
-    call 0x26dc:FUN_2_17ba ; 2569 2:17ba
+    call 0x26dc:UnpauseTimer ; 2569 2:17ba
 .label34: ; 256e
     mov ax,[wParam]
     cmp ax,0x74
@@ -4444,7 +4451,7 @@ func BOARDWNDPROC
     call 0x0:0x21d7 ; 2805 USER.InvalidateRect
     push word [hwndBoard]
     call 0x0:0xb20 ; 280e USER.UpdateWindow
-    call 0x221c:FUN_2_17ba ; 2813 2:17ba
+    call 0x221c:UnpauseTimer ; 2813 2:17ba
 .label7: ; 2818
     mov bx,[GameStatePtr]
     mov word [bx+HaveMouseTarget],0x1
