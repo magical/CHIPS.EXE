@@ -1583,7 +1583,7 @@ FUN_2_0dc6:
     push word [bp-0x12]
     mov bx,[bp+0x8]
     push word [bx]
-    call 0xef7:FUN_2_1006 ; ec9 2:1006
+    call 0xef7:DrawSolidBorder ; ec9 2:1006
     add sp,byte +0xc
     lea ax,[bp-0x12]
     push ss
@@ -1612,24 +1612,22 @@ FUN_2_0dc6:
 
 ; f06
 
-FUN_2_0f06:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; draw an inset/outset border
+func FUN_2_0f06
     sub sp,byte +0x8
     push di
     push si
     mov si,[bp+0x12]
+    ; get a GRAY_BRUSH or a WHITE_BRUSH
+    ; depending on whether si == 0 or not
     cmp si,byte +0x1
     sbb ax,ax
     and ax,0x2
     push ax
     call 0x0:0xf33 ; f21 GDI.GetStockObject
     mov di,ax
+    ; get a GRAY_BRUSH or a WHITE_BRUSH
+    ; depending on whether si != 0 or not
     cmp si,byte +0x1
     cmc
     sbb ax,ax
@@ -1637,18 +1635,20 @@ FUN_2_0f06:
     push ax
     call 0x0:0x101c ; f32 GDI.GetStockObject
     mov [bp-0x4],ax
+    ; select the first brush
     push word [bp+0x6]
     push di
     call 0x0:0xf6b ; f3e GDI.SelectObject
     mov [bp-0x8],ax
+    ;
     cmp word [bp+0x10],byte +0x0
     jg .label0 ; ↓
-    jmp .label2 ; ↓
+    jmp .cleanup ; ↓
 .label0: ; f4f
     mov [bp-0x6],di
     mov si,[bp+0x6]
     mov di,[bp+0x10]
-.label1: ; f58
+.loop: ; f58
     lea ax,[bp+0x8]
     push ss
     push ax
@@ -1668,7 +1668,7 @@ FUN_2_0f06:
     sub ax,0x2
     push ax
     push byte +0x1
-    push word 0xf0
+    push word 0xf0 ; PATCOPY
     push byte +0x21
     call 0x0:0xfa5 ; f89 GDI.PatBlt
     push si
@@ -1695,7 +1695,7 @@ FUN_2_0f06:
     dec ax
     push ax
     push byte +0x1
-    push word 0xf0
+    push word 0xf0 ; PATCOPY
     push byte +0x21
     call 0x0:0xfe7 ; fca GDI.PatBlt
     push si
@@ -1707,51 +1707,43 @@ FUN_2_0f06:
     mov ax,[bp+0xe]
     sub ax,[bp+0xa]
     push ax
-    push word 0xf0
+    push word 0xf0 ; PATCOPY
     push byte +0x21
     call 0x0:0x105e ; fe6 GDI.PatBlt
     dec di
-    jz .label2 ; ↓
-    jmp .label1 ; ↑
-.label2: ; ff1
+    jz .cleanup ; ↓
+    jmp .loop ; ↑
+.cleanup: ; ff1
+    ; restore the selected object
     push word [bp+0x6]
     push word [bp-0x8]
     call 0x0:0x1022 ; ff7 GDI.SelectObject
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 1006
 
-FUN_2_1006:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; draw a solid border
+func DrawSolidBorder
     sub sp,byte +0x4
     push di
     push si
     mov si,[bp+0x6]
+    ; get a light gray brush and select it
     push si
-    push byte +0x1
+    push byte +0x1 ; LTGRAY BRUSH
     call 0x0:0x769 ; 101b GDI.GetStockObject
     push ax
     call 0x0:0x10c1 ; 1021 GDI.SelectObject
     mov [bp-0x4],ax
+    ; check a flag
     cmp word [bp+0x10],byte +0x0
     jg .label0 ; ↓
-    jmp .label2 ; ↓
+    jmp .cleanup ; ↓
 .label0: ; 1032
     mov di,[bp+0x10]
-.label1: ; 1035
+.loop: ; 1035
     lea ax,[bp+0x8]
     push ss
     push ax
@@ -1768,7 +1760,7 @@ FUN_2_1006:
     sub ax,0x2
     push ax
     push byte +0x1
-    push word 0xf0
+    push word 0xf0 ; PATCOPY
     push byte +0x21
     call 0x0:0x1079 ; 105d GDI.PatBlt
     push si
@@ -1779,7 +1771,7 @@ FUN_2_1006:
     sub ax,[bp+0xa]
     dec ax
     push ax
-    push word 0xf0
+    push word 0xf0 ; PATCOPY
     push byte +0x21
     call 0x0:0x1096 ; 1078 GDI.PatBlt
     push si
@@ -1792,7 +1784,7 @@ FUN_2_1006:
     dec ax
     push ax
     push byte +0x1
-    push word 0xf0
+    push word 0xf0 ; PATCOPY
     push byte +0x21
     call 0x0:0x10b2 ; 1095 GDI.PatBlt
     push si
@@ -1804,23 +1796,19 @@ FUN_2_1006:
     mov ax,[bp+0xe]
     sub ax,[bp+0xa]
     push ax
-    push word 0xf0
+    push word 0xf0 ; PATCOPY
     push byte +0x21
     call 0x0:0x111d ; 10b1 GDI.PatBlt
     dec di
-    jz .label2 ; ↓
-    jmp .label1 ; ↑
-.label2: ; 10bc
+    jz .cleanup ; ↓
+    jmp .loop ; ↑
+.cleanup: ; 10bc
     push si
     push word [bp-0x4]
     call 0x0:0x1178 ; 10c0 GDI.SelectObject
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 10ce
 
