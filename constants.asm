@@ -153,6 +153,7 @@ TickSound               equ 13
 ChipDeathByTimeSound    equ 14
 
 ; Last level
+FirstLevel    equ 1
 FakeLastLevel equ 144
 LastLevel     equ 149
 
@@ -176,6 +177,17 @@ ID_COLOR        equ 0x7A
 
 ID_HOWTOPLAY    equ 0x78
 ID_COMMANDS     equ 0x79
+
+; INI keys & defaults
+ID_HighestLevel equ 200 ; 0xc8
+ID_CurrentLevel equ 201 ; 0xc9
+ID_CurrentScore equ 202 ; 0xca
+ID_NumMidiFiles equ 203 ; 0xcb
+
+SoundEnabledDefault     equ 0
+MusicEnabledDefault     equ 0
+ColorDefault            equ 1
+NumMidiFilesDefault     equ 3
 
 ; Tile sizes
 TileWidth       equ 32

@@ -1197,8 +1197,8 @@ func CreateWindows
     call 0x0:0xc67 ; b16 USER.ShowWindow
     push word [hwndMain]
     call 0x0:0xffff ; b1f USER.UpdateWindow
-    push word 0xc9
-    call 0xb40:FUN_2_198e ; b27 2:198e
+    push word ID_CurrentLevel
+    call 0xb40:GetIniInt ; b27 2:198e
     add sp,byte +0x2
     cmp ax,0x1
     jnl .label11 ; ↓
@@ -1206,13 +1206,13 @@ func CreateWindows
     jmp short .label12 ; ↓
     nop
 .label11: ; b3a
-    push word 0xc9
-    call 0xb4d:FUN_2_198e ; b3d 2:198e
+    push word ID_CurrentLevel
+    call 0xb4d:GetIniInt ; b3d 2:198e
     add sp,byte +0x2
     mov si,ax
 .label12: ; b47
-    push word 0xca
-    call 0xb62:FUN_2_1a1c ; b4a 2:1a1c
+    push word ID_CurrentScore
+    call 0xb62:GetIniLong; b4a 2:1a1c
     add sp,byte +0x2
     or dx,dx
     jnl .label13 ; ↓
@@ -1221,8 +1221,8 @@ func CreateWindows
     jmp short .label14 ; ↓
     nop
 .label13: ; b5c
-    push word 0xca
-    call 0xc08:FUN_2_1a1c ; b5f 2:1a1c
+    push word ID_CurrentScore
+    call 0xc08:GetIniLong; b5f 2:1a1c
     add sp,byte +0x2
 .label14: ; b67
     mov [TotalScore],ax
@@ -2724,119 +2724,113 @@ UnpauseMusic:
 
 ; 18de
 
-FUN_2_18de:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; char* GetIniKey(int id, int* pDefaultValue)
+;
+; Returns the key for the requested INI setting.
+; If pDefaultValue is not NULL, it is set to the default
+; value for the requested key.
+func GetIniKey
     sub sp,byte +0x2
     mov ax,[bp+0x6]
-    cmp ax,0xc8
-    jz .label7 ; ↓
-    jg .label0 ; ↓
-    sub ax,0x75
-    jz .label1 ; ↓
-    dec ax
-    jz .label3 ; ↓
-    sub ax,0x4
-    jz .label5 ; ↓
-    jmp .label16 ; ↓
+    cmp ax,200
+    jz .highestLevelKey
+    jg .label0
+    sub ax,117
+    jz .midiKey
+    dec ax ; 118
+    jz .soundsKey
+    sub ax,4 ; 122
+    jz .colorKey
+    jmp .end
     nop
     nop
     nop
 .label0: ; 1908
-    sub ax,0xc9
-    jz .label9 ; ↓
-    dec ax
-    jz .label11 ; ↓
-    dec ax
-    jz .label13 ; ↓
-    jmp short .label16 ; ↓
+    sub ax,201
+    jz .currentLevelKey
+    dec ax ; 202
+    jz .currentScoreKey
+    dec ax ; 203
+    jz .numMidiFilesKey
+    jmp short .end
     nop
-.label1: ; 1916
+    ;;
+.midiKey: ; 1916
     mov bx,[bp+0x8]
     or bx,bx
-    jz .label2 ; ↓
+    jz .skip_midi_default
+    mov word [bx],MusicEnabledDefault
+.skip_midi_default: ; 1921
+    mov ax,MIDIKey
+    jmp short .set_dx_and_return
+    ;;
+.soundsKey: ; 1926
+    mov bx,[bp+0x8]
+    or bx,bx
+    jz .skip_sounds_default
+    mov word [bx],SoundEnabledDefault
+.skip_sounds_default: ; 1931
+    mov ax,SoundsKey
+    jmp short .set_dx_and_return
+    ;;
+.colorKey: ; 1936
+    mov bx,[bp+0x8]
+    or bx,bx
+    jz .skip_color_default
+    mov word [bx],ColorDefault
+.skip_color_default: ; 1941
+    mov ax,ColorKey
+    jmp short .set_dx_and_return
+    ;;
+.highestLevelKey: ; 1946
+    mov bx,[bp+0x8]
+    or bx,bx
+    jz .skip_highestLevel_default
+    mov word [bx],FirstLevel
+.skip_highestLevel_default: ; 1951
+    mov ax,HighestLevelKey
+    jmp short .set_dx_and_return
+    ;;
+.currentLevelKey: ; 1956
+    mov bx,[bp+0x8]
+    or bx,bx
+    jz .skip_currentLevel_default
+    mov word [bx],FirstLevel
+.skip_currentLevel_default: ; 1961
+    mov ax,CurrentLevelKey
+    jmp short .set_dx_and_return
+    ;;
+.currentScoreKey: ; 1966
+    mov bx,[bp+0x8]
+    or bx,bx
+    jz .skip_currentScore_default
     mov word [bx],0x0
-.label2: ; 1921
-    mov ax,0x286
-    jmp short .label15 ; ↓
-.label3: ; 1926
+.skip_currentScore_default:
+    mov ax,CurrentScoreKey
+    jmp short .set_dx_and_return
+    ;;
+.numMidiFilesKey: ; 1976
     mov bx,[bp+0x8]
     or bx,bx
-    jz .label4 ; ↓
-    mov word [bx],0x0
-.label4: ; 1931
-    mov ax,0x28c
-    jmp short .label15 ; ↓
-.label5: ; 1936
-    mov bx,[bp+0x8]
-    or bx,bx
-    jz .label6 ; ↓
-    mov word [bx],0x1
-.label6: ; 1941
-    mov ax,0x2be
-    jmp short .label15 ; ↓
-.label7: ; 1946
-    mov bx,[bp+0x8]
-    or bx,bx
-    jz .label8 ; ↓
-    mov word [bx],0x1
-.label8: ; 1951
-    mov ax,0x294
-    jmp short .label15 ; ↓
-.label9: ; 1956
-    mov bx,[bp+0x8]
-    or bx,bx
-    jz .label10 ; ↓
-    mov word [bx],0x1
-.label10: ; 1961
-    mov ax,0x2a2
-    jmp short .label15 ; ↓
-.label11: ; 1966
-    mov bx,[bp+0x8]
-    or bx,bx
-    jz .label12 ; ↓
-    mov word [bx],0x0
-.label12: ; 1971
-    mov ax,0x2b0
-    jmp short .label15 ; ↓
-.label13: ; 1976
-    mov bx,[bp+0x8]
-    or bx,bx
-    jz .label14 ; ↓
-    mov word [bx],0x3
-.label14: ; 1981
-    mov ax,0x2de
-.label15: ; 1984
+    jz .skip_numMidiFiles_default
+    mov word [bx],NumMidiFilesDefault
+.skip_numMidiFiles_default: ; 1981
+    mov ax,NumMidiFilesKey ; "Number of Midi Files"
+.set_dx_and_return: ; 1984
     mov dx,ds
-.label16: ; 1986
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+.end: ; 1986
+endfunc
 
 ; 198e
 
-FUN_2_198e:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; int GetIniInt(int id)
+func GetIniInt
     sub sp,byte +0x8
     push si
     lea ax,[bp-0x8]
     push ax
     push word [bp+0x6]
-    call 0x12f5:FUN_2_18de ; 19a3 2:18de
+    call 0x12f5:GetIniKey ; 19a3 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2849,27 +2843,17 @@ FUN_2_198e:
     push word IniFileName
     call 0x0:0xffff ; 19bd KERNEL.GetPrivateProfileInt
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 19ca
 
-FUN_2_19ca:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; StoreIniInt(int id, int value)
+func StoreIniInt
     sub sp,byte +0x16
     push si
     push byte +0x0
     push word [bp+0x6]
-    call 0x1a34:FUN_2_18de ; 19dd 2:18de
+    call 0x1a34:GetIniKey ; 19dd 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2892,28 +2876,20 @@ FUN_2_19ca:
     push word IniFileName
     call 0x0:0x1acf ; 1a0f KERNEL.WritePrivateProfileString
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1a1c
 
-FUN_2_1a1c:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; long GetIniLong(int id)
+;
+; Retrieves an long int value from the INI file.
+func GetIniLong
     sub sp,byte +0x28
     push si
     lea ax,[bp-0x8]
     push ax
     push word [bp+0x6]
-    call 0x1a9c:FUN_2_18de ; 1a31 2:18de
+    call 0x1a9c:GetIniKey ; 1a31 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2947,27 +2923,17 @@ FUN_2_1a1c:
     call 0x1ba2:0xc0 ; 1a76 1:c0 atol
     add sp,byte +0x2
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1a86
 
-FUN_2_1a86:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; StoreIniLong(int id, long value)
+func StoreIniLong
     sub sp,byte +0x16
     push si
     push byte +0x0
     push word [bp+0x6]
-    call 0x1698:FUN_2_18de ; 1a99 2:18de
+    call 0x1698:GetIniKey ; 1a99 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2991,12 +2957,7 @@ FUN_2_1a86:
     push word IniFileName
     call 0x0:0x1c94 ; 1ace KERNEL.WritePrivateProfileString
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 1adc
 
@@ -3363,8 +3324,8 @@ FUN_2_1dae:
     push di
     push si
     mov si,0x1
-    push word 0xc8
-    call 0x1e0a:FUN_2_198e ; 1dc3 2:198e
+    push word ID_HighestLevel
+    call 0x1e0a:GetIniInt ; 1dc3 2:198e
     add sp,byte +0x2
     mov di,ax
     cmp di,byte +0x1
@@ -3394,13 +3355,13 @@ FUN_2_1dae:
     jng .label0 ; ↑
 .label1: ; 1e02
     push byte +0x1
-    push word 0xc8
-    call 0x1e19:FUN_2_19ca ; 1e07 2:19ca
+    push word ID_HighestLevel
+    call 0x1e19:StoreIniInt ; 1e07 2:19ca
     add sp,byte +0x4
     push byte +0x0
     push byte +0x0
-    push word 0xca
-    call 0x1e93:FUN_2_1a86 ; 1e16 2:1a86
+    push word ID_CurrentScore
+    call 0x1e93:StoreIniLong ; 1e16 2:1a86
     add sp,byte +0x6
     pop si
     pop di
@@ -3586,8 +3547,8 @@ MenuItemCallback:
     jmp short .label12 ; ↑
 
 .label19: ; 1f9e
-    push word 0xc8
-    call 0x1fb9:FUN_2_198e ; 1fa1 2:198e
+    push word ID_HighestLevel
+    call 0x1fb9:GetIniInt ; 1fa1 2:198e
     add sp,byte +0x2
     dec ax
     jz .label20 ; ↓
@@ -3661,11 +3622,11 @@ MenuItemCallback:
     add sp,byte +0x2
 .label26: ; 205a
     push word [MusicEnabled]
-    push byte +0x75
-    call 0x2088:FUN_2_19ca ; 2060 2:19ca
+    push byte ID_BGM
+    call 0x2088:StoreIniInt ; 2060 2:19ca
     add sp,byte +0x4
     push word [hMenu]
-    push byte +0x75
+    push byte ID_BGM
     cmp word [MusicEnabled],byte +0x1
     jmp .label7 ; ↑
 
@@ -3676,10 +3637,10 @@ MenuItemCallback:
     mov [SoundEnabled],ax
     push ax
     push byte ID_SOUND
-    call 0x20c7:FUN_2_19ca ; 2085 2:19ca
+    call 0x20c7:StoreIniInt ; 2085 2:19ca
     add sp,byte +0x4
     push word [hMenu]
-    push byte +0x76
+    push byte ID_SOUND
     cmp word [SoundEnabled],byte +0x1
     cmc
     sbb ax,ax
@@ -3822,8 +3783,8 @@ MenuItemCallback:
     xor ax,ax
 .label39: ; 2216
     push ax
-    push byte +0x7a
-    call 0x2339:FUN_2_19ca ; 2219 2:19ca
+    push byte ID_COLOR
+    call 0x2339:StoreIniInt ; 2219 2:19ca
     add sp,byte +0x4
     push word [hMenu]
     push byte ID_COLOR
@@ -3954,12 +3915,12 @@ func MAINWNDPROC
     push byte +0x1
     call 0x23fb:0x320 ; 232c 4:320
     add sp,byte +0x2
-    push byte +0x75
-    call 0x2346:FUN_2_198e ; 2336 2:198e
+    push byte ID_BGM
+    call 0x2346:GetIniInt ; 2336 2:198e
     add sp,byte +0x2
     mov [MusicEnabled],ax
-    push byte +0x76
-    call 0x23db:FUN_2_198e ; 2343 2:198e
+    push byte ID_SOUND
+    call 0x23db:GetIniInt ; 2343 2:198e
     add sp,byte +0x2
     mov [SoundEnabled],ax
     call 0x2356:0x0 ; 234e 8:0 InitSound
@@ -4020,8 +3981,8 @@ func MAINWNDPROC
     call 0x2442:0x2d4 ; 23e0 8:2d4
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    push word 0xc9
-    call 0x2492:FUN_2_19ca ; 23f0 2:19ca
+    push word ID_CurrentLevel
+    call 0x2492:StoreIniInt ; 23f0 2:19ca
     add sp,byte +0x4
     call 0x1f2e:0x240 ; 23f8 4:240
     cmp word [0x2a],byte +0x0

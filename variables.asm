@@ -39,7 +39,15 @@ s_How_To_Play                       equ 0x252
 s_Commands                          equ 0x25E
 IniFileName                         equ 0x268
 IniSectionName                      equ 0x274
+MIDIKey                             equ 0x286
+SoundsKey                           equ 0x28C
+HighestLevelKey                     equ 0x294
+CurrentLevelKey                     equ 0x2A2
+CurrentScoreKey                     equ 0x2B0
+ColorKey                            equ 0x2BE
 s_KeyboardDelay                     equ 0x2C6
+DataFileName                        equ 0x2D4
+NumMidiFilesKey                     equ 0x2DE
 SoundKeyArray                       equ 0x2F4
 SoundDefaultArray                   equ 0x312
 MidiFileDefaultArray                equ 0x330

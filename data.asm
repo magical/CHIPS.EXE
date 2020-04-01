@@ -77,15 +77,15 @@ s_Commands      db "Commands", 0, 0
 
 IniFileName     db "entpack.ini", 0
 IniSectionName  db "Chip's Challenge", 0, 0
-db "MIDI", 0, 0
-db "Sounds", 0, 0
-db "Highest Level", 0
-db "Current Level", 0
-db "Current Score", 0
-db "Color", 0, 0, 0
+MIDIKey db "MIDI", 0, 0
+SoundsKey db "Sounds", 0, 0
+HighestLevelKey db "Highest Level", 0
+CurrentLevelKey db "Current Level", 0
+CurrentScoreKey db "Current Score", 0
+ColorKey db "Color", 0, 0, 0
 s_KeyboardDelay db "KeyboardDelay", 0
-db "CHIPS.DAT", 0
-db "Number of Midi Files", 0, 0
+DataFileName    db "CHIPS.DAT", 0
+NumMidiFilesKey db "Number of Midi Files", 0, 0
 
 SoundKeyArray:
 dw PickUpToolSoundKey
