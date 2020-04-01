@@ -188,6 +188,7 @@ SoundEnabledDefault     equ 0
 MusicEnabledDefault     equ 0
 ColorDefault            equ 1
 NumMidiFilesDefault     equ 3
+NumMidiFilesMax         equ 20
 
 ; Tile sizes
 TileWidth       equ 32

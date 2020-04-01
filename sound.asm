@@ -469,6 +469,7 @@ func FUN_8_04a0
     sub sp,0x102
     push di
     push si
+    ;; Sound
     xor di,di
     mov si,SoundArray
 .soundLoop: ; 4b5
@@ -497,22 +498,23 @@ func FUN_8_04a0
     add si,byte +0x2
     cmp si,SoundArray.end
     jc .soundLoop ; ↑
-    push word 0xcb
+    ;; MIDI
+    push word ID_NumMidiFiles
     call 0x50a:0x198e ; 4f1 2:198e
     add sp,byte +0x2
-    cmp ax,0x14
+    cmp ax,NumMidiFilesMax
     jl .label2 ; ↓
-    mov ax,0x14
+    mov ax,NumMidiFilesMax
     jmp short .label3 ; ↓
     nop
 .label2: ; 504
-    push word 0xcb
+    push word ID_NumMidiFiles
     call 0x519:0x198e ; 507 2:198e
     add sp,byte +0x2
 .label3: ; 50f
     mov [NumMIDIFiles],ax
     push ax
-    push word 0xcb
+    push word ID_NumMidiFiles
     call 0x539:0x19ca ; 516 2:19ca
     add sp,byte +0x4
     xor di,di
