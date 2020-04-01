@@ -28,7 +28,7 @@ InitialMonsterList  equ 0x81e
 
 ; Slip list
 ; Array of Monster structs
-; Monster.slipping records whether the moving object is a block (yes, i should probably rename it).
+; Monster.slipping records whether the moving object is a block (yes, this is confusing).
 SlipListLen         equ 0x91e
 SlipListCap         equ 0x920
 SlipListHandle      equ 0x922
@@ -37,6 +37,7 @@ SlipListSeg         equ 0x926
 
 ; Monsters
 ; Array of Monster structs
+; Monster.slipping records whether the monster is on the slip list
 MonsterListLen      equ 0x928
 MonsterListCap      equ 0x92a
 MonsterListHandle   equ 0x92c
