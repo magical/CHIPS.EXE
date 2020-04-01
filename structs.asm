@@ -94,14 +94,10 @@ ViewportHeight      equ 0xa2a
 ;     viewporty = chipy - viewportheight/2
 ; and clamped to the range [0, 32-viewportsize]
 
-; a24 viewport x
-; a26 viewport y
-; a28 viewport width
-; a2a viewport height
-; a2c ___ x?
-; a2e ___ y?
-
-; a34 incremented every time chip moves
+; These fields are some sort of unused additional offset
+; to the viewport offset. They are always set to zero.
+UnusedOffsetX       equ 0xa2c
+UnusedOffsetY       equ 0xa2e
 
 ; Counts the number of times the level has been retried,
 ; and progress towards the "You seem to be having trouble"
