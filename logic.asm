@@ -2565,7 +2565,7 @@ func SlipLoop
     push word [x]
     push word [y]
     push word [x]
-    call 0x16a7:0x636 ; 168a slide movement
+    call 0x16a7:0x636 ; 168a 7:636 slide movement
     add sp,byte +0x10
     push byte +0x0
     push word 0xff

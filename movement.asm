@@ -328,7 +328,7 @@ func DoTick
     neg ax
     push ax ; tick&3 == 0
     push word [hDC]
-    call 0xffff:0x74e ; 26f Monster loop
+    call 0xffff:0x74e ; 26f 3:74e Monster loop
     add sp,byte +0x4
     jmp short .doChipSlideMovement
     nop
