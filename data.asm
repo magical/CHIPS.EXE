@@ -533,8 +533,8 @@ MIDIArray: ; XXX how long is this?
 times 20 dw 0 ; 16c8
 
 ; seg5.asm
-;   169e            initial x coord of main window (always 0x20)
-;   16a0            initial y coord of main window (0x20 or 8, depending on vertical resolution)
+;   169e            main window horizontal padding (always 0x20)
+;   16a0            main window vertical padding (0x20 or 8, depending on vertical resolution)
 ;   16c0            horizontal resolution
 ;   16c2            vertical resolution
 ;   172e    BOOL    records whether windows version >= 3.10
