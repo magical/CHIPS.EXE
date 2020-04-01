@@ -24,12 +24,12 @@ for line in sys.stdin:
         lastjump = ""
         shape = "ellipse" if "." in label else "box"
         print("  \"{}\" [label=\"{}\", shape={}]".format(currentlabel, label, shape))
-    if words[0].startswith("j"):
-        lastjump = words[0]
+    if words[0].startswith("j") or words[0] == "dw":
         for word in words:
             if word.startswith("."):
+                lastjump = words[0]
                 target = currentfunc+word
-                if words[0] == "jmp":
+                if words[0] == "jmp" or words[0] == "dw":
                     print("  \"{}\" -> \"{}\" [color=purple];".format(currentlabel, target))
                 else:
                     print("  \"{}\" -> \"{}\";".format(currentlabel, target))
