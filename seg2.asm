@@ -781,31 +781,31 @@ CreateClasses:
     sub sp,byte +0x6a
     push si
     mov si,[bp+0x6]
-    mov word [bp-0x6a],0x1000
-    mov word [bp-0x68],MAINWNDPROC
-    mov word [bp-0x66],0x749
+    mov word [bp-0x6a],0x1000           ; style
+    mov word [bp-0x68],MAINWNDPROC      ; lpfnWndProc
+    mov word [bp-0x66],0x749            ;
     xor ax,ax
-    mov [bp-0x64],ax
-    mov [bp-0x62],ax
-    mov [bp-0x60],si
+    mov [bp-0x64],ax                    ; cbClassExtra
+    mov [bp-0x62],ax                    ; cbWndExtra
+    mov [bp-0x60],si                    ; hInstance
     push si
     push ax
     push word 0x100
     call 0x0:0xffff ; 6f8 USER.LoadIcon
-    mov [bp-0x5e],ax
+    mov [bp-0x5e],ax                    ; hIcon
     push byte +0x0
     push byte +0x0
     push word 0x7f00
     call 0x0:0x75f ; 707 USER.LoadCursor
-    mov [bp-0x5c],ax
+    mov [bp-0x5c],ax                    ; hCursor
     push byte +0x4
     call 0x0:0xffff ; 711 GDI.GetStockObject
-    mov [bp-0x5a],ax
+    mov [bp-0x5a],ax                    ; hbcBackground
     sub ax,ax
-    mov [bp-0x56],ax
-    mov [bp-0x58],ax
-    mov word [bp-0x54],MainClassName
-    mov [bp-0x52],ds
+    mov [bp-0x56],ax                    ; lpszMenuName
+    mov [bp-0x58],ax                    ;
+    mov word [bp-0x54],MainClassName    ; lpszClassName
+    mov [bp-0x52],ds                    ;
     lea ax,[bp-0x6a]
     push ss
     push ax
@@ -1028,8 +1028,8 @@ func CreateWindows
     push word MainWindowCaption ; "Chip's Challenge"
     push word (WS_CLIPCHILDREN | WS_TILEDWINDOW)>>16
     push byte (WS_CLIPCHILDREN | WS_TILEDWINDOW)&0xffff
-    push word 0x8000
-    push word 0x8000
+    push word 0x8000 ; x = CW_USEDEFAULT
+    push word 0x8000 ; y = CW_USEDEFAULT
     mov ax,[bp-0x12]
     sub ax,[bp-0x16]
     push ax
