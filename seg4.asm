@@ -777,7 +777,7 @@ DecodeLevelFields:
     jmp [cs:bx+0x71c]
     nop
     dw .label2 ; ↓
-    dw 0x73e
+    dw .label27
     dw .label3 ; ↓
     dw .label6 ; ↓
     dw .label12 ; ↓
@@ -787,13 +787,13 @@ DecodeLevelFields:
     dw .label25 ; ↓
     dw .label23 ; ↓
 .label2: ; 730
-; 0x730
-    db 0x8b,0x4,0x8b ; 0000072F  088B048B          or [bp+di-0x74fc],cl
-    push ds
-    adc byte [0x8789],0x4
-    or cl,ch
-    sti
-    add [bx+si+0x48b],dx
+    mov ax,[si]
+    mov bx,[0x1680]
+    mov [bx+0x804],ax
+    jmp .label25
+    nop
+.label27: ; 73e
+    mov ax,[si]
     mov bx,[0x1680]
     mov [bx+0x806],ax
     jmp .label25 ; ↓
