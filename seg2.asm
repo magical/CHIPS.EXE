@@ -110,11 +110,11 @@ DrawTile:
     jnz .label0 ; ↓
     jmp .label3 ; ↓
 .label0: ; da
-    cmp byte [bp+0xc],0x40
+    cmp byte [bp+0xc],FirstTransparent
     jnc .label1 ; ↓
     jmp .label3 ; ↓
 .label1: ; e3
-    cmp byte [bp+0xc],0x6f
+    cmp byte [bp+0xc],LastTransparent
     jna .label2 ; ↓
     jmp .label3 ; ↓
 .label2: ; ec
@@ -312,6 +312,7 @@ endfunc
 
 ; 2b2
 
+; Invalidate a tile. Unused.
 FUN_2_02b2:
     mov ax,ds
     nop
@@ -1507,7 +1508,7 @@ FUN_2_0cbe:
     mov si,[bx+ChipY]
     shl si,byte 0x5
     add si,[bx+ChipX]
-    cmp byte [bx+si+0x400],0x2f
+    cmp byte [bx+si+Lower],Hint
     jnz .label5 ; ↓
     call 0xdb5:ShowHint ; dab 2:c1a ShowHint
     jmp short .label6 ; ↓
@@ -1525,6 +1526,7 @@ FUN_2_0cbe:
 
 ; dc6
 
+; draw main window background
 FUN_2_0dc6:
     mov ax,ds
     nop
@@ -1862,6 +1864,9 @@ endfunc
 
 ; 10ce
 
+; draw board?
+; and level placard
+; and/or pause screen
 FUN_2_10ce:
     mov ax,ds
     nop
@@ -2495,6 +2500,7 @@ FUN_2_10ce:
 
 ; 16fa
 
+; create timer
 FUN_2_16fa:
     mov ax,ds
     nop
@@ -2559,6 +2565,7 @@ FUN_2_16fa:
 
 ; 176e
 
+; destroy timer
 FUN_2_176e:
     mov ax,ds
     nop
@@ -3011,6 +3018,7 @@ endfunc
 
 ; 1adc
 
+; GetLevelProgress
 FUN_2_1adc:
     mov ax,ds
     nop
@@ -3036,7 +3044,7 @@ FUN_2_1adc:
     push ss
     push ax
     push ds
-    push word 0x2c4
+    push word 0x2c4 ; ""
     lea ax,[bp-0x24]
     push ss
     push ax
@@ -3050,13 +3058,13 @@ FUN_2_1adc:
     xor ax,ax
     jmp .label15 ; ↓
 .label0: ; 1b28
-    lea ax,[bp+di-0x24]
+    lea ax,[(bp-0x24) + di]
     mov [bp-0x6],ax
     lea si,[bp-0x24]
     cmp byte [si],0x0
     jz .label2 ; ↓
 .label1: ; 1b36
-    cmp byte [si],0x2c
+    cmp byte [si],','
     jz .label2 ; ↓
     inc si
     cmp byte [si],0x0
@@ -3092,7 +3100,7 @@ FUN_2_1adc:
     cmp byte [si],0x0
     jz .label8 ; ↓
 .label7: ; 1b88
-    cmp byte [si],0x2c
+    cmp byte [si],','
     jz .label8 ; ↓
     inc si
     cmp byte [si],0x0
@@ -3124,7 +3132,7 @@ FUN_2_1adc:
     cmp byte [si],0x0
     jz .label12 ; ↓
 .label11: ; 1bd5
-    cmp byte [si],0x2c
+    cmp byte [si],','
     jz .label12 ; ↓
     inc si
     cmp byte [si],0x0
@@ -3162,6 +3170,10 @@ FUN_2_1adc:
 
 ; 1c1c
 
+; SaveLevelProgress
+;
+; Writes a level password to the ini file,
+; and (optionally) a completion time and score.
 FUN_2_1c1c:
     mov ax,ds
     nop
@@ -3233,6 +3245,7 @@ FUN_2_1c1c:
 
 ; 1ca0
 
+; get midi or sound effect path
 FUN_2_1ca0:
     mov ax,ds
     nop
@@ -3248,7 +3261,7 @@ FUN_2_1ca0:
     jz .label0 ; ↓
     mov si,[bp+0x6]
     mov bx,si
-    mov di,[bx+si+0x2f4]
+    mov di,[SoundKeyArray+(bx+si)]
     jmp short .label1 ; ↓
 .label0: ; 1cc0
     mov si,[bp+0x6]
@@ -3322,10 +3335,10 @@ FUN_2_1ca0:
     jz .label7 ; ↓
     mov bx,[bp-0x4]
     add bx,si
-    cmp byte [bx-0x1],0x5c
+    cmp byte [bx-0x1],'\'
     jz .label6 ; ↓
     mov bx,[bp-0x4]
-    mov byte [bx+si],0x5c
+    mov byte [bx+si],'\'
     inc word [bp-0x4]
 .label6: ; 1d70
     add [bp-0x4],si
@@ -3362,6 +3375,7 @@ FUN_2_1ca0:
 
 ; 1dae
 
+; ResetLevelProgress
 FUN_2_1dae:
     mov ax,ds
     nop
@@ -3381,7 +3395,7 @@ FUN_2_1dae:
     cmp di,byte +0x1
     jl .label1 ; ↓
     mov [bp-0x4],di
-.label0: ; 1dd5
+.loop: ; 1dd5
     push si
     push ds
     push word s_612 ; "Level%d"
@@ -3402,9 +3416,9 @@ FUN_2_1dae:
     call 0x0:0x1a10 ; 1df8 KERNEL.WritePrivateProfileString
     inc si
     cmp si,di
-    jng .label0 ; ↑
+    jng .loop ; ↑
 .label1: ; 1e02
-    push byte +0x1
+    push byte FirstLevel
     push word ID_HighestLevel
     call 0x1e19:StoreIniInt ; 1e07 2:19ca
     add sp,byte +0x4
@@ -3617,7 +3631,7 @@ MenuItemCallback:
     mov [TotalScore+2],ax
     mov [TotalScore],ax
     push ax
-    push byte +0x1
+    push byte FirstLevel
     jmp .label12 ; ↑
     nop
 

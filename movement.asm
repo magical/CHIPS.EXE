@@ -1308,7 +1308,7 @@ func EndGame
     mov al,[exitTile]
     push ax
     push byte ChipS
-    lea ax,[si+0x20] ; (_a36 * 8 + 32)
+    lea ax,[si+0x20] ; (EndingTick * 8 + 32)
     push ax ; height?
     push ax ; width?
     ; ax =  si / 2 (signed)
@@ -1493,8 +1493,8 @@ func EndGame
     push word [hDC]
     push byte +0x0
     push byte +0x0
-    push word 0x120
-    push word 0x120
+    push word 32 * 9
+    push word 32 * 9
     push word [0x1734]
     push byte +0x0
     push byte +0x0

@@ -82,7 +82,8 @@ SoundsKey db "Sounds", 0, 0
 HighestLevelKey db "Highest Level", 0
 CurrentLevelKey db "Current Level", 0
 CurrentScoreKey db "Current Score", 0
-ColorKey db "Color", 0, 0, 0
+ColorKey db "Color", 0
+db 0, 0
 s_KeyboardDelay db "KeyboardDelay", 0
 DataFileName    db "CHIPS.DAT", 0
 NumMidiFilesKey db "Number of Midi Files", 0, 0
