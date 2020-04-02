@@ -359,87 +359,125 @@ FUN_2_02b2:
 
 ; 306
 
-FUN_2_0306:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func ScrollViewport
     sub sp,byte +0x1c
     push di
     push si
-    mov di,[bp+0x8]
+    %arg hdc:word ; +6
+    %arg viewportDeltaX:word ; +8 number of tiles
+    %arg viewportDeltaY:word ; +a to move viewport by
+    %arg oldChipX:word ; +c
+    %arg oldChipY:word ; +e
+    %arg newChipX:word ; +10
+    %arg newChipY:word ; +12
+    %local local_4:word ; -4
+    %local local_6:word ; -6
+    %local local_8:word ; -8
+    %local local_a:word ; -a
+    %local local_c:word ; -c
+    %local local_e:word ; -e
+    %local local_10:word ; -10
+    %local rect.height:word ; -12
+    %local rect.width:word ; -14
+    %local rect.y:word ; -16
+    %local rect.x:word ; -18
+    %define rect rect.x
+    ;;; if viewport position didn't change, return
+    mov di,[viewportDeltaX]
     or di,di
     jnz .label0 ; ↓
-    cmp [bp+0xa],di
+    cmp [viewportDeltaY],di
     jnz .label0 ; ↓
-    jmp .label20 ; ↓
+    jmp .end ; ↓
+    ;;
 .label0: ; 324
+    ; si = 32*(dx - 0)
     mov bx,[GameStatePtr]
     mov si,di
     sub si,[bx+0xa2c]
     shl si,byte 0x5
-    mov ax,[bp+0xa]
+    ; ax = 32*(dy - 0)
+    mov ax,[viewportDeltaY]
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
-    mov [bp-0xc],ax
+    mov [local_c],ax
+    ; GetClientRectangle(hwndBoard, &rect)
     push word [hwndBoard]
-    lea ax,[bp-0x18]
+    lea ax,[rect]
     push ss
     push ax
     call 0x0:0xffff ; 347 USER.GetClientRect
+    ; vw-0
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportWidth]
     sub ax,[bx+0xa2c]
-    mov cx,[bp-0x14]
+    ; dx = rect.width/32
+    ; cx = rect.width/32 + 1
+    mov cx,[rect.width]
     sar cx,byte 0x5
     mov dx,cx
     inc cx
+    ; bx = vw-0
     mov bx,ax
+    ; if vw-0 > rect.width/32+1 then ax = rect.width/32+1
     cmp ax,cx
     jng .label1 ; ↓
     mov ax,cx
 .label1: ; 369
-    mov [bp-0x4],ax
+    ; stash ax
+    mov [local_4],ax
+    ; ax = vw-0
     mov ax,bx
+    ; cx = vh-0
     mov bx,[GameStatePtr]
     mov cx,[bx+ViewportHeight]
     sub cx,[bx+0xa2e]
-    mov bx,[bp-0x12]
+    ; bx = rect.height/32+1
+    mov bx,[rect.height]
     sar bx,byte 0x5
     mov [bp-0x1a],bx
     inc bx
     mov [bp-0x1c],cx
+    ; if cx > bx then cx = bx
     cmp cx,bx
     jng .label2 ; ↓
     mov cx,bx
 .label2: ; 38d
-    mov [bp-0xe],cx
+    mov [local_e],cx
+    ; ax = vw-0-1
     dec ax
+    ; if ax > rect.width/32 then ax = dx
     cmp ax,dx
     jng .label3 ; ↓
     mov ax,dx
 .label3: ; 397
-    mov [bp-0x6],ax
+    mov [local_6],ax
+    ; ax = vh-0-1
+    ; if ax > rect.height/32 then ax = rect.height/32
     mov ax,[bp-0x1c]
     dec ax
     cmp ax,[bp-0x1a]
     jng .label4 ; ↓
     mov ax,[bp-0x1a]
 .label4: ; 3a6
-    mov [bp-0x10],ax
-    push word [bp+0x12]
-    push word [bp+0x10]
+    mov [local_10],ax
+    ;; Draw chip in his new position, scroll the window,
+    ;; set the new viewport position, and update the tile chip left
+    ;
+    ; UpdateTile(hdc, new x, new y)
+    push word [newChipY]
+    push word [newChipX]
     push word [bp+0x6]
     call 0x3f5:UpdateTile ; 3b2 2:1ca UpdateTile
     add sp,byte +0x6
+    ; ScrollWindow(hwndBoard, -32*(dx-0), -32*(dy-0), NULL, NULL)
     push word [hwndBoard]
+    ; x scroll amount = -32*(dx - 0)
     mov ax,si
     neg ax
     push ax
-    mov ax,[bp-0xc]
+    ; y scroll amount = -32*(dy - 0)
+    mov ax,[local_c]
     neg ax
     push ax
     push byte +0x0
@@ -447,47 +485,54 @@ FUN_2_0306:
     push byte +0x0
     push byte +0x0
     call 0x0:0xffff ; 3d1 USER.ScrollWindow
+    ; update ViewportX and ViewportY
     mov bx,[GameStatePtr]
     add [bx+ViewportX],di
-    mov ax,[bp+0xa]
+    mov ax,[viewportDeltaY]
     mov bx,[GameStatePtr]
     add [bx+ViewportY],ax
-    push word [bp+0xe]
-    push word [bp+0xc]
+    ; UpdateTile(hdc, oldx, oldy)
+    push word [oldChipY]
+    push word [oldChipX]
     push word [bp+0x6]
     call 0x454:UpdateTile ; 3f2 2:1ca UpdateTile
     add sp,byte +0x6
+    ;; Now draw any tiles that were
+    ;; scrolled into view
+.check_x_delta:
+    ; if x delta is nonzero
     or si,si
-    jnz .label5 ; ↓
-    jmp .label12 ; ↓
-.label5: ; 401
+    jnz .update_x_tiles ; ↓
+    jmp .check_y_delta ; ↓
+.update_x_tiles: ; 401
     or si,si
     jng .label6 ; ↓
-    mov ax,[bp-0x6]
-    sub ax,di
-    mov [bp-0xa],ax
-    mov bx,[bp-0x4]
+    mov ax,[local_6]
+    sub ax,di ; ax -= delta x
+    mov [local_a],ax
+    mov bx,[local_4]
     jmp short .label7 ; ↓
 .label6: ; 412
-    mov word [bp-0xa],0x0
+    mov word [local_a],0x0
     mov bx,di
     neg bx
 .label7: ; 41b
     mov si,[GameStatePtr]
     mov ax,[si+ViewportY]
-    mov [bp-0x4],ax
-    mov [bp-0x8],bx
+    mov [local_4],ax
+    mov [local_8],bx
     mov cx,ax
     add ax,[si+ViewportHeight]
     cmp ax,cx
     jng .label11 ; ↓
-.label8: ; 433
-    mov si,[bp-0xa]
-    cmp si,[bp-0x8]
+.loop1: ; 433
+    mov si,[local_a]
+    cmp si,[local_8]
     jnl .label10 ; ↓
     mov di,[bp+0x6]
-.label9: ; 43e
-    push word [bp-0x4]
+.loop2: ; 43e
+    ; UpdateTile(hdc, vx+0+si, local_4)
+    push word [local_4]
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportX]
     add ax,[bx+0xa2c]
@@ -497,128 +542,129 @@ FUN_2_0306:
     call 0x50b:UpdateTile ; 451 2:1ca UpdateTile
     add sp,byte +0x6
     inc si
-    cmp si,[bp-0x8]
-    jl .label9 ; ↑
+    cmp si,[local_8]
+    jl .loop2 ; ↑
 .label10: ; 45f
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportY]
     add ax,[bx+ViewportHeight]
-    inc word [bp-0x4]
-    cmp ax,[bp-0x4]
-    jg .label8 ; ↑
+    inc word [local_4]
+    cmp ax,[local_4]
+    jg .loop1 ; ↑
+    ; rect = {local_a*32, -0*32, local_8*32, (vh-0)*32}
+    ; ValidateRect(hwndBoard, &rect)
 .label11: ; 473
-    mov ax,[bp-0xa]
+    mov ax,[local_a]
     shl ax,byte 0x5
-    mov [bp-0x18],ax
-    mov ax,[bp-0x8]
+    mov [rect.x],ax
+    mov ax,[local_8]
     shl ax,byte 0x5
-    mov [bp-0x14],ax
+    mov [rect.width],ax
     mov bx,[GameStatePtr]
     mov ax,[bx+0xa2e]
     shl ax,byte 0x5
     neg ax
-    mov [bp-0x16],ax
+    mov [rect.y],ax
     mov ax,[bx+ViewportHeight]
     sub ax,[bx+0xa2e]
     shl ax,byte 0x5
-    mov [bp-0x12],ax
+    mov [rect.height],ax
     push word [hwndBoard]
-    lea ax,[bp-0x18]
+    lea ax,[rect]
     push ss
     push ax
     call 0x0:0x560 ; 4ac USER.ValidateRect
-.label12: ; 4b1
-    cmp word [bp-0xc],byte +0x0
-    jnz .label13 ; ↓
-    jmp .label20 ; ↓
-.label13: ; 4ba
+.check_y_delta: ; 4b1
+    ; if y delta is nonzero
+    cmp word [local_c],byte +0x0
+    jnz .update_y_tiles ; ↓
+    jmp .end ; ↓
+.update_y_tiles: ; 4ba
     jng .label14 ; ↓
-    mov di,[bp-0x10]
-    sub di,[bp+0xa]
-    mov ax,[bp-0xe]
+    mov di,[local_10]
+    sub di,[viewportDeltaY]
+    mov ax,[local_e]
     jmp short .label15 ; ↓
     nop
 .label14: ; 4c8
     xor di,di
-    mov ax,[bp+0xa]
+    mov ax,[viewportDeltaY]
     neg ax
 .label15: ; 4cf
-    mov [bp-0x4],ax
+    mov [local_4],ax
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportX]
-    mov [bp-0x6],ax
+    mov [local_6],ax
     mov cx,ax
     add ax,[bx+ViewportWidth]
     cmp ax,cx
     jng .label19 ; ↓
-    mov [bp-0x8],di
-.label16: ; 4ea
-    mov si,[bp-0x8]
-    cmp si,[bp-0x4]
+    mov [local_8],di
+.loop3: ; 4ea
+    mov si,[local_8]
+    cmp si,[local_4]
     jnl .label18 ; ↓
     mov di,[bp+0x6]
-.label17: ; 4f5
+.loop4: ; 4f5
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportY]
     add ax,[bx+0xa2e]
     add ax,si
     push ax
-    push word [bp-0x6]
+    push word [local_6]
     push di
     call 0x5ee:UpdateTile ; 508 2:1ca UpdateTile
     add sp,byte +0x6
     inc si
-    cmp si,[bp-0x4]
-    jl .label17 ; ↑
+    cmp si,[local_4]
+    jl .loop4 ; ↑
 .label18: ; 516
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportX]
     add ax,[bx+ViewportWidth]
-    inc word [bp-0x6]
-    cmp ax,[bp-0x6]
-    jg .label16 ; ↑
-    mov di,[bp-0x8]
+    inc word [local_6]
+    cmp ax,[local_6]
+    jg .loop3 ; ↑
+    mov di,[local_8]
 .label19: ; 52d
+    ; rect = {-0*32, di*32, (vw-0)*32, (local_4-0)*32}
+    ; ValidateRect(hwndBoard, &rect)
     mov ax,[bx+0xa2c]
     shl ax,byte 0x5
     neg ax
-    mov [bp-0x18],ax
+    mov [rect.x],ax
     mov ax,[bx+ViewportWidth]
     sub ax,[bx+0xa2c]
     shl ax,byte 0x5
-    mov [bp-0x14],ax
+    mov [rect.width],ax
     shl di,byte 0x5
-    mov [bp-0x16],di
-    mov ax,[bp-0x4]
+    mov [rect.y],di
+    mov ax,[local_4]
     shl ax,byte 0x5
-    mov [bp-0x12],ax
+    mov [rect.height],ax
     push word [hwndBoard]
     lea ax,[bp-0x18]
     push ss
     push ax
     call 0x0:0xffff ; 55f USER.ValidateRect
-.label20: ; 564
+.end: ; 564
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 56e
 
-FUN_2_056e:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; void UpdateChip(hdc, new x, new y, old x, old y)
+func UpdateChip
     sub sp,byte +0x6
     push si
+    %arg hdc:word ; +6
+    %arg newX:word ; +8
+    %arg newY:word ; +a
+    %arg oldX:word ; +c
+    %arg oldY:word ; +e
+    ;; calculate new viewportx (but do not store)
+    ; ax = chipx - vw/2
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportWidth]
     mov cx,ax
@@ -632,6 +678,7 @@ FUN_2_056e:
     sar ax,1
     sub ax,[bp+0x8]
     neg ax
+    ; clamp to [0, 32 - vw]
     or ax,ax
     jnl .label0 ; ↓
     xor ax,ax
@@ -640,9 +687,11 @@ FUN_2_056e:
     jng .label1 ; ↓
     mov ax,si
 .label1: ; 5a7
+    ; cx = difference between new position and old position
     sub ax,[bx+ViewportX]
     mov [bp-0x6],ax
     mov cx,ax
+    ;; calculate new ViewportY
     mov ax,[bx+ViewportHeight]
     mov dx,ax
     sub ax,0x20
@@ -652,8 +701,9 @@ FUN_2_056e:
     cwd
     sub ax,dx
     sar ax,1
-    sub ax,[bp+0xa]
+    sub ax,[newY]
     neg ax
+    ; clamp to [0, 32 - vh]
     or ax,ax
     jnl .label2 ; ↓
     xor ax,ax
@@ -662,41 +712,41 @@ FUN_2_056e:
     jng .label3 ; ↓
     mov ax,si
 .label3: ; 5d5
+    ; ax = difference between new y position and old position
     sub ax,[bx+ViewportY]
+    ;; if viewport pos is the same, just update src and dest tiles
     or cx,cx
     jnz .label4 ; ↓
     cmp ax,cx
     jnz .label4 ; ↓
-    mov si,[bp+0x6]
-    push word [bp+0xe]
-    push word [bp+0xc]
+    ; UpdateTile(hdc, oldX, oldY)
+    mov si,[hdc]
+    push word [oldY]
+    push word [oldX]
     push si
     call 0x5fd:UpdateTile ; 5eb 2:1ca UpdateTile
     add sp,byte +0x6
-    push word [bp+0xa]
-    push word [bp+0x8]
+    ; UpdateTile(hdc, newX, newY)
+    push word [newY]
+    push word [newX]
     push si
     call 0x61a:UpdateTile ; 5fa 2:1ca UpdateTile
     add sp,byte +0x6
     jmp short .label5 ; ↓
+    ; if viewport has moved, scroll the board
 .label4: ; 604
-    push word [bp+0xe]
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push word [bp+0x8]
-    push ax
-    push word [bp-0x6]
-    push word [bp+0x6]
-    call 0x652:FUN_2_0306 ; 617 2:306
+    push word [oldY] ; old chipy
+    push word [oldX] ; old chipx
+    push word [newY] ; new chipy
+    push word [newX] ; new chipx
+    push ax            ; viewport y diff
+    push word [bp-0x6] ; viewport x diff
+    push word [hdc]    ; hdc probably
+    call 0x652:ScrollViewport ; 617 2:306
     add sp,byte +0xe
 .label5: ; 61f
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 628
 
