@@ -13,16 +13,27 @@
 2:00c4    DrawTile
 2:01ca    UpdateTile
 2:0232    DrawInventoryTile
+2:025a    InvertTile_Unused
+2:0306    ScrollViewport
+2:056e    UpdateChip
 2:0628    WinMain
 2:06c8    CreateClasses
 2:08e8    CreateWindows
 2:0b9a    ShowDeathMessage
 2:0c1a    ShowHint
 2:0c7e    HideHint
+2:1006    DrawSolidBorder
+2:17a2    PauseTimer
+2:17ba    UnpauseTimer
 2:17da    PauseGame
 2:1834    UnpauseGame
 2:189c    PauseMusic
 2:18b6    UnpauseMusic
+2:18de    GetIniKey
+2:198e    GetIniInt
+2:19ca    StoreIniInt
+2:1a1c    GetIniLong
+2:1a86    StoreIniLong
 2:1e28    MenuItemCallback
 2:225c    MAINWNDPROC
 2:274e    BOARDWNDPROC
@@ -76,6 +87,7 @@
 3:29dc    DeleteTeleport_Unused
 3:2a3e    GetTileImagePos
 
+4:0000    GetTileRect
 4:0134    UpdateWindowTitle
 4:01a0    UpdateNextPrevMenuItems
 4:01fc    ResetTimerAndChipCount
@@ -103,9 +115,11 @@
 
 8:0000    InitSound
 8:00e6    TeardownSound
+8:025c    ShowMIDIError
 8:056c    PlaySoundEffect
 
 9:0000    FindBitmap
 9:0028    BitmapSize
 9:004e    LoadDigits
+9:00bc    FreeDigits
 9:00ea    DrawDigit

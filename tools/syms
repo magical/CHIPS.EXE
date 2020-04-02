@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+# syms - extracts function symbols from assembly files
+import sys
+
+# makes the following assumptions:
+# - segments start with 'SEGMENT CODE ; n' where n is the segment number
+# - functions are preceded by a comment containing their address
+
+# usage:
+#  tools/sym *.asm
+#
+
+def ishex(s):
+    return all(c in "0123456789abcdef" for c in s)
+
+def printsyms(file):
+    lastfuncaddr = "0"
+    lastsegment = "?"
+
+    for line in file:
+        words = line.strip().split()
+        if not words:
+            continue
+        if line[0] == ';' and len(words)==2 and ishex(words[1]):
+            lastfuncaddr = words[1].zfill(4)
+        if words[0] == "SEGMENT":
+            if len(words) > 3:
+                lastsegment = words[3]
+        if words[0] == "func" or words[0].endswith(":") and "%" not in words[0]:
+            if words[0] == "func":
+                label = words[1]
+            else:
+                label = words[0].strip(":")
+
+            addr = lastsegment+":"+lastfuncaddr.zfill(4)
+
+            if not label.startswith(('.', 'FUN_')):
+                print("{}    {}".format(addr, label))
+
+for filename in sys.argv[1:]:
+    with open(filename) as f:
+        printsyms(f)
+if not sys.argv[1:]:
+    printsyms(sys.stdin)
