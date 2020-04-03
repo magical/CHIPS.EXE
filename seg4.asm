@@ -52,6 +52,11 @@ GetTileRect:
 
 ; 5e
 
+; reset level data
+;
+; sets all the tiles to Floor
+; and clears the slip, monster, toggle, trap,
+; clone, teleport, and initial monster lists.
 FUN_4_005e:
     mov ax,ds
     nop
@@ -71,7 +76,7 @@ FUN_4_005e:
     mov al,[bx+Lower]
     mov [bx+Upper],al
     inc si
-    cmp si,0x400
+    cmp si,0x400 ; BoardWidth * BoardHeight?
     jl .label0 ; ↑
     mov bx,[GameStatePtr]
     mov word [bx+SlipListLen],0x0
@@ -96,6 +101,7 @@ FUN_4_005e:
 
 ; d8
 
+; tries to read a level
 FUN_4_00d8:
     mov ax,ds
     nop
@@ -277,7 +283,8 @@ ResetTimerAndChipCount:
 
 ; 240
 
-FUN_4_0240:
+; frees the monster list and other lists
+FreeGameLists:
     mov ax,ds
     nop
     inc bp
@@ -360,6 +367,8 @@ FUN_4_0240:
 
 ; 320
 
+; zeroes the game state
+; and maybe frees lists first
 FUN_4_0320:
     mov ax,ds
     nop
@@ -371,10 +380,11 @@ FUN_4_0320:
     sub sp,byte +0x4
     cmp word [bp+0x6],byte +0x0
     jnz .label0 ; ↓
-    call 0xffff:FUN_4_0240 ; 333 4:240
+    call 0xffff:FreeGameLists ; 333 4:240
 .label0: ; 338
+    ; memset(gamestateptr, 0, sizeof *gamestateptr)
     mov bx,[GameStatePtr]
-    lea dx,[bx+0xa42]
+    lea dx,[bx+GameStateSize]
     cmp dx,bx
     jna .label2 ; ↓
 .label1: ; 344
@@ -1010,6 +1020,8 @@ DecodeLevelFields:
 
 ; 950
 
+; checks the signature of a file
+; and returns the next word (number of levels)
 FUN_4_0950:
     mov ax,ds
     nop
@@ -1119,6 +1131,8 @@ FUN_4_09b4:
 
 ; a0e
 
+; opens chips.dat and checks the signature
+; and returns the number of levels
 FUN_4_0a0e:
     mov ax,ds
     nop
