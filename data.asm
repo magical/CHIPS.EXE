@@ -430,7 +430,7 @@ DecadeMessages:
 
 Chipend db "chipend", 0
 Chipend2 db "chipend", 0
-db "DLG_COMPLETE", 0
+s_DLG_COMPLETE db "DLG_COMPLETE", 0
 db 0
 s_MIDI_Error_on_file_s db "MIDI Error on file %s: ", 0
 s_None_of_the_MIDI_files_specified___ db "None of the MIDI files specified in entpack.ini were found.", 0

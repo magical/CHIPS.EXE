@@ -1547,7 +1547,7 @@ func EndLevel
     mov si,ax
     push word [OurHInstance]  ; hInstance
     push ds
-    push word 0x1362    ; "DLG_COMPLETE"
+    push word s_DLG_COMPLETE
     push word [hWnd]  ; hWndParent
     mov ax,dx
     push ax
