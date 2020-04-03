@@ -1,5 +1,6 @@
 SEGMENT CODE ; 6
 
+%include "structs.asm"
 %include "variables.asm"
 
 ; 0
@@ -147,7 +148,7 @@ GOTOLEVELMSGPROC:
 .label14: ; 13c
     mov ax,[bp-0x4]
     mov bx,[GameStatePtr]
-    mov [bx+0x800],ax
+    mov [bx+LevelNumber],ax
     push si
     push byte +0x1
     jmp short .label18 ; ↓
@@ -425,7 +426,7 @@ BESTTIMEMSGPROC:
     mov si,ax
     inc si
     mov bx,[GameStatePtr]
-    cmp si,[bx+0x800]
+    cmp si,[bx+LevelNumber]
     jz .label22 ; ↓
     push si
     push di
@@ -515,11 +516,11 @@ COMPLETEMSGPROC:
     mov [bp-0xa],dx
     mov ax,0x1f4
     mov bx,[GameStatePtr]
-    imul word [bx+0x800]
+    imul word [bx+LevelNumber]
     mov [bp-0x8],ax
     mov [bp-0x6],dx
     mov word [bp-0x4],0x0
-    mov ax,[bx+0xa30]
+    mov ax,[bx+RestartCount]
     mov [bp-0x9a],ax
     or ax,ax
     jng .label7 ; ↓
@@ -635,7 +636,7 @@ COMPLETEMSGPROC:
     push ax
     call 0x0:0x6ec ; 561 USER.SetDlgItemText
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     push word 0xc9
     call 0x57f:0x19ca ; 571 2:19ca StoreIniInt
     add sp,byte +0x4
@@ -644,7 +645,7 @@ COMPLETEMSGPROC:
     add sp,byte +0x2
     mov si,ax
     mov bx,[GameStatePtr]
-    cmp [bx+0x800],si
+    cmp [bx+LevelNumber],si
     jng .label12 ; ↓
     jmp .label28 ; ↓
 .label12: ; 593
@@ -653,7 +654,7 @@ COMPLETEMSGPROC:
     lea ax,[bp-0x14]
     push ax
     push byte +0x0
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     call 0x5fe:0x1adc ; 5a1 2:1adc
     add sp,byte +0x8
     or ax,ax
@@ -692,7 +693,7 @@ COMPLETEMSGPROC:
 .label18: ; 5f2
     push ax
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     call 0x6d1:0x1c1c ; 5fb 2:1c1c
     add sp,byte +0x8
     mov ax,[bp-0x10]
@@ -784,7 +785,7 @@ COMPLETEMSGPROC:
     push word [bp-0xc]
     push word [TimeRemaining]
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     call 0x6fe:0x1c1c ; 6ce 2:1c1c
     add sp,byte +0x8
     mov ax,[bp-0xc]

@@ -1,5 +1,6 @@
 SEGMENT CODE ; 4
 
+%include "structs.asm"
 %include "variables.asm"
 
 ; 0
@@ -17,13 +18,13 @@ GetTileRect:
     push si
     mov ax,[bp+0x6]
     mov bx,[GameStatePtr]
-    sub ax,[bx+0xa24]
-    sub ax,[bx+0xa2c]
+    sub ax,[bx+ViewportX]
+    sub ax,[bx+UnusedOffsetX]
     shl ax,byte 0x5
     mov [bp-0xa],ax
     mov ax,[bp+0x8]
-    sub ax,[bx+0xa26]
-    sub ax,[bx+0xa2e]
+    sub ax,[bx+ViewportY]
+    sub ax,[bx+UnusedOffsetY]
     shl ax,byte 0x5
     mov [bp-0x8],ax
     mov ax,[bp-0xa]
@@ -64,28 +65,28 @@ FUN_4_005e:
     xor si,si
 .label0: ; 6e
     mov bx,[GameStatePtr]
-    mov byte [bx+si+0x400],0x0
+    mov byte [bx+si+Lower],0x0
     mov bx,[GameStatePtr]
     add bx,si
-    mov al,[bx+0x400]
+    mov al,[bx+Lower]
     mov [bx],al
     inc si
     cmp si,0x400
     jl .label0 ; ↑
     mov bx,[GameStatePtr]
-    mov word [bx+0x91e],0x0
+    mov word [bx+SlipListLen],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x928],0x0
+    mov word [bx+MonsterListLen],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x932],0x0
+    mov word [bx+ToggleListLen],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x93c],0x0
+    mov word [bx+TrapListLen],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x946],0x0
+    mov word [bx+CloneListLen],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x950],0x0
+    mov word [bx+TeleportListLen],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0x81c],0x0
+    mov word [bx+InitialMonsterListLen],0x0
     pop si
     lea sp,[bp-0x2]
     pop ds
@@ -128,7 +129,7 @@ FUN_4_00d8:
     call 0x0:0xffff ; 11e USER.PostMessage
 .label0: ; 123
     mov bx,[GameStatePtr]
-    mov [bx+0x800],si
+    mov [bx+LevelNumber],si
     pop si
     lea sp,[bp-0x2]
     pop ds
@@ -222,7 +223,7 @@ UpdateNextPrevMenuItems:
     call 0x0:0x1f0 ; 1c8 USER.EnableMenuItem
     mov ax,[bp-0x4]
     mov bx,[GameStatePtr]
-    cmp [bx+0x802],ax
+    cmp [bx+NumLevelsInSet],ax
     jg .label2 ; ↓
     cmp word [DebugModeEnabled],byte +0x0
     jnz .label2 ; ↓
@@ -254,9 +255,9 @@ ResetTimerAndChipCount:
     mov ds,ax
     sub sp,byte +0x2
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x804]
+    mov ax,[bx+InitialTimeLimit]
     mov [TimeRemaining],ax
-    mov ax,[bx+0x806]
+    mov ax,[bx+InitialChipsRemainingCount]
     mov [ChipsRemainingCount],ax
     push word [hwndCounter2]
     push byte +0x2
@@ -286,69 +287,69 @@ FUN_4_0240:
     mov ds,ax
     sub sp,byte +0xe
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x922]
+    mov ax,[bx+SlipListHandle]
     mov [bp-0x4],ax
     or ax,ax
     jz .label0 ; ↓
     push ax
     call 0x0:0x280 ; 25d KERNEL.GlobalUnlock
     mov bx,[GameStatePtr]
-    push word [bx+0x922]
+    push word [bx+SlipListHandle]
     call 0x0:0x28d ; 26a KERNEL.GlobalFree
 .label0: ; 26f
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x92c]
+    mov ax,[bx+MonsterListHandle]
     mov [bp-0x6],ax
     or ax,ax
     jz .label1 ; ↓
     push ax
     call 0x0:0x2a2 ; 27f KERNEL.GlobalUnlock
     mov bx,[GameStatePtr]
-    push word [bx+0x92c]
+    push word [bx+MonsterListHandle]
     call 0x0:0x2af ; 28c KERNEL.GlobalFree
 .label1: ; 291
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x936]
+    mov ax,[bx+ToggleListHandle]
     mov [bp-0x8],ax
     or ax,ax
     jz .label2 ; ↓
     push ax
     call 0x0:0x2c4 ; 2a1 KERNEL.GlobalUnlock
     mov bx,[GameStatePtr]
-    push word [bx+0x936]
+    push word [bx+ToggleListHandle]
     call 0x0:0x2d1 ; 2ae KERNEL.GlobalFree
 .label2: ; 2b3
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x940]
+    mov ax,[bx+TrapListHandle]
     mov [bp-0xa],ax
     or ax,ax
     jz .label3 ; ↓
     push ax
     call 0x0:0x2e6 ; 2c3 KERNEL.GlobalUnlock
     mov bx,[GameStatePtr]
-    push word [bx+0x940]
+    push word [bx+TrapListHandle]
     call 0x0:0x2f3 ; 2d0 KERNEL.GlobalFree
 .label3: ; 2d5
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x94a]
+    mov ax,[bx+CloneListHandle]
     mov [bp-0xc],ax
     or ax,ax
     jz .label4 ; ↓
     push ax
     call 0x0:0x308 ; 2e5 KERNEL.GlobalUnlock
     mov bx,[GameStatePtr]
-    push word [bx+0x94a]
+    push word [bx+CloneListHandle]
     call 0x0:0x315 ; 2f2 KERNEL.GlobalFree
 .label4: ; 2f7
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x954]
+    mov ax,[bx+TeleportListHandle]
     mov [bp-0xe],ax
     or ax,ax
     jz .label5 ; ↓
     push ax
     call 0x0:0xffff ; 307 KERNEL.GlobalUnlock
     mov bx,[GameStatePtr]
-    push word [bx+0x954]
+    push word [bx+TeleportListHandle]
     call 0x0:0xffff ; 314 KERNEL.GlobalFree
 .label5: ; 319
     lea sp,[bp-0x2]
@@ -403,7 +404,7 @@ FUN_4_0356:
     push si
     mov si,[bp+0x8]
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x810]
+    mov ax,[bx+IsLevelPlacardVisible]
     mov [bp-0x6],ax
     push byte +0x0
     push byte +0x0
@@ -424,15 +425,15 @@ FUN_4_0356:
     or si,si
     jz .label1 ; ↓
     mov bx,[GameStatePtr]
-    cmp word [bx+0xa34],byte +0x1e
+    cmp word [bx+StepCount],byte +0x1e
     jng .label1 ; ↓
     cmp word [bp+0x6],0x90
     jz .label1 ; ↓
     cmp word [bp+0x6],0x95
     jz .label1 ; ↓
-    inc word [bx+0xa32]
+    inc word [bx+MelindaCount]
     mov bx,[GameStatePtr]
-    cmp word [bx+0xa32],byte +0xa
+    cmp word [bx+MelindaCount],byte +0xa
     jl .label1 ; ↓
     push byte +0x24
     push ds
@@ -448,14 +449,14 @@ FUN_4_0356:
     nop
 .label0: ; 3f2
     mov bx,[GameStatePtr]
-    mov word [bx+0xa32],0x0
+    mov word [bx+MelindaCount],0x0
 .label1: ; 3fc
     mov di,[bp-0xa]
     or si,si
     jz .label2 ; ↓
     mov bx,[GameStatePtr]
-    mov di,[bx+0xa30]
-    mov ax,[bx+0xa32]
+    mov di,[bx+RestartCount]
+    mov ax,[bx+MelindaCount]
     mov [bp-0x4],ax
 .label2: ; 412
     push byte +0x0
@@ -465,10 +466,10 @@ FUN_4_0356:
     jz .label3 ; ↓
     lea ax,[di+0x1]
     mov bx,[GameStatePtr]
-    mov [bx+0xa30],ax
+    mov [bx+RestartCount],ax
     mov ax,[bp-0x4]
     mov bx,[GameStatePtr]
-    mov [bx+0xa32],ax
+    mov [bx+MelindaCount],ax
 .label3: ; 436
     push word [bp+0x6]
     call 0x53b:FUN_4_00d8 ; 439 4:d8
@@ -478,7 +479,7 @@ FUN_4_0356:
     or si,si
     jnz .label4 ; ↓
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     call 0xffff:0x308 ; 454 8:308
     add sp,byte +0x2
 .label4: ; 45c
@@ -486,34 +487,34 @@ FUN_4_0356:
     cmp word [DebugModeEnabled],byte +0x0
     jz .label5 ; ↓
     mov bx,[GameStatePtr]
-    mov word [bx+0xa26],0x0
+    mov word [bx+ViewportY],0x0
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa26]
-    mov [bx+0xa24],ax
+    mov ax,[bx+ViewportY]
+    mov [bx+ViewportX],ax
     mov bx,[GameStatePtr]
-    mov word [bx+0xa2e],0x0
+    mov word [bx+UnusedOffsetY],0x0
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa2e]
-    mov [bx+0xa2c],ax
+    mov ax,[bx+UnusedOffsetY]
+    mov [bx+UnusedOffsetX],ax
     mov bx,[GameStatePtr]
-    mov word [bx+0xa28],0x20
+    mov word [bx+ViewportWidth],0x20
     mov bx,[GameStatePtr]
-    mov word [bx+0xa2a],0x20
+    mov word [bx+ViewportHeight],0x20
     jmp .label10 ; ↓
     nop
 .label5: ; 4ac
     mov bx,[GameStatePtr]
-    mov word [bx+0xa2a],0x9
+    mov word [bx+ViewportHeight],0x9
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa2a]
-    mov [bx+0xa28],ax
+    mov ax,[bx+ViewportHeight]
+    mov [bx+ViewportWidth],ax
     mov bx,[GameStatePtr]
-    mov word [bx+0xa2e],0x10
+    mov word [bx+UnusedOffsetY],0x10
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa2e]
-    mov [bx+0xa2c],ax
+    mov ax,[bx+UnusedOffsetY]
+    mov [bx+UnusedOffsetX],ax
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa28]
+    mov ax,[bx+ViewportWidth]
     mov cx,ax
     sub ax,0x20
     neg ax
@@ -523,7 +524,7 @@ FUN_4_0356:
     cwd
     sub ax,dx
     sar ax,1
-    sub ax,[bx+0x808]
+    sub ax,[bx+ChipX]
     neg ax
     or ax,ax
     jnl .label6 ; ↓
@@ -533,9 +534,9 @@ FUN_4_0356:
     jng .label7 ; ↓
     mov ax,di
 .label7: ; 504
-    mov [bx+0xa24],ax
+    mov [bx+ViewportX],ax
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa2a]
+    mov ax,[bx+ViewportHeight]
     mov cx,ax
     sub ax,0x20
     neg ax
@@ -545,7 +546,7 @@ FUN_4_0356:
     cwd
     sub ax,dx
     sar ax,1
-    sub ax,[bx+0x80a]
+    sub ax,[bx+ChipY]
     neg ax
     or ax,ax
     jnl .label8 ; ↓
@@ -555,28 +556,28 @@ FUN_4_0356:
     jng .label9 ; ↓
     mov ax,di
 .label9: ; 534
-    mov [bx+0xa26],ax
+    mov [bx+ViewportY],ax
 .label10: ; 538
     call 0x561:ResetTimerAndChipCount ; 538 4:1fc ResetTimerAndChipCount
     mov bx,[GameStatePtr]
-    mov word [bx+0x810],0x1
+    mov word [bx+IsLevelPlacardVisible],0x1
     cmp word [bp-0x6],byte +0x0
     jnz .label11 ; ↓
     call 0x59e:0x17a2 ; 54d 2:17a2 PauseTimer
 .label11: ; 552
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     push word [hwndMain]
     call 0x571:UpdateWindowTitle ; 55e 4:134 UpdateWindowTitle
     add sp,byte +0x4
     mov bx,[GameStatePtr]
-    push word [bx+0x800]
+    push word [bx+LevelNumber]
     call 0xf1:UpdateNextPrevMenuItems ; 56e 4:1a0 UpdateNextPrevMenuItems
     add sp,byte +0x2
     mov bx,[GameStatePtr]
-    mov word [bx+0xa2c],0x0
+    mov word [bx+UnusedOffsetX],0x0
     mov bx,[GameStatePtr]
-    mov word [bx+0xa2e],0x0
+    mov word [bx+UnusedOffsetY],0x0
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
@@ -793,13 +794,13 @@ DecodeLevelFields:
 .label2: ; 730
     mov ax,[si]
     mov bx,[GameStatePtr]
-    mov [bx+0x804],ax
+    mov [bx+InitialTimeLimit],ax
     jmp .label25
     nop
 .label27: ; 73e
     mov ax,[si]
     mov bx,[GameStatePtr]
-    mov [bx+0x806],ax
+    mov [bx+InitialChipsRemainingCount],ax
     jmp .label25 ; ↓
     nop
 .label3: ; 74c
@@ -824,20 +825,20 @@ DecodeLevelFields:
     div cl
     sub ah,ah
     mov bx,[GameStatePtr]
-    mov [bx+0x93c],ax
+    mov [bx+TrapListLen],ax
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x93e]
-    cmp [bx+0x93c],ax
+    mov ax,[bx+TrapListCap]
+    cmp [bx+TrapListLen],ax
     jg .label7 ; ↓
     jmp .label25 ; ↓
 .label7: ; 78f
     push byte +0xa
-    push word [bx+0x93c]
-    lea ax,[bx+0x93e]
+    push word [bx+TrapListLen]
+    lea ax,[bx+TrapListCap]
     push ax
-    lea ax,[bx+0x942]
+    lea ax,[bx+TrapListPtr]
     push ax
-    lea ax,[bx+0x940]
+    lea ax,[bx+TrapListHandle]
     push ax
     call 0x846:0x1a4 ; 7a4 3:1a4 GrowArray
     add sp,byte +0xa
@@ -845,14 +846,14 @@ DecodeLevelFields:
     jz .label11 ; ↓
     mov word [bp-0x8],0x0
     mov bx,[GameStatePtr]
-    cmp word [bx+0x93c],byte +0x0
+    cmp word [bx+TrapListLen],byte +0x0
     jg .label8 ; ↓
     jmp .label25 ; ↓
 .label8: ; 7c3
     mov [bp+0x6],si
     mov word [bp-0x4],0x0
 .label9: ; 7cb
-    les bx,[bx+0x942]
+    les bx,[bx+TrapListPtr]
     mov si,[bp-0x4]
     mov ax,[bp-0x6]
     lea di,[bx+si]
@@ -864,14 +865,14 @@ DecodeLevelFields:
     inc word [bp-0x8]
     mov ax,[bp-0x8]
     mov bx,[GameStatePtr]
-    cmp [bx+0x93c],ax
+    cmp [bx+TrapListLen],ax
     jg .label9 ; ↑
 .label10: ; 7f6
     mov si,[bp+0x6]
     jmp .label25 ; ↓
 .label11: ; 7fc
     mov bx,[GameStatePtr]
-    mov word [bx+0x93c],0x0
+    mov word [bx+TrapListLen],0x0
     jmp .label25 ; ↓
     nop
 .label12: ; 80a
@@ -880,20 +881,20 @@ DecodeLevelFields:
     shr al,byte 0x3
     sub ah,ah
     mov bx,[GameStatePtr]
-    mov [bx+0x946],ax
+    mov [bx+CloneListLen],ax
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x948]
-    cmp [bx+0x946],ax
+    mov ax,[bx+CloneListCap]
+    cmp [bx+CloneListLen],ax
     jg .label13 ; ↓
     jmp .label25 ; ↓
 .label13: ; 82e
     push byte +0x8
-    push word [bx+0x946]
-    lea ax,[bx+0x948]
+    push word [bx+CloneListLen]
+    lea ax,[bx+CloneListCap]
     push ax
-    lea ax,[bx+0x94c]
+    lea ax,[bx+CloneListPtr]
     push ax
-    lea ax,[bx+0x94a]
+    lea ax,[bx+CloneListHandle]
     push ax
     call 0x45f:0x1a4 ; 843 3:1a4 GrowArray
     add sp,byte +0xa
@@ -901,14 +902,14 @@ DecodeLevelFields:
     jz .label16 ; ↓
     mov word [bp-0x8],0x0
     mov bx,[GameStatePtr]
-    cmp word [bx+0x946],byte +0x0
+    cmp word [bx+CloneListLen],byte +0x0
     jg .label14 ; ↓
     jmp .label25 ; ↓
 .label14: ; 862
     mov [bp+0x6],si
     mov word [bp-0x4],0x0
 .label15: ; 86a
-    les bx,[bx+0x94c]
+    les bx,[bx+CloneListPtr]
     mov si,[bp-0x4]
     mov ax,[bp-0x6]
     lea di,[bx+si]
@@ -922,13 +923,13 @@ DecodeLevelFields:
     inc word [bp-0x8]
     mov ax,[bp-0x8]
     mov bx,[GameStatePtr]
-    cmp [bx+0x946],ax
+    cmp [bx+CloneListLen],ax
     jg .label15 ; ↑
     jmp .label10 ; ↑
     nop
 .label16: ; 898
     mov bx,[GameStatePtr]
-    mov word [bx+0x946],0x0
+    mov word [bx+CloneListLen],0x0
     jmp .label25 ; ↓
     nop
 .label17: ; 8a6
@@ -973,22 +974,22 @@ DecodeLevelFields:
     shr al,1
     sub ah,ah
     mov bx,[GameStatePtr]
-    mov [bx+0x81c],ax
+    mov [bx+InitialMonsterListLen],ax
     xor dx,dx
     mov bx,[GameStatePtr]
-    cmp [bx+0x81c],dx
+    cmp [bx+InitialMonsterListLen],dx
     jng .label25 ; ↓
     mov [bp+0x6],si
     xor bx,bx
 .label24: ; 91a
     mov ax,[di]
     mov si,[GameStatePtr]
-    mov [bx+si+0x81e],ax
+    mov [bx+si+InitialMonsterList],ax
     add bx,byte +0x2
     add di,byte +0x2
     inc dx
     mov si,[GameStatePtr]
-    cmp [si+0x81c],dx
+    cmp [si+InitialMonsterListLen],dx
     jg .label24 ; ↑
     jmp .label10 ; ↑
 .label25: ; 938
@@ -1188,7 +1189,7 @@ ReadLevelData:
     add sp,byte +0x2
     mov si,ax
     mov bx,[GameStatePtr]
-    mov [bx+0x802],si
+    mov [bx+NumLevelsInSet],si
     or si,si
     jnz .label1 ; ↓
     jmp .label13 ; ↓
@@ -2000,7 +2001,7 @@ FUN_4_115c:
     push si
     mov si,[bp+0x8]
     mov bx,[GameStatePtr]
-    mov ax,[bx+0x800]
+    mov ax,[bx+LevelNumber]
     mov [bp-0x12],ax
     cmp ax,si
     jz .label2 ; ↓

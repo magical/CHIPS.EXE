@@ -26,9 +26,9 @@ check: $(BASE) chips.exe Makefile
 logic.bin: constants.asm structs.asm variables.asm func.mac
 movement.bin: constants.asm structs.asm variables.asm func.mac
 seg2.bin: structs.asm variables.asm func.mac
-seg4.bin: variables.asm
+seg4.bin: structs.asm variables.asm
 seg5.bin: constants.asm variables.asm func.mac
-seg6.bin: variables.asm
+seg6.bin: structs.asm variables.asm
 sound.bin: constants.asm variables.asm func.mac
 digits.bin: variables.asm func.mac
 
