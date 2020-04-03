@@ -95,7 +95,7 @@ top:
 			continue
 		}
 
-		if breaking && mnemonic != "nop" {
+		if breaking && mnemonic != "nop" && mnemonic != "db" {
 			if *many && len(lines) > 0 {
 				printFunctionLabel(*prefix, lines[0].Addr)
 				drain(lines, jumps)
@@ -175,7 +175,7 @@ top:
 		} else if isJump(mnemonic) {
 			var jumpDest uint64
 			var text string
-			if strings.Contains(arg1, ":") || strings.Contains(arg2, ":") {
+			if arg1 == "far" || strings.Contains(arg1, ":") || strings.Contains(arg2, ":") {
 				// far jump. basically a call. ignore
 				lines = append(lines, Line{
 					Addr:     addr,
@@ -217,7 +217,7 @@ top:
 			})
 		}
 
-		if (*single || *many) && mnemonic == "retf" {
+		if (*single || *many) && (mnemonic == "retf" || mnemonic == "ret") {
 			breaking = true
 		}
 	}
