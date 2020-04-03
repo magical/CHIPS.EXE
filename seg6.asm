@@ -344,7 +344,7 @@ BESTTIMEMSGPROC:
     push ss
     push ax
     call 0x0:0x303 ; 2da USER.SetDlgItemText
-    push word [0x1698]
+    push word [TotalScore+2]
     push word [TotalScore]
     push ds
     push word 0xb14
