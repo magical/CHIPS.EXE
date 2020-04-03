@@ -132,6 +132,15 @@ s_Arial3                            equ 0x661
 s_Helv3                             equ 0x667
 TileTable                           equ 0x66C
 MelindaMessage                      equ 0x90C
+CorruptDataMessage                  equ 0x966
+s_98e                               equ 0x98E
+sColon                              equ 0x98F
+sNoColon                            equ 0x992
+s_sss                               equ 0x993
+PasswordPromptMessage               equ 0x99A
+WrongPasswordMessage                equ 0x9C2
+EmptyPasswordMessage                equ 0x9EB
+s_DLG_PASSWORD                      equ 0xA06
 ColorMode                           equ 0xA18
 HicolorTiles                        equ 0xA1A
 LocolorTiles                        equ 0xA22

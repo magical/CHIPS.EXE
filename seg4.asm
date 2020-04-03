@@ -107,7 +107,7 @@ FUN_4_00d8:
     push si
     mov si,[bp+0x6]
     push ds
-    push word 0x2d4
+    push word DataFileName ; "CHIPS.DAT"
     push si
     call 0xfd:ReadLevelData ; ee 4:a56 ReadLevelData
     add sp,byte +0x6
@@ -116,7 +116,7 @@ FUN_4_00d8:
     call 0x336:FUN_4_005e ; fa 4:5e
     push byte +0x10
     push ds
-    push word 0x966
+    push word CorruptDataMessage
     push word [hwndMain]
     call 0x236:0x0 ; 109 2:0 ShowMessageBox
     add sp,byte +0x8
@@ -157,7 +157,7 @@ UpdateWindowTitle:
     jmp short .label1 ; ↓
     nop
 .label0: ; 158
-    mov ax,0x98e
+    mov ax,s_98e ; ""
 .label1: ; 15b
     mov cx,ax
     mov [bp-0x8],ds
@@ -165,18 +165,18 @@ UpdateWindowTitle:
     push cx
     cmp byte [bx],0x0
     jz .label2 ; ↓
-    mov ax,0x98f
+    mov ax,sColon ; ": "
     jmp short .label3 ; ↓
 .label2: ; 16c
-    mov ax,0x992
+    mov ax,sNoColon ; ""
 .label3: ; 16f
     mov [bp-0x4],ds
     push ds
     push ax
     push ds
-    push word 0x68
+    push word MessageBoxCaption
     push ds
-    push word 0x993
+    push word s_sss ; "%s%s%s"
     lea ax,[bp-0x8a]
     push ss
     push ax
@@ -436,7 +436,7 @@ FUN_4_0356:
     jl .label1 ; ↓
     push byte +0x24
     push ds
-    push word 0x90c
+    push word MelindaMessage
     push word [hwndMain]
     call 0x550:0x0 ; 3dd 2:0 ShowMessageBox
     add sp,byte +0x8
@@ -955,7 +955,7 @@ DecodeLevelFields:
     mov byte [si+0x7f],0x0
 .label20: ; 8da
     mov ax,[GameStatePtr]
-    add ax,0x99a
+    add ax,PasswordPromptMessage
     jmp .label5 ; ↑
     nop
 .label21: ; 8e4
@@ -1130,7 +1130,7 @@ FUN_4_0a0e:
     push di
     push si
     push ds
-    push word 0x2d4
+    push word DataFileName ; "CHIPS.DAT"
     lea ax,[bp-0x8a]
     push ss
     push ax
@@ -1508,7 +1508,7 @@ FUN_4_0d58:
     push di
     push si
     push ds
-    push word 0x2d4
+    push word DataFileName ; "CHIPS.DAT"
     lea ax,[bp-0x92]
     push ss
     push ax
@@ -1716,7 +1716,7 @@ FUN_4_0eaa:
     jmp .label17 ; ↓
 .label3: ; f16
     push ds
-    push word 0x2d4
+    push word DataFileName ; "CHIPS.DAT"
     lea ax,[bp-0xae]
     push ss
     push ax
@@ -1879,7 +1879,7 @@ PASSWORDMSGPROC:
     call 0x0:0xffff ; 1072 WEP4UTIL.103
     push word [0x169c]
     push ds
-    push word 0x99a
+    push word PasswordPromptMessage
     lea ax,[bp-0x4c]
     push ss
     push ax
@@ -1925,7 +1925,7 @@ PASSWORDMSGPROC:
     push ss
     push ax
     push ds
-    push word 0x9c2
+    push word WrongPasswordMessage
     lea ax,[bp-0x4c]
     push ss
     push ax
@@ -1935,7 +1935,7 @@ PASSWORDMSGPROC:
     nop
 .label6: ; 10f0
     push ds
-    push word 0x9eb
+    push word EmptyPasswordMessage
     lea ax,[bp-0x4c]
     push ss
     push ax
@@ -2034,7 +2034,7 @@ FUN_4_115c:
     mov [bp-0x4],dx
     push word [OurHInstance]
     push ds
-    push word 0xa06
+    push word s_DLG_PASSWORD
     push word [bp+0x6]
     mov ax,dx
     push ax

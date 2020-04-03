@@ -332,17 +332,25 @@ db 0,0,1,1,1,0  ; 0x6d ChipW
 db 0,0,1,1,1,0  ; 0x6e ChipS
 db 0,0,1,1,1,0  ; 0x6f ChipE
 
+; 90c
+; segment 4 strings
+
 MelindaMessage:
     db "You seem to be having trouble with this level.", 10
     db "Would you like to skip to the next level?", 0, 0
 
-db "Corrupt or inaccessible CHIPS.DAT file.", 0, 0
-db ": ", 0, 0
-db "%s%s%s", 0
-db "Please enter the password for level %d:", 0
-db 'Sorry, "%s" is not the correct password.', 0
-db "You must enter a password.", 0
-db "DLG_PASSWORD", 0, 0
+CorruptDataMessage      db "Corrupt or inaccessible CHIPS.DAT file.", 0
+s_98e       db 0
+sColon      db ": ", 0
+sNoColon    db 0
+s_sss       db "%s%s%s", 0
+PasswordPromptMessage   db "Please enter the password for level %d:", 0
+WrongPasswordMessage    db 'Sorry, "%s" is not the correct password.', 0
+EmptyPasswordMessage    db "You must enter a password.", 0
+
+s_DLG_PASSWORD db "DLG_PASSWORD", 0, 0
+
+; a14
 
 dw 0 ; a14 tile bitmap handle
 dw 0 ; a16 tile bitmap data?
@@ -356,6 +364,7 @@ MonochromeTiles db "obj32_1", 0, 0
 DebugModeEnabled dw 0 ; a34
 
 ; a36
+; segment 6 strings
 
 db "You must enter a level and/or password.", 0
 db "You must enter a valid password.", 0, 0
