@@ -29,9 +29,9 @@ InventoryDirty dw 0 ; 0x20
 Var22        dw 0 ; 0x22 *
 GamePaused   dw 0 ; 0x24
 hMenu        dw 0 ; 0x26 HMENU
-    dw 0 ; 0x28
-    dw 0 ; 0x2a
-    dw 0 ; 0x2c
+hAccel       dw 0 ; 0x28 HACCEL
+Var2a        dw 0 ; 0x2a whether we've called WEP4UTIL.5
+Var2c        dw 0 ; 0x2c whether to pause the game and music when minimized
 
 IgnorePasswords dw 0 ; 0x2e passwords disabled
 CheatVisible    dw 0 ; 0x30 whether the ignore passwords menu option is visible
@@ -42,21 +42,20 @@ KeyboardDelay   dw -1 ; 0x34
 ; LOGFONT struct
 LOGFONT:
 .lfHeight       dw 0 ; 0x36 lfHeight
-    dw 0 ; 0x38 lfWidth
-    dw 0 ; 0x3a lfEscapement
-    dw 0 ; 0x3c lfOrientation
+                dw 0 ; 0x38 lfWidth
+                dw 0 ; 0x3a lfEscapement
+                dw 0 ; 0x3c lfOrientation
 .lfWeight       dw 0 ; 0x3e lfWeight
 .lfItalic       db 0 ; 0x40 lfItalic
-    db 0 ; 0x41 lfUnderline
-    db 0 ; 0x42 lfStrikeOut
-    db 0 ; 0x43 lfCharSet
-    db 0 ; 0x44 lfOutPrecision
-    db 0 ; 0x45 lfClipPrecision
-    db 0x02 ; 0x46 lfQuality PROOF_QUALITY
-    db 0x22 ; 0x47 lfPitchAndFamily FF_SWISS | VARIABLE_PITCH
-.lfFaceName:
-    db "Arial" ; 0x48 char[32] lfFaceName
-    times 32-5 db 0
+                db 0 ; 0x41 lfUnderline
+                db 0 ; 0x42 lfStrikeOut
+                db 0 ; 0x43 lfCharSet
+                db 0 ; 0x44 lfOutPrecision
+                db 0 ; 0x45 lfClipPrecision
+                db 0x02 ; 0x46 lfQuality PROOF_QUALITY
+                db 0x22 ; 0x47 lfPitchAndFamily FF_SWISS | VARIABLE_PITCH
+.lfFaceName:    db "Arial" ; 0x48 char[32] lfFaceName
+                times 32-5 db 0
 
 ; 0x68
 MessageBoxCaption db "Chip's Challenge", 0, 0

@@ -781,7 +781,7 @@ func WinMain
     add sp,byte +0x4
     or ax,ax
     jz .returnZero
-    mov word [0x2c],0x1
+    mov word [Var2c],0x1
 .label3: ; 673
     lea ax,[bp-0x14]
     push ss
@@ -797,7 +797,7 @@ func WinMain
     cmp word [bp-0x12],byte +0x12
     jz .label4 ; ↓
     push word [hwndMain]
-    push word [0x28]
+    push word [hAccel]
     lea ax,[bp-0x14]
     push ss
     push ax
@@ -3511,7 +3511,7 @@ MenuItemCallback:
     jmp .label42 ; ↓
 
 .label4: ; 1ebe
-    mov word [0x2a],0x1
+    mov word [Var2a],0x1
     push word [OurHInstance]
     push word [bp+0x6]
     push word 0x101
@@ -3541,7 +3541,7 @@ MenuItemCallback:
     nop
 
 .label8: ; 1f08
-    mov word [0x2a],0x1
+    mov word [Var2a],0x1
     push word [OurHInstance]
     push word [bp+0x6]
     push byte +0x4
@@ -3761,7 +3761,7 @@ MenuItemCallback:
     nop
 
 .label31: ; 2130
-    mov word [0x2a],0x1
+    mov word [Var2a],0x1
     push word [OurHInstance]
     push word [bp+0x6]
     push word 0x101
@@ -3771,7 +3771,7 @@ MenuItemCallback:
     nop
 
 .label32: ; 2148
-    mov word [0x2a],0x1
+    mov word [Var2a],0x1
     push word [OurHInstance]
     push word [bp+0x6]
     push word 0x101
@@ -3939,7 +3939,7 @@ func MAINWNDPROC
     push ds
     push word s_ChipsMenu2
     call 0x0:0xffff ; 22c4 USER.LoadAccelerators
-    mov [0x28],ax
+    mov [hAccel],ax
     or ax,ax
     jnz .label11 ; ↓
     jmp .label15 ; ↓
@@ -4048,8 +4048,8 @@ func MAINWNDPROC
     push word ID_CurrentLevel
     call 0x2492:StoreIniInt ; 23f0 2:19ca
     add sp,byte +0x4
-    call 0x1f2e:0x240 ; 23f8 4:240
-    cmp word [0x2a],byte +0x0
+    call 0x1f2e:0x240 ; 23f8 4:240 FreeGameLists
+    cmp word [Var2a],byte +0x0
     jz .label19 ; ↓
     push word [OurHInstance]
     push word [hwnd]
@@ -4132,7 +4132,7 @@ func MAINWNDPROC
     call 0x0:0xffff ; 24d8 USER.SystemParametersInfo
     jmp .label67 ; ↓
 .label27: ; 24e0
-    cmp word [0x2c],byte +0x0
+    cmp word [Var2c],byte +0x0
     jz .label29 ; ↓
     push word [hwnd]
     call 0x0:0xffff ; 24ea USER.IsIconic
