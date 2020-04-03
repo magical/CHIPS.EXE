@@ -701,7 +701,7 @@ COMPLETEMSGPROC:
     sub ax,[bp-0x18]
     sbb dx,[bp-0x16]
     add [TotalScore],ax
-    adc [0x1698],dx
+    adc [TotalScore+2],dx
     mov ax,[TimeRemaining]
     cmp [bp-0x14],ax
     jnl .label21 ; ↓
@@ -791,19 +791,19 @@ COMPLETEMSGPROC:
     mov ax,[bp-0xc]
     mov dx,[bp-0xa]
     add [TotalScore],ax
-    adc [0x1698],dx
+    adc [TotalScore+2],dx
     push di
     push byte +0x69
     push ds
     push word 0xbb7
 .label29: ; 6eb
     call 0x0:0x727 ; 6eb USER.SetDlgItemText
-    push word [0x1698]
+    push word [TotalScore+2]
     push word [TotalScore]
     push word 0xca
     call 0x102:0x1a86 ; 6fb 2:1a86 StoreIniLong
     add sp,byte +0x6
-    push word [0x1698]
+    push word [TotalScore+2]
     push word [TotalScore]
     push ds
     push word 0xc59
