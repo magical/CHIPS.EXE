@@ -1,18 +1,20 @@
-SEGMENTS=data.bin seg2.bin logic.bin seg5.bin movement.bin sound.bin digits.bin
+SEGMENTS=data.bin seg2.bin logic.bin seg4.bin seg5.bin seg6.bin movement.bin sound.bin digits.bin
 RESOURCES=chips.ico res/*
 chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
 	nasm -o $@ $<
 
-base=basedata.bin baseseg2.bin baselogic.bin basedigits.bin baseseg5.bin basemovement.bin baseseg8.bin
+BASE=basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
-check: $(base) chips.exe Makefile
+check: $(BASE) chips.exe Makefile
 	-cmp basedata.bin data.bin
 	-cmp baseseg2.bin seg2.bin
 	-cmp baselogic.bin logic.bin
-	-cmp basedigits.bin digits.bin
+	-cmp baseseg4.bin seg4.bin
 	-cmp baseseg5.bin seg5.bin
+	-cmp baseseg6.bin seg6.bin
 	-cmp basemovement.bin movement.bin
 	-cmp baseseg8.bin sound.bin
+	-cmp basedigits.bin digits.bin
 	cmp base.exe chips.exe
 
 %.bin: %.asm fixmov.awk Makefile

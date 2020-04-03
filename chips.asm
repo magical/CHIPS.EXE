@@ -283,7 +283,7 @@ Logic:
 
 ; 8e00
 Segment4:
-    INCBIN "base.exe", 0x8e00, 0x1208
+    INCBIN "seg4.bin"
     INCBIN "base.exe", 0x8e00+0x1208, 0x10a
     ALIGN SectorSize, db 0
 
@@ -324,7 +324,7 @@ Segment5:
 
 ; a600
 Segment6:
-    INCBIN "base.exe", 0xa600, 0x75b
+    INCBIN "seg6.bin"
     INCBIN "base.exe", 0xa600+0x75b, 130
     ALIGN SectorSize, db 0
 
