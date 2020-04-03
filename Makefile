@@ -25,10 +25,12 @@ check: $(BASE) chips.exe Makefile
 # additional dependencies
 logic.bin: constants.asm structs.asm variables.asm func.mac
 movement.bin: constants.asm structs.asm variables.asm func.mac
-seg5.bin: constants.asm variables.asm func.mac
-digits.bin: variables.asm func.mac
-sound.bin: constants.asm variables.asm func.mac
 seg2.bin: structs.asm variables.asm func.mac
+seg4.bin: variables.asm
+seg5.bin: constants.asm variables.asm func.mac
+seg6.bin: variables.asm
+sound.bin: constants.asm variables.asm func.mac
+digits.bin: variables.asm func.mac
 
 variables.asm: data.bin genvars.sh Makefile
 	sh genvars.sh >variables.asm

@@ -1,5 +1,7 @@
 SEGMENT CODE ; 6
 
+%include "variables.asm"
+
 ; 0
 
 GOTOLEVELMSGPROC:
@@ -96,7 +98,7 @@ GOTOLEVELMSGPROC:
     jnl .label9 ; ↓
     jmp .label16 ; ↓
 .label9: ; cf
-    cmp word [0x2e],byte +0x0
+    cmp word [IgnorePasswords],byte +0x0
     jz .label10 ; ↓
     cmp word [bp-0x4],0x91
     jnz .label14 ; ↓
@@ -144,7 +146,7 @@ GOTOLEVELMSGPROC:
     jz .label15 ; ↓
 .label14: ; 13c
     mov ax,[bp-0x4]
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     mov [bx+0x800],ax
     push si
     push byte +0x1
@@ -343,7 +345,7 @@ BESTTIMEMSGPROC:
     push ax
     call 0x0:0x303 ; 2da USER.SetDlgItemText
     push word [0x1698]
-    push word [0x1696]
+    push word [TotalScore]
     push ds
     push word 0xb14
     lea ax,[bp-0x50]
@@ -422,7 +424,7 @@ BESTTIMEMSGPROC:
 .label21: ; 389
     mov si,ax
     inc si
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp si,[bx+0x800]
     jz .label22 ; ↓
     push si
@@ -502,7 +504,7 @@ COMPLETEMSGPROC:
     mov di,[bp+0xe]
     push di
     call 0x0:0x5c ; 426 WEP4UTIL.103
-    mov ax,[0x1694]
+    mov ax,[TimeRemaining]
     mov cx,ax
     shl ax,byte 0x2
     add ax,cx
@@ -512,7 +514,7 @@ COMPLETEMSGPROC:
     mov [bp-0xc],ax
     mov [bp-0xa],dx
     mov ax,0x1f4
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     imul word [bx+0x800]
     mov [bp-0x8],ax
     mov [bp-0x6],dx
@@ -632,7 +634,7 @@ COMPLETEMSGPROC:
     push ss
     push ax
     call 0x0:0x6ec ; 561 USER.SetDlgItemText
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     push word 0xc9
     call 0x57f:0x19ca ; 571 2:19ca StoreIniInt
@@ -641,7 +643,7 @@ COMPLETEMSGPROC:
     call 0x5a4:0x198e ; 57c 2:198e GetIniInt
     add sp,byte +0x2
     mov si,ax
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     cmp [bx+0x800],si
     jng .label12 ; ↓
     jmp .label28 ; ↓
@@ -684,12 +686,12 @@ COMPLETEMSGPROC:
     push dx
     push ax
     mov ax,[bp-0x14]
-    cmp ax,[0x1694]
+    cmp ax,[TimeRemaining]
     jnl .label18 ; ↓
-    mov ax,[0x1694]
+    mov ax,[TimeRemaining]
 .label18: ; 5f2
     push ax
-    mov bx,[0x1680]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     call 0x6d1:0x1c1c ; 5fb 2:1c1c
     add sp,byte +0x8
@@ -697,9 +699,9 @@ COMPLETEMSGPROC:
     mov dx,[bp-0xe]
     sub ax,[bp-0x18]
     sbb dx,[bp-0x16]
-    add [0x1696],ax
+    add [TotalScore],ax
     adc [0x1698],dx
-    mov ax,[0x1694]
+    mov ax,[TimeRemaining]
     cmp [bp-0x14],ax
     jnl .label21 ; ↓
     sub ax,[bp-0x14]
@@ -714,7 +716,7 @@ COMPLETEMSGPROC:
     mov [bp-0x4],ds
     push ds
     push si
-    mov ax,[0x1694]
+    mov ax,[TimeRemaining]
     sub ax,[bp-0x14]
     push ax
     push ds
@@ -780,14 +782,14 @@ COMPLETEMSGPROC:
 .label28: ; 6bc
     push word [bp-0xa]
     push word [bp-0xc]
-    push word [0x1694]
-    mov bx,[0x1680]
+    push word [TimeRemaining]
+    mov bx,[GameStatePtr]
     push word [bx+0x800]
     call 0x6fe:0x1c1c ; 6ce 2:1c1c
     add sp,byte +0x8
     mov ax,[bp-0xc]
     mov dx,[bp-0xa]
-    add [0x1696],ax
+    add [TotalScore],ax
     adc [0x1698],dx
     push di
     push byte +0x69
@@ -796,12 +798,12 @@ COMPLETEMSGPROC:
 .label29: ; 6eb
     call 0x0:0x727 ; 6eb USER.SetDlgItemText
     push word [0x1698]
-    push word [0x1696]
+    push word [TotalScore]
     push word 0xca
     call 0x102:0x1a86 ; 6fb 2:1a86 StoreIniLong
     add sp,byte +0x6
     push word [0x1698]
-    push word [0x1696]
+    push word [TotalScore]
     push ds
     push word 0xc59
     lea ax,[bp-0x98]
