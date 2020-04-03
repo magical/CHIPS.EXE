@@ -397,11 +397,14 @@ db 0
 ; Used as a pointer argument to SlideMovement when we don't care about its value
 DummyVarForSlideMovement dw 0xFF ; c6c
 
-GreatJobChipMsg db "Great Job, Chip!", 10, "You did it!  You finished the challenge!", 0
-MelindaHerselfMsg db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0
-db 0
-YouCompletedNLevelsMsg db "You completed %d levels, and your total score for the challenge is %li points.", 10, 10
-db "You can still improve your score, by completing levels that you skipped, and getting better times on each level.  When you replay a level, if your new score is better than your old, your score will be adjusted by the difference.  Select Best Times from the Game menu to see your scores for each level.", 0
+GreatJobChipMsg:
+    db "Great Job, Chip!", 10
+    db "You did it!  You finished the challenge!", 0
+MelindaHerselfMsg:
+    db "Melinda herself offers Chip membership in the exclusive Bit Busters computer club, and gives him access to the club's computer system.  Chip is in heaven!", 0, 0
+YouCompletedNLevelsMsg:
+    db "You completed %d levels, and your total score for the challenge is %li points.", 10, 10
+    db "You can still improve your score, by completing levels that you skipped, and getting better times on each level.  When you replay a level, if your new score is better than your old, your score will be adjusted by the difference.  Select Best Times from the Game menu to see your scores for each level.", 0
 
 ; Decade messages
 ; 0xEC2
