@@ -150,7 +150,7 @@ UpdateWindowTitle:
     mov ds,ax
     sub sp,0x8c
     mov bx,[GameStatePtr]
-    add bx,0x95a
+    add bx,LevelTitle
     mov [bp-0x8c],bx
     cmp byte [bx],0x0
     jz .label0 ; ↓
