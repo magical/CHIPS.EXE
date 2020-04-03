@@ -228,7 +228,7 @@ UpdateTile:
     add si,[GameStatePtr]
     mov cl,[si+Lower]
     push cx
-    mov cl,[si]
+    mov cl,[si+Upper]
     push cx
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportY]

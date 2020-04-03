@@ -69,7 +69,7 @@ FUN_4_005e:
     mov bx,[GameStatePtr]
     add bx,si
     mov al,[bx+Lower]
-    mov [bx],al
+    mov [bx+Upper],al
     inc si
     cmp si,0x400
     jl .label0 ; ↑
