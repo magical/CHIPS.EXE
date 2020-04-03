@@ -15,6 +15,9 @@ InventoryDirty                      equ 0x20
 Var22                               equ 0x22
 GamePaused                          equ 0x24
 hMenu                               equ 0x26
+hAccel                              equ 0x28
+Var2a                               equ 0x2A
+Var2c                               equ 0x2C
 IgnorePasswords                     equ 0x2E
 CheatVisible                        equ 0x30
 CheatKeys                           equ 0x32
