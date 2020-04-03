@@ -1,3 +1,5 @@
+SEGMENT CODE ; 6
+
 ; 0
 
 GOTOLEVELMSGPROC:
@@ -842,7 +844,8 @@ COMPLETEMSGPROC:
     pop ds
     pop bp
     dec bp
-    db 0xca
-    db 0x0a
+    db 0xca,0x0a ; retf 0xa
 
-; 75a
+; 75b
+
+; vim: syntax=nasm

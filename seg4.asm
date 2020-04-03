@@ -1,3 +1,5 @@
+SEGMENT CODE ; 4
+
 ; 0
 
 GetTileRect:
@@ -2058,4 +2060,6 @@ FUN_4_115c:
     retf
     nop
 
-; 1207
+; 1208
+
+; vim: syntax=nasm
