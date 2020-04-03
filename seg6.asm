@@ -1,5 +1,6 @@
 SEGMENT CODE ; 6
 
+%include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
 
@@ -244,7 +245,7 @@ BESTTIMEMSGPROC:
     push byte +0x64
     call 0x0:0x346 ; 1fb USER.GetDlgItem
     mov si,ax
-    push word 0xc8
+    push word ID_HighestLevel
     call 0x24c:0x198e ; 205 2:198e GetIniInt
     add sp,byte +0x2
     mov [bp-0x8],ax
@@ -637,10 +638,10 @@ COMPLETEMSGPROC:
     call 0x0:0x6ec ; 561 USER.SetDlgItemText
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    push word 0xc9
+    push word ID_CurrentLevel
     call 0x57f:0x19ca ; 571 2:19ca StoreIniInt
     add sp,byte +0x4
-    push word 0xc8
+    push word ID_HighestLevel
     call 0x5a4:0x198e ; 57c 2:198e GetIniInt
     add sp,byte +0x2
     mov si,ax
@@ -800,7 +801,7 @@ COMPLETEMSGPROC:
     call 0x0:0x727 ; 6eb USER.SetDlgItemText
     push word [TotalScore+2]
     push word [TotalScore]
-    push word 0xca
+    push word ID_CurrentScore
     call 0x102:0x1a86 ; 6fb 2:1a86 StoreIniLong
     add sp,byte +0x6
     push word [TotalScore+2]

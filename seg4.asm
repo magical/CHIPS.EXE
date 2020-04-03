@@ -1,5 +1,6 @@
 SEGMENT CODE ; 4
 
+%include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
 
@@ -215,7 +216,7 @@ UpdateNextPrevMenuItems:
     push si
     mov si,[bp+0x6]
     push word [hMenu]
-    push byte +0x6f
+    push byte ID_PREVIOUS
     mov [bp-0x4],si
     cmp si,byte +0x1
     jng .label0 ; ↓
@@ -239,7 +240,7 @@ UpdateNextPrevMenuItems:
     xor cx,cx
 .label3: ; 1e8
     push word [hMenu]
-    push byte +0x6e
+    push byte ID_NEXT
     push cx
     call 0x0:0xffff ; 1ef USER.EnableMenuItem
     pop si
@@ -612,13 +613,13 @@ FUN_4_0356:
     push word [bp+0x6]
     call 0x5ce:0x1c1c ; 5c0 2:1c1c
     add sp,byte +0x8
-    push word 0xc8
+    push word ID_HighestLevel
     call 0x5e1:0x198e ; 5cb 2:198e GetIniInt
     add sp,byte +0x2
     cmp ax,[bp+0x6]
     jnl .label12 ; ↓
     push word [bp+0x6]
-    push word 0xc8
+    push word ID_HighestLevel
     call 0x10c:0x19ca ; 5de 2:19ca StoreIniInt
     add sp,byte +0x4
 .label12: ; 5e6
