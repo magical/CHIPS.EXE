@@ -232,12 +232,12 @@ UpdateTile:
     push cx
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportY]
-    sub ax,[bx+0xa2e]
+    sub ax,[bx+UnusedOffsetY]
     shl ax,byte 0x5
     push ax
     mov ax,[bp+0x8]
     sub ax,[bx+ViewportX]
-    sub ax,[bx+0xa2c]
+    sub ax,[bx+UnusedOffsetX]
     shl ax,byte 0x5
     push ax
     push word [bp+0x6]
@@ -294,12 +294,12 @@ func InvertTile_Unused
     mov ax,[bp+0x8]
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportX]
-    sub ax,[bx+0xa2c]
+    sub ax,[bx+UnusedOffsetX]
     shl ax,byte TileShift
     push ax
     mov ax,[bp+0xa]
     sub ax,[bx+ViewportY]
-    sub ax,[bx+0xa2e]
+    sub ax,[bx+UnusedOffsetY]
     shl ax,byte TileShift
     push ax
     push byte TileWidth
@@ -395,11 +395,11 @@ func ScrollViewport
     ; si = 32*(dx - 0)
     mov bx,[GameStatePtr]
     mov si,di
-    sub si,[bx+0xa2c]
+    sub si,[bx+UnusedOffsetX]
     shl si,byte 0x5
     ; ax = 32*(dy - 0)
     mov ax,[viewportDeltaY]
-    sub ax,[bx+0xa2e]
+    sub ax,[bx+UnusedOffsetY]
     shl ax,byte 0x5
     mov [local_c],ax
     ; GetClientRectangle(hwndBoard, &rect)
@@ -411,7 +411,7 @@ func ScrollViewport
     ; vw-0
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportWidth]
-    sub ax,[bx+0xa2c]
+    sub ax,[bx+UnusedOffsetX]
     ; dx = rect.width/32
     ; cx = rect.width/32 + 1
     mov cx,[rect.width]
@@ -432,7 +432,7 @@ func ScrollViewport
     ; cx = vh-0
     mov bx,[GameStatePtr]
     mov cx,[bx+ViewportHeight]
-    sub cx,[bx+0xa2e]
+    sub cx,[bx+UnusedOffsetY]
     ; bx = rect.height/32+1
     mov bx,[rect.height]
     sar bx,byte 0x5
@@ -536,7 +536,7 @@ func ScrollViewport
     push word [local_4]
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportX]
-    add ax,[bx+0xa2c]
+    add ax,[bx+UnusedOffsetX]
     add ax,si
     push ax
     push di
@@ -562,12 +562,12 @@ func ScrollViewport
     shl ax,byte 0x5
     mov [rect.width],ax
     mov bx,[GameStatePtr]
-    mov ax,[bx+0xa2e]
+    mov ax,[bx+UnusedOffsetY]
     shl ax,byte 0x5
     neg ax
     mov [rect.y],ax
     mov ax,[bx+ViewportHeight]
-    sub ax,[bx+0xa2e]
+    sub ax,[bx+UnusedOffsetY]
     shl ax,byte 0x5
     mov [rect.height],ax
     push word [hwndBoard]
@@ -609,7 +609,7 @@ func ScrollViewport
 .loop4: ; 4f5
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportY]
-    add ax,[bx+0xa2e]
+    add ax,[bx+UnusedOffsetY]
     add ax,si
     push ax
     push word [local_6]
@@ -630,12 +630,12 @@ func ScrollViewport
 .label19: ; 52d
     ; rect = {-0*32, di*32, (vw-0)*32, (local_4-0)*32}
     ; ValidateRect(hwndBoard, &rect)
-    mov ax,[bx+0xa2c]
+    mov ax,[bx+UnusedOffsetX]
     shl ax,byte 0x5
     neg ax
     mov [rect.x],ax
     mov ax,[bx+ViewportWidth]
-    sub ax,[bx+0xa2c]
+    sub ax,[bx+UnusedOffsetX]
     shl ax,byte 0x5
     mov [rect.width],ax
     shl di,byte 0x5
@@ -2025,7 +2025,7 @@ FUN_2_10ce:
     mov ax,[si+0x4]
     sar ax,byte 0x5
     add ax,[bx+ViewportX]
-    add ax,[bx+0xa2c]
+    add ax,[bx+UnusedOffsetX]
     cmp ax,[bx+ViewportX]
     jnl .label11 ; ↓
     mov ax,[bx+ViewportX]
@@ -2038,7 +2038,7 @@ FUN_2_10ce:
     add di,byte +0x1f
     sar di,byte 0x5
     add di,cx
-    add di,[bx+0xa2c]
+    add di,[bx+UnusedOffsetX]
     dec ax
     cmp di,ax
     jng .label12 ; ↓
@@ -2054,7 +2054,7 @@ FUN_2_10ce:
     add cx,dx
     mov dx,bx
     mov bx,[GameStatePtr]
-    add cx,[bx+0xa2e]
+    add cx,[bx+UnusedOffsetY]
     dec ax
     cmp cx,ax
     jng .label13 ; ↓
@@ -2067,7 +2067,7 @@ FUN_2_10ce:
     add dx,ax
     mov ax,bx
     mov bx,[GameStatePtr]
-    add dx,[bx+0xa2e]
+    add dx,[bx+UnusedOffsetY]
     cmp dx,ax
     jnl .label14 ; ↓
     mov dx,ax
@@ -2102,13 +2102,13 @@ FUN_2_10ce:
     mov dx,[bp-0x4]
     mov bx,[GameStatePtr]
     sub dx,[bx+ViewportX]
-    sub dx,[bx+0xa2c]
+    sub dx,[bx+UnusedOffsetX]
     inc dx
     shl dx,byte 0x5
     mov [bp-0x8],dx
     mov di,[bp-0xa]
     sub di,[bx+ViewportY]
-    sub di,[bx+0xa2e]
+    sub di,[bx+UnusedOffsetY]
     inc di
     shl di,byte 0x5
     cmp dx,[si+0x8]
@@ -4484,13 +4484,13 @@ func BOARDWNDPROC
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
     add ax,[bx+ViewportX]
-    add ax,[bx+0xa2c]
+    add ax,[bx+UnusedOffsetX]
     mov [bx+MouseTargetX],ax
     mov ax,[lParam+2]
     shr ax,byte 0x5
     mov bx,[GameStatePtr]
     add ax,[bx+ViewportY]
-    add ax,[bx+0xa2e]
+    add ax,[bx+UnusedOffsetY]
     mov [bx+MouseTargetY],ax
     mov bx,[GameStatePtr]
     mov word [bx+IsBuffered],0x0

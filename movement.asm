@@ -1320,7 +1320,7 @@ func EndGame
     mov bx,[GameStatePtr]
     mov cx,[bx+ChipY]
     sub cx,[bx+ViewportY]
-    sub cx,[bx+0xa2e]
+    sub cx,[bx+UnusedOffsetY]
     shl cx,byte 0x5
     sub cx,ax
     jns .label5
@@ -1330,7 +1330,7 @@ func EndGame
 
     mov cx,[bx+ChipX]
     sub cx,[bx+ViewportX]
-    sub cx,[bx+0xa2c]
+    sub cx,[bx+UnusedOffsetX]
     shl cx,byte 0x5
     sub cx,ax
     jns .label6
