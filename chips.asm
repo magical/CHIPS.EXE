@@ -256,7 +256,7 @@ TIMES 512  db 0
 
 ; a00
 Segment1:
-    INCBIN "base.exe", 0xa00, 0x952
+    INCBIN "seg1.bin"
     INCBIN "base.exe", 0xa00+0x952, 162
     ALIGN SectorSize, db 0
     TIMES SectorSize  db 0

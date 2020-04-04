@@ -1,12 +1,13 @@
-SEGMENTS=data.bin seg2.bin logic.bin seg4.bin seg5.bin seg6.bin movement.bin sound.bin digits.bin
+SEGMENTS=data.bin seg1.bin seg2.bin logic.bin seg4.bin seg5.bin seg6.bin movement.bin sound.bin digits.bin
 RESOURCES=chips.ico res/*
 chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
 	nasm -o $@ $<
 
-BASE=basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
+BASE=basedata.bin baseseg1.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
 check: $(BASE) chips.exe Makefile
 	-cmp basedata.bin data.bin
+	-cmp baseseg1.bin seg1.bin
 	-cmp baseseg2.bin seg2.bin
 	-cmp baselogic.bin logic.bin
 	-cmp baseseg4.bin seg4.bin
