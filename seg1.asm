@@ -14,7 +14,7 @@ FUN_1_0000:
 .label0: ; 12
     mov al,0xff
     push ax
-    call 0xffff:0x23c ; 15 1:2c3
+    call 0xffff:0x2c3 ; 15 1:2c3
     xor bp,bp
     push bp
     call 0x0:0xffff ; 1d KERNEL.InitTask
