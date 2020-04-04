@@ -17,12 +17,18 @@
     if ($1 == "sub" && $2 == "bh,bh") { print "db 0x2a,0xff"; next }
     if ($1 == "sub" && $2 == "ch,ch") { print "db 0x2a,0xed"; next }
     if ($1 == "sbb" && $2 == "al,al") { print "db 0x1a,0xc0"; next }
+    if ($1 == "or" && $2 == "al,al") { print "db 0x0a,0xc0"; next }
+    if ($1 == "or" && $2 == "ah,ah") { print "db 0x0a,0xe4"; next }
+    if ($1 == "or" && $2 == "al,dl") { print "db 0x0a,0xc2"; next }
+    if ($1 == "or" && $2 == "cl,cl") { print "db 0x0a,0xc9"; next }
 
     if      ($1 == "mov")   opcod = 0x8B;
     else if ($1 == "add")   opcod = 0x03;
+    else if ($1 == "adc")   opcod = 0x13;
     else if ($1 == "sub")   opcod = 0x2B;
     else if ($1 == "sbb")   opcod = 0x1B;
     else if ($1 == "xor")   opcod = 0x33;
+    else if ($1 == "and")   opcod = 0x23;
     else if ($1 == "or")    opcod = 0x0B;
     else if ($1 == "cmp")   opcod = 0x3B;
     else { print; next }
