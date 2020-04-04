@@ -63,10 +63,23 @@ entry:
     call 0xab:FUN_1_02b5 ; b1 1:2b5
     mov ax,0x15
     jmp 0x5cb
+
+; bc
+
+atoi:
     jmp 0x60e
-    add cl,ch
-    dec bx
-    add ax,0x4500
+    db 0x00
+
+; c0
+
+atol:
+    jmp 0x60e
+    db 0x00
+
+; c4
+
+srand:
+    inc bp
     push bp
     mov bp,sp
     push ds
