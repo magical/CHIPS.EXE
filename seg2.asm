@@ -130,8 +130,8 @@ DrawTile:
     push word [0x1734]
     push word [bp-0xa]
     push word [bp-0x8]
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word [0x1734]
     push ax
     push dx
@@ -146,8 +146,8 @@ DrawTile:
     push word [0x1734]
     push word [bp-0xa]
     push word [bp-0x8]
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word [0x1734]
     push ax
     push dx
@@ -162,8 +162,8 @@ DrawTile:
     push word [0x1734]
     push word [bp-0xa]
     push word [bp-0x8]
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word [0x1734]
     push ax
     push dx
@@ -173,8 +173,8 @@ DrawTile:
     push word [bp+0x6]
     push word [bp+0x8]
     push word [bp+0xa]
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word [0x1734]
     push word [bp-0xa]
     push word [bp-0x8]
@@ -188,8 +188,8 @@ DrawTile:
     push word [bp+0x6]
     push word [bp+0x8]
     push word [bp+0xa]
-    push byte +0x20
-    push byte +0x20
+    push byte TileWidth
+    push byte TileHeight
     push word [0x1734]
     push ax
     push dx
@@ -223,7 +223,7 @@ UpdateTile:
     or ax,ax
     jz .label0 ; ↓
     mov ax,si
-    shl si,byte 0x5
+    shl si,byte TileShift
     add si,[bp+0x8]
     add si,[GameStatePtr]
     mov cl,[si+Lower]
@@ -233,12 +233,12 @@ UpdateTile:
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportY]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     push ax
     mov ax,[bp+0x8]
     sub ax,[bx+ViewportX]
     sub ax,[bx+UnusedOffsetX]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     push ax
     push word [bp+0x6]
     call 0x251:DrawTile ; 221 2:c4 DrawTile
@@ -396,11 +396,11 @@ func ScrollViewport
     mov bx,[GameStatePtr]
     mov si,di
     sub si,[bx+UnusedOffsetX]
-    shl si,byte 0x5
+    shl si,byte TileShift
     ; ax = 32*(dy - 0)
     mov ax,[viewportDeltaY]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [local_c],ax
     ; GetClientRectangle(hwndBoard, &rect)
     push word [hwndBoard]
@@ -415,7 +415,7 @@ func ScrollViewport
     ; dx = rect.width/32
     ; cx = rect.width/32 + 1
     mov cx,[rect.width]
-    sar cx,byte 0x5
+    sar cx,byte TileShift
     mov dx,cx
     inc cx
     ; bx = vw-0
@@ -435,7 +435,7 @@ func ScrollViewport
     sub cx,[bx+UnusedOffsetY]
     ; bx = rect.height/32+1
     mov bx,[rect.height]
-    sar bx,byte 0x5
+    sar bx,byte TileShift
     mov [bp-0x1a],bx
     inc bx
     mov [bp-0x1c],cx
@@ -556,19 +556,19 @@ func ScrollViewport
     ; ValidateRect(hwndBoard, &rect)
 .label11: ; 473
     mov ax,[local_a]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [rect.x],ax
     mov ax,[local_8]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [rect.width],ax
     mov bx,[GameStatePtr]
     mov ax,[bx+UnusedOffsetY]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     neg ax
     mov [rect.y],ax
     mov ax,[bx+ViewportHeight]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [rect.height],ax
     push word [hwndBoard]
     lea ax,[rect]
@@ -631,17 +631,17 @@ func ScrollViewport
     ; rect = {-0*32, di*32, (vw-0)*32, (local_4-0)*32}
     ; ValidateRect(hwndBoard, &rect)
     mov ax,[bx+UnusedOffsetX]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     neg ax
     mov [rect.x],ax
     mov ax,[bx+ViewportWidth]
     sub ax,[bx+UnusedOffsetX]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [rect.width],ax
-    shl di,byte 0x5
+    shl di,byte TileShift
     mov [rect.y],di
     mov ax,[local_4]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [rect.height],ax
     push word [hwndBoard]
     lea ax,[bp-0x18]
@@ -1054,9 +1054,9 @@ func CreateWindows
     mov [bp-0xe],ax
     mov cx,[0x16a0]
     mov [bp-0xc],cx
-    add cx,0x120
+    add cx,TileWidth * 9
     mov [bp-0x8],cx
-    add ax,0x120
+    add ax,TileHeight * 9
     mov [bp-0xa],ax
     xor dx,dx
     mov [bp-0x14],dx
@@ -1130,7 +1130,7 @@ func CreateWindows
     push word 0x5200
     push byte +0x0
     mov ax,[0x169e]
-    add ax,0x133
+    add ax,TileWidth * 9 + 0x13
     push ax
     mov ax,[0x16a0]
     sub ax,0x6
@@ -1624,9 +1624,9 @@ FUN_2_0dc6:
     mov [bp-0x12],ax
     mov cx,[0x16a0]
     mov [bp-0x10],cx
-    add cx,0x120
+    add cx,TileWidth * 9
     mov [bp-0xc],cx
-    add ax,0x120
+    add ax,TileHeight * 9
     mov [bp-0xe],ax
     push byte +0x2
     push cx
@@ -2023,7 +2023,7 @@ FUN_2_10ce:
 .label10: ; 1252
     mov si,[bp+0x8]
     mov ax,[si+0x4]
-    sar ax,byte 0x5
+    sar ax,byte TileShift
     add ax,[bx+ViewportX]
     add ax,[bx+UnusedOffsetX]
     cmp ax,[bx+ViewportX]
@@ -2035,8 +2035,8 @@ FUN_2_10ce:
     mov cx,ax
     add ax,[bx+ViewportWidth]
     mov di,[si+0x8]
-    add di,byte +0x1f
-    sar di,byte 0x5
+    add di,byte TileWidth-1
+    sar di,byte TileShift
     add di,cx
     add di,[bx+UnusedOffsetX]
     dec ax
@@ -2048,8 +2048,8 @@ FUN_2_10ce:
     mov cx,ax
     add ax,[bx+ViewportHeight]
     mov dx,[si+0xa]
-    add dx,byte +0x1f
-    sar dx,byte 0x5
+    add dx,byte TileHeight-1
+    sar dx,byte TileShift
     mov bx,cx
     add cx,dx
     mov dx,bx
@@ -2062,7 +2062,7 @@ FUN_2_10ce:
 .label13: ; 12b8
     mov [bp-0xa],cx
     mov ax,[si+0x6]
-    sar ax,byte 0x5
+    sar ax,byte TileShift
     mov bx,dx
     add dx,ax
     mov ax,bx
@@ -2104,13 +2104,13 @@ FUN_2_10ce:
     sub dx,[bx+ViewportX]
     sub dx,[bx+UnusedOffsetX]
     inc dx
-    shl dx,byte 0x5
+    shl dx,byte TileShift
     mov [bp-0x8],dx
     mov di,[bp-0xa]
     sub di,[bx+ViewportY]
     sub di,[bx+UnusedOffsetY]
     inc di
-    shl di,byte 0x5
+    shl di,byte TileShift
     cmp dx,[si+0x8]
     jnl .label20 ; ↓
     push word [si]
@@ -2238,7 +2238,7 @@ FUN_2_10ce:
     mov [bp-0x6],ax
     mov bx,[GameStatePtr]
     mov cx,[bx+ViewportWidth]
-    shl cx,byte 0x5
+    shl cx,byte TileShift
     mov [bp-0x8],cx
     cmp byte [bx+LevelTitle],0x1
     sbb cx,cx
@@ -2355,7 +2355,7 @@ FUN_2_10ce:
     imul word [bp-0xc]
     mov bx,[GameStatePtr]
     mov cx,[bx+ViewportHeight]
-    shl cx,byte 0x5
+    shl cx,byte TileShift
     sub cx,ax
     mov [bp-0x24],cx
     mov ax,[bp-0x8]
@@ -4481,13 +4481,13 @@ func BOARDWNDPROC
     mov bx,[GameStatePtr]
     mov word [bx+HaveMouseTarget],0x1
     mov ax,[lParam]
-    shr ax,byte 0x5
+    shr ax,byte TileShift
     mov bx,[GameStatePtr]
     add ax,[bx+ViewportX]
     add ax,[bx+UnusedOffsetX]
     mov [bx+MouseTargetX],ax
     mov ax,[lParam+2]
-    shr ax,byte 0x5
+    shr ax,byte TileShift
     mov bx,[GameStatePtr]
     add ax,[bx+ViewportY]
     add ax,[bx+UnusedOffsetY]

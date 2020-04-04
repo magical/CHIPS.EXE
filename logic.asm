@@ -4933,11 +4933,11 @@ func GetTileImagePos
     ; dx = a%16 * 32
     mov al,[tile]
     and ax,0xf0
-    shl ax,1
+    shl ax,(TileShift-4)
     mov [xpos],ax
     mov al,[tile]
     and ax,0xf
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [ypos],ax
     mov ax,[xpos]
     mov dx,[ypos]
