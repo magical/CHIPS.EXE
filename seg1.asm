@@ -883,15 +883,12 @@ mul32:
     mov cx,[bp+0xc]
     or cx,ax
     mov cx,[bp+0xa]
-    jnz 0x67b
+    jnz .label0
     mov ax,[bp+0x6]
     mul cx
     pop bp
     retf 0x8
-
-; 67b
-
-FUN_1_067b:
+.label0: ; 67b
     push bx
     mul cx
     mov bx,ax
