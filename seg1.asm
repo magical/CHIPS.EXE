@@ -250,7 +250,7 @@ FUN_1_01d6:
     push cs
     pop ds
     mov ax,0x2500
-    mov dx,0x5c6
+    mov dx,FUN_1_05c6
     test word [cs:0x10],0x1
     jz .label2 ; ↓
     call 0x0:0x1ed ; 20e KERNEL.DOS3Call
