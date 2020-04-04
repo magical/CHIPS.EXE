@@ -446,8 +446,10 @@ FUN_1_037c:
 
 ; 38f
 
-FUN_1_038f:
-    add [si-0x6f28],cl
+    db 0x00
+FUN_1_0390:
+    mov ax,ds
+    nop
     inc bp
     push bp
     mov bp,sp
@@ -1023,8 +1025,10 @@ FUN_1_071a:
 
 ; 747
 
-FUN_1_0747:
-    add [bx+di+0x57],dl
+    db 0x00
+FUN_1_0748:
+    push cx
+    push di
     test byte [bx+0x2],0x1
     jz .label8 ; ↓
     call 0x83a ; 750
