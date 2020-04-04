@@ -1054,9 +1054,9 @@ func CreateWindows
     mov [bp-0xe],ax
     mov cx,[0x16a0]
     mov [bp-0xc],cx
-    add cx,TileWidth * 9
+    add cx,TileHeight * 9
     mov [bp-0x8],cx
-    add ax,TileHeight * 9
+    add ax,TileWidth * 9
     mov [bp-0xa],ax
     xor dx,dx
     mov [bp-0x14],dx
