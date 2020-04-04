@@ -61,7 +61,7 @@ entry:
     add sp,byte +0x6
     push ax
     call 0xab:FUN_1_02b5 ; b1 1:2b5
-    mov ax,0x15
+    mov ax,0x15 ; no main proceduce
     jmp 0x5cb
 
 ; bc
@@ -482,7 +482,7 @@ FUN_1_0390:
     push ax
     push cs
     call 0x6dd ; 39f
-    mov ax,0xff
+    mov ax,0xff ; run-time error
     push ax
     push cs
     call 0x6dd ; 3a7
@@ -814,7 +814,7 @@ FUN_1_0536:
 FUN_1_05c6:
     push ss
     pop ds
-    mov ax,0x3
+    mov ax,0x3 ; integer divide by 0
 
 ; 5cb
 
@@ -950,14 +950,14 @@ FUN_1_0694:
 ; 699
 
 FUN_1_0699:
-    mov ax,0x14
+    mov ax,0x14 ; unexpected quickwin error
     jmp 0x5cb
     db 0x00
 
 ; 6a0
 
 FUN_1_06a0:
-    mov ax,0x2
+    mov ax,0x2 ; floating point support not loaded
     jmp 0x5cb
 
 ; 6a6
@@ -1200,7 +1200,7 @@ FUN_1_07d4:
     clc
     jmp short .label6 ; ↓
 .label4: ; 82f
-    mov ax,0x12
+    mov ax,0x12 ; unexpeted heap error
     jmp 0x5cb
 .label5: ; 835
     pop bx
