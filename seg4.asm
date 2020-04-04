@@ -21,18 +21,18 @@ GetTileRect:
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportX]
     sub ax,[bx+UnusedOffsetX]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [bp-0xa],ax
     mov ax,[bp+0x8]
     sub ax,[bx+ViewportY]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte 0x5
+    shl ax,byte TileShift
     mov [bp-0x8],ax
     mov ax,[bp-0xa]
-    add ax,0x20
+    add ax,TileWidth
     mov [bp-0x6],ax
     mov ax,[bp-0x8]
-    add ax,0x20
+    add ax,TileHeight
     mov [bp-0x4],ax
     mov ax,0x1674
     mov di,ax

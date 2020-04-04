@@ -1321,7 +1321,7 @@ func EndGame
     mov cx,[bx+ChipY]
     sub cx,[bx+ViewportY]
     sub cx,[bx+UnusedOffsetY]
-    shl cx,byte 0x5
+    shl cx,byte TileShift
     sub cx,ax
     jns .label5
     xor cx,cx
@@ -1331,7 +1331,7 @@ func EndGame
     mov cx,[bx+ChipX]
     sub cx,[bx+ViewportX]
     sub cx,[bx+UnusedOffsetX]
-    shl cx,byte 0x5
+    shl cx,byte TileShift
     sub cx,ax
     jns .label6
     xor cx,cx
@@ -1374,8 +1374,8 @@ func EndGame
     mov [exitTile],al
     push ax
 
-    push word 0x120
-    push word 0x120
+    push word TileWidth * 9
+    push word TileHeight * 9
     push byte +0x0
     push byte +0x0
     jmp short .callDrawStretchedTile ; draw tile
@@ -1410,8 +1410,8 @@ func EndGame
     push word [hDC]
     push byte +0x0
     push byte +0x0
-    push word 0x120
-    push word 0x120
+    push word TileWidth * 9
+    push word TileHeight * 9
     push word [0x1734]
     push byte +0x0
     push byte +0x0
@@ -1493,8 +1493,8 @@ func EndGame
     push word [hDC]
     push byte +0x0
     push byte +0x0
-    push word 32 * 9
-    push word 32 * 9
+    push word TileWidth * 9
+    push word TileHeight * 9
     push word [0x1734]
     push byte +0x0
     push byte +0x0
