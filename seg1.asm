@@ -818,7 +818,7 @@ FUN_1_05c6:
 
 ; 5cb
 
-exit:
+FUN_1_05cb:
     push ax
     push ax
     push cs
