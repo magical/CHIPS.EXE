@@ -526,8 +526,9 @@ TimeRemaining dw 0 ; 1694
 
 TotalScore dd 0 ; 1696
 
-    dw 0 ; 169a
-    dw 0 ; 169c
+    dw 0 ; 169a pointer to decoded password (for password prompt)
+    dw 0 ; 169c level for password prompt
+
     dw 0 ; 169e
     dw 0 ; 16a0
 
