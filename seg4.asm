@@ -2043,7 +2043,7 @@ FUN_4_115c:
     lea ax,[bp-0x10]
     mov [0x169a],ax
     push word 0xb91
-    push word 0x1016
+    push word PASSWORDMSGPROC
     push word [OurHInstance]
     call 0x0:0xffff ; 11c4 KERNEL.MakeProcInstance
     mov di,ax
