@@ -223,7 +223,7 @@ UpdateTile:
     or ax,ax
     jz .label0 ; ↓
     mov ax,si
-    shl si,byte TileShift
+    shl si,byte 0x5
     add si,[bp+0x8]
     add si,[GameStatePtr]
     mov cl,[si+Lower]
