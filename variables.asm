@@ -185,6 +185,7 @@ s_sequencer                         equ 0x143D
 EmptyStringForMciSendCommand        equ 0x1447
 s_The_MIDI_Mapper_is_not_available_Continue? equ 0x1449
 s_Unknown_Error                     equ 0x1475
+CRTMemory                           equ 0x1484
 GameStatePtr                        equ 0x1680
 BlueKeyCount                        equ 0x1682
 RedKeyCount                         equ 0x1684

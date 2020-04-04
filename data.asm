@@ -463,12 +463,14 @@ EmptyStringForMciSendCommand db 0, 0
 
 s_The_MIDI_Mapper_is_not_available_Continue? db "The MIDI Mapper is not available. Continue?", 0
 s_Unknown_Error db "Unknown Error", 0
+db 0
 
-times 13 db 0 ; 1482
+; 1484
+
+CRTMemory:
+times 6 dw 0
 dw 1, -1, 0, 0, 1, 0
 db "_C_FILE_INFO=", 0
-
-; 14aa
 
 dw 0, 0, 0 ; 14aa
 dw 0, 0, 0, 0, 0, 0, 0, 0  ; 14b0
@@ -478,11 +480,12 @@ db 00, 00,0xC1,00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 14e0
 db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 21, 00, 00 ; 14f0
 db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 16 ; 1500
 db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 1510
+db 0, 0 ; 1520
 
-; 1520
+db "<<NMSG>>" ; 1522
 
-db 0, 0,
-db "<<NMSG>>", 0, 0
+; 152a
+dw 0
 db "R6000", 13, 10, "- stack overflow", 13, 10, 0
 dw 3
 db "R6003", 13, 10, "- integer divide by 0", 13, 10, 0
