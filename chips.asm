@@ -118,16 +118,16 @@ NEResourceTab:
         dw (VERSION-$$)>>SectorShift, 1, 0x1c30, 0x8100, 0, 0
 
     dw RT_BITMAP, 7, 0, 0
-        dw (OBJ32_4-$$)>>SectorShift, 0x90, 0xc30, .OBJ32_4-NEResourceTab, 0, 0
-        dw (OBJ32_4E-$$)>>SectorShift, 0x84, 0xc30, .OBJ32_4E-NEResourceTab, 0, 0
-        dw (OBJ32_1-$$)>>SectorShift, 0x35, 0xc30, .OBJ32_1-NEResourceTab, 0, 0
+        dw (OBJ32_4-$$)>>SectorShift, (OBJ32_4E-OBJ32_4)>>SectorShift, 0xc30, .OBJ32_4-NEResourceTab, 0, 0
+        dw (OBJ32_4E-$$)>>SectorShift, (OBJ32_1-OBJ32_4E)>>SectorShift, 0xc30, .OBJ32_4E-NEResourceTab, 0, 0
+        dw (OBJ32_1-$$)>>SectorShift, (BACKGROUND-OBJ32_1)>>SectorShift, 0xc30, .OBJ32_1-NEResourceTab, 0, 0
         dw (BACKGROUND-$$)>>SectorShift, 0xd, 0xc30, .BACKGROUND-NEResourceTab, 0, 0
         dw (DigitsBitmap-$$)>>SectorShift, 0xe, 0xc30, 0x80c8, 0, 0
         dw (INFOWND-$$)>>SectorShift, 0xc, 0xc30, .INFOWND-NEResourceTab, 0, 0
         dw (CHIPEND-$$)>>SectorShift, 0x22, 0xc30, .CHIPEND-NEResourceTab, 0, 0
 
     dw RT_MENU, 1, 0, 0
-        dw 0x1fe, 0x1, 0x1c30, .CHIPSMENU-NEResourceTab, 0, 0
+        dw (MENU-$$)>>SectorShift, 0x1, 0x1c30, .CHIPSMENU-NEResourceTab, 0, 0
 
     dw RT_DIALOG, 4, 0, 0
         dw (DLGGOTO-$$)>>SectorShift, 0x1, 0x1c30, .DLG_GOTO-NEResourceTab, 0, 0
@@ -136,10 +136,10 @@ NEResourceTab:
         dw (DLGCOMPLETE-$$)>>SectorShift, 0x1, 0x1c30, .DLG_COMPLETE-NEResourceTab, 0, 0
 
     dw RT_STRING, 1, 0, 0
-        dw 0x203, 0x1, 0x1c30, 0x8011, 0, 0
+        dw (STRING-$$)>>SectorShift, 0x1, 0x1c30, 0x8011, 0, 0
 
     dw RT_ACCELERATOR, 1, 0, 0
-        dw 0x204, 1, 0xc30, .CHIPSMENU2-NEResourceTab, 0, 0
+        dw (ACCELERATOR-$$)>>SectorShift, 1, 0xc30, .CHIPSMENU2-NEResourceTab, 0, 0
 
     dw RT_RCDATA, 4, 0, 0
         dw (DlgIncludeGoto-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE1-NEResourceTab, 0, 0
@@ -148,7 +148,7 @@ NEResourceTab:
         dw (DlgIncludeComplete-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE4-NEResourceTab, 0, 0
 
     dw RT_ICON, 1, 0, 0
-        dw 0x209, 2, 0x1c10, 0x8001, 0, 0
+        dw (ICON-$$)>>SectorShift, 2, 0x1c10, 0x8001, 0, 0
 
     dw 0
 
@@ -361,7 +361,7 @@ VERSION:
 
 ; d800
 OBJ32_4:
-    INCBIN "res/OBJ32_4.bmp", 14
+    INCBIN "res/nesmaskx2.bmp", 14
     TIMES 0x22 db 0xFF ; ???
     ALIGN SectorSize, db 0
 
@@ -415,6 +415,7 @@ CHIPEND:
     db %1, 0 ; text
 %endmacro
 
+MENU:
 dd 0
 POPUP "&Game"
     MENUITEM `&New Game\tF2`, ID_NEWGAME
@@ -525,6 +526,7 @@ ALIGN SectorSize, db 0
 
 ; 40600
 ; RT_STRING
+STRING:
 
 db 0x5, "Chips"
 db 0x10, "Chip's Challenge"
@@ -547,6 +549,8 @@ ALIGN SectorSize, db 0
     dw %1
     dw %2
 %endmacro
+
+ACCELERATOR:
 
 ACCEL CTRL('R'), ID_RESTART
 ACCEL CTRL('N'), ID_NEXT
@@ -590,6 +594,7 @@ ALIGN SectorSize, db 0
 
 ; 41200
 ; RT_ICON
+ICON:
 INCBIN "chips.ico", 0x16
 ALIGN SectorSize, db 0
 
