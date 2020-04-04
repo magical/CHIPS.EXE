@@ -39,7 +39,7 @@ func InitGraphics
 
     mov word [0x169e],0x20 ;???
 
-    cmp ax,350
+    cmp ax,622
     jng .label0
     mov ax,0x20
     jmp short .label1
