@@ -361,7 +361,7 @@ VERSION:
 
 ; d800
 OBJ32_4:
-    INCBIN "res/nesmaskx2.bmp", 14
+    INCBIN "res/nesmasked.bmp", 14
     TIMES 0x22 db 0xFF ; ???
     ALIGN SectorSize, db 0
 
