@@ -1217,10 +1217,10 @@ func CreateWindows
     push byte +0x0
     push word 0x5400
     push byte +0x0
-    push byte +0xd
-    push word 0xdd
-    push word 0x80
-    push byte +0x40
+    push byte 13 + 0x40 - TileWidth*4/2
+    push word 0xdd + 0x20 - TileWidth*2/2
+    push word TileWidth * 4
+    push byte TileWidth * 2
     push word [hwndInfo]
     push byte +0x5
     push si
@@ -4785,7 +4785,7 @@ func INVENTORYWNDPROC
     and al,0x64
     push ax
     push byte +0x0
-    push byte +0x20
+    push byte TileWidth * 1
     push word [bp-0x22]
     call 0x2b1f:DrawInventoryTile ; 2b02 2:232 DrawInventoryTile
     add sp,byte +0x8
@@ -4795,7 +4795,7 @@ func INVENTORYWNDPROC
     and al,0x67
     push ax
     push byte +0x0
-    push byte +0x40
+    push byte TileWidth * 2
     push word [bp-0x22]
     call 0x2b39:DrawInventoryTile ; 2b1c 2:232 DrawInventoryTile
     add sp,byte +0x8
@@ -4805,7 +4805,7 @@ func INVENTORYWNDPROC
     and al,0x66
     push ax
     push byte +0x0
-    push byte +0x60
+    push byte TileWidth * 3
     push word [bp-0x22]
     call 0x2b53:DrawInventoryTile ; 2b36 2:232 DrawInventoryTile
     add sp,byte +0x8
@@ -4814,7 +4814,7 @@ func INVENTORYWNDPROC
     sbb al,al
     and al,0x6a
     push ax
-    push byte +0x20
+    push byte TileHeight
     push byte +0x0
     push word [bp-0x22]
     call 0x2b6d:DrawInventoryTile ; 2b50 2:232 DrawInventoryTile
@@ -4824,8 +4824,8 @@ func INVENTORYWNDPROC
     sbb al,al
     and al,0x6b
     push ax
-    push byte +0x20
-    push byte +0x20
+    push byte TileHeight
+    push byte TileWidth * 1
     push word [bp-0x22]
     call 0x2b87:DrawInventoryTile ; 2b6a 2:232 DrawInventoryTile
     add sp,byte +0x8
@@ -4834,8 +4834,8 @@ func INVENTORYWNDPROC
     sbb al,al
     and al,0x69
     push ax
-    push byte +0x20
-    push byte +0x40
+    push byte TileHeight
+    push byte TileWidth * 2
     push word [bp-0x22]
     call 0x2ba1:DrawInventoryTile ; 2b84 2:232 DrawInventoryTile
     add sp,byte +0x8
@@ -4844,8 +4844,8 @@ func INVENTORYWNDPROC
     sbb al,al
     and al,0x68
     push ax
-    push byte +0x20
-    push byte +0x60
+    push byte TileHeight
+    push byte TileWidth * 3
     push word [bp-0x22]
     call 0x2c2c:DrawInventoryTile ; 2b9e 2:232 DrawInventoryTile
     add sp,byte +0x8
