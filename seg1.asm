@@ -1,20 +1,18 @@
 ; 0
 
-FUN_1_0000:
-    add [bx+si],al
-    add [bx+si],al
-    add [bx+si],al
-    add [bx+si],al
-    add [bx+si],al
-    add [bx+si],al
-    add [bx+si],al
-    add [bx+si],al
-    db 0xff
-    db 0xff
-.label0: ; 12
+    times 16 db 0x00
+    dw -1
+
+; 12
+
+entry.label0:
     mov al,0xff
     push ax
-    call 0xffff:0x2c3 ; 15 1:2c3
+    call 0xffff:FUN_1_02c3 ; 15 1:2c3
+
+; 1a
+
+entry:
     xor bp,bp
     push bp
     call 0x0:0xffff ; 1d KERNEL.InitTask
@@ -54,7 +52,7 @@ FUN_1_0000:
     jz .label0 ; ↑
     call 0x18:FUN_1_01d6 ; 8a 1:1d6
     call 0x8d:FUN_1_03b4 ; 8f 1:3b4
-    call 0x92:0x536 ; 94 1:536
+    call 0x92:FUN_1_0536 ; 94 1:536
     call 0x694 ; 99
     push word [0x14fa]
     push word [0x14f8]
@@ -333,7 +331,11 @@ FUN_1_02b5:
     push ds
     mov ds,ax
     xor cx,cx
-    jmp short .label0 ; ↓
+    jmp short FUN_1_02e3.label0 ; ↓
+
+; 2c3
+
+FUN_1_02c3:
     mov ax,ds
     nop
     inc bp
@@ -342,7 +344,11 @@ FUN_1_02b5:
     push ds
     mov ds,ax
     mov cx,0x1
-    jmp short .label0 ; ↓
+    jmp short FUN_1_02e3.label0 ; ↓
+
+; 2d2
+
+FUN_1_02d2:
     mov ax,ds
     nop
     inc bp
@@ -353,7 +359,11 @@ FUN_1_02b5:
     push si
     push di
     mov cx,0x100
-    jmp short .label0 ; ↓
+    jmp short FUN_1_02e3.label0 ; ↓
+
+; 2e3
+
+FUN_1_02e3:
     mov ax,ds
     nop
     inc bp
@@ -697,6 +707,10 @@ FUN_1_03b4:
     mov word [bx],0x0
     jmp far [0x1508]
     db 0x00
+
+; 536
+
+FUN_1_0536:
     mov ax,ds
     nop
     inc bp
@@ -788,6 +802,10 @@ FUN_1_05c6:
     push ss
     pop ds
     mov ax,0x3
+
+; 5cb
+
+exit:
     push ax
     push ax
     push cs
@@ -823,6 +841,10 @@ FUN_1_05c6:
     push ax
     call 0x0:0xffff ; 608 KERNEL.FatalExit
     db 0x00
+
+; 60e
+
+FUN_1_060e:
     push bp
     mov bp,sp
     push di
@@ -918,8 +940,16 @@ FUN_1_0699:
     mov ax,0x14
     jmp 0x5cb
     db 0x00
+
+; 6a0
+
+FUN_1_06a0:
     mov ax,0x2
     jmp 0x5cb
+
+; 6a6
+
+FUN_1_06a6:
     mov ax,ds
     nop
     inc bp
