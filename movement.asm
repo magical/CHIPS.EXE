@@ -1401,7 +1401,7 @@ func EndGame
     add sp,byte +0x8
     push word [OurHInstance]
     push ds
-    push word Chipend
+    push word s_chipend
     call 0x0:0xc59 ; b8e USER.LoadBitmap
     mov [hBitmap],ax
     or ax,ax
@@ -1413,8 +1413,8 @@ func EndGame
     push word [hDC]
     push byte +0x0
     push byte +0x0
-    push word TileWidth * 9
-    push word TileHeight * 9
+    push word 0x120 ; width
+    push word 0x120 ; height
     push word [0x1734]
     push byte +0x0
     push byte +0x0
@@ -1484,7 +1484,7 @@ func EndGame
 .showEndGraphic:
     push word [OurHInstance]
     push ds
-    push word 0x135a
+    push word s_chipend2
     call 0x0:0xffff ; c58 USER.LoadBitmap
     mov si,ax
     or si,si
@@ -1496,8 +1496,8 @@ func EndGame
     push word [hDC]
     push byte +0x0
     push byte +0x0
-    push word TileWidth * 9
-    push word TileHeight * 9
+    push word 0x120 ; width
+    push word 0x120 ; height
     push word [0x1734]
     push byte +0x0
     push byte +0x0

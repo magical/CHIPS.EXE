@@ -164,8 +164,8 @@ DecadeMessages.level110             equ 0x11AD
 DecadeMessages.level120             equ 0x122B
 DecadeMessages.level130             equ 0x1291
 DecadeMessages.level140             equ 0x1315
-Chipend                             equ 0x1352
-Chipend2                            equ 0x135A
+s_chipend                           equ 0x1352
+s_chipend2                          equ 0x135A
 s_DLG_COMPLETE                      equ 0x1362
 s_MIDI_Error_on_file_s              equ 0x1370
 s_None_of_the_MIDI_files_specified___ equ 0x1388
