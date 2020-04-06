@@ -515,9 +515,10 @@ FUN_4_0356:
     nop
 .label5: ; 4ac
     mov bx,[GameStatePtr]
-    mov word [bx+ViewportHeight],0x20
+    mov word [bx+ViewportHeight],13
     mov bx,[GameStatePtr]
-    mov ax,[bx+ViewportHeight]
+    mov ax,word 15 ; [bx+ViewportHeight]
+    nop
     mov [bx+ViewportWidth],ax
     mov bx,[GameStatePtr]
     mov word [bx+UnusedOffsetY],0x10

@@ -1054,9 +1054,9 @@ func CreateWindows
     mov [bp-0xe],ax
     mov cx,[0x16a0]
     mov [bp-0xc],cx
-    add cx,TileHeight * 32
+    add cx,TileHeight * 13
     mov [bp-0x8],cx
-    add ax,TileWidth * 32
+    add ax,TileWidth * 15
     mov [bp-0xa],ax
     xor dx,dx
     mov [bp-0x14],dx
@@ -1130,7 +1130,7 @@ func CreateWindows
     push word 0x5200
     push byte +0x0
     mov ax,[0x169e]
-    add ax,TileWidth * 32 + 0x13
+    add ax,TileWidth * 15 + 0x13
     push ax
     mov ax,[0x16a0]
     sub ax,0x6
@@ -1624,9 +1624,9 @@ FUN_2_0dc6:
     mov [bp-0x12],ax
     mov cx,[0x16a0]
     mov [bp-0x10],cx
-    add cx,TileWidth * 32
+    add cx,TileHeight * 13
     mov [bp-0xc],cx
-    add ax,TileHeight * 32
+    add ax,TileWidth * 15
     mov [bp-0xe],ax
     push byte +0x2
     push cx
