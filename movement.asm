@@ -1273,16 +1273,18 @@ func EndGame
     mov [hDC],ax
     mov bx,[GameStatePtr]
 
-    cmp word [bx+EndingTick],byte 32
-    jge .atLeast32
+    %define framesToGrow 16/16 * 31; TileWidth*(ViewportWidth-1)/8
+    %define framesToCheer 72
+    cmp word [bx+EndingTick],byte framesToGrow
+    jge .growDone
 
-.lessThanOrEqualTo32:
+.growChip:
     ; select an exit tile depending on EndingTick % 3
     ; and store in [exitTile]
     mov si,[bx+EndingTick]
     mov ax,si
     mov cx,0x3
-    shl si,byte 0x3
+    shl si,byte 0x4
     cwd
     idiv cx
     mov ax,dx
@@ -1308,7 +1310,7 @@ func EndGame
     mov al,[exitTile]
     push ax
     push byte ChipS
-    lea ax,[si+0x20] ; (EndingTick * 8 + 32)
+    lea ax,[si+TileWidth] ; (EndingTick * 8 + 32)
     push ax ; height?
     push ax ; width?
     ; ax =  si / 2 (signed)
@@ -1345,11 +1347,11 @@ func EndGame
     jmp word .done
 
 
+.growDone: ; b1a
+    cmp word [bx+EndingTick],byte framesToGrow + framesToCheer
+    jge .cheerDone
 
-.atLeast32: ; b1a
-    cmp word [bx+EndingTick],byte +0x68
-    jge .atLeast104
-
+.cheer:
     ;
     mov ax,[bx+EndingTick]
     mov cx,0x2
@@ -1374,16 +1376,17 @@ func EndGame
     mov [exitTile],al
     push ax
 
-    push word TileWidth * 9
-    push word TileHeight * 9
+    push word TileWidth * 32
+    push word TileHeight * 32
     push byte +0x0
     push byte +0x0
     jmp short .callDrawStretchedTile ; draw tile
 
-.atLeast104: ; b5c
-    cmp word [bx+EndingTick],byte +0x69
+.cheerDone: ; b5c
+    cmp word [bx+EndingTick],byte framesToGrow+framesToCheer+1
     jl .equals104
     jmp word .greaterThan104orFlagIsNonzero
+
 .equals104: ; b66
     cmp word [flag],byte +0x0
     jz .equals104andFlagIsZero
