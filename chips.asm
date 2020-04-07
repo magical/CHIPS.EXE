@@ -401,6 +401,7 @@ CHIPEND:
 
 ; 3fc00
 ; RT_MENU
+%define MF_GRAYED   0x01
 %define MF_CHECKED  0x08
 %define MF_POPUP    0x10
 %define MF_END      0x80
@@ -418,7 +419,7 @@ CHIPEND:
 MENU:
 dd 0
 POPUP "&Game"
-    MENUITEM `&New Game\tF2`, ID_NEWGAME
+    MENUITEM `&New Game\tF2`, ID_NEWGAME, MF_GRAYED
     MENUITEM `&Pause\tF3`, ID_PAUSE
     MENUITEM "Best &Times...", ID_BESTTIMES
     MENUITEM "", 0
