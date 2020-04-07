@@ -313,7 +313,7 @@ endfunc
 ; 2b2
 
 ; Invalidate a tile.
-FUN_2_02b2:
+InvalidateTile:
     mov ax,ds
     nop
     inc bp

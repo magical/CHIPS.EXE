@@ -14,6 +14,7 @@
 2:01ca    UpdateTile
 2:0232    DrawInventoryTile
 2:025a    InvertTile_Unused
+2:02b2    InvalidateTile
 2:0306    ScrollViewport
 2:056e    UpdateChip
 2:0628    WinMain
