@@ -529,28 +529,23 @@ TotalScore dd 0 ; 1696
     dw 0 ; 169a pointer to decoded password (for password prompt)
     dw 0 ; 169c level for password prompt
 
-    dw 0 ; 169e
-    dw 0 ; 16a0
+; seg5.asm
+HorizontalPadding       dw 0 ; 169e main window horizontal padding (always 0x20)
+VerticalPadding         dw 0 ; 16a0 main window vertical padding (0x20 or 8, depending on vertical resolution)
 
 SoundArray:
     ; XXX what type are these?
     times 15 dw 0 ; 16a2
 .end:
 
-HorizontalResolution    dw 0 ; 16c0
-VerticalResolution      dw 0 ; 16c2
+; seg5.asm
+HorizontalResolution    dw 0 ; 16c0 horizontal screen resolution in px
+VerticalResolution      dw 0 ; 16c2 vertical screen resolution in px
 
 DigitBitmapData         dd 0 ; 16c4 far pointer
 
-MIDIArray: ; XXX how long is this?
-times 20 dw 0 ; 16c8
-
-; seg5.asm
-;   169e            main window horizontal padding (always 0x20)
-;   16a0            main window vertical padding (0x20 or 8, depending on vertical resolution)
-;   16c0            horizontal resolution
-;   16c2            vertical resolution
-;   172e    BOOL    records whether windows version >= 3.10
+MIDIArray:
+    times 20 dw 0 ; 16c8
 
 ; sounds.asm
 ;   13c4            whether music is playing?
@@ -558,7 +553,6 @@ times 20 dw 0 ; 16c8
 ;   16a2-16c0       array of sound effect handles?
 ;   16c8            array of midi handles?
 ;   1736            some sort of midi playback handle
-
 
 ; Digit image pointers
 DigitPtrArray:

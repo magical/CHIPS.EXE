@@ -1050,9 +1050,9 @@ func CreateWindows
     push byte +0x1
     call 0xffff:0x0 ; 93e 5:0 InitGraphics
     add sp,byte +0x2
-    mov ax,[0x169e]
+    mov ax,[HorizontalPadding]
     mov [bp-0xe],ax
-    mov cx,[0x16a0]
+    mov cx,[VerticalPadding]
     mov [bp-0xc],cx
     add cx,TileHeight * 9
     mov [bp-0x8],cx
@@ -1061,9 +1061,9 @@ func CreateWindows
     xor dx,dx
     mov [bp-0x14],dx
     mov [bp-0x16],dx
-    add cx,[0x16a0]
+    add cx,[VerticalPadding]
     mov [bp-0x10],cx
-    add ax,[0x169e]
+    add ax,[HorizontalPadding]
     add ax,0xa0
     mov [bp-0x12],ax
     lea ax,[bp-0x16]
@@ -1129,10 +1129,10 @@ func CreateWindows
     push byte +0x0
     push word 0x5200
     push byte +0x0
-    mov ax,[0x169e]
+    mov ax,[HorizontalPadding]
     add ax,TileWidth * 9 + 0x13
     push ax
-    mov ax,[0x16a0]
+    mov ax,[VerticalPadding]
     sub ax,0x6
     push ax
     push word 0x9a
@@ -1620,9 +1620,9 @@ FUN_2_0dc6:
     push byte +0x42
     call 0x0:0x2a7 ; e9b GDI.PatBlt
 .label6: ; ea0
-    mov ax,[0x169e]
+    mov ax,[HorizontalPadding]
     mov [bp-0x12],ax
-    mov cx,[0x16a0]
+    mov cx,[VerticalPadding]
     mov [bp-0x10],cx
     add cx,TileWidth * 9
     mov [bp-0xc],cx

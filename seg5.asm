@@ -6,10 +6,10 @@ SEGMENT CODE ; 5
 ;   a14     HGDIOBJ tile object
 ;   a16     LPVOID  bitmap data?
 ;   a18             bitmap to use: 1, 2, 3, or 4 (monochrome, locolor, hicolor, hicolor)
-;   169e    ???
-;   16a0            0x20 or 8, depending on vertical resolution
-;   16c0            horizontal resolution
-;   16c2            vertical resolution
+;   169e            horizontal padding
+;   16a0            vertical padding: 0x20 or 8, depending on vertical resolution
+;   16c0            horizontal screen resolution
+;   16c2            vertical screen resolution
 ;   172e    BOOL    records whether windows version >= 3.10
 
 %include "constants.asm"
@@ -37,7 +37,7 @@ func InitGraphics
     call 0x0:0x71 ; 2b GDI.GetDeviceCaps
     mov [VerticalResolution],ax
 
-    mov word [0x169e],0x20 ;???
+    mov word [HorizontalPadding],0x20
 
     cmp ax,350
     jng .label0
@@ -47,11 +47,11 @@ func InitGraphics
 .label0: ; 44
     mov ax,0x8
 .label1: ; 47
-    mov [0x16a0],ax
+    mov [VerticalPadding],ax
     or si,si
     jz .label2
     push byte ID_COLOR
-    call 0xffff:0x198e ; 50 2:0x198e
+    call 0xffff:0x198e ; 50 2:198e GetIniInt
     add sp,byte +0x2
     or ax,ax
     jnz .label2
