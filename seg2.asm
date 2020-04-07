@@ -312,8 +312,8 @@ endfunc
 
 ; 2b2
 
-; Invalidate a tile. Unused.
-FUN_2_02b2:
+; Invalidate a tile.
+InvalidateTile:
     mov ax,ds
     nop
     inc bp
