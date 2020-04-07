@@ -312,7 +312,7 @@ endfunc
 
 ; 2b2
 
-; Invalidate a tile. Unused.
+; Invalidate a tile.
 FUN_2_02b2:
     mov ax,ds
     nop
