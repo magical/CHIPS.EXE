@@ -1,6 +1,5 @@
 CHIPS.EXE
 ====
-
 This is a disassembly of Chip's Challenge for Windows 95.
 
 It builds the following executable:
@@ -10,12 +9,28 @@ It builds the following executable:
 
 Progress
 ----
-Most of the game logic has been disassembled; see `logic.asm` and `movement.asm`.
+The core game logic has been disassembled and extensively commented; see `logic.asm` and `movement.asm`.
+Almost all of the game's memory has been mapped out; see `data.asm` and `structs.asm`.
+If you are interested in the address of a particular variable, check out `variables.asm`.
+
+Most of the rest of the code has been disassembled but may lack useful function/data labels and comments.
+
+| Segment | Disassembled | Labels | Comments | Filename / purpose |
+| --- | --- | --- | --- | --- |
+| 1 | no | | | C runtime |
+| 2 | yes | some | some | seg2.asm - UI / WinMain |
+| 3 | yes | yes  | some | logic.asm - tile logic |
+| 4 | yes | some | no   | seg4.asm - levelset I/O |
+| 5 | yes | yes  | yes  | seg5.asm - tile graphics |
+| 6 | yes | few  | no   | seg6.asm - dialog boxes |
+| 7 | yes | yes  | yes  | movement.asm - chip & creature movement |
+| 8 | yes | some | some | sound.asm - sound effects & MIDI |
+| 9 | yes | yes  | yes  | digits.asm - counter graphics |
+| 10 | yes | yes | some | data.asm |
 
 
 Dependencies
 ----
-
 To build, you'll need the following programs installed:
 
 * make
