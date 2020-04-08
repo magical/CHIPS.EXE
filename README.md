@@ -18,15 +18,15 @@ Most of the rest of the code has been disassembled but may lack useful function/
 | Segment | Disassembled | Labels | Comments | Filename / purpose |
 | --- | --- | --- | --- | --- |
 | 1 | no | | | C runtime |
-| 2 | yes | some | some | seg2.asm - UI / WinMain |
-| 3 | yes | yes  | some | logic.asm - tile logic |
-| 4 | yes | some | no   | seg4.asm - levelset I/O |
-| 5 | yes | yes  | yes  | seg5.asm - tile graphics |
-| 6 | yes | few  | no   | seg6.asm - dialog boxes |
-| 7 | yes | yes  | yes  | movement.asm - chip & creature movement |
-| 8 | yes | some | some | sound.asm - sound effects & MIDI |
-| 9 | yes | yes  | yes  | digits.asm - counter graphics |
-| 10 | yes | yes | some | data.asm |
+| 2 | yes | some | some | `seg2.asm` - UI / WinMain |
+| 3 | yes | yes  | some | `logic.asm` - tile logic |
+| 4 | yes | some | no   | `seg4.asm` - levelset I/O |
+| 5 | yes | yes  | yes  | `seg5.asm` - tile graphics |
+| 6 | yes | few  | no   | `seg6.asm` - dialog boxes |
+| 7 | yes | yes  | yes  | `movement.asm` - chip & creature movement |
+| 8 | yes | some | some | `sound.asm` - sound effects & MIDI |
+| 9 | yes | yes  | yes  | `digits.asm` - counter graphics |
+| 10 | yes | yes | some | `data.asm` |
 
 Community
 ----
