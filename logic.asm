@@ -952,8 +952,7 @@ func MonsterLoop
     %local len:word ; -16
     %local xdistance:word ; -18
     %local ydistance:word ; -1a
-    %local local_1c:word ; -1c
-    %local p:word ; -1e
+    %local p:dword ; -1e
     %local offset:word ; -20
 
     mov bx,[GameStatePtr]
