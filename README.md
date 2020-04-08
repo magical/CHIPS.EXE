@@ -28,6 +28,11 @@ Most of the rest of the code has been disassembled but may lack useful function/
 | 9 | yes | yes  | yes  | digits.asm - counter graphics |
 | 10 | yes | yes | some | data.asm |
 
+Community
+----
+Join the [Bit Busters Discord][bbc].
+
+[bbc]: https://discord.gg/Xd4dUY9
 
 Dependencies
 ----
