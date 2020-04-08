@@ -26,6 +26,8 @@ To build, you'll need the following programs installed:
 You'll also need an existing copy of `CHIPS.EXE` with the sha26sum given above,
 to fill in the incomplete portions of the disassembly.
 
+Some tools require python3, but they aren't used in the build.
+
 Building
 ----
 
@@ -33,4 +35,5 @@ Building
 
 2. Run `make`
 
-You can run `make check` to compare the output with the base image.
+3. (optional) Run `make check` to compare the output with the base image.
+   This step requires golang.
