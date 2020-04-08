@@ -214,9 +214,12 @@ s_658           db "Hint: %s", 0
 s_Arial3        db "Arial", 0
 s_Helv3         db "Helv", 0
 
-; Tile table (0x66c)
-; Columns: Chip, ??, Block, ??, Monsters, ??
-;
+; 66c
+
+; Tile table
+; Chip/Block/Monsters
+; Even columns: 0=blocked 1=ok 2=special
+; Odd columns: action
 TileTable:
 db 1,0,1,0,1,1  ; 0x0  Floor
 db 0,0,0,0,0,0  ; 0x1  Wall
@@ -511,6 +514,7 @@ times 13 db 0
 ; Near pointer to game state structure
 GameStatePtr dw 0   ; 1680
 
+; Inventory
 BlueKeyCount dw 0 ; 1682
 RedKeyCount dw 0 ; 1684
 GreenKeyCount dw 0 ; 1686
