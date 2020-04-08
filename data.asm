@@ -561,16 +561,16 @@ DigitPtrArray:
 
 DigitResourceHandle dw 0 ; 1720 HGLOBAL
     dw 0 ; 1722 copy of GameStatePtr used for deallocation
-    dw 0 ; 1724 HGDIOBJ
+SavedObj            dw 0 ; 1724 HGDIOBJ previously selected object
 fpWaveOutGetNumDevs dw 0, 0 ; 1726
 OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
-    dw 0 ; 172c HGDIOBJ
+TileBitmapObj       dw 0 ; 172c HGDIOBJ current tile bitmap object
 ; If the game is running on Windows 3.1 or higher,
 ; it uses Arial instead of Helv[etica] as its font
 ; and fiddles with the KeyboardDelay setting.
-IsWin31             dw 0 ; 172e
-fpMidiOutGetNumDevs dw 0, 0; 1730
-    dw 0 ; 1734 HDC
+IsWin31             dw 0 ; 172e BOOL
+fpMidiOutGetNumDevs dw 0, 0 ; 1730
+TileDC              dw 0 ; 1734 HDC memory dc for tile graphics
 MCIDeviceID         dw 0 ; 1736 MCIDEVICEID
 
 ; vim: syntax=nasm

@@ -127,12 +127,12 @@ DrawTile:
     push ax
     call 0x12f:0x2a3e ; 100 3:2a3e GetTileImagePos
     add sp,byte +0x2
-    push word [0x1734]
+    push word [TileDC]
     push word [bp-0xa]
     push word [bp-0x8]
     push byte TileWidth
     push byte TileHeight
-    push word [0x1734]
+    push word [TileDC]
     push ax
     push dx
     push word 0xcc
@@ -143,12 +143,12 @@ DrawTile:
     push ax
     call 0x15c:0x2a3e ; 12c 3:2a3e GetTileImagePos
     add sp,byte +0x2
-    push word [0x1734]
+    push word [TileDC]
     push word [bp-0xa]
     push word [bp-0x8]
     push byte TileWidth
     push byte TileHeight
-    push word [0x1734]
+    push word [TileDC]
     push ax
     push dx
     push word 0xee
@@ -159,12 +159,12 @@ DrawTile:
     push ax
     call 0x1a1:0x2a3e ; 159 3:2a3e GetTileImagePos
     add sp,byte +0x2
-    push word [0x1734]
+    push word [TileDC]
     push word [bp-0xa]
     push word [bp-0x8]
     push byte TileWidth
     push byte TileHeight
-    push word [0x1734]
+    push word [TileDC]
     push ax
     push dx
     push word 0x88
@@ -175,7 +175,7 @@ DrawTile:
     push word [bp+0xa]
     push byte TileWidth
     push byte TileHeight
-    push word [0x1734]
+    push word [TileDC]
     push word [bp-0xa]
     push word [bp-0x8]
     jmp short .label4 ; ↓
@@ -190,7 +190,7 @@ DrawTile:
     push word [bp+0xa]
     push byte TileWidth
     push byte TileHeight
-    push word [0x1734]
+    push word [TileDC]
     push ax
     push dx
 .label4: ; 1b9
@@ -1548,7 +1548,7 @@ FUN_2_0dc6:
     jmp .label5 ; ↓
 .label0: ; deb
     mov di,[bp+0x8]
-    push word [0x1734]
+    push word [TileDC]
     push si
     call 0x0:0xe71 ; df3 GDI.SelectObject
     mov [bp-0x8],ax
@@ -1581,7 +1581,7 @@ FUN_2_0dc6:
     push si
     push word [bp-0x1e]
     push word [bp-0x1c]
-    push word [0x1734]
+    push word [TileDC]
     push byte +0x0
     push byte +0x0
     push word 0xcc
@@ -1598,7 +1598,7 @@ FUN_2_0dc6:
     jl .label1 ; ↑
     mov si,[bp-0xa]
 .label4: ; e69
-    push word [0x1734]
+    push word [TileDC]
     push word [bp-0x8]
     call 0x0:0xffff ; e70 GDI.SelectObject
     push si
@@ -3810,13 +3810,13 @@ MenuItemCallback:
     add sp,byte +0x6
     or ax,ax
     jz .label36 ; ↓
-    push word [0x1734]
+    push word [TileDC]
     push word [bp-0x6]
     call 0x0:0x2323 ; 21bb GDI.SelectObject
     push ax
     call 0x0:0x2428 ; 21c1 GDI.DeleteObject
     mov ax,[bp-0x6]
-    mov [0x172c],ax
+    mov [TileBitmapObj],ax
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
@@ -3935,6 +3935,7 @@ func MAINWNDPROC
     jmp .label68 ; ↓
     nop
 .label10: ; 22bc
+    ; WM_CREATE
     push word [OurHInstance]
     push ds
     push word s_ChipsMenu2
@@ -3946,7 +3947,7 @@ func MAINWNDPROC
 .label11: ; 22d3
     mov si,[hwnd]
     push byte +0x0
-    push word 0x172c
+    push word TileBitmapObj
     push word [OurHInstance]
     call 0x243d:0x112 ; 22df 5:112 LoadTiles
     add sp,byte +0x6
@@ -3962,20 +3963,22 @@ func MAINWNDPROC
     jnz .label13 ; ↓
     jmp .label16 ; ↓
 .label13: ; 2300
+    ; create a memory DC that's compatible with our main window
     push di
     call 0x0:0xffff ; 2301 GDI.CreateCompatibleDC
-    mov [0x1734],ax
+    mov [TileDC],ax
     push si
     push di
     call 0x0:0xffff ; 230b USER.ReleaseDC
-    cmp word [0x1734],byte +0x0
+    cmp word [TileDC],byte +0x0
     jnz .label14 ; ↓
     jmp .label16 ; ↓
 .label14: ; 231a
-    push word [0x1734]
-    push word [0x172c]
+    ; select our tile bitmap into it
+    push word [TileDC]
+    push word [TileBitmapObj]
     call 0x0:0x241f ; 2322 GDI.SelectObject
-    mov [0x1724],ax
+    mov [SavedObj],ax
     push byte +0x1
     call 0x23fb:0x320 ; 232c 4:320
     add sp,byte +0x2
@@ -4039,6 +4042,7 @@ func MAINWNDPROC
     jmp .label69 ; ↓
     nop
 .label18: ; 23d6
+    ; WM_DESTROY
     push byte +0x1
     call 0x23f3:FUN_2_176e ; 23d8 2:176e
     add sp,byte +0x2
@@ -4058,13 +4062,13 @@ func MAINWNDPROC
     push byte +0x0
     call 0x0:0x1ed3 ; 2411 WEP4UTIL.5
 .label19: ; 2416
-    push word [0x1734]
-    push word [0x1724]
+    push word [TileDC]
+    push word [SavedObj]
     call 0x0:0x16e6 ; 241e GDI.SelectObject
-    push word [0x172c]
+    push word [TileBitmapObj]
     call 0x0:0x16ec ; 2427 GDI.DeleteObject
     call 0xffff:0xbc ; 242c 9:bc
-    push word [0x1734]
+    push word [TileDC]
     call 0x0:0xffff ; 2435 GDI.DeleteDC
     call 0x941:0x17c ; 243a 5:17c
     call 0x2447:0x5b8 ; 243f 8:5b8
@@ -4535,7 +4539,7 @@ func INFOWNDPROC
     mov si,ax
     or si,si
     jz .label1 ; ↓
-    push word [0x1734]
+    push word [TileDC]
     push si
     call 0x0:0x28e5 ; 28b9 GDI.SelectObject
     mov di,ax
@@ -4544,13 +4548,13 @@ func INFOWNDPROC
     push byte +0x0
     push word 0x9a
     push word 0x12c
-    push word [0x1734]
+    push word [TileDC]
     push byte +0x0
     push byte +0x0
     push word 0xcc
     push byte +0x20
     call 0x0:0xe4c ; 28da GDI.BitBlt
-    push word [0x1734]
+    push word [TileDC]
     push di
     call 0x0:0x2904 ; 28e4 GDI.SelectObject
     push si

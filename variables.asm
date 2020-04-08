@@ -211,10 +211,13 @@ MIDIArray                           equ 0x16C8
 DigitPtrArray                       equ 0x16F0
 DigitPtrArray.end                   equ 0x1720
 DigitResourceHandle                 equ 0x1720
+SavedObj                            equ 0x1724
 fpWaveOutGetNumDevs                 equ 0x1726
 OurHInstance                        equ 0x172A
+TileBitmapObj                       equ 0x172C
 IsWin31                             equ 0x172E
 fpMidiOutGetNumDevs                 equ 0x1730
+TileDC                              equ 0x1734
 MCIDeviceID                         equ 0x1736
 
 ; vim: syntax=nasm
