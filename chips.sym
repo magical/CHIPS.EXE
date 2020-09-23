@@ -4,7 +4,7 @@
 1:00c4    srand
 1:00dc    rand
 1:0110    div32_probably
-1:05c5    exit
+1:05cb    exit
 1:060e    atol_common
 1:0662    mul32
 
