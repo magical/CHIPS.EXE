@@ -823,7 +823,7 @@ func InitBoard
     mov ax,[bx+ToggleListCap]
     cmp [bx+ToggleListLen],ax
     jl .longenough
-    push byte +0x4
+    push byte Point_size
     push byte +0x20
     mov ax,bx
     add ax,ToggleListCap
@@ -4836,7 +4836,7 @@ func AddTeleport
     mov ax,[bx+TeleportListCap]
     cmp [bx+TeleportListLen],ax
     jl .allswell
-    push byte +0x4
+    push byte Point_size
     push byte +0x8
     mov ax,bx
     add ax,TeleportListCap
@@ -4864,11 +4864,11 @@ func AddTeleport
     shl si,byte 0x2
     mov bx,[GameStatePtr]
     les bx,[bx+TeleportListPtr]
-    mov [es:bx+si],ax
+    mov [es:bx+si+Point.x],ax
     mov ax,[y]
     mov bx,[GameStatePtr]
     les bx,[bx+TeleportListPtr]
-    mov [es:bx+si+0x2],ax
+    mov [es:bx+si+Point.y],ax
     mov ax,cx
 .end: ; 29d4
     pop si
