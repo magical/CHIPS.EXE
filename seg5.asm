@@ -1,4 +1,5 @@
 SEGMENT CODE ; 5
+
 ; Tile graphics
 
 ; Data
@@ -20,7 +21,7 @@ func InitGraphics
     sub sp,byte +0x4
     push si
 
-    %define hDC (bp-4)
+    %local hDC:word ; -4
 
     mov si,[bp+6] ; ???
     push byte +0x0 ; NULL
