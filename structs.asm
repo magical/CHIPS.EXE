@@ -27,8 +27,8 @@ InitialMonsterList  equ 0x81e
 ;   x, y
 
 ; Slip list
-; Array of Monster structs
-; Monster.slipping records whether the moving object is a block (yes, this is confusing).
+; Array of Slipper structs
+; See Slipper definition below
 SlipListLen         equ 0x91e
 SlipListCap         equ 0x920
 SlipListHandle      equ 0x922
@@ -37,7 +37,7 @@ SlipListSeg         equ 0x926
 
 ; Monsters
 ; Array of Monster structs
-; Monster.slipping records whether the monster is on the slip list
+; See Monster definition below
 MonsterListLen      equ 0x928
 MonsterListCap      equ 0x92a
 MonsterListHandle   equ 0x92c
@@ -128,6 +128,8 @@ STRUC Connection
     .flag resw 1        ; 0x8
 ENDSTRUC
 
+; An entry on the monster list
+; slipping records whether the monster is also on the slip list
 STRUC Monster
     .tile resb 1        ; 0x0
     .x resw 1           ; 0x1
@@ -135,6 +137,17 @@ STRUC Monster
     .xdir resw 1        ; 0x5
     .ydir resw 1        ; 0x7
     .slipping resw 1    ; 0x9
+ENDSTRUC
+
+; An entry on the slip list
+; isblock records whether the moving object is a block (not a monster)
+STRUC Slipper
+    .tile resb 1        ; 0x0
+    .x resw 1           ; 0x1
+    .y resw 1           ; 0x3
+    .xdir resw 1        ; 0x5
+    .ydir resw 1        ; 0x7
+    .isblock resw 1     ; 0x9
 ENDSTRUC
 
 ; vim: syntax=nasm

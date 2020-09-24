@@ -79,13 +79,13 @@ func FindSlipper
     mov es,dx
     mov di,[x]
 .loop:
-    cmp [es:bx+Monster.x-1],di
+    cmp [es:bx+Slipper.x-1],di
     jnz .next
     mov ax,[y]
-    cmp [es:bx+Monster.y-1],ax
+    cmp [es:bx+Slipper.y-1],ax
     jz .found
 .next:
-    add bx,byte Monster_size
+    add bx,byte Slipper_size
     inc cx
     cmp [si+SlipListLen],cx
     jg .loop
@@ -325,7 +325,7 @@ func NewMonster
     mov ax,[bx+MonsterListCap]
     cmp [bx+MonsterListLen],ax
     jl .longEnough
-    push byte +0xb
+    push byte Monster_size
     push byte +0x10
     mov ax,bx
     add ax,MonsterListCap
@@ -2150,7 +2150,7 @@ func NewSlipper
     mov ax,[bx+SlipListCap]
     cmp [bx+SlipListLen],ax
     jl .label0
-    push byte +0xb
+    push byte Slipper_size
     push byte +0x8
     mov ax,bx
     add ax,SlipListCap
@@ -2215,7 +2215,7 @@ func DeleteSlipperAt
     les si,[si+SlipListPtr]
     ; if the slipper has a monster list entry (i.e. it isn't a block),
     ; then find it and turn off its slipping flag
-    cmp word [es:bx+si+Monster.slipping],byte +0x0
+    cmp word [es:bx+si+Slipper.isblock],byte +0x0
     jz .notAMonster
     push word [y]
     push word [x]
@@ -2254,7 +2254,7 @@ func DeleteSlipperAt
     rep movsw
     movsb
     pop ds
-    add word [bp-0x4],byte Monster_size
+    add word [bp-0x4],byte Slipper_size
     inc word [bp-0x6]
     mov ax,[bp-0x6]
     mov bx,[GameStatePtr]
@@ -2330,33 +2330,33 @@ func SlipLoop
     mov [previousSlipListLen],ax
     les bx,[bx+SlipListPtr]
     add bx,si
-    cmp word [es:bx+Monster.slipping],byte +0x0
+    cmp word [es:bx+Slipper.isblock],byte +0x0
     jnz .isAMonster
     jmp word .isABlock
 .isAMonster: ; 141c
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
     add bx,si
-    push word [es:bx+Monster.y]
-    push word [es:bx+Monster.x]
+    push word [es:bx+Slipper.y]
+    push word [es:bx+Slipper.x]
     call 0x148d:FindMonster ; 142e 3:0x0
     add sp,byte +0x4
     mov [monsterIndex],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+Monster.xdir]
+    mov ax,[es:bx+si+Slipper.xdir]
     mov [xdir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+Monster.ydir]
+    mov ax,[es:bx+si+Slipper.ydir]
     mov [ydir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+Monster.x]
+    mov ax,[es:bx+si+Slipper.x]
     mov [x],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+Monster.y]
+    mov ax,[es:bx+si+Slipper.y]
     mov [y],ax
     push word [ydir]
     push word [xdir]
@@ -2511,19 +2511,19 @@ func SlipLoop
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
     add bx,si
-    mov ax,[es:bx+Monster.xdir]
+    mov ax,[es:bx+Slipper.xdir]
     mov [xdir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+Monster.ydir]
+    mov ax,[es:bx+si+Slipper.ydir]
     mov [ydir],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+Monster.x]
+    mov ax,[es:bx+si+Slipper.x]
     mov [x],ax
     mov bx,[GameStatePtr]
     les bx,[bx+SlipListPtr]
-    mov ax,[es:bx+si+Monster.y]
+    mov ax,[es:bx+si+Slipper.y]
     mov [y],ax
     push byte +0x0
     push word 0xff
@@ -2598,7 +2598,7 @@ func SlipLoop
     mov bx,[GameStatePtr]
     cmp [bx+SlipListLen],ax
     jnz .label17
-    add si,byte Monster_size
+    add si,byte Slipper_size
     inc word [i]
 .label17: ; 16ea
     mov ax,[i]

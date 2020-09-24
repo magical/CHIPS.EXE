@@ -812,11 +812,11 @@ func SlideMovement
 .label5: ; 6cc
     mov ax,[slipptr]
     mov dx,[slipseg]
-    add ax,Monster.xdir
+    add ax,Slipper.xdir
     mov si,ax
     mov [bp-0x4],dx
     mov ax,[slipptr]
-    add ax,Monster.ydir
+    add ax,Slipper.ydir
     mov di,ax
     mov [bp-0x8],dx
 
@@ -1082,16 +1082,15 @@ func SlideMovement
     mov al,[bx+si+Upper]
 .label43: ; 8e3
     les bx,[slipptr]
-    mov [es:bx+Monster.tile],al
+    mov [es:bx+Slipper.tile],al
     mov ax,[xdest]
     les bx,[slipptr]
-    mov [es:bx+Monster.x],ax
+    mov [es:bx+Slipper.x],ax
     mov ax,[ydest]
-    mov [es:bx+Monster.y],ax
+    mov [es:bx+Slipper.y],ax
 
-; set slipping to 0 if flag != 2
-; set slipping to 1 if flag == 2
-; XXX the slipping flag must mean something different in the slip list
+    ; set isblock to 0 if flag != 2
+    ; set isblock to 1 if flag == 2
     cmp word [flag],byte +0x2
     jnz .label48
     mov ax,0x1
@@ -1101,7 +1100,7 @@ func SlideMovement
     xor ax,ax
 .label49: ; 908
     les bx,[slipptr]
-    mov [es:bx+Monster.slipping],ax
+    mov [es:bx+Slipper.isblock],ax
 
     cmp word [flag],byte +0x2
     jnz .return
@@ -2307,9 +2306,9 @@ func MoveChip
     les bx,[bx+SlipListPtr]
     add bx,ax
     ; can't push a block in the same direction as it's slipping
-    mov ax,[es:bx+Monster.xdir]
+    mov ax,[es:bx+Slipper.xdir]
     mov [local_6],ax
-    mov cx,[es:bx+Monster.ydir]
+    mov cx,[es:bx+Slipper.ydir]
     cmp ax,[xdir]
     jnz .checkOtherDirection
     cmp [ydir],cx
