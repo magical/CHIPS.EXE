@@ -2521,18 +2521,18 @@ FUN_2_16fa:
     jmp short .label3 ; ↓
     nop
 .label0: ; 171a
-    mov si,0x6e
+    mov si,110 ; milliseconds
     jmp short .label2 ; ↓
     nop
 .label1: ; 1720
-    mov si,0xdc
+    mov si,220 ; milliseconds
 .label2: ; 1723
     mov cx,[hwndBoard]
 .label3: ; 1727
-    push cx
-    push word [bp+0x6]
-    push si
-    push byte +0x0
+    push cx             ; hWnd
+    push word [bp+0x6]  ; nIDEvent
+    push si             ; uElapse
+    push byte +0x0      ; lpTimerFunc
     push byte +0x0
     call 0x0:0xffff ; 1730 USER.SetTimer
     or ax,ax
@@ -4414,7 +4414,7 @@ func BOARDWNDPROC
     sub ax,0xf
     jz .label0 ; ↓
     sub ax,0x104
-    jz .label1 ; ↓
+    jz .label1 ; WM_TIMER
     sub ax,0xee
     jz .label6 ; ↓
     push word [hwnd]
