@@ -1,7 +1,6 @@
 SEGMENT CODE ; 3
 
 ; Game logic
-; (Mostly monsters so far)
 
 %include "constants.asm"
 %include "structs.asm"
