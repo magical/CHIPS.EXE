@@ -1,11 +1,11 @@
 SEGMENT CODE ; 7
 
+; Movement code and tick function
+
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
 %include "func.mac"
-
-; data
 
 ; 0
 
