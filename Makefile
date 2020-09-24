@@ -17,6 +17,11 @@ check: $(BASE) chips.exe Makefile
 	-cmp basedigits.bin digits.bin
 	cmp base.exe chips.exe
 
+clean:
+	rm *.bin
+	rm chips.exe
+	rm data.map
+
 %.bin: %.asm fixmov.awk Makefile
 	awk -f fixmov.awk $< >$<.tmp
 	nasm -O0 -o $@ $<.tmp

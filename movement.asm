@@ -311,7 +311,7 @@ func DoTick
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0xffff:0x1ca ; 24b 2:1ca
+    call 0xffff:0x1ca ; 24b 2:1ca UpdateTile
     add sp,byte +0x6
 
     ;;; PHASE 2 ;;;
@@ -683,7 +683,7 @@ func DoTick
     jg .label71
     push byte +0x1
     push byte TickSound
-    call 0x607:0x56c ; 5e7 8:56c
+    call 0x607:0x56c ; 5e7 8:56c PlaySoundEffect
     add sp,byte +0x4
 .label71: ; 5ef
     push byte +0x1
@@ -693,7 +693,7 @@ func DoTick
     jnz .end
     push byte +0x1
     push byte ChipDeathByTimeSound
-    call 0xffff:0x56c ; 604 8:56c
+    call 0xffff:0x56c ; 604 8:56c PlaySoundEffect
     add sp,byte +0x4
     mov bx,[GameStatePtr]
     mov word [bx+Autopsy],OutOfTime
@@ -1393,7 +1393,7 @@ func EndGame
     push ds
     push word GreatJobChipMsg
     push word [hwndMain]
-    call 0xbe4:0x0 ; b7e 2:0
+    call 0xbe4:0x0 ; b7e 2:0 ShowMessageBox
     add sp,byte +0x8
     push word [OurHInstance]
     push ds
@@ -1427,7 +1427,7 @@ func EndGame
     push ds
     push word MelindaHerselfMsg
     push word [hwndMain]
-    call 0xbfb:0x0 ; be1 2:0
+    call 0xbfb:0x0 ; be1 2:0 ShowMessageBox
     add sp,byte +0x8
 
     mov si,0x1
@@ -1763,7 +1763,7 @@ func MoveBlock
 .action2: ; eba
     push byte +0x1
     push byte SplashSound
-    call 0x5ea:0x56c ; ebe 8:56c
+    call 0x5ea:0x56c ; ebe 8:56c PlaySoundEffect
     add sp,byte +0x4
     mov byte [blockTile],Dirt
     jmp short .endOfSwitch
@@ -1822,7 +1822,7 @@ func MoveBlock
 .action5: ; f44
     push byte +0x1
     push byte BombSound
-    call 0xec1:0x56c ; f48
+    call 0xec1:0x56c ; f48 8:56c PlaySoundEffect
     add sp,byte +0x4
     mov byte [blockTile],Floor
     jmp short .endOfSwitch
@@ -1833,7 +1833,7 @@ func MoveBlock
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0xfa3:0x1396 ; f66
+    call 0xfa3:0x1396 ; f66 3:1396 FindSlipperAt
     add sp,byte +0x6
     or dx,ax
     jz .label25
@@ -1868,7 +1868,7 @@ func MoveBlock
     lea cx,[xdest]
     push cx
     push word [hDC]
-    call 0x10a2:0x276a ; fbf
+    call 0x10a2:0x276a ; fbf 3:276a EnterTeleport
     add sp,byte +0xc
     lea ax,[blockTile]
     push ax
@@ -1907,7 +1907,7 @@ func MoveBlock
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x105c:0x1ca ; 1021
+    call 0x105c:0x1ca ; 1021 2:1ca UpdateTile
     add sp,byte +0x6
 
 ; delet from source tile if not on a clone machine
@@ -1929,7 +1929,7 @@ func MoveBlock
     push word [ysrc]
     push word [xsrc]
     push word [hDC]
-    call 0xb81:0x1ca ; 1059
+    call 0xb81:0x1ca ; 1059 2:1ca UpdateTile
     add sp,byte +0x6
 
 ; handle any button presses
@@ -1972,7 +1972,7 @@ func MoveBlock
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x10cb:0x2442 ; 10b5
+    call 0x10cb:0x2442 ; 10b5 3:2442 PressCloneButton
     add sp,byte +0x8
     jmp short .label34
     nop
@@ -1980,13 +1980,13 @@ func MoveBlock
     push byte +0x0
     push word [ydest]
     push word [xdest]
-    call 0x10da:0x211a ; 10c8
+    call 0x10da:0x211a ; 10c8 3:211a PressTrapButton
     add sp,byte +0x6
     jmp short .label34
 .tankButton: ; 10d2
     push byte +0x0
     push word [hDC]
-    call 0x1174:0x1e6a ; 10d7
+    call 0x1174:0x1e6a ; 10d7 3:1e6a PressTankButton
     add sp,byte +0x4
     jmp short .label34
     nop
@@ -2509,11 +2509,11 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x1572:0x56e ; 154c 2:56e
+    call 0x1572:0x56e ; 154c 2:56e UpdateChip
     add sp,byte +0xa
     push byte +0x1
     push byte ChipDeathSound
-    call 0xf4b:0x56c ; 1558 8:56c
+    call 0xf4b:0x56c ; 1558 8:56c PlaySoundEffect
     add sp,byte +0x4
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
@@ -2591,7 +2591,7 @@ func MoveChip
     lea cx,[xdest]
     push cx
     push word [hDC]
-    call 0x16b0:0x276a ; 162b
+    call 0x16b0:0x276a ; 162b 3:276a EnterTeleport
     add sp,byte +0xc
     push word DummyVarForSlideMovement
     push byte +0x0 ; chip
@@ -2665,7 +2665,7 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x16e5:0x56e ; 16cb 2:56e
+    call 0x16e5:0x56e ; 16cb 2:56e UpdateChip
     add sp,byte +0xa
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
@@ -2711,7 +2711,7 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x1753:0x2442 ; 173b
+    call 0x1753:0x2442 ; 173b 3:2442 PressCloneButton
     add sp,byte +0x8
     jmp short .label54
     nop
@@ -2720,20 +2720,20 @@ func MoveChip
     push byte +0x1
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x1762:0x211a ; 1750
+    call 0x1762:0x211a ; 1750 3:211a PressTrapButton
     add sp,byte +0x6
     jmp short .label54
 
 .tankButton: ; 175a
     push byte +0x1
     push word [hDC]
-    call 0x17a6:0x1e6a ; 175f
+    call 0x17a6:0x1e6a ; 175f 3:1e6a PressTankButton
     add sp,byte +0x4
     jmp short .label54
     nop
 .showHint: ; 176a
     push byte +0x8
-    call 0x17ef:0xcbe ; 176c
+    call 0x17ef:0xcbe ; 176c 2:cbe
 .label60: ; 1771
     add sp,byte +0x2
 
@@ -2792,7 +2792,7 @@ func MoveChip
     cmp word [InventoryDirty],byte +0x0
     jz .label66
     push byte +0x6
-    call 0x18b0:0xcbe ; 17ec 2:cbc
+    call 0x18b0:0xcbe ; 17ec 2:cbe
     add sp,byte +0x2
 
 ; if chip is sliding and action != 5, stop sliding
@@ -2818,7 +2818,7 @@ func MoveChip
     jnz .label68
     push byte +0x1
     push byte LevelCompleteSound
-    call 0x185b:0x56c ; 182d 8:56c
+    call 0x185b:0x56c ; 182d 8:56c PlaySoundEffect
     add sp,byte +0x4
     push word [hwndBoard] ; hWnd
     call 0x13ab:EndLevel ; 1839 7:cca
@@ -2838,7 +2838,7 @@ func MoveChip
     ; play oof sound
     push byte +0x1
     push byte BlockedMoveSound
-    call 0x18c8:0x56c ; 1858
+    call 0x18c8:0x56c ; 1858 8:56c PlaySoundEffect
     add sp,byte +0x4
 
 .label69: ; 1860
@@ -2888,7 +2888,7 @@ func MoveChip
     jz .label72
     push byte +0x1
     push byte BlockedMoveSound
-    call 0x155b:0x56c ; 18c5
+    call 0x155b:0x56c ; 18c5 8:56c PlaySoundEffect
     add sp,byte +0x4
 .label72: ; 18cd
     mov ax,[canenter]
