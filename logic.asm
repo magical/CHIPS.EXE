@@ -1076,7 +1076,7 @@ func MonsterLoop
     mov [deadflag],ax
     or ax,ax
     jz .bug.alive
-    jmp word .label7
+    jmp word .finishMovement
 .bug.alive: ; 8ab
     cmp byte [tile],Trap
     jnz .bug.notATrap
@@ -1093,7 +1093,7 @@ func MonsterLoop
     push ax
     ; Jump to second half of function call,
     ; shared with glider.
-    jmp word .label10
+    jmp word .glider.moveLeft
     nop
 
         ;;; FIREBALL ;;;
@@ -1125,12 +1125,12 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label11
-    jmp word .label7
-.label11: ; 918
+    jz .fireball.tryRightTurn
+    jmp word .finishMovement
+.fireball.tryRightTurn: ; 918
 
     ; Ran into something.
-    ; Try turning left,
+    ; Try turning right,
     ; unless we're on a trap or clone machine.
     mov si,[y]
     shl si,byte 0x5
@@ -1139,13 +1139,13 @@ func MonsterLoop
     mov al,[bx+si+Lower]
     mov [tile],al
     cmp al,Trap
-    jnz .label12
+    jnz .fireball.notATrap
     jmp word .next
-.label12: ; 933
+.fireball.notATrap: ; 933
     cmp al,CloneMachine
-    jnz .label13
+    jnz .fireball.notACloneMachine
     jmp word .next
-.label13: ; 93a
+.fireball.notACloneMachine: ; 93a
     lea ax,[ynewdir]
     push ax
     lea cx,[xnewdir]
@@ -1156,7 +1156,7 @@ func MonsterLoop
     add sp,byte +0x8
     push word [ynewdir]
     ; The rest of the logic is shared with the paramecium.
-    jmp word .label14
+    jmp word .paramecium.trySecondMove
 
         ;;; BALL ;;;
 .BallMovement:
@@ -1187,9 +1187,9 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label15
-    jmp word .label7
-.label15: ; 9a0
+    jz .ball.alive
+    jmp word .finishMovement
+.ball.alive: ; 9a0
     mov si,[y]
     shl si,byte 0x5
     add si,[x]
@@ -1197,15 +1197,15 @@ func MonsterLoop
     mov al,[bx+si+Lower]
     mov [tile],al
     cmp al,Trap
-    jnz .label16
+    jnz .ball.notATrap
     jmp word .next
-.label16: ; 9bb
+.ball.notATrap: ; 9bb
     cmp al,CloneMachine
-    jnz .label17
+    jnz .ball.notACloneMachine
     jmp word .next
-.label17: ; 9c2
+.ball.notACloneMachine: ; 9c2
     ; rest of logic shared with gliders
-    jmp word .label18
+    jmp word .paramecium.moveBackwards
     nop
 
         ;;; TANK ;;;
@@ -1238,7 +1238,7 @@ func MonsterLoop
     mov [deadflag],ax
     or ax,ax
     jz .tank.blocked
-    jmp word .label7
+    jmp word .finishMovement
 
 .tank.blocked: ; a10
     push word [y]
@@ -1320,10 +1320,10 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label22
-    jmp word .label7
+    jz .glider.tryLeftTurn
+    jmp word .finishMovement
 
-.label22: ; aea
+.glider.tryLeftTurn: ; aea
     ; Couldn't go - turn left!
     ; (Unless we're on a trap or clone machine of course)
     mov si,[y]
@@ -1333,14 +1333,14 @@ func MonsterLoop
     mov al,[bx+si+Lower]
     mov [tile],al
     cmp al,Trap
-    jnz .label23
+    jnz .glider.notATrap
     jmp word .next
-.label23: ; b05
+.glider.notATrap: ; b05
     cmp al,CloneMachine
-    jnz .label24
+    jnz .glider.notACloneMachine
     jmp word .next
 
-.label24: ; b0c
+.glider.notACloneMachine: ; b0c
     lea ax,[ynewdir]
     push ax
     lea cx,[xnewdir]
@@ -1350,7 +1350,7 @@ func MonsterLoop
     call 0xb3a:TurnLeft ; b1a 3:b0
     add sp,byte +0x8
     push word [ynewdir]
-.label10: ; b25
+.glider.moveLeft: ; b25
     ; shared with bugs
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1374,9 +1374,9 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label25
-    jmp word .label7
-.label25: ; b65
+    jz .glider.tryRightTurn
+    jmp word .finishMovement
+.glider.tryRightTurn: ; b65
     ; If that didn't work, turn right.
     lea ax,[ynewdir]
     push ax
@@ -1386,16 +1386,16 @@ func MonsterLoop
     push word [xdir]
     call 0xc22:TurnRight ; b73 3:116
     ; The rest of this logic is shared with parameciums.
-    jmp word .label26
+    jmp word .paramecium.tryThirdMove
     nop
 
         ; TEETH
 .TeethMovement:
     ; Teeth move only on even turns.
     cmp word [isEvenTurn],byte +0x0
-    jnz .label27
+    jnz .teeth.isEven
     jmp word .next
-.label27: ; b85
+.teeth.isEven: ; b85
 
     ; If on a trap or clone machine,
     ; don't change direction.
@@ -1406,9 +1406,9 @@ func MonsterLoop
     mov al,[bx+si+Lower]
     mov [tile],al
     cmp al,Trap
-    jz .label28
+    jz .teeth.tryMove
     cmp al,CloneMachine
-    jz .label28
+    jz .teeth.tryMove
 
     ; xdistance = chip's x pos - monster's x pos
     ; ydistance = chip's y pos - monster's y pos
@@ -1435,28 +1435,28 @@ func MonsterLoop
     sub ax,dx
     ; if xdistance <= ydistance
     cmp ax,cx
-    jg .label29
+    jg .teeth.xDistSmaller
     cmp word [ydistance],byte +0x0
-    jng .label30
+    jng .teeth.setYdiroutToNegative
     mov word [xnewdir],0
     mov word [ynewdir],+1
-    jmp short .label28
-.label30: ; be6
+    jmp short .teeth.tryMove
+.teeth.setYdiroutToNegative: ; be6
     mov word [xnewdir],0
     mov word [ynewdir],-1
-    jmp short .label28
-.label29: ; bf2
+    jmp short .teeth.tryMove
+.teeth.xDistSmaller: ; bf2
     cmp word [xdistance],byte +0x0
-    jng .label31
+    jng .teeth.setXdiroutToNegative
     mov word [xnewdir],+1
     jmp short .teeth.setYdiroutToZero
     nop
-.label31: ; c00
+.teeth.setXdiroutToNegative: ; c00
     mov word [xnewdir],-1
 .teeth.setYdiroutToZero: ; c05
     mov word [ynewdir],0
 
-.label28: ; c0a
+.teeth.tryMove: ; c0a
     ; Set tile direction and move tile.
     ; Note: xnewdir and ynewdir may be used uninitialized.
     push word [ynewdir]
@@ -1483,20 +1483,20 @@ func MonsterLoop
     ; Check if we succeeded
     mov [deadflag],ax
     or ax,ax
-    jz .label33
-    jmp word .label7
+    jz .teeth.tryOtherDirection
+    jmp word .finishMovement
 
     ; Our preferred direction is blocked.
     ; Try the other direction.
-.label33: ; c4d
+.teeth.tryOtherDirection: ; c4d
     cmp byte [tile],Trap
-    jnz .label34
+    jnz .teeth.tryOtherDirection.notATrap
     jmp word .next
-.label34: ; c56
+.teeth.tryOtherDirection.notATrap: ; c56
     cmp byte [tile],CloneMachine
-    jnz .label35
+    jnz .teeth.tryOtherDirection.notACloneMachine
     jmp word .next
-.label35: ; c5f
+.teeth.tryOtherDirection.notACloneMachine: ; c5f
     mov ax,[xdistance]
     cwd
     xor ax,dx
@@ -1508,32 +1508,32 @@ func MonsterLoop
     sub ax,dx
     ; if xdistance <= ydistance
     cmp ax,cx
-    jl .label36
+    jl .teeth.tryOtherDirection.xDistSmaller ; smaller or equal
     cmp word [xdistance],byte +0x0
-    jng .label37
+    jng .teeth.tryOtherDirection.xDistNegativeOrZero
     mov word [xnewdir],0x1
-.label40: ; c80
+.teeth.tryOtherDirection.setYdiroutToZero: ; c80
     mov word [ynewdir],0x0
-    jmp short .label38
+    jmp short .teeth.tryOtherDirection.tryMove
     nop
-.label37: ; c88
+.teeth.tryOtherDirection.xDistNegativeOrZero: ; c88
     cmp word [xdistance],byte +0x0
-    jnl .label39
+    jnl .teeth.failedMove
     mov word [xnewdir],-1
-    jmp short .label40
+    jmp short .teeth.tryOtherDirection.setYdiroutToZero
     nop
-.label36: ; c96
+.teeth.tryOtherDirection.xDistSmaller: ; c96
     cmp word [ydistance],byte +0x0
-    jng .label41
+    jng .teeth.tryOtherDirection.yDistNegativeOrZero
     mov word [xnewdir],0
     mov word [ynewdir],1
-    jmp short .label38
-.label41: ; ca8
+    jmp short .teeth.tryOtherDirection.tryMove
+.teeth.tryOtherDirection.yDistNegativeOrZero: ; ca8
     cmp word [ydistance],byte +0x0
-    jnl .label39
+    jnl .teeth.failedMove
     mov word [xnewdir],0
     mov word [ynewdir],-1
-.label38: ; cb8
+.teeth.tryOtherDirection.tryMove: ; cb8
     push word [ynewdir]
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1557,12 +1557,12 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label39
-    jmp word .label7
+    jz .teeth.failedMove
+    jmp word .finishMovement
 
     ; Both directions were blocked.
     ; At least /face/ the right way.
-.label39: ; cfb
+.teeth.failedMove: ; cfb
     mov ax,[xdistance]
     cwd
     xor ax,dx
@@ -1572,29 +1572,29 @@ func MonsterLoop
     cwd
     xor ax,dx
     sub ax,dx
-    cmp ax,cx
-    jl .label42
+    cmp ax,cx ; cmp abs(ydistance), abs(xdistance)
+    jl .teeth.failedMove.xDistSmaller
     cmp word [ydistance],byte +0x0
-    jng .label43
+    jng .teeth.failedMove.yDistNegativeOrZero
     mov word [xnewdir],0
     mov word [ynewdir],1
-    jmp short .label44
+    jmp short .teeth.failedMove.faceDirection
     nop
-.label43: ; d24
+.teeth.failedMove.yDistNegativeOrZero: ; d24
     mov word [xnewdir],0
     mov word [ynewdir],-1
-    jmp short .label44
-.label42: ; d30
+    jmp short .teeth.failedMove.faceDirection
+.teeth.failedMove.xDistSmaller: ; d30
     cmp word [xdistance],byte +0x0
-    jng .label45
+    jng .teeth.failedMove.setXdiroutToNegative
     mov word [xnewdir],1
-    jmp short .label46
+    jmp short .teeth.failedMove.setYdiroutToZero
     nop
-.label45: ; d3e
+.teeth.failedMove.setXdiroutToNegative: ; d3e
     mov word [xnewdir],-1
-.label46: ; d43
+.teeth.failedMove.setYdiroutToZero: ; d43
     mov word [ynewdir],0
-.label44: ; d48
+.teeth.failedMove.faceDirection: ; d48
     push word [ynewdir]
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1652,9 +1652,9 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label47
-    jmp word .label7
-.label47: ; de8
+    jz .walker.straightFailed
+    jmp word .finishMovement
+.walker.straightFailed: ; de8
 
     ; Straight was blocked.
     ; If we are on a trap or clone machine,
@@ -1666,13 +1666,13 @@ func MonsterLoop
     mov al,[bx+si+Lower]
     mov [tile],al
     cmp al,Trap
-    jnz .label48
+    jnz .walker.notATrap
     jmp word .next
-.label48: ; e03
+.walker.notATrap: ; e03
     cmp al,CloneMachine
-    jnz .label49
+    jnz .walker.notACloneMachine
     jmp word .next
-.label49: ; e0a
+.walker.notACloneMachine: ; e0a
 
     ; Otherwise pick a random direction to go.
     ; Keep trying until we find an open direction
@@ -1684,10 +1684,12 @@ func MonsterLoop
     mov [bp-0x4],ax
     mov [xdir],di
 .walker.loop: ; e18
-    cmp si,byte +0x7
-    jnz .label50
+    ; each direction tried sets a bit in the si register 
+    ; so that si equals 7 when all direction bits are set
+    cmp si,byte +0x7 
+    jnz .walker.pickRandomDirection
     jmp word .next
-.label50: ; e20
+.walker.pickRandomDirection: ; e20
     ; Random choice of 0, 1, or 2.
     push byte +0x3
     call 0xe4e:RandInt ; e22 3:0x72e
@@ -1698,7 +1700,7 @@ func MonsterLoop
     jz .walker.turnRight
     dec ax
     jz .walker.turnAround
-    jmp short .label54
+    jmp short .walker.tryMove
 
 .walker.turnLeft: ; e36
     ; Randomly turn left
@@ -1712,7 +1714,7 @@ func MonsterLoop
     push word [bp-0x4]
     push di
     call 0xe6a:TurnLeft ; e4b 3:b0
-    jmp short .label56
+    jmp short .walker.cleanStack
 
 .walker.turnRight: ; e52
     ; Randomly turn right
@@ -1726,7 +1728,7 @@ func MonsterLoop
     push word [bp-0x4]
     push di
     call 0xe86:TurnRight ; e67 3:116
-    jmp short .label56
+    jmp short .walker.cleanStack
 
 .walker.turnAround: ; e6e
     ; Randomly turn around
@@ -1740,11 +1742,11 @@ func MonsterLoop
     push word [bp-0x4]
     push di
     call 0xea3:TurnAround ; e83 3:17c
-.label56: ; e88
+.walker.cleanStack: ; e88
     add sp,byte +0x8
 
     ; Try moving.
-.label54: ; e8b
+.walker.tryMove: ; e8b
     push word [ynewdir]
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1768,18 +1770,18 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jnz .label57
+    jnz .walker.end
     jmp word .walker.loop
-.label57: ; ece
-    jmp word .label7
+.walker.end: ; ece
+    jmp word .finishMovement
     nop
 
         ;;; BLOB ;;;
 .BlobMovement:
     cmp word [isEvenTurn],byte +0x0
-    jnz .label58
+    jnz .blob.loop
     jmp word .next
-.label58: ; edb
+.blob.loop: ; edb
     push byte +0x3
     call 0xeee:RandInt ; edd 3:0x72e
     add sp,byte +0x2
@@ -1791,15 +1793,15 @@ func MonsterLoop
     dec ax
     mov [ynewdir],ax
     cmp word [xnewdir],byte +0x0
-    jnz .label59
+    jnz .blob.xNotZero
     or ax,ax
-    jnz .label60
-.label59: ; f01
+    jnz .blob.tryMove
+.blob.xNotZero: ; f01
     or ax,ax
-    jnz .label58
+    jnz .blob.loop
     cmp [xnewdir],ax
-    jz .label58
-.label60: ; f0a
+    jz .blob.loop
+.blob.tryMove: ; f0a
     push ax
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1823,33 +1825,33 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label61
-    jmp word .label7
-.label61: ; f4b
+    jz .blob.moveBlocked
+    jmp word .finishMovement
+.blob.moveBlocked: ; f4b
     xor si,si
     mov di,[xnewdir]
     mov ax,[ynewdir]
     mov [bp-0x4],ax
     mov [xdir],di
-.label67: ; f59
+.blob.moveBlocked.loop: ; f59
     cmp si,byte +0x7
-    jnz .label62
+    jnz .blob.moveBlocked.loopContinue
     jmp word .next
-.label62: ; f61
+.blob.moveBlocked.loopContinue: ; f61
     push byte +0x3
     call 0xf90:RandInt ; f63 3:0x72e
     add sp,byte +0x2
     or ax,ax
-    jz .label63
+    jz .blob.moveBlocked.turnLeft
     dec ax
-    jz .label64
+    jz .blob.moveBlocked.turnRight
     dec ax
-    jz .label65
-    jmp short .label66
+    jz .blob.moveBlocked.turnAround
+    jmp short .blob.moveBlocked.tryMove
     nop
-.label63: ; f78
+.blob.moveBlocked.turnLeft: ; f78
     test si,0x1
-    jnz .label67
+    jnz .blob.moveBlocked.loop
     or si,byte +0x1
     lea ax,[ynewdir]
     push ax
@@ -1858,10 +1860,10 @@ func MonsterLoop
     push word [bp-0x4]
     push di
     call 0xfac:TurnLeft ; f8d 3:0xb0
-    jmp short .label68
-.label64: ; f94
+    jmp short .blob.moveBlocked.tryMoveJump
+.blob.moveBlocked.turnRight: ; f94
     test si,0x2
-    jnz .label67
+    jnz .blob.moveBlocked.loop
     or si,byte +0x2
     lea ax,[ynewdir]
     push ax
@@ -1870,10 +1872,10 @@ func MonsterLoop
     push word [bp-0x4]
     push di
     call 0xfc8:TurnRight ; fa9 3:0x116
-    jmp short .label68
-.label65: ; fb0
+    jmp short .blob.moveBlocked.tryMoveJump
+.blob.moveBlocked.turnAround: ; fb0
     test si,0x4
-    jnz .label67
+    jnz .blob.moveBlocked.loop
     or si,byte +0x4
     lea ax,[ynewdir]
     push ax
@@ -1882,9 +1884,9 @@ func MonsterLoop
     push word [bp-0x4]
     push di
     call 0xfe5:TurnAround ; fc5 3:0x17c
-.label68: ; fca
+.blob.moveBlocked.tryMoveJump: ; fca
     add sp,byte +0x8
-.label66: ; fcd
+.blob.moveBlocked.tryMove: ; fcd
     push word [ynewdir]
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1908,10 +1910,10 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jnz .label69
-    jmp word .label67
-.label69: ; 1010
-    jmp word .label7
+    jnz .blob.moveBlocked.moved
+    jmp word .blob.moveBlocked.loop
+.blob.moveBlocked.moved: ; 1010
+    jmp word .finishMovement
     nop
 
         ;;; PARAMECIUM ;;;
@@ -1923,9 +1925,9 @@ func MonsterLoop
     mov al,[bx+si+Lower]
     mov [tile],al
     cmp al,Trap
-    jz .label70
+    jz .paramecium.tryMove
     cmp al,CloneMachine
-    jz .label70
+    jz .paramecium.tryMove
     lea ax,[ynewdir]
     push ax
     lea ax,[xnewdir]
@@ -1934,7 +1936,7 @@ func MonsterLoop
     push word [xdir]
     call 0x105e:TurnRight ; 103e 3:116
     add sp,byte +0x8
-.label70: ; 1046
+.paramecium.tryMove: ; 1046
     push word [ynewdir]
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1958,23 +1960,23 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label71
-    jmp word .label7
-.label71: ; 1089
+    jz .paramecium.moveBlocked
+    jmp word .finishMovement
+.paramecium.moveBlocked: ; 1089
     cmp byte [tile],Trap
-    jnz .label72
+    jnz .paramecium.notATrap
     jmp word .next
-.label72: ; 1092
+.paramecium.notATrap: ; 1092
     cmp byte [tile],CloneMachine
-    jnz .label73
+    jnz .paramecium.notACloneMachine
     jmp word .next
-.label73: ; 109b
-    mov ax,[xdir]
+.paramecium.notACloneMachine: ; 109b
+    mov ax,[xdir] ; causes the paramecium to turn forwards
     mov [xnewdir],ax
     mov ax,[ydir]
     mov [ynewdir],ax
     push ax
-.label14: ; 10a8
+.paramecium.trySecondMove: ; 10a8
     ; shared with fireball
     push word [xnewdir]
     mov bx,[GameStatePtr]
@@ -1998,9 +2000,9 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jz .label74
-    jmp word .label7
-.label74: ; 10e8
+    jz .paramecium.turnLeft
+    jmp word .finishMovement
+.paramecium.turnLeft: ; 10e8
     lea ax,[ynewdir]
     push ax
     lea cx,[xnewdir]
@@ -2009,7 +2011,7 @@ func MonsterLoop
     push word [xdir]
     call 0x1116:TurnLeft ; 10f6 3:b0
 
-.label26: ; 10fb
+.paramecium.tryThirdMove: ; 10fb
     ; shared with gliders
     add sp,byte +0x8
     push word [ynewdir]
@@ -2035,8 +2037,8 @@ func MonsterLoop
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
-    jnz .label7
-.label18: ; 113e
+    jnz .finishMovement
+.paramecium.moveBackwards: ; 113e
     ; shared with balls
     lea ax,[ynewdir]
     push ax
@@ -2071,7 +2073,7 @@ func MonsterLoop
     or ax,ax
     jz .next
 
-.label7: ; 1194
+.finishMovement: ; 1194
     ; Check dead flag.
     cmp ax,0x1
     jnz .dead
