@@ -436,7 +436,7 @@ func DoTick
     push word [bx+ChipX]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0xffff:SlideMovement ; 395 7:0x636
+    call 0xffff:SlideMovement ; 395 7:636
     add sp,byte +0x10
 
     ; Allow chip to get a move in after sliding
@@ -795,13 +795,13 @@ func SlideMovement
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0x6b9:0x1396 ; 6a4 FindSlipperAt
+    call 0x6b9:0x1396 ; 6a4 3:1396 FindSlipperAt
     add sp,byte +0x6
     mov [slipptr],ax
     mov [slipseg],dx
     or dx,ax
     jnz .label4
-    call 0x272:0x1250 ; 6b6 NewSlipper
+    call 0x272:0x1250 ; 6b6 3:1250 NewSlipper
     mov [slipptr],ax
     mov [slipseg],dx
 .label4: ; 6c1
@@ -1040,7 +1040,7 @@ func SlideMovement
     push word [xdir]
     mov al,[di]
     push ax
-    call 0x8b3:0x486 ; 89a SetTileDir
+    call 0x8b3:0x486 ; 89a 3:486 SetTileDir
     add sp,byte +0x6
     mov [di],al
 .label41: ; 8a4
@@ -1053,7 +1053,7 @@ func SlideMovement
     ; Force Random
 .forceRandom: ; 8ae
     push byte +0x4
-    call 0x91e:0x72e ; 8b0 RandInt
+    call 0x91e:0x72e ; 8b0 3:72e RandInt
     add sp,byte +0x2
     or ax,ax
     jnz .label44
@@ -1167,13 +1167,13 @@ func DrawStretchedTile
     jmp word .label1
 .label3: ; 98e
     push byte +0x20
-    call 0x9a5:0x2a3e ; 990 GetTileImagePos
+    call 0x9a5:0x2a3e ; 990 3:2a3e GetTileImagePos
     add sp,byte +0x2
     mov [tilexpos],ax
     mov [tileypos],dx
     mov al,[lowertile]
     push ax
-    call 0x9d1:0x2a3e ; 9a2 GetTileImagePos
+    call 0x9d1:0x2a3e ; 9a2 3:2a3e GetTileImagePos
     add sp,byte +0x2
     push word [TileDC]
     push word [tilexpos]
@@ -1189,7 +1189,7 @@ func DrawStretchedTile
     mov al,[uppertile]
     add al,0x60
     push ax
-    call 0x9fe:0x2a3e ; 9ce GetTileImagePos
+    call 0x9fe:0x2a3e ; 9ce 3:2a3e GetTileImagePos
     add sp,byte +0x2
     push word [TileDC]
     push word [tilexpos]
@@ -1205,7 +1205,7 @@ func DrawStretchedTile
     mov al,[uppertile]
     add al,0x30
     push ax
-    call 0xa45:0x2a3e ; 9fb GetTileImagePos
+    call 0xa45:0x2a3e ; 9fb 3:2a3e GetTileImagePos
     add sp,byte +0x2
     push word [TileDC]
     push word [tilexpos]
@@ -1231,7 +1231,7 @@ func DrawStretchedTile
 .label1: ; a3e
     mov al,[uppertile]
     push ax
-    call 0x5ac:0x2a3e ; a42 GetTileImagePos
+    call 0x5ac:0x2a3e ; a42 3:2a3e GetTileImagePos
     add sp,byte +0x2
     push word [hDC]
     push word [xpos]
@@ -1678,7 +1678,7 @@ func MoveBlock
     jnz .label5
     push word [ysrc]
     push word [xsrc]
-    call 0xe5d:0x22be ; e10 FindTrap
+    call 0xe5d:0x22be ; e10 3:22be FindTrap
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -1710,7 +1710,7 @@ func MoveBlock
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0xe8c:0x1934 ; e5a CanEnterOrExitPanelWalls
+    call 0xe8c:0x1934 ; e5a 3:1934 CheckPanelWalls
     add sp,byte +0x8
     or ax,ax
     jnz .label9
@@ -1730,7 +1730,7 @@ func MoveBlock
     push word [xdest]
     mov al,[tile]
     push ax
-    call 0x89d:0x1ca4 ; e89 BlockCanEnterTile
+    call 0x89d:0x1ca4 ; e89 3:1ca4 BlockCanEnterTile
     add sp,byte +0xc
     or ax,ax
     jnz .label10
@@ -1780,7 +1780,7 @@ func MoveBlock
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xf8f:SlideMovement ; ee6 7:0x636
+    call 0xf8f:SlideMovement ; ee6 7:636
     add sp,byte +0x10
 
 .action1: ; eee
@@ -1848,7 +1848,7 @@ func MoveBlock
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xfe4:SlideMovement ; f8c 7:0x636
+    call 0xfe4:SlideMovement ; f8c 7:636
     add sp,byte +0x10
 .label25: ; f94
     push word [ysrc]
@@ -1881,7 +1881,7 @@ func MoveBlock
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xb12:SlideMovement ; fe1 7:0x636
+    call 0xb12:SlideMovement ; fe1 7:636
     add sp,byte +0x10
     mov bx,[ydest]
     shl bx,byte 0x5
@@ -2056,7 +2056,7 @@ func MoveBlock
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0xb3e:0x12be ; 1171 DeleteSlipperAt
+    call 0xb3e:0x12be ; 1171 3:12be DeleteSlipperAt
     add sp,byte +0x8
 .return0: ; 1179
     xor ax,ax
@@ -2237,7 +2237,7 @@ func MoveChip
     jnz .checkPanelWalls
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x1311:0x22be ; 12c4 FindTrap
+    call 0x1311:0x22be ; 12c4 3:22be FindTrap
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -2543,7 +2543,7 @@ func MoveChip
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0xee9:SlideMovement ; 15b1 7:0x636
+    call 0xee9:SlideMovement ; 15b1 7:636
     add sp,byte +0x10
     mov bx,[GameStatePtr]
     cmp word [bx+IsBuffered],byte +0x0
@@ -2604,7 +2604,7 @@ func MoveChip
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x183c:SlideMovement ; 1652 7:0x636
+    call 0x183c:SlideMovement ; 1652 7:636
     add sp,byte +0x10
     mov word [action],0x5
     ; fallthrough
@@ -3077,7 +3077,7 @@ func MoveMonster
     push word [xdest]
     push si ; ysrc
     push di ; xsrc
-    call 0x1ac4:SlideMovement ; 1a12 7:0x636
+    call 0x1ac4:SlideMovement ; 1a12 7:636
     add sp,byte +0x10
     jmp short .label13
 
@@ -3164,7 +3164,7 @@ func MoveMonster
     push word [xdest]
     push si ; ysrc
     push di ; xsrc
-    call 0x1655:SlideMovement ; 1ac1 7:0x636
+    call 0x1655:SlideMovement ; 1ac1 7:636
     add sp,byte +0x10
     mov bx,[ydest]
     shl bx,byte 0x5
