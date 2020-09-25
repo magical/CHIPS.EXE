@@ -375,14 +375,14 @@ func ScrollViewport
     %local local_6:word ; -6
     %local local_8:word ; -8
     %local local_a:word ; -a
-    %local local_c:word ; -c
+    %local yScrollPixels:word ; -c
     %local local_e:word ; -e
     %local local_10:word ; -10
-    %local rect.height:word ; -12
-    %local rect.width:word ; -14
-    %local rect.y:word ; -16
-    %local rect.x:word ; -18
-    %define rect rect.x
+    %local rect.bottom:word ; -12
+    %local rect.right:word ; -14
+    %local rect.top:word ; -16
+    %local rect.left:word ; -18
+    %define rect rect.left
     ;;; if viewport position didn't change, return
     mov di,[viewportDeltaX]
     or di,di
@@ -401,8 +401,13 @@ func ScrollViewport
     mov ax,[viewportDeltaY]
     sub ax,[bx+UnusedOffsetY]
     shl ax,byte TileShift
-    mov [local_c],ax
+    mov [yScrollPixels],ax
     ; GetClientRectangle(hwndBoard, &rect)
+    ; Note: getClientRectangle returns only the width and height of the window,
+    ; not the absolute coordinates. the width is in rect.right and the height
+    ; in rect.bottom.
+    %define rect.height rect.bottom
+    %define rect.width rect.right
     push word [hwndBoard]
     lea ax,[rect]
     push ss
@@ -478,7 +483,7 @@ func ScrollViewport
     neg ax
     push ax
     ; y scroll amount = -32*(dy - 0)
-    mov ax,[local_c]
+    mov ax,[yScrollPixels]
     neg ax
     push ax
     push byte +0x0
@@ -552,24 +557,24 @@ func ScrollViewport
     inc word [local_4]
     cmp ax,[local_4]
     jg .loop1 ; ↑
+.label11: ; 473
     ; rect = {local_a*32, -0*32, local_8*32, (vh-0)*32}
     ; ValidateRect(hwndBoard, &rect)
-.label11: ; 473
     mov ax,[local_a]
     shl ax,byte TileShift
-    mov [rect.x],ax
+    mov [rect.left],ax
     mov ax,[local_8]
     shl ax,byte TileShift
-    mov [rect.width],ax
+    mov [rect.right],ax
     mov bx,[GameStatePtr]
     mov ax,[bx+UnusedOffsetY]
     shl ax,byte TileShift
     neg ax
-    mov [rect.y],ax
+    mov [rect.top],ax
     mov ax,[bx+ViewportHeight]
     sub ax,[bx+UnusedOffsetY]
     shl ax,byte TileShift
-    mov [rect.height],ax
+    mov [rect.bottom],ax
     push word [hwndBoard]
     lea ax,[rect]
     push ss
@@ -577,7 +582,7 @@ func ScrollViewport
     call 0x0:0x560 ; 4ac USER.ValidateRect
 .check_y_delta: ; 4b1
     ; if y delta is nonzero
-    cmp word [local_c],byte +0x0
+    cmp word [yScrollPixels],byte +0x0
     jnz .update_y_tiles ; ↓
     jmp .end ; ↓
 .update_y_tiles: ; 4ba
@@ -633,16 +638,16 @@ func ScrollViewport
     mov ax,[bx+UnusedOffsetX]
     shl ax,byte TileShift
     neg ax
-    mov [rect.x],ax
+    mov [rect.left],ax
     mov ax,[bx+ViewportWidth]
     sub ax,[bx+UnusedOffsetX]
     shl ax,byte TileShift
-    mov [rect.width],ax
+    mov [rect.right],ax
     shl di,byte TileShift
-    mov [rect.y],di
+    mov [rect.top],di
     mov ax,[local_4]
     shl ax,byte TileShift
-    mov [rect.height],ax
+    mov [rect.bottom],ax
     push word [hwndBoard]
     lea ax,[bp-0x18]
     push ss
