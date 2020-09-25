@@ -35,6 +35,8 @@
 2:19ca    StoreIniInt
 2:1a1c    GetIniLong
 2:1a86    StoreIniLong
+2:1adc    GetLevelProgressFromIni
+2:1c1c    SaveLevelProgressToIni
 2:1e28    MenuItemCallback
 2:225c    MAINWNDPROC
 2:274e    BOARDWNDPROC

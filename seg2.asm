@@ -3036,15 +3036,12 @@ endfunc
 
 ; 1adc
 
-; GetLevelProgress
-FUN_2_1adc:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; GetLevelProgressFromIni
+;
+; Parses lines in the INI file like:
+;       Level1=FRST,999,12340
+;       Level2=SCND
+func GetLevelProgressFromIni
     sub sp,byte +0x24
     push di
     push si
@@ -3180,26 +3177,15 @@ FUN_2_1adc:
 .label15: ; 1c13
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1c1c
 
-; SaveLevelProgress
+; SaveLevelProgressToIni
 ;
 ; Writes a level password to the ini file,
 ; and (optionally) a completion time and score.
-FUN_2_1c1c:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func SaveLevelProgressToIni
     sub sp,byte +0x4c
     push si
     mov si,[bp+0x8]
@@ -3255,11 +3241,7 @@ FUN_2_1c1c:
     push word IniFileName
     call 0x0:0xffff ; 1c93 KERNEL.WritePrivateProfileString
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1ca0
 
@@ -3997,8 +3979,8 @@ func MAINWNDPROC
     push word [TileBitmapObj]
     call 0x0:0x241f ; 2322 GDI.SelectObject
     mov [SavedObj],ax
-    push byte +0x1
-    call 0x23fb:0x320 ; 232c 4:320
+    push byte +0x1 ; free game lists
+    call 0x23fb:0x320 ; 232c 4:320 ClearGameState
     add sp,byte +0x2
     push byte ID_BGM
     call 0x2346:GetIniInt ; 2336 2:198e
