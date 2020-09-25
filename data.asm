@@ -354,8 +354,8 @@ s_DLG_PASSWORD db "DLG_PASSWORD", 0, 0
 
 ; a14
 
-dw 0 ; a14 tile bitmap handle
-dw 0 ; a16 tile bitmap data?
+dw 0 ; a14 HGDIOBJ tile bitmap handle
+dw 0 ; a16 BYTE*   tile bitmap data?
 ColorMode       dw 0 ; a18 which bitmap to load: 1, 2, 3, or 4(?)
 HicolorTiles    db "obj32_4", 0
 LocolorTiles    db "obj32_4E", 0
@@ -565,7 +565,7 @@ DigitPtrArray:
 
 DigitResourceHandle dw 0 ; 1720 HGLOBAL
     dw 0 ; 1722 copy of GameStatePtr used for deallocation
-SavedObj            dw 0 ; 1724 HGDIOBJ previously selected object
+SavedObj            dw 0 ; 1724 HGDIOBJ previously selected object; restored on exit
 fpWaveOutGetNumDevs dw 0, 0 ; 1726
 OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
 TileBitmapObj       dw 0 ; 172c HGDIOBJ current tile bitmap object
