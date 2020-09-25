@@ -63,7 +63,7 @@ endfunc
 
 ; BOOL IsCoordOnscreen(int x, int y)
 ;
-; Reports whether the given coordinate lies within the viewport
+; Reports whether the given tile coordinate lies within the viewport
 func IsCoordOnscreen
     sub sp,byte +0x2
     %arg x:word ; x position in level
@@ -2631,33 +2631,15 @@ FUN_2_176e:
 ; This function can be called multiple times;
 ; the timer will only resume when a matching number of
 ; calls to UnpauseTimer are made.
-PauseTimer:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func PauseTimer
     sub sp,byte +0x2
     inc word [Var22]
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 17ba
 
 ; void UnpauseTimer()
-UnpauseTimer:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func UnpauseTimer
     sub sp,byte +0x2
     mov ax,[Var22]
     dec ax
@@ -2665,12 +2647,7 @@ UnpauseTimer:
     xor ax,ax
 .label0: ; 17cf
     mov [Var22],ax
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 17da
 
@@ -2762,45 +2739,22 @@ UnpauseGame:
 
 ; 189c
 
-PauseMusic:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func PauseMusic
     sub sp,byte +0x2
     call 0x18d5:0x2d4 ; 18a9 8:2d4
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 18b6
 
-UnpauseMusic:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func UnpauseMusic
     sub sp,byte +0x2
     cmp word [MusicEnabled],byte +0x0
-    jz .label0 ; ↓
+    jz .end ; ↓
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     call 0xffff:0x308 ; 18d2 8:308
-.label0: ; 18d7
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+.end: ; 18d7
+endfunc
 
 ; 18de
 
@@ -3380,7 +3334,7 @@ FUN_2_1ca0:
 
 ; 1dae
 
-; ResetLevelProgress
+; ResetLevelProgressInIni
 FUN_2_1dae:
     mov ax,ds
     nop
