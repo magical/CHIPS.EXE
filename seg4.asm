@@ -1,8 +1,11 @@
 SEGMENT CODE ; 4
 
+; Functions for loading levels
+
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
+%include "func.mac"
 
 ; 0
 
@@ -53,19 +56,13 @@ GetTileRect:
 
 ; 5e
 
-; reset level data
+; ResetLevelData
 ;
-; sets all the tiles to Floor
+; Sets all the tiles to Floor
 ; and clears the slip, monster, toggle, trap,
-; clone, teleport, and initial monster lists.
-FUN_4_005e:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; clone, teleport, and initial monster lists
+; (doesn't free them, just sets the length to 0).
+func ResetLevelData
     sub sp,byte +0x2
     push si
     xor si,si
@@ -94,23 +91,14 @@ FUN_4_005e:
     mov bx,[GameStatePtr]
     mov word [bx+InitialMonsterListLen],0x0
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; d8
 
-; tries to read a level
-FUN_4_00d8:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; ReadLevelDataOrDie
+; Tries to read a level. Sets LevelNumber on success.
+; If it fails, pops up an error message and exits the game.
+func ReadLevelDataOrDie
     sub sp,byte +0x2
     push si
     mov si,[bp+0x6]
@@ -120,8 +108,9 @@ FUN_4_00d8:
     call 0xfd:ReadLevelData ; ee 4:a56 ReadLevelData
     add sp,byte +0x6
     or ax,ax
-    jnz .label0 ; ↓
-    call 0x336:FUN_4_005e ; fa 4:5e
+    jnz .success ; ↓
+    ; load failed... show and error message and quit the game
+    call 0x336:ResetLevelData ; fa 4:5e
     push byte +0x10
     push ds
     push word CorruptDataMessage
@@ -130,20 +119,15 @@ FUN_4_00d8:
     add sp,byte +0x8
     push word [hwndMain]
     push word 0x111
-    push byte +0x6a
+    push byte ID_QUIT
     push byte +0x0
     push byte +0x0
     call 0x0:0xffff ; 11e USER.PostMessage
-.label0: ; 123
+.success: ; 123
     mov bx,[GameStatePtr]
     mov [bx+LevelNumber],si
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 134
 
@@ -252,14 +236,9 @@ UpdateNextPrevMenuItems:
 
 ; 1fc
 
-ResetTimerAndChipCount:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; Sets the timer and chip counter to the
+; level's time limit and chip count.
+func ResetTimerAndChipCount
     sub sp,byte +0x2
     mov bx,[GameStatePtr]
     mov ax,[bx+InitialTimeLimit]
@@ -275,12 +254,7 @@ ResetTimerAndChipCount:
     call 0x0:0xffff ; 22c USER.SetWindowWord
     push byte +0x1
     call 0x398:0x16fa ; 233 2:16fa
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 240
 
@@ -368,37 +342,29 @@ FreeGameLists:
 
 ; 320
 
-; zeroes the game state
-; and maybe frees lists first
-FUN_4_0320:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; ClearGameState(bool flag)
+;
+; Zeroes the game state
+; and maybe frees lists first.
+func ClearGameState
+    %arg flag:word
     sub sp,byte +0x4
-    cmp word [bp+0x6],byte +0x0
-    jnz .label0 ; ↓
+    cmp word [flag],byte +0x0
+    jnz .dontFree ; ↓
     call 0xffff:FreeGameLists ; 333 4:240
-.label0: ; 338
+.dontFree: ; 338
     ; memset(gamestateptr, 0, sizeof *gamestateptr)
     mov bx,[GameStatePtr]
     lea dx,[bx+GameStateSize]
     cmp dx,bx
-    jna .label2 ; ↓
-.label1: ; 344
+    jna .end ; ↓
+.zeroLoop: ; 344
     mov word [bx],0x0
     add bx,byte +0x2
     cmp bx,dx
-    jc .label1 ; ↑
-.label2: ; 34f
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+    jc .zeroLoop ; ↑
+.end: ; 34f
+endfunc
 
 ; 356
 
@@ -470,8 +436,8 @@ FUN_4_0356:
     mov ax,[bx+MelindaCount]
     mov [bp-0x4],ax
 .label2: ; 412
-    push byte +0x0
-    call 0x43c:FUN_4_0320 ; 414 4:320
+    push byte +0x0 ; don't free lists
+    call 0x43c:ClearGameState ; 414 4:320
     add sp,byte +0x2
     or si,si
     jz .label3 ; ↓
@@ -483,7 +449,7 @@ FUN_4_0356:
     mov [bx+MelindaCount],ax
 .label3: ; 436
     push word [bp+0x6]
-    call 0x53b:FUN_4_00d8 ; 439 4:d8
+    call 0x53b:ReadLevelDataOrDie ; 439 4:d8
     add sp,byte +0x2
     cmp word [GamePaused],byte +0x0
     jnz .label4 ; ↓
@@ -636,6 +602,7 @@ FUN_4_0356:
 
 ; 5fc
 
+; expand rle
 FUN_4_05fc:
     mov ax,ds
     nop
@@ -1383,6 +1350,7 @@ ReadLevelData:
 
 ; c3a
 
+; find a level and read its fields
 FUN_4_0c3a:
     mov ax,ds
     nop
@@ -1392,6 +1360,7 @@ FUN_4_0c3a:
     push ds
     mov ds,ax
     sub sp,byte +0x4
+    ; read a word
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
@@ -1400,8 +1369,9 @@ FUN_4_0c3a:
     call 0x0:0xc69 ; c51 KERNEL._lread
     cmp ax,0x2
     jnc .label0 ; ↓
-    jmp .label7 ; ↓
+    jmp .error ; ↓
 .label0: ; c5e
+    ; read another word
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
@@ -1410,13 +1380,15 @@ FUN_4_0c3a:
     call 0x0:0xc8b ; c68 KERNEL._lread
     cmp ax,0x2
     jnc .label1 ; ↓
-    jmp .label7 ; ↓
+    jmp .error ; ↓
 .label1: ; c75
+    ; check that it equals the 2nd argument
     mov ax,[bp+0x8]
     cmp [bp-0x4],ax
     jz .label2 ; ↓
-    jmp .label7 ; ↓
+    jmp .error ; ↓
 .label2: ; c80
+    ; read & discard 2 words
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
@@ -1425,7 +1397,7 @@ FUN_4_0c3a:
     call 0x0:0xca2 ; c8a KERNEL._lread
     cmp ax,0x2
     jnc .label3 ; ↓
-    jmp .label7 ; ↓
+    jmp .error ; ↓
 .label3: ; c97
     push word [bp+0x6]
     lea ax,[bp-0x4]
@@ -1435,8 +1407,9 @@ FUN_4_0c3a:
     call 0x0:0xcb9 ; ca1 KERNEL._lread
     cmp ax,0x2
     jnc .label4 ; ↓
-    jmp .label7 ; ↓
+    jmp .error ; ↓
 .label4: ; cae
+    ; read a 3rd word
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
@@ -1445,13 +1418,15 @@ FUN_4_0c3a:
     call 0x0:0xcdc ; cb8 KERNEL._lread
     cmp ax,0x2
     jnc .label5 ; ↓
-    jmp .label7 ; ↓
+    jmp .error ; ↓
 .label5: ; cc5
+    ; check that it equals 0 or 1
     cmp word [bp-0x4],byte +0x0
     jz .label6 ; ↓
     cmp word [bp-0x4],byte +0x1
-    jnz .label7 ; ↓
+    jnz .error ; ↓
 .label6: ; cd1
+    ; read a word and skip that many bytes
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
@@ -1459,12 +1434,13 @@ FUN_4_0c3a:
     push byte +0x2
     call 0x0:0xcff ; cdb KERNEL._lread
     cmp ax,0x2
-    jc .label7 ; ↓
+    jc .error ; ↓
     push word [bp+0x6]
     push byte +0x0
     push word [bp-0x4]
     push byte +0x1
     call 0x0:0xd13 ; cef KERNEL._llseek
+    ; read a word and skip that many bytes (again)
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
@@ -1472,12 +1448,13 @@ FUN_4_0c3a:
     push byte +0x2
     call 0x0:0xd22 ; cfe KERNEL._lread
     cmp ax,0x2
-    jc .label7 ; ↓
+    jc .error ; ↓
     push word [bp+0x6]
     push byte +0x0
     push word [bp-0x4]
     push byte +0x1
     call 0x0:0x9e9 ; d12 KERNEL._llseek
+    ; read a word and then read that many bytes into arg 3
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
@@ -1485,24 +1462,25 @@ FUN_4_0c3a:
     push byte +0x2
     call 0x0:0xd36 ; d21 KERNEL._lread
     cmp ax,0x2
-    jc .label7 ; ↓
+    jc .error ; ↓
     push word [bp+0x6]
     push ds
     push word [bp+0xa]
     push word [bp-0x4]
     call 0x0:0x96a ; d35 KERNEL._lread
     cmp ax,[bp-0x4]
-    jc .label7 ; ↓
+    jc .error ; ↓
+    ; store number of bytes in arg 4
     mov ax,[bp-0x4]
     mov bx,[bp+0xc]
     mov [bx],ax
     mov ax,0x1
-    jmp short .label8 ; ↓
+    jmp short .return ; ↓
     nop
     nop
-.label7: ; d4e
+.error: ; d4e
     xor ax,ax
-.label8: ; d50
+.return: ; d50
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -1512,6 +1490,7 @@ FUN_4_0c3a:
 
 ; d58
 
+; get level password
 FUN_4_0d58:
     mov ax,ds
     nop
@@ -1523,6 +1502,7 @@ FUN_4_0d58:
     sub sp,0x222
     push di
     push si
+    ; open CHIPS.DAT
     push ds
     push word DataFileName ; "CHIPS.DAT"
     lea ax,[bp-0x92]
@@ -1533,28 +1513,32 @@ FUN_4_0d58:
     mov di,ax
     cmp di,byte -0x1
     jnz .label0 ; ↓
-    jmp .label9 ; ↓
+    jmp .error ; ↓
 .label0: ; d83
+    ; read signature & levels
     push di
     call 0xda4:FUN_4_0950 ; d84 4:950
     add sp,byte +0x2
     mov si,ax
     or si,si
     jnz .label1 ; ↓
-    jmp .label8 ; ↓
+    jmp .cleanup ; ↓
 .label1: ; d95
+    ; check that our level number isn't too large
     cmp si,[bp+0x6]
     jnc .label2 ; ↓
-    jmp .label8 ; ↓
+    jmp .cleanup ; ↓
 .label2: ; d9d
+    ; find level
     push word [bp+0x6]
     push di
     call 0xdc5:FUN_4_09b4 ; da1 4:9b4
     add sp,byte +0x4
     or ax,ax
     jnz .label3 ; ↓
-    jmp .label8 ; ↓
+    jmp .cleanup ; ↓
 .label3: ; db0
+    ; read its fields
     mov word [bp-0xa],0x190
     lea ax,[bp-0xa]
     push ax
@@ -1565,15 +1549,16 @@ FUN_4_0d58:
     call 0xe23:FUN_4_0c3a ; dc2 4:c3a
     add sp,byte +0x8
     or ax,ax
-    jz .label8 ; ↓
+    jz .cleanup ; ↓
+    ; search for password field
     mov si,[bp-0xa]
-    lea dx,[bp+si-0x222]
+    lea dx,[bp-0x222+si]
     lea si,[bp-0x222]
     cmp dx,si
-    jna .label8 ; ↓
+    jna .cleanup ; ↓
     mov [bp-0x6],dx
     mov [bp-0x8],di
-.label4: ; de3
+.loop: ; de3
     lodsb
     mov [bp-0x3],al
     lodsb
@@ -1585,8 +1570,8 @@ FUN_4_0d58:
     sub ah,ah
     add si,ax
     cmp si,dx
-    jc .label4 ; ↑
-    jmp short .label8 ; ↓
+    jc .loop ; ↑
+    jmp short .cleanup ; ↓
     nop
 .label5: ; e02
     cmp byte [bp-0x4],0xa
@@ -1609,10 +1594,10 @@ FUN_4_0d58:
     mov ax,0x1
     jmp short .label10 ; ↓
     nop
-.label8: ; e36
+.cleanup: ; e36
     push di
     call 0x0:0xa47 ; e37 KERNEL._lclose
-.label9: ; e3c
+.error: ; e3c
     xor ax,ax
 .label10: ; e3e
     pop si
@@ -1626,6 +1611,7 @@ FUN_4_0d58:
 
 ; e48
 
+; check password in INI file
 FUN_4_0e48:
     mov ax,ds
     nop
@@ -1680,6 +1666,9 @@ FUN_4_0e48:
 
 ; eaa
 
+; check password for a level
+; level number may be 0 in which case we search
+; for a level with a matching password
 FUN_4_0eaa:
     mov ax,ds
     nop
@@ -1692,6 +1681,7 @@ FUN_4_0eaa:
     push di
     push si
     mov di,[bp+0x6]
+    ; get number of levels
     call 0x8c9:FUN_4_0a0e ; ebd 4:a0e
     mov [bp-0xe],ax
     cmp word [di],byte +0x0
@@ -1712,6 +1702,7 @@ FUN_4_0eaa:
     add sp,byte +0x8
     or ax,ax
     jnz .label0 ; ↑
+    ; get level password
     lea ax,[bp-0x26]
     push ax
     push word [di]
@@ -1721,6 +1712,7 @@ FUN_4_0eaa:
     jnz .label2 ; ↓
     jmp .label17 ; ↓
 .label2: ; f01
+    ; check password
     push ds
     push word [bp+0x8]
     lea ax,[bp-0x26]
@@ -1730,6 +1722,7 @@ FUN_4_0eaa:
     or ax,ax
     jz .label0 ; ↑
     jmp .label17 ; ↓
+    ; same, but this time we don't know the level number
 .label3: ; f16
     push ds
     push word DataFileName ; "CHIPS.DAT"
@@ -2022,7 +2015,7 @@ FUN_4_115c:
     jz .label2 ; ↓
     cmp word [IgnorePasswords],byte +0x0
     jz .label0 ; ↓
-    cmp ax,0x91
+    cmp ax,145 ; Thanks to...
     jnz .label2 ; ↓
 .label0: ; 1189
     push si

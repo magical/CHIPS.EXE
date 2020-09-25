@@ -89,9 +89,13 @@
 3:2a3e    GetTileImagePos
 
 4:0000    GetTileRect
+4:005e    ResetLevelData
+4:00d8    ReadLevelDataOrDie
 4:0134    UpdateWindowTitle
 4:01a0    UpdateNextPrevMenuItems
 4:01fc    ResetTimerAndChipCount
+4:0240    FreeGameLists
+4:0320    ClearGameState
 4:06b0    DecodePassword
 4:06d8    DecodeLevelFields
 4:0a56    ReadLevelData
