@@ -4517,7 +4517,7 @@ func INFOWNDPROC
     push di
     push si
     mov ax,[uMsg]
-    sub ax,0xf
+    sub ax,WM_PAINT
     jz .label0 ; ↓
     push word [hwnd]
     push word [uMsg]
@@ -4866,38 +4866,63 @@ endfunc
 
 ; 2bbe
 
+MaxHintFontSize equ 12
+MinHintFontSize equ 6
+
 func HINTWNDPROC
     %assign %$argsize 0xa
     %arg lParam:dword ; +6
     %arg wParam:word ; +a
     %arg uMsg:word ; +c
     %arg hwnd:word ; +e
+    %local hFont:word ; -4
+    %local fontSize:word ; -6
+    %local local_8:word ; text length
+    %local local_a:word
+    %local local_c:word
+    %local local_10:dword
+    %local local_14:dword
+    %local local_16:word
+    %local hSavedObj:word ; -18
+    %local rect.bottom:word
+    %local rect.right:word
+    %local rect.top:word
+    %local rect.left:word
+    %define rect (bp-0x20) ; RECT
+    %local computedTextRect.bottom:word
+    %define computedTextRect (bp-0x28)
+    ; The next 0x20 bytes are a PAINSTRUCT
+    ; https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-paintstruct
+    ; we don't really care what's in it except that
+    ; the first member is a HDC
+    %define hdcPaint (bp-0x48) ; HDC
     sub sp,0xc8
     push di
     push si
     mov ax,[uMsg]
-    sub ax,0xf
-    jz .label0 ; ↓
+    sub ax,WM_PAINT
+    jz .paint ; ↓
+.default:
     push word [hwnd]
     push word [uMsg]
     push word [wParam]
     push word [lParam+2]
     push word [lParam]
     call 0x0:0x273e ; 2be5 USER.DefWindowProc
-    jmp .label11 ; ↓
+    jmp .end ; ↓
     nop
-.label0: ; 2bee
-    push word [hwnd]
-    lea ax,[bp-0x48]
-    push ss
+.paint: ; 2bee
+    push word [hwnd]    ; hWnd
+    lea ax,[hdcPaint]
+    push ss             ; lpPaint
     push ax
     call 0x0:0x2790 ; 2bf6 USER.BeginPaint
     push word [hwnd]
-    lea ax,[bp-0x20]
+    lea ax,[rect]
     push ss
     push ax
     call 0x0:0x10fe ; 2c03 USER.GetClientRect
-    lea ax,[bp-0x20]
+    lea ax,[rect]
     push ss
     push ax
     push byte -0x3
@@ -4905,38 +4930,39 @@ func HINTWNDPROC
     call 0x0:0xedb ; 2c11 USER.InflateRect
     push byte +0x0
     push byte +0x3
-    push word [bp-0x1a]
-    push word [bp-0x1c]
-    push word [bp-0x1e]
-    push word [bp-0x20]
-    push word [bp-0x48]
+    push word [rect.bottom]
+    push word [rect.right]
+    push word [rect.top]
+    push word [rect.left]
+    push word [hdcPaint]
     call 0x24fb:Draw3DBorder; 2c29 2:f06
     add sp,byte +0xe
-    push word [bp-0x48]
-    push word [bp-0x20]
-    push word [bp-0x1e]
-    mov ax,[bp-0x1c]
-    sub ax,[bp-0x20]
+    push word [hdcPaint]
+    push word [rect.left]
+    push word [rect.top]
+    mov ax,[rect.right]
+    sub ax,[rect.left]
     push ax
-    mov ax,[bp-0x1a]
-    sub ax,[bp-0x1e]
+    mov ax,[rect.bottom]
+    sub ax,[rect.top]
     push ax
     push byte +0x0
     push byte +0x42
     call 0x0:0x134f ; 2c4c GDI.PatBlt
-    lea ax,[bp-0x20]
+    lea ax,[rect]
     push ss
     push ax
     push byte -0x1
     push byte -0x1
     call 0x0:0x2c12 ; 2c5a USER.InflateRect
-    push word [bp-0x48]
+    ; set text color to white or yellow depending on ColorMode
+    push word [hdcPaint]
     cmp word [ColorMode],byte +0x1
     jnz .label1 ; ↓
-    mov ax,0xffff
+    mov ax,0xffff ; ffffff = white
     jmp short .label2 ; ↓
 .label1: ; 2c6e
-    mov ax,0xff00
+    mov ax,0xff00 ; ffff00 = yellow
 .label2: ; 2c71
     mov dx,0xff
     push dx
@@ -4944,12 +4970,14 @@ func HINTWNDPROC
     call 0x0:0x2d9d ; 2c76 GDI.SetTextColor
     mov [bp-0x10],ax
     mov [bp-0xe],dx
-    push word [bp-0x48]
+    ; set background color to black
+    push word [hdcPaint]
     push byte +0x0
     push byte +0x0
     call 0x0:0x2dab ; 2c88 GDI.SetBkColor
     mov [bp-0x14],ax
     mov [bp-0x12],dx
+    ; prepend "Hint: " to the hint and place on stack
     mov ax,[GameStatePtr]
     add ax,LevelHint
     push ds
@@ -4963,12 +4991,16 @@ func HINTWNDPROC
     add sp,byte +0xc
     mov [bp-0x8],ax
     mov word [bp-0x16],0x0
-    mov word [bp-0x6],0xc
-.label3: ; 2cba
-    mov ax,[bp-0x6]
+    mov word [fontSize],MaxHintFontSize
+.fontSizeLoop: ; 2cba
+    ; computes font height by multiplying the desired point size by the screen's DPI,
+    ; see comment in FUN_2_10ce.
+    ;
+    ; lfHeight = MulDiv(-fontSize, GetDeviceCaps(hDC, LOGPIXELSY), 72)
+    mov ax,[fontSize]
     neg ax
     push ax
-    push word [bp-0x48]
+    push word [hdcPaint]
     push byte +0x5a ; LOGPIXELSY
     call 0x0:0x13fb ; 2cc5 GDI.GetDeviceCaps
     push ax
@@ -4980,93 +5012,105 @@ func HINTWNDPROC
     push ds
     push word LOGFONT.lfFaceName
     cmp word [IsWin31],byte +0x0
-    jz .label4 ; ↓
+    jz .helv ; ↓
     mov ax,s_Arial3
-    jmp short .label5 ; ↓
-.label4: ; 2cf0
+    jmp short .arial ; ↓
+.helv: ; 2cf0
     mov ax,s_Helv3
-.label5: ; 2cf3
+.arial: ; 2cf3
     mov si,ax
-    mov [bp-0xa],ds
+    mov [local_a],ds
     push ds
     push ax
     call 0x0:0x1b54 ; 2cfa KERNEL.lstrcpy
+    ; try and load the font
+    ; if it fails no biggie, just use
+    ; whatever font was already selected
     push ds
     push word LOGFONT
     call 0x0:0x143a ; 2d03 GDI.CreateFontIndirect
-    mov [bp-0x4],ax
+    mov [hFont],ax
     or ax,ax
-    jz .label6 ; ↓
-    push word [bp-0x48]
+    jz .createFontFailed ; ↓
+    push word [hdcPaint]
     push ax
     call 0x0:0x2d7b ; 2d13 GDI.SelectObject
-    mov [bp-0x18],ax
-.label6: ; 2d1b
-    lea di,[bp-0x28]
-    lea si,[bp-0x20]
+    mov [hSavedObj],ax
+.createFontFailed: ; 2d1b
+    ; copy rect
+    lea di,[computedTextRect]
+    lea si,[rect]
     mov ax,ss
     mov es,ax
     movsw
     movsw
     movsw
     movsw
-    push word [bp-0x48]
+    ; calculate how large the text would be if we drew it
+    push word [hdcPaint]
     lea ax,[bp-0xc8]
     push ss
     push ax
     push word [bp-0x8]
-    lea ax,[bp-0x28]
+    lea ax,[computedTextRect]
     push ss
     push ax
-    push word 0xc11
+    push word 0xc11 ; DT_NOPREFIX | DT_CALCRECT | DT_WORDBREAK | DT_CENTER
     call 0x0:0x2d65 ; 2d3d USER.DrawText
-    mov ax,[bp-0x1a]
-    cmp [bp-0x22],ax
-    jng .label7 ; ↓
-    cmp word [bp-0x6],byte +0x6
+    ; if the bottom of the text bounding box extends
+    ; below the bottom of the hint box,
+    ; decrease the font size and try again
+    mov ax,[rect.bottom]
+    cmp [computedTextRect.bottom],ax
+    jng .drawTheText ; ↓
+    cmp word [fontSize],byte MinHintFontSize
     jg .label8 ; ↓
-.label7: ; 2d50
-    push word [bp-0x48]
+.drawTheText: ; 2d50
+    ; font size is ok, text fits;
+    ; acually draw the text now
+    push word [hdcPaint]
     lea ax,[bp-0xc8]
     push ss
     push ax
     push word [bp-0x8]
-    lea ax,[bp-0x20]
+    lea ax,[rect]
     push ss
     push ax
-    push word 0x811
+    push word 0x811 ; DT_NOPREFIX | DT_WORDBREAK | DT_CENTER
     call 0x0:0x1656 ; 2d64 USER.DrawText
     mov word [bp-0x16],0x1
 .label8: ; 2d6e
-    cmp word [bp-0x4],byte +0x0
-    jz .label9 ; ↓
-    push word [bp-0x48]
-    push word [bp-0x18]
+    ; free the font object and restore the old HGDIOBJ if necessary
+    cmp word [hFont],byte +0x0
+    jz .nextFontSize ; ↓
+    push word [hdcPaint]
+    push word [hSavedObj]
     call 0x0:0x28ba ; 2d7a GDI.SelectObject
-    push word [bp-0x4]
+    push word [hFont]
     call 0x0:0x28eb ; 2d82 GDI.DeleteObject
-.label9: ; 2d87
-    dec word [bp-0x6]
+.nextFontSize: ; 2d87
+    dec word [fontSize]
     cmp word [bp-0x16],byte +0x0
     jnz .label10 ; ↓
-    jmp .label3 ; ↑
+    jmp .fontSizeLoop ; ↑
 .label10: ; 2d93
-    push word [bp-0x48]
+    ; restore the old text color and background color
+    push word [hdcPaint]
     push word [bp-0xe]
     push word [bp-0x10]
     call 0x0:0x13d9 ; 2d9c GDI.SetTextColor
-    push word [bp-0x48]
+    push word [hdcPaint]
     push word [bp-0x12]
     push word [bp-0x14]
     call 0x0:0x16c5 ; 2daa GDI.SetBkColor
-    push word [hwnd]
-    lea ax,[bp-0x48]
+    push word [hwnd]  ; hWnd
+    lea ax,[hdcPaint] ; lpPaint
     push ss
     push ax
     call 0x0:0x2957 ; 2db7 USER.EndPaint
     xor ax,ax
     cwd
-.label11: ; 2dbf
+.end: ; 2dbf
     pop si
     pop di
 endfunc

@@ -198,6 +198,9 @@ TileShift       equ 5
 
 ;;; Windows stuff
 
+; Events
+WM_PAINT        equ 0xf
+
 ; Window styles
 WS_CLIPCHILDREN equ 0x200<<16
 WS_TILEDWINDOW  equ 0x0cf<<16
