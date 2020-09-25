@@ -920,7 +920,7 @@ endfunc
 ; Returns a random integer between 0 and n-1.
 func RandInt
     sub sp,byte +0x2
-    call 0xffff:0xdc ; 73b 1:0xdc
+    call 0xffff:0xdc ; 73b 1:dc rand
     sub dx,dx
     div word [bp+0x6]
     mov ax,dx
@@ -1070,7 +1070,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x909:0x18da ; 899 7:0x18da
+    call 0x909:0x18da ; 899 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1120,7 +1120,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x991:0x18da ; 906 7:0x18da
+    call 0x991:0x18da ; 906 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1182,7 +1182,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xa01:0x18da ; 98e 7:0x18da
+    call 0xa01:0x18da ; 98e 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1232,7 +1232,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xadb:0x18da ; 9fe 7:0x18da
+    call 0xadb:0x18da ; 9fe 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1243,7 +1243,7 @@ func MonsterLoop
     push word [y]
     push word [x]
     push word [hDC]
-    call 0xffff:0x1ca ; a19 2:0x1ca
+    call 0xffff:0x1ca ; a19 2:1ca UpdateTile
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les si,[bx+MonsterListPtr]
@@ -1315,7 +1315,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xffff:0x18da ; ad8 7:0x18da
+    call 0xffff:0x18da ; ad8 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1369,7 +1369,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xc3e:0x18da ; b53 7:0x18da
+    call 0xc3e:0x18da ; b53 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1477,7 +1477,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xcec:0x18da ; c3b 7:0x18da
+    call 0xcec:0x18da ; c3b 7:18da MoveMonster
     add sp,byte +0xc
     ; Check if we succeeded
     mov [deadflag],ax
@@ -1552,7 +1552,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xdd9:0x18da ; ce9 7:0x18da
+    call 0xdd9:0x18da ; ce9 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1618,7 +1618,7 @@ func MonsterLoop
     push word [y]
     push word [x]
     push word [hDC]
-    call 0xa1c:0x1ca ; d93 2:0x1ca
+    call 0xa1c:0x1ca ; d93 2:1ca UpdateTile
     add sp,byte +0x6
     jmp word .next
 
@@ -1647,7 +1647,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xebf:0x18da ; dd6 7:0x18da
+    call 0xebf:0x18da ; dd6 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1765,7 +1765,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x89c:0x18da ; ebc 7:0x18da
+    call 0x89c:0x18da ; ebc 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1820,7 +1820,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x1001:0x18da ; f39 7:0x18da
+    call 0x1001:0x18da ; f39 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1905,7 +1905,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x107a:0x18da ; ffe 7:0x18da
+    call 0x107a:0x18da ; ffe 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1955,7 +1955,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x10d9:0x18da ; 1077 7:0x18da
+    call 0x10d9:0x18da ; 1077 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1995,7 +1995,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x1132:0x18da ; 10d6 7:0x18da
+    call 0x1132:0x18da ; 10d6 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2032,7 +2032,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x1188:0x18da ; 112f 7:0x18da
+    call 0x1188:0x18da ; 112f 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2066,7 +2066,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xb56:0x18da ; 1185 7:0x18da
+    call 0xb56:0x18da ; 1185 7:18da MoveMonster
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2126,17 +2126,17 @@ func MonsterLoop
     cmp word [bx+Autopsy],byte +0x0
     jz .notDeadYet
     push byte +0x1
-    call 0x1233:0xcbe ; 121c 2:0xcbe
+    call 0x1233:0xcbe ; 121c 2:cbe
     add sp,byte +0x2
     push byte +0x1
     push byte ChipDeathSound
-    call 0xffff:0x56c ; 1228 8:0x56c
+    call 0xffff:0x56c ; 1228 8:56c PlaySoundEffect
     add sp,byte +0x4
-    call 0xd96:0xb9a ; 1230 2:0xb9a ShowDeathMessage
+    call 0xd96:0xb9a ; 1230 2:b9a ShowDeathMessage
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xffff:0x356 ; 123f 4:0x356
+    call 0xffff:0x356 ; 123f 4:356
     add sp,byte +0x4
 .notDeadYet: ; 1247
 
@@ -2497,7 +2497,7 @@ func SlipLoop
     nop
 .label11: ; 15d2
     push word [monsterIndex]
-    call 0xee0:0x3b4 ; 15d5
+    call 0xee0:DeleteMonster ; 15d5 3:3b4 DeleteMonster
     add sp,byte +0x2
     jmp word .next
 .label9: ; 15e0
@@ -2592,7 +2592,7 @@ func SlipLoop
     push word [x]
     push word [y]
     push word [x]
-    call 0x14a7:0x636 ; 16cf
+    call 0x14a7:0x636 ; 16cf 7:636 SlideMovement
     add sp,byte +0x10
 
 .next: ; 16d7
@@ -2612,17 +2612,17 @@ func SlipLoop
     cmp word [bx+Autopsy],byte +0x0
     jz .label19
     push byte +0x1
-    call 0x1716:0xcbe ; 16ff
+    call 0x1716:0xcbe ; 16ff 2:cbe
     add sp,byte +0x2
     push byte +0x1
     push byte ChipDeathSound
-    call 0x17fb:0x56c ; 170b
+    call 0x17fb:0x56c ; 170b 8:56c PlaySoundEffect
     add sp,byte +0x4
     call 0x121f:0xb9a ; 1713 ShowDeathMessage
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0x1242:0x356 ; 1722
+    call 0x1242:0x356 ; 1722 4:356
     add sp,byte +0x4
 .label19: ; 172a
     pop si
@@ -2721,7 +2721,7 @@ func PickUpKeyOrBoot
     mov [InventoryDirty],ax
     push ax
     push cx
-    call 0x122b:0x56c ; 17f8 8:56c
+    call 0x122b:0x56c ; 17f8 8:56c PlaySoundEffect
 endfunc
 
 ; 1804
@@ -3252,7 +3252,7 @@ func ChipCanEnterTile
     push byte +0x1
     push byte OpenDoorSound
 .label17: ; 1bc2
-    call 0x1c34:0x56c ; 1bc2 8:56c
+    call 0x1c34:0x56c ; 1bc2 8:56c PlaySoundEffect
     add sp,byte +0x4
     jmp word .return1 ; ↑
     nop
@@ -3293,7 +3293,7 @@ func ChipCanEnterTile
     mov byte [bx+si+Upper],Wall
     push ax
     push di
-    call 0x1702:0x2b2 ; 1c19
+    call 0x1702:0x2b2 ; 1c19 2:2b2 InvalidateTile
     add sp,byte +0x4
     jmp short .nope ; ↓
     nop
@@ -3306,7 +3306,7 @@ func ChipCanEnterTile
 .label25: ; 1c2d
     push byte +0x1
     push byte ThiefSound
-    call 0x170e:0x56c ; 1c31 8:56c
+    call 0x170e:0x56c ; 1c31 8:56c PlaySoundEffect
     add sp,byte +0x4
     push byte +0x1
     call 0x1c8b:ResetInventory ; 1c3b 3:1734
@@ -3626,7 +3626,7 @@ func PressTankButton
 
     push word [bp+0x8]
     push byte SwitchSound
-    call 0x2130:0x56c ; 1e7e 8:0x56c PlaySoundEffect
+    call 0x2130:0x56c ; 1e7e 8:56c PlaySoundEffect
     add sp,byte +0x4
     mov word [index],0x0
     mov bx,[GameStatePtr]
@@ -3691,7 +3691,7 @@ func PressTankButton
     push cx ; y
     push word [hDC]
     mov di,bx
-    call 0x204d:0x1ca ; 1f22 2:0x1ca
+    call 0x204d:0x1ca ; 1f22 2:1ca UpdateTile
     add sp,byte +0x6
     ; turn direction left again (180 degrees total)
     ; and store new direction in monster list
@@ -3813,7 +3813,7 @@ func PressToggleButton
     push word [y]
     push word [x]
     push word [hDC]
-    call 0x1c1c:0x1ca ; 204a 2:0x1ca
+    call 0x1c1c:0x1ca ; 204a 2:1ca UpdateTile
     add sp,byte +0x6
     ; check loop condition
     add si,byte Point_size
@@ -3925,7 +3925,7 @@ func PressTrapButton
     push si
     push word [arg]
     push byte SwitchSound
-    call 0x1bc5:0x56c ; 212d 8:0x56c PlaySoundEffect
+    call 0x1bc5:0x56c ; 212d 8:56c PlaySoundEffect
     add sp,byte +0x4
     push word [y]
     push word [x]
@@ -4392,7 +4392,7 @@ func PressCloneButton
     add sp,byte +0xc
     push word [destY]
     push word [destX]
-    call 0x1f25:0x2b2 ; 2555 2:2b2
+    call 0x1f25:0x2b2 ; 2555 2:2b2 InvalidateTile
     add sp,byte +0x4
     jmp .end ; ↓
 
