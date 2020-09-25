@@ -1438,7 +1438,7 @@ func EndGame
     push byte +0x0
     push byte +0x0
     push si
-    call 0xc42:0x1adc ; bf8 2:0x1adc
+    call 0xc42:0x1adc ; bf8 2:1adc GetLevelProgressFromIni
     add sp,byte +0x8
     or ax,ax
     jz .label15
@@ -1536,7 +1536,7 @@ func EndLevel
 
     %arg hWnd:word
 
-    call 0xd51:0x17a2 ; cd9 2:0x17a2
+    call 0xd51:0x17a2 ; cd9 2:17a2 PauseTimer
 
     ; Show level completed dialog
     push word 0xffff ; 6:
@@ -1585,17 +1585,17 @@ func EndLevel
     push ds
     push word [DecadeMessages + si - 5*2]
     push word [hwndMain]
-    call 0xd59:0x0 ; d4e 2:0x0
+    call 0xd59:0x0 ; d4e 2:0 ShowMessageBox
     add sp,byte +0x8
 
 .noDecadeMsg: ; d56
-    call 0xda3:0x17ba ; d56 2:0x17ba
+    call 0xda3:0x17ba ; d56 2:17ba UnpauseTimer
     push byte +0x0
     mov bx,[GameStatePtr]
     mov ax,[bx+LevelNumber]
     inc ax
     push ax
-    call 0x628:0x356 ; d67 4:0x356
+    call 0x628:0x356 ; d67 4:356
     add sp,byte +0x4
     jmp short .end
     nop
@@ -1610,7 +1610,7 @@ func EndLevel
     mov word [bx+SlipListLen],0x0
     mov bx,[GameStatePtr]
     mov word [bx+MonsterListLen],0x0
-    call 0x5f4:0x17ba ; da0 2:0x17ba
+    call 0x5f4:0x17ba ; da0 2:17ba UnpauseTimer
 .end: ; da5
     pop si
     pop di
@@ -1963,7 +1963,7 @@ func MoveBlock
     nop
 .toggleButton: ; 109c
     push word [hDC]
-    call 0x10b8:0x1fac ; 109f 3:0x1fac PressToggleButton
+    call 0x10b8:0x1fac ; 109f 3:1fac PressToggleButton
     add sp,byte +0x2
     jmp short .label34
     nop
@@ -2269,7 +2269,7 @@ func MoveChip
     push word [xdir]
     mov al,[tile1]
     push ax
-    call 0x134a:0x1934 ; 130e 3:0x1934 CanEnterOrExitPanelWalls
+    call 0x134a:0x1934 ; 130e 3:1934 CanEnterOrExitPanelWalls
     add sp,byte +0x8
     or ax,ax
     jnz .checkBlock
@@ -2703,7 +2703,7 @@ func MoveChip
 
 .toggleButton: ; 1724
     push word [hDC]
-    call 0x173e:0x1fac ; 1727 3:0x1fac PressToggleButton
+    call 0x173e:0x1fac ; 1727 3:1fac PressToggleButton
     jmp short .label60
 
 .cloneButton: ; 172e
@@ -2761,7 +2761,7 @@ func MoveChip
     nop
 .label62: ; 17a0
     push word [hDC]
-    call 0x17bc:0x1fac ; 17a3 3:0x1fac PressToggleButton
+    call 0x17bc:0x1fac ; 17a3 3:1fac PressToggleButton
     add sp,byte +0x2
     jmp short .label61
     nop
@@ -2770,7 +2770,7 @@ func MoveChip
     push word [buttonY]
     push word [buttonX]
     push word [hDC]
-    call 0x17cf:0x2442 ; 17b9 3:0x2442
+    call 0x17cf:0x2442 ; 17b9 3:2442 PressCloneButton
     add sp,byte +0x8
     jmp short .label61
     nop
@@ -2778,13 +2778,13 @@ func MoveChip
     push byte +0x0
     push word [buttonY]
     push word [buttonX]
-    call 0x17de:0x211a ; 17cc 3:0x211a
+    call 0x17de:0x211a ; 17cc 3:211a PressTrapButton
     add sp,byte +0x6
     jmp short .label61
 .label65: ; 17d6
     push byte +0x0
     push word [hDC]
-    call 0x1894:0x1e6a ; 17db 3:0x1e6a
+    call 0x1894:0x1e6a ; 17db 3:1e6a PressTankButton
     add sp,byte +0x4
 
 ; Invalidate the inventory window if the inventory changed
@@ -2879,7 +2879,7 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x1436:0x1ca ; 18ad 2:0x1ca UpdateTile
+    call 0x1436:0x1ca ; 18ad 2:1ca UpdateTile
     add sp,byte +0x6
 
     cmp word [canenter],byte +0x0
@@ -3023,7 +3023,7 @@ func MoveMonster
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x19d2:0x1934 ; 19a0 3:0x1934 CanEnterOrExitPanelWalls
+    call 0x19d2:0x1934 ; 19a0 3:1934 CanEnterOrExitPanelWalls
     add sp,byte +0x8
     or ax,ax
     jnz .label9
@@ -3043,7 +3043,7 @@ func MoveMonster
     push word [xdest]
     mov al,[tile]
     push ax
-    call 0x12c7:0x1d4a ; 19cf 3:0x1d4a MonsterCanEnterTile
+    call 0x12c7:0x1d4a ; 19cf 3:1d4a MonsterCanEnterTile
     add sp,byte +0xc
     or ax,ax
     jnz .label10
@@ -3086,7 +3086,7 @@ func MoveMonster
     ; play bomb sound
     push byte +0x1
     push byte BombSound
-    call 0x1830:0x56c ; 1a20 8:0x56c
+    call 0x1830:0x56c ; 1a20 8:56c PlaySoundEffect
     add sp,byte +0x4
     mov byte [facing],Floor
 ; 1a2c
@@ -3108,7 +3108,7 @@ func MoveMonster
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
     push ax
-    call 0x1a77:0x12be ; 1a50 DeleteSlipperAt
+    call 0x1a77:0x12be ; 1a50 3:12be DeleteSlipperAt
     add sp,byte +0x8
 .label14: ; 1a58
     cmp word [action],byte +0x2
@@ -3126,7 +3126,7 @@ func MoveMonster
     push di ; xsrc
     push word [ydest]
     push word [xdest]
-    call 0x1aa8:0x21aa ; 1a74 3:0x21aa EnterTrap
+    call 0x1aa8:0x21aa ; 1a74 3:21aa EnterTrap
     add sp,byte +0x8
 
 ; 1a7c
@@ -3153,7 +3153,7 @@ func MoveMonster
     lea cx,[xdest]
     push cx
     push word [hDC]
-    call 0x1b76:0x276a ; 1aa5 3:0x276a
+    call 0x1b76:0x276a ; 1aa5 3:276a EnterTeleport
     add sp,byte +0xc
     lea ax,[facing]
     push ax
@@ -3187,7 +3187,7 @@ func MoveMonster
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x1b36:0x1ca ; 1aff 2:0x1ca
+    call 0x1b36:0x1ca ; 1aff 2:1ca UpdateTile
     add sp,byte +0x6
 
 ; end of the jump table cases???
@@ -3210,7 +3210,7 @@ func MoveMonster
     push si ; ysrc
     push di ; xsrc
     push word [hDC]
-    call 0x16ce:0x1ca ; 1b33 2:0x1ca
+    call 0x16ce:0x1ca ; 1b33 2:1ca UpdateTile
     add sp,byte +0x6
     cmp word [action],byte +0x1
     jz .label20
@@ -3236,7 +3236,7 @@ func MoveMonster
     jmp word .autopsy
 .toggleButton: ; 1b70
     push word [hDC]
-    call 0x1b8c:0x1fac ; 1b73 3:0x1fac PressToggleButton
+    call 0x1b8c:0x1fac ; 1b73 3:1fac PressToggleButton
     add sp,byte +0x2
     jmp word .autopsy
 .cloneButton: ; 1b7e
@@ -3244,14 +3244,14 @@ func MoveMonster
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x1b9f:0x2442 ; 1b89 3:0x2442
+    call 0x1b9f:0x2442 ; 1b89 3:2442 PressCloneButton
     add sp,byte +0x8
     jmp word .autopsy
 .trapButton: ; 1b94
     push byte +0x0
     push word [ydest]
     push word [xdest]
-    call 0x1bb4:0x211a ; 1b9c 3:0x211a
+    call 0x1bb4:0x211a ; 1b9c 3:211a PressTrapButton
     add sp,byte +0x6
     jmp word .autopsy
     nop
@@ -3294,7 +3294,7 @@ func MoveMonster
 .notFound: ; 1c13
     push byte +0x0
     push word [hDC]
-    call 0x1cc4:0x1e6a ; 1c18 3:0x1e6a
+    call 0x1cc4:0x1e6a ; 1c18 3:1e6a PressTankButton
     add sp,byte +0x4
     cmp si,byte -0x1
     jz .autopsy
@@ -3368,7 +3368,7 @@ func MoveMonster
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax         ; facing
-    call 0x162e:0x12be ; 1cc1 3:0x12be DeleteSlipperAt
+    call 0x162e:0x12be ; 1cc1 3:12be DeleteSlipperAt
     add sp,byte +0x8
 
 .returnZero: ; 1cc9
