@@ -122,7 +122,7 @@ NEResourceTab:
         dw (OBJ32_4E-$$)>>SectorShift, 0x84, 0xc30, .OBJ32_4E-NEResourceTab, 0, 0
         dw (OBJ32_1-$$)>>SectorShift, 0x35, 0xc30, .OBJ32_1-NEResourceTab, 0, 0
         dw (BACKGROUND-$$)>>SectorShift, 0xd, 0xc30, .BACKGROUND-NEResourceTab, 0, 0
-        dw (DigitsBitmap-$$)>>SectorShift, 0xe, 0xc30, 0x80c8, 0, 0
+        dw (DigitsBitmap-$$)>>SectorShift, 0xe, 0xc30, 0x8000+200, 0, 0
         dw (INFOWND-$$)>>SectorShift, 0xc, 0xc30, .INFOWND-NEResourceTab, 0, 0
         dw (CHIPEND-$$)>>SectorShift, 0x22, 0xc30, .CHIPEND-NEResourceTab, 0, 0
 
