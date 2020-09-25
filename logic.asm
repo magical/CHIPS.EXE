@@ -336,7 +336,7 @@ func NewMonster
     mov ax,bx
     add ax,MonsterListHandle
     push ax
-    call 0x383:GrowArray ; 25a 3:0x1a4
+    call 0x383:GrowArray ; 25a 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .growSucceeded
@@ -465,7 +465,7 @@ func NewMonster
     push byte -0x1
     push word [y]
     push word [x]
-    call 0xffff:EnterTrap ; 380 3:0x21aa
+    call 0xffff:EnterTrap ; 380 3:21aa
     add sp,byte +0x8
     jmp short .end
 
@@ -1691,7 +1691,7 @@ func MonsterLoop
 .walker.pickRandomDirection: ; e20
     ; Random choice of 0, 1, or 2.
     push byte +0x3
-    call 0xe4e:RandInt ; e22 3:0x72e
+    call 0xe4e:RandInt ; e22 3:72e
     add sp,byte +0x2
     or ax,ax
     jz .walker.turnLeft
@@ -1782,12 +1782,12 @@ func MonsterLoop
     jmp word .next
 .blob.loop: ; edb
     push byte +0x3
-    call 0xeee:RandInt ; edd 3:0x72e
+    call 0xeee:RandInt ; edd 3:72e
     add sp,byte +0x2
     dec ax
     mov [xnewdir],ax
     push byte +0x3
-    call 0xf20:RandInt ; eeb 3:0x72e
+    call 0xf20:RandInt ; eeb 3:72e
     add sp,byte +0x2
     dec ax
     mov [ynewdir],ax
@@ -1838,7 +1838,7 @@ func MonsterLoop
     jmp word .next
 .blob.moveBlocked.loopContinue: ; f61
     push byte +0x3
-    call 0xf90:RandInt ; f63 3:0x72e
+    call 0xf90:RandInt ; f63 3:72e
     add sp,byte +0x2
     or ax,ax
     jz .blob.moveBlocked.turnLeft
@@ -1858,7 +1858,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xfac:TurnLeft ; f8d 3:0xb0
+    call 0xfac:TurnLeft ; f8d 3:b0
     jmp short .blob.moveBlocked.tryMoveJump
 .blob.moveBlocked.turnRight: ; f94
     test si,0x2
@@ -1870,7 +1870,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xfc8:TurnRight ; fa9 3:0x116
+    call 0xfc8:TurnRight ; fa9 3:116
     jmp short .blob.moveBlocked.tryMoveJump
 .blob.moveBlocked.turnAround: ; fb0
     test si,0x4
@@ -1882,7 +1882,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xfe5:TurnAround ; fc5 3:0x17c
+    call 0xfe5:TurnAround ; fc5 3:17c
 .blob.moveBlocked.tryMoveJump: ; fca
     add sp,byte +0x8
 .blob.moveBlocked.tryMove: ; fcd
@@ -2108,7 +2108,7 @@ func MonsterLoop
     ; The monster died.
     ; Remove it from the monster list.
     push word [i]
-    call 0xb1d:DeleteMonster ; 11f3 3:0x3b4
+    call 0xb1d:DeleteMonster ; 11f3 3:3b4
     add sp,byte +0x2
     dec word [i]
     dec word [len]
@@ -2163,7 +2163,7 @@ func NewSlipper
     mov ax,bx
     add ax,SlipListHandle
     push ax
-    call 0x12e7:GrowArray ; 1281 3:0x1a4
+    call 0x12e7:GrowArray ; 1281 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .label0
@@ -2279,7 +2279,7 @@ func FindSlipperAt
     %local slipperIdx:word
     push word [y]
     push word [x]
-    call 0x1431:FindSlipper ; 13a9 3:0x58
+    call 0x1431:FindSlipper ; 13a9 3:58
     add sp,byte +0x4
     mov [slipperIdx],ax
     inc ax
@@ -2341,7 +2341,7 @@ func SlipLoop
     add bx,si
     push word [es:bx+Slipper.y]
     push word [es:bx+Slipper.x]
-    call 0x148d:FindMonster ; 142e 3:0x0
+    call 0x148d:FindMonster ; 142e 3:0
     add sp,byte +0x4
     mov [monsterIndex],ax
     mov bx,[GameStatePtr]
@@ -3595,7 +3595,7 @@ func MonsterCanEnterTile
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1edc:CheckPanelWalls ; 1e4a 3:0x1934
+    call 0x1edc:CheckPanelWalls ; 1e4a 3:1934
     add sp,byte +0x8
     or ax,ax
     jz .clearOutAndReturnZero ; ↓
@@ -3663,7 +3663,7 @@ func PressTankButton
     push cx
     mov dl,[tile]
     push dx
-    call 0x1ef2:GetMonsterDir ; 1ed9 3:0x4d8
+    call 0x1ef2:GetMonsterDir ; 1ed9 3:4d8
     add sp,byte +0x6
     ; turn tile left and store in map
     lea ax,[ydir]
@@ -3672,13 +3672,13 @@ func PressTankButton
     push cx
     push word [ydir]
     push word [xdir]
-    call 0x1f04:TurnLeft ; 1eef 3:0xb0
+    call 0x1f04:TurnLeft ; 1eef 3:b0
     add sp,byte +0x8
     push word [ydir]
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1f3b:SetTileDir ; 1f01 3:0x486
+    call 0x1f3b:SetTileDir ; 1f01 3:486
     add sp,byte +0x6
     mov bx,[x]
     shl bx,byte 0x5
@@ -3701,7 +3701,7 @@ func PressTankButton
     push cx
     push word [ydir]
     push word [xdir]
-    call 0x1f6b:TurnLeft ; 1f38 3:0xb0
+    call 0x1f6b:TurnLeft ; 1f38 3:b0
     add sp,byte +0x8
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
@@ -3716,7 +3716,7 @@ func PressTankButton
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1b6b:SetTileDir ; 1f68 3:0x486
+    call 0x1b6b:SetTileDir ; 1f68 3:486
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
@@ -3929,7 +3929,7 @@ func PressTrapButton
     add sp,byte +0x4
     push word [y]
     push word [x]
-    call 0x216f:FindTrapByButton ; 213b 3:0x2270
+    call 0x216f:FindTrapByButton ; 213b 3:2270
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -3947,7 +3947,7 @@ func PressTrapButton
     add bx,si
     push word [es:bx+Connection.toY]
     push word [es:bx+Connection.toX]
-    call 0x21ca:FindTrapSpan ; 216c 3:0x206c
+    call 0x21ca:FindTrapSpan ; 216c 3:206c
     add sp,byte +0x8
     or ax,ax
     jz .end ; ↓
@@ -3991,7 +3991,7 @@ func EnterTrap
     push ax
     push word [ydest]
     push word [xdest]
-    call 0x234d:FindTrapSpan ; 21c7 3:0x206c
+    call 0x234d:FindTrapSpan ; 21c7 3:206c
     add sp,byte +0x8
     or ax,ax
     jnz .label0 ; ↓
@@ -4169,7 +4169,7 @@ func AddTrap_Unused
     mov ax,bx
     add ax,TrapListHandle
     push ax
-    call 0x2467:GrowArray ; 234a 3:0x1a4
+    call 0x2467:GrowArray ; 234a 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .longEnough ; ↓
@@ -4849,7 +4849,7 @@ func AddTeleport
     mov ax,bx
     add ax,TeleportListHandle
     push ax
-    call 0x2501:GrowArray ; 2990 3:0x1a4
+    call 0x2501:GrowArray ; 2990 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .allswell
