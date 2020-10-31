@@ -127,7 +127,7 @@ NEResourceTab:
         dw (CHIPEND-$$)>>SectorShift, 0x22, 0xc30, .CHIPEND-NEResourceTab, 0, 0
 
     dw RT_MENU, 1, 0, 0
-        dw 0x1fe, 0x1, 0x1c30, .CHIPSMENU-NEResourceTab, 0, 0
+        dw (CHIPSMENU-$$)>>SectorShift, 0x1, 0x1c30, .CHIPSMENU-NEResourceTab, 0, 0
 
     dw RT_DIALOG, 4, 0, 0
         dw (DLGGOTO-$$)>>SectorShift, 0x1, 0x1c30, .DLG_GOTO-NEResourceTab, 0, 0
@@ -136,10 +136,10 @@ NEResourceTab:
         dw (DLGCOMPLETE-$$)>>SectorShift, 0x1, 0x1c30, .DLG_COMPLETE-NEResourceTab, 0, 0
 
     dw RT_STRING, 1, 0, 0
-        dw 0x203, 0x1, 0x1c30, 0x8011, 0, 0
+        dw (StringResource-$$)>>SectorShift, 0x1, 0x1c30, 0x8011, 0, 0
 
     dw RT_ACCELERATOR, 1, 0, 0
-        dw 0x204, 1, 0xc30, .CHIPSMENU2-NEResourceTab, 0, 0
+        dw (CHIPSMENUACCEL-$$)>>SectorShift, 1, 0xc30, .CHIPSMENU2-NEResourceTab, 0, 0
 
     dw RT_RCDATA, 4, 0, 0
         dw (DlgIncludeGoto-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE1-NEResourceTab, 0, 0
@@ -148,7 +148,7 @@ NEResourceTab:
         dw (DlgIncludeComplete-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE4-NEResourceTab, 0, 0
 
     dw RT_ICON, 1, 0, 0
-        dw 0x209, 2, 0x1c10, 0x8001, 0, 0
+        dw (ICON-$$)>>SectorShift, 2, 0x1c10, 0x8001, 0, 0
 
     dw 0
 
@@ -415,32 +415,33 @@ CHIPEND:
     db %1, 0 ; text
 %endmacro
 
-dd 0
-POPUP "&Game"
-    MENUITEM `&New Game\tF2`, ID_NEWGAME
-    MENUITEM `&Pause\tF3`, ID_PAUSE
-    MENUITEM "Best &Times...", ID_BESTTIMES
-    MENUITEM "", 0
-    MENUITEM "E&xit", ID_QUIT, MF_END
+CHIPSMENU:
+    dd 0
+    POPUP "&Game"
+        MENUITEM `&New Game\tF2`, ID_NEWGAME
+        MENUITEM `&Pause\tF3`, ID_PAUSE
+        MENUITEM "Best &Times...", ID_BESTTIMES
+        MENUITEM "", 0
+        MENUITEM "E&xit", ID_QUIT, MF_END
 
-POPUP "&Options"
-    MENUITEM "&Background Music", ID_BGM, MF_CHECKED
-    MENUITEM "&Sound Effects", ID_SOUND, MF_CHECKED
-    MENUITEM "&Color", ID_COLOR, MF_CHECKED|MF_END
+    POPUP "&Options"
+        MENUITEM "&Background Music", ID_BGM, MF_CHECKED
+        MENUITEM "&Sound Effects", ID_SOUND, MF_CHECKED
+        MENUITEM "&Color", ID_COLOR, MF_CHECKED|MF_END
 
-POPUP "&Level"
-    MENUITEM `&Restart\tCtrl+R`, ID_RESTART
-    MENUITEM `&Next\tCtrl+N`, ID_NEXT
-    MENUITEM `&Previous\tCtrl+P`, ID_PREVIOUS
-    MENUITEM "&Go To...", ID_GOTO, MF_END
+    POPUP "&Level"
+        MENUITEM `&Restart\tCtrl+R`, ID_RESTART
+        MENUITEM `&Next\tCtrl+N`, ID_NEXT
+        MENUITEM `&Previous\tCtrl+P`, ID_PREVIOUS
+        MENUITEM "&Go To...", ID_GOTO, MF_END
 
-POPUP "&Help", MF_END
-    MENUITEM `&Contents\tF1`, ID_HELP
-    MENUITEM "&How to Play", ID_HOWTOPLAY
-    MENUITEM "C&ommands", ID_COMMANDS
-    MENUITEM "How to &Use Help", ID_METAHELP
-    MENUITEM "", 0
-    MENUITEM "&About Chip's Challenge...", ID_ABOUT, MF_END
+    POPUP "&Help", MF_END
+        MENUITEM `&Contents\tF1`, ID_HELP
+        MENUITEM "&How to Play", ID_HOWTOPLAY
+        MENUITEM "C&ommands", ID_COMMANDS
+        MENUITEM "How to &Use Help", ID_METAHELP
+        MENUITEM "", 0
+        MENUITEM "&About Chip's Challenge...", ID_ABOUT, MF_END
 
 ALIGN SectorSize, db 0
 
@@ -525,11 +526,11 @@ ALIGN SectorSize, db 0
 
 ; 40600
 ; RT_STRING
-
-db 0x5, "Chips"
-db 0x10, "Chip's Challenge"
-db 0x24, "By Tony Krueger", 10
-db       "Artwork by Ed Halley"
+StringResource:
+    db 0x5, "Chips"
+    db 0x10, "Chip's Challenge"
+    db 0x24, "By Tony Krueger", 10
+    db       "Artwork by Ed Halley"
 
 ALIGN SectorSize, db 0
 
@@ -548,12 +549,13 @@ ALIGN SectorSize, db 0
     dw %2
 %endmacro
 
-ACCEL CTRL('R'), ID_RESTART
-ACCEL CTRL('N'), ID_NEXT
-ACCEL CTRL('P'), ID_PREVIOUS
-ACCEL VK_F1, ID_HELP, VIRTKEY
-ACCEL VK_F2, ID_NEWGAME, VIRTKEY
-ACCEL VK_F3, ID_PAUSE, VIRTKEY|LAST
+CHIPSMENUACCEL:
+    ACCEL CTRL('R'), ID_RESTART
+    ACCEL CTRL('N'), ID_NEXT
+    ACCEL CTRL('P'), ID_PREVIOUS
+    ACCEL VK_F1, ID_HELP, VIRTKEY
+    ACCEL VK_F2, ID_NEWGAME, VIRTKEY
+    ACCEL VK_F3, ID_PAUSE, VIRTKEY|LAST
 
 ALIGN SectorSize, db 0
 
@@ -590,6 +592,7 @@ ALIGN SectorSize, db 0
 
 ; 41200
 ; RT_ICON
+ICON:
 INCBIN "chips.ico", 0x16
 ALIGN SectorSize, db 0
 
