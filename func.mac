@@ -8,6 +8,9 @@
     %local saved_ds:word
     ; Standard function prologue
     ; See http://blogs.msdn.com/b/oldnewthing/archive/2011/03/16/10141735.aspx
+    ; and http://jdebp.eu/FGA/function-perilogues.html#Win16Callbacks
+    ; https://web.archive.org/web/20190127204706/https://blogs.msdn.microsoft.com/oldnewthing/?p=23533
+    ; https://web.archive.org/web/20040824085710/http://www.geary.com/fixds.html
     mov ax,ds
     nop
     inc bp
