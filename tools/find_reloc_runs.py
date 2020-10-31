@@ -21,6 +21,8 @@ segments = [
     (9, 0xd400, 0x150),
 ]
 
+verbose = False or True
+
 def main():
     for mod in modules:
         symbols.setdefault(mod, {})
@@ -42,26 +44,25 @@ def main():
             segment = int(sys.argv[2], 0)
             for seg, base, offset in segments:
                 if seg == segment:
-                    dumpreloc(f, base, offset)
+                    dumpreloc(f, seg, base, offset)
                     break
             else:
                 print("no such segment", file=sys.stderr)
         elif len(sys.argv) == 4:
             base = int(sys.argv[2], 0)
             offset = int(sys.argv[3], 0)
-            dumpreloc(f, base, offset)
+            dumpreloc(f, 0, base, offset)
         else:
             for seg, base, offset in segments:
                 print(";;; SEGMENT %d ;;;" % seg)
-                dumpreloc(f, base, offset)
+                dumpreloc(f, seg, base, offset)
                 print()
 
-def dumpreloc(f, base, offset):
+def dumpreloc(f, seg, base, offset):
     #print(hex(base), hex(offset), hex(base+offset))
     f.seek(base+offset)
     nreloc = read16(f)
     relocdata = f.read(8*nreloc)
-    patchlist = []
     #print("    dw", nreloc, "; number of relocations")
 
     for j in range(nreloc):
@@ -70,7 +71,7 @@ def dumpreloc(f, base, offset):
 
         # Follow source chain
         addr, = struct.unpack("<H", r[2:4])
-        p = []
+        p = [] # patch list
         while addr != 0xffff:
             p.append(addr)
             #print(hex(addr))
@@ -80,27 +81,29 @@ def dumpreloc(f, base, offset):
             if value == addr:
                 raise RuntimeError("cycle detected")
             addr = value
-
         p.reverse()
 
-        for i, x in enumerate(p):
-            patchlist.append((j, i, x))
+        s = "RELOC %s %s" % (seg, get_reloc_sym(r))
+        if verbose:
+            #s = str(j) + " " + fmt_reloc(r) + " :"
+            print(s.ljust(40), *["%x"%x for x in p])
+        else:
+            if len(p) == 1:
+                print(s)
+            else:
+                runs = find_runs(p)
+                if len(runs) == 1 and runs[0][0] >= runs[0][1]:
+                    # there's only a single decreasing run, so equivalent to 0-
+                    print(s.ljust(35), "0- ;", find_and_format_runs(p))
+                else:
+                    #s = str(j) + " " + fmt_reloc(r) + " :"
+                    print(s.ljust(40), find_and_format_runs(p))
 
-        if len(p) > 1:
-            #print(j, ":", p)
-            #print(j, ":", find_runs(p))
-            #print(j, ":", find_and_format_runs(p))
-            #print(j, ":", *["%x"%x for x in p])
-            #print("#", *["%x"%x for x in p])
-            s = str(j) + " " + fmt_reloc(r) + " :"
-            print(s.ljust(40), find_and_format_runs(p))
-            runs = find_runs(p)
-            for k, m in zip(range(len(runs)), range(1, len(runs))):
-                if not max(runs[k]) < min(runs[m]):
-                    print("error: %x > %x" % (max(runs[k]),  min(runs[m])))
+        runs = find_runs(p)
+        for k, m in zip(range(len(runs)), range(1, len(runs))):
+            if not max(runs[k]) < min(runs[m]):
+                print("error: %x > %x" % (max(runs[k]),  min(runs[m])))
 
-    patchlist.sort(key=lambda x: (x[2]))
-    #print(patchlist)
     
 
 def find_runs(p):
@@ -141,6 +144,23 @@ def find_and_format_runs(p):
 
     return " ".join(s)
 
+def get_reloc_sym(r):
+    addr, = struct.unpack("<H", r[2:4])
+    if r[1] == 0:
+        seg = r[4]
+        num = r[6] + (r[7]<<8)
+        if seg != 0xff and num == 0:
+            # segment internal
+            return "{}:".format(seg)
+        else:
+            return "<unknown>"
+    elif r[1] == 1:
+        mod, num = struct.unpack("<HH", r[4:8])
+        modname = modules[mod-1]
+        entry = symbols[modname].get(num, str(num))
+        return "{}.{}".format(modname, entry)
+    else:
+        return "<unknown>"
 
 def fmt_reloc(r):
     addr, = struct.unpack("<H", r[2:4])
