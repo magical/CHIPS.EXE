@@ -171,9 +171,10 @@ NEResourceTab:
 
 ; 669
 NEResidentNameTab:
-    db 5, "CHIPS"
-    dw 0
+    db 5, "CHIPS" ; name of this module
+    dw 0 ; ordinal (ignored for module name)
 
+    ; exported procedure names
     db 0
 
 ; 672
