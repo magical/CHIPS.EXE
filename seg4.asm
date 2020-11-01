@@ -1886,7 +1886,7 @@ PASSWORDMSGPROC:
     mov si,[bp+0xe]
     push si
     call 0x0:0xffff ; 1072 WEP4UTIL.103
-    push word [0x169c]
+    push word [PasswordPromptLevel]
     push ds
     push word PasswordPromptMessage
     lea ax,[bp-0x4c]
@@ -1924,7 +1924,7 @@ PASSWORDMSGPROC:
     push ss
     push ax
     push ds
-    push word [0x169a]
+    push word [PasswordPromptPassword]
     call 0x0:0xe92 ; 10c8 USER.lstrcmpi
     or ax,ax
     jz .label8 ; ↓
@@ -1972,13 +1972,13 @@ PASSWORDMSGPROC:
     call 0x0:0xffff ; 112b USER.SendDlgItemMessage
     jmp short .label11 ; ↓
 .label8: ; 1132
-    mov word [0x169c],0x1
+    mov word [PasswordPromptLevel],0x1
     push si
     push byte +0x1
     jmp short .label10 ; ↓
     nop
 .label9: ; 113e
-    mov word [0x169c],0x0
+    mov word [PasswordPromptLevel],0x0
     push word [bp+0xe]
     push byte +0x0
 .label10: ; 1149
@@ -2032,9 +2032,9 @@ FUN_4_115c:
     or ax,ax
     jz .label1 ; ↓
     mov ax,[bp+0x8]
-    mov [0x169c],ax
+    mov [PasswordPromptLevel],ax
     lea ax,[bp-0x10]
-    mov [0x169a],ax
+    mov [PasswordPromptPassword],ax
     push word 0xb91
     push word PASSWORDMSGPROC
     push word [OurHInstance]
@@ -2054,7 +2054,7 @@ FUN_4_115c:
     push di
     call 0x0:0xffff ; 11e6 KERNEL.FreeProcInstance
     call 0x11f9:0x1834 ; 11eb 2:1834 UnpauseGame
-    mov ax,[0x169c]
+    mov ax,[PasswordPromptLevel]
     jmp short .label3 ; ↓
     nop
 .label1: ; 11f6

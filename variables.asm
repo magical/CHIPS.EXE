@@ -200,6 +200,8 @@ SuctionBootCount                    equ 0x1690
 ChipsRemainingCount                 equ 0x1692
 TimeRemaining                       equ 0x1694
 TotalScore                          equ 0x1696
+PasswordPromptPassword              equ 0x169A
+PasswordPromptLevel                 equ 0x169C
 HorizontalPadding                   equ 0x169E
 VerticalPadding                     equ 0x16A0
 SoundArray                          equ 0x16A2

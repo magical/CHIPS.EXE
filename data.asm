@@ -530,8 +530,8 @@ TimeRemaining dw 0 ; 1694
 
 TotalScore dd 0 ; 1696
 
-    dw 0 ; 169a pointer to decoded password (for password prompt)
-    dw 0 ; 169c level for password prompt
+PasswordPromptPassword dw 0 ; 169a pointer to decoded password (for password prompt)
+PasswordPromptLevel    dw 0 ; 169c level for password prompt
 
 ; seg5.asm
 HorizontalPadding       dw 0 ; 169e main window horizontal padding (always 0x20)
