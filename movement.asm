@@ -1480,7 +1480,7 @@ func EndGame
 .showEndGraphic:
     push word [OurHInstance]
     push ds
-    push word 0x135a
+    push word Chipend2
     call 0x0:0xffff ; c58 USER.LoadBitmap
     mov si,ax
     or si,si
