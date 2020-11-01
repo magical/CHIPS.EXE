@@ -64,14 +64,15 @@ span is greater than the previous one. (eg x+10-2(x%10))
 
 e.g.
 
-    RELOC 2 KERNEL.GlobalUnlock
-    RELOC 2 3: 0- 7a0- 1004 2aa0+ 2cc8-
+    RELOC 2 KERNEL GlobalUnlock
+    RELOC 2 SEGMENT 3    0- 7a0- 1004 2aa0+ 2cc8-
 
 format:
 
-    RELOC [seg] [symbol] [patchlist]?
+    RELOC [seg] [module] [symbol] [patchlist]?
 
-symbol may be a number followed by a colon to indicate a segment.
+the relocation can also refer to a segment, in which case the module name should be the
+special value "SEGMENT", and the segment number should be given instead of a symbol.
 
 patchlist is optional. if present, it consists of a sequence of hexadecimal numbers
 each followed by a plus sign, minus sign, or nothing.

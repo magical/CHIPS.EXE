@@ -21,21 +21,24 @@ segments = [
     (9, 0xd400, 0x150),
 ]
 
-verbose = False or True
+verbose = False
 
 def main():
     for mod in modules:
         symbols.setdefault(mod, {})
         try:
-            with open("reloc.orig/{}.sym".format(mod)) as f:
+            with open("tools/reloc.orig/{}.sym".format(mod)) as f:
                 for line in f:
                     if line.count(" ") == 1:
                         ordinal, name = line.split()
                         ordinal = int(ordinal)
                         symbols[mod][ordinal] = name
-                    elif " equate " in line:
-                        ordinal, _, name, _ = line.split(maxsplit=3)
-                        symbols[mod][int(ordinal)] = name
+                    elif line.count(" ") >= 2:
+                        try:
+                            ordinal, _, name, *_ = line.split(maxsplit=3)
+                            symbols[mod][int(ordinal)] = name
+                        except ValueError as e:
+                            raise ValueError(line)
         except IOError as e:
             print(e, file=sys.stderr)
 
@@ -53,6 +56,9 @@ def main():
             offset = int(sys.argv[3], 0)
             dumpreloc(f, 0, base, offset)
         else:
+            for i, mod in enumerate(modules):
+                print("MODULE %d %s %s.sym" % (i+1, mod, mod))
+            print()
             for seg, base, offset in segments:
                 print(";;; SEGMENT %d ;;;" % seg)
                 dumpreloc(f, seg, base, offset)
@@ -98,6 +104,7 @@ def dumpreloc(f, seg, base, offset):
                 else:
                     #s = str(j) + " " + fmt_reloc(r) + " :"
                     print(s.ljust(40), find_and_format_runs(p))
+                print(s.ljust(40), fmt_simplified_runs(runs))
 
         runs = find_runs(p)
         for k, m in zip(range(len(runs)), range(1, len(runs))):
@@ -132,6 +139,34 @@ def find_runs(p):
         i = end+1
     return runs
 
+def fmt_simplified_runs(runs):
+    if len(runs) == 1:
+        if runs[0][0] < runs[0][1]:
+            return "0+"
+        else:
+            return "0-"
+
+    # simplify spans by expanding them to meet at the ends,
+    # so we just have to specify a sequence of cut points instead of full spans.
+    # p keeps track of where the last span ended, which will also be the start of the next span
+    p = 0
+    s = []
+    for start, end in runs:
+        if start == end:
+            # TODO
+            s.append("%x-"%p) # direction doesn't matter
+            s.append("%x"%start)
+            p = end+2
+        elif start < end:
+            s.append("%x+" % p)
+            p = end+2
+        else: # start > end:
+            s.append("%x-" % p)
+            p = start+2
+
+    return " ".join(s)
+
+
 def find_and_format_runs(p):
     s = []
     for start, end in find_runs(p):
@@ -151,14 +186,14 @@ def get_reloc_sym(r):
         num = r[6] + (r[7]<<8)
         if seg != 0xff and num == 0:
             # segment internal
-            return "{}:".format(seg)
+            return "SEGMENT {}".format(seg)
         else:
             return "<unknown>"
     elif r[1] == 1:
         mod, num = struct.unpack("<HH", r[4:8])
         modname = modules[mod-1]
-        entry = symbols[modname].get(num, str(num))
-        return "{}.{}".format(modname, entry)
+        entry = symbols[modname].get(num, "@"+str(num))
+        return "{:7s} {}".format(modname, entry)
     else:
         return "<unknown>"
 
