@@ -787,7 +787,7 @@ DecodeLevelFields:
     mov byte [si+0x3f],0x0
 .label4: ; 756
     mov ax,[GameStatePtr]
-    add ax,0x95a
+    add ax,LevelTitle
 .label5: ; 75c
     push ds
     push ax
@@ -916,14 +916,14 @@ DecodeLevelFields:
     mov byte [si+0x9],0x0
 .label18: ; 8b0
     mov ax,[GameStatePtr]
-    add ax,0xa1a
+    add ax,LevelPassword
     push ds
     push ax
     push ds
     push si
     call 0x0:0x761 ; 8ba KERNEL.lstrcpy
     mov ax,[GameStatePtr]
-    add ax,0xa1a
+    add ax,LevelPassword
     push ax
     call 0xa3e:DecodePassword ; 8c6 4:6b0 DecodePassword
     add sp,byte +0x2
@@ -943,7 +943,7 @@ DecodeLevelFields:
     mov byte [si+0x9],0x0
 .label22: ; 8ee
     mov ax,[GameStatePtr]
-    add ax,0xa1a
+    add ax,LevelPassword
     jmp .label5 ; ↑
     nop
 .label23: ; 8f8
@@ -1215,7 +1215,7 @@ ReadLevelData:
 .label6: ; af1
     push word [bp-0x4]
     mov ax,[GameStatePtr]
-    add ax,0x804
+    add ax,InitialTimeLimit
     push ds
     push ax
     push byte +0x2
@@ -1226,7 +1226,7 @@ ReadLevelData:
 .label7: ; b0b
     push word [bp-0x4]
     mov ax,[GameStatePtr]
-    add ax,0x806
+    add ax,InitialChipsRemainingCount
     push ds
     push ax
     push byte +0x2
@@ -1299,7 +1299,7 @@ ReadLevelData:
     push byte +0x20
     push byte +0x20
     mov ax,[GameStatePtr]
-    add ah,0x4
+    add ah,Lower/256
     push ax
     push word [bp-0x8]
     push word [bp-0x6]
