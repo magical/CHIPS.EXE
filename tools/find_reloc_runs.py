@@ -107,6 +107,8 @@ def dumpreloc(f, seg, base, offset):
             if not max(runs[k]) < min(runs[m]):
                 print("error: %x > %x" % (max(runs[k]),  min(runs[m])))
 
+        check_patchlist(p, fmt_simplified_runs(runs))
+
 
 
 def find_runs(p):
@@ -182,6 +184,42 @@ def find_and_format_runs(p):
             s.append("%x..%x-"%(end, start))
 
     return " ".join(s)
+
+def check_patchlist(addresses, patchlist_str):
+    """checks that the list of addreses is in the correct order according to the patchlist specification"""
+    # sort the list of addresses,
+    # apply the ordering given in the patchlist spec
+    # and compare the two lists
+    # they should be identical
+
+    # iterate through the cuts
+    p = sorted(addresses)
+    cuts = patchlist_str.split()
+    start = 0
+    for cut, nextcut in zip(cuts, cuts[1:]+[None]):
+        cutaddr = int(cut.rstrip('-+'), 16)
+        while start < len(p) and p[start] < cutaddr:
+            start += 1
+
+        if nextcut is None:
+            end = len(p)
+        else:
+            nextaddr = int(nextcut.rstrip('-+'), 16)
+            end = start
+            while end < len(p) and p[end] < nextaddr:
+                end += 1
+
+        # if it ends with + we don't have to do anything
+        if cut.endswith('-'):
+            p[start:end] = reversed(p[start:end])
+
+        start = end
+
+    if p != addresses:
+        print("; warning: patchlist doesn't match spec")
+        #print("want:", addresses)
+        #print("got: ", p)
+        #assert p == addresses
 
 def get_reloc_sym(r):
     addr, = struct.unpack("<H", r[2:4])
