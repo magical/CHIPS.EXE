@@ -65,25 +65,23 @@ span is greater than the previous one. (eg x+10-2(x%10))
 e.g.
 
     RELOC 2 KERNEL GlobalUnlock
-    RELOC 2 SEGMENT 3    0- 7a0- 1004 2aa0+ 2cc8-
+    RELOC 2 SEGMENT 3 = 0- 7a0- 1004 2aa0+ 2cc8-
 
 format:
 
-    RELOC [seg] [module] [symbol] [patchlist]?
+    RELOC [seg] [module] [symbol] [= patchlist]?
 
 the relocation can also refer to a segment, in which case the module name should be the
 special value "SEGMENT", and the segment number should be given instead of a symbol.
 
 patchlist is optional. if present, it consists of a sequence of hexadecimal numbers
-each followed by a plus sign, minus sign, or nothing.
+each followed by a plus sign or a minus sign.
 the sign attached to an address indicates that the span between that address and the next
 address are either ascending or descending order. the span includes the lower endpoint but
 not the higher endpoint.
 for the last address, all patches after that address are part of the span.
-a bare number is a span of width 0. 
-(XXX what if a patch falls between it and the next span?)
 
-a missing patchlist is equivalent to 0-.
+a missing patchlist is equivalent to 0+.
 
 
 

@@ -21,7 +21,7 @@ segments = [
     (9, 0xd400, 0x150),
 ]
 
-verbose = False
+verbose = False #or True
 
 def main():
     for mod in modules:
@@ -98,27 +98,27 @@ def dumpreloc(f, seg, base, offset):
                 print(s)
             else:
                 runs = find_runs(p)
-                if len(runs) == 1 and runs[0][0] >= runs[0][1]:
-                    # there's only a single decreasing run, so equivalent to 0-
-                    print(s.ljust(35), "0- ;", find_and_format_runs(p))
-                else:
-                    #s = str(j) + " " + fmt_reloc(r) + " :"
-                    print(s.ljust(40), find_and_format_runs(p))
-                print(s.ljust(40), fmt_simplified_runs(runs))
+                #print(" "*len(s.ljust(40)), ";", *["%x"%x for x in p])
+                #print(" "*len(s.ljust(40)), ";", find_and_format_runs(p))
+                print(s.ljust(40), "=", fmt_simplified_runs(runs))
 
         runs = find_runs(p)
         for k, m in zip(range(len(runs)), range(1, len(runs))):
             if not max(runs[k]) < min(runs[m]):
                 print("error: %x > %x" % (max(runs[k]),  min(runs[m])))
 
-    
+
 
 def find_runs(p):
+    """finds runs of increasing or decreasing numbers in p (a list of int).
+    returns a list of tuples (a,b) where a>b represents a decreasing run from a to b and a<b is an increasing run.
+    may include 0-width runs (a=b)"""
     runs = []
     i = 0
     while i < len(p):
         end = i
         if i+1 < len(p) and p[i] < p[i+1]:
+            # ascending
             for j in range(i+1, len(p)):
                 if p[j-1] < p[j]:
                     if j == len(p)-1:
@@ -130,6 +130,7 @@ def find_runs(p):
             if end - i == 1:
                 end = i
         elif i+1 < len(p) and p[i] > p[i+1]:
+            # descending
             for j in range(i+1, len(p)):
                 if p[j-1] > p[j]:
                     end = j
@@ -140,29 +141,32 @@ def find_runs(p):
     return runs
 
 def fmt_simplified_runs(runs):
-    if len(runs) == 1:
-        if runs[0][0] < runs[0][1]:
-            return "0+"
-        else:
-            return "0-"
+    # turn a sequence of spans into a sequence of points
+    # by creating cut points halfway between the spaces between spans.
+    # p keeps track of the last cut point
 
-    # simplify spans by expanding them to meet at the ends,
-    # so we just have to specify a sequence of cut points instead of full spans.
-    # p keeps track of where the last span ended, which will also be the start of the next span
+    # given
+    #  | 3-6 | c-a | x-z
+    # we should get (roughly)
+    #  0+    8-    m+
     p = 0
+    lo = -1
     s = []
     for start, end in runs:
-        if start == end:
-            # TODO
-            s.append("%x-"%p) # direction doesn't matter
-            s.append("%x"%start)
-            p = end+2
-        elif start < end:
+        if lo >= 0:
+            hi = min(start,end) # start of this span, end of empty space
+            mid = lo + (hi-lo)//2
+            p = mid
+
+        if start < end:
             s.append("%x+" % p)
-            p = end+2
-        else: # start > end:
+        elif start > end:
             s.append("%x-" % p)
-            p = start+2
+        else: # start == end:
+            # TODO maybe do something special?
+            s.append("%x-"%p) # direction doesn't matter
+
+        lo = max(start,end)+2 # end of this span, start of empty space
 
     return " ".join(s)
 
