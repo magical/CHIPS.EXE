@@ -86,7 +86,7 @@ func (ld *Linker) loadSymbols(filename string) error {
 		return err
 	}
 	defer f.Close()
-	names, err := ReadNames(f)
+	names, err := ReadObjNames(f)
 	if err != nil {
 		return err
 	}

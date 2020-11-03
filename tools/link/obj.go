@@ -133,7 +133,7 @@ func pubdef(r *Record) {
 	}
 }
 
-func ReadNames(r io.Reader) ([]ObjSymbol, error) {
+func ReadObjNames(r io.Reader) ([]ObjSymbol, error) {
 	// TODO: maybe don't read the whole file
 	var syms []ObjSymbol
 	for {
