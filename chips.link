@@ -1,0 +1,242 @@
+MODULE 1 KERNEL KERNEL.sym
+MODULE 2 GDI GDI.sym
+MODULE 3 USER USER.sym
+MODULE 4 WEP4UTIL
+
+;;; SEGMENT 1 ;;;
+RELOC 1 SEGMENT 1                        = 0+ 809-
+RELOC 1 SEGMENT 2
+RELOC 1 KERNEL  FatalExit
+RELOC 1 KERNEL  GetVersion
+RELOC 1 KERNEL  GetDOSEnvironment
+RELOC 1 KERNEL  LocalAlloc
+RELOC 1 KERNEL  LocalReAlloc
+RELOC 1 KERNEL  LocalFree
+RELOC 1 KERNEL  FatalAppExit
+RELOC 1 KERNEL  LocalSize
+RELOC 1 KERNEL  GlobalReAlloc
+RELOC 1 KERNEL  GlobalSize
+RELOC 1 USER    InitApp
+RELOC 1 KERNEL  LockSegment              = 0-
+RELOC 1 KERNEL  UnlockSegment            = 0-
+RELOC 1 KERNEL  WaitEvent
+RELOC 1 KERNEL  GetModuleFileName
+RELOC 1 KERNEL  __WINFLAGS
+RELOC 1 KERNEL  InitTask
+RELOC 1 KERNEL  DOS3Call                 = 0+
+
+;;; SEGMENT 2 ;;;
+RELOC 2 USER    MessageBeep
+RELOC 2 USER    GetKeyState              = 0-
+RELOC 2 USER    DefWindowProc            = 0- 22e4- 2910-
+RELOC 2 SEGMENT 1                        = 0- 11d9-
+RELOC 2 USER    PeekMessage
+RELOC 2 USER    PostMessage              = 0- 1e92-
+RELOC 2 KERNEL  GetPrivateProfileInt
+RELOC 2 USER    SendMessage
+RELOC 2 SEGMENT 2                        = 0- 340- 773- b1b- e41- 10f7- 14c7- 19c4- 1c32- 2196- 24c7- 2981-
+RELOC 2 KERNEL  GetPrivateProfileString  = 0-
+RELOC 2 USER    TranslateMessage
+RELOC 2 KERNEL  WritePrivateProfileString = 0- 1d16-
+RELOC 2 USER    DispatchMessage
+RELOC 2 SEGMENT 3                        = 0-
+RELOC 2 KERNEL  LocalAlloc
+RELOC 2 KERNEL  GetWindowsDirectory
+RELOC 2 KERNEL  LocalFree
+RELOC 2 SEGMENT 4                        = 0- 72a- 11d2- 1bd6- 2152-
+RELOC 2 GDI     MulDiv                   = 0+
+RELOC 2 GDI     SetBkColor               = 0- 12ea- 1546- 21b0-
+RELOC 2 GDI     SetBkMode                = 0- 12d2- 1537-
+RELOC 2 SEGMENT 5                        = 0- 156e-
+RELOC 2 USER    UpdateWindow             = 0- 1843-
+RELOC 2 USER    InvalidateRect           = 0- 807- 12db- 1d32- 23ad-
+RELOC 2 USER    ValidateRect             = 0-
+RELOC 2 SEGMENT 6                        = 0-
+RELOC 2 USER    MessageBox               = 0- 1218-
+RELOC 2 GDI     SetTextColor             = 0- 12cc- 2029-
+RELOC 2 SEGMENT 7                        = 0- 1c2a-
+RELOC 2 USER    GetWindowWord            = 0- 1b4c-
+RELOC 2 USER    SetWindowWord            = 0-
+RELOC 2 USER    PostQuitMessage
+RELOC 2 SEGMENT 8                        = 0- 1c8e- 2208- 25b8-
+RELOC 2 WEP4UTIL @2
+RELOC 2 USER    SetTimer
+RELOC 2 USER    KillTimer
+RELOC 2 WEP4UTIL @4
+RELOC 2 SEGMENT 9                        = 0- 273b-
+RELOC 2 WEP4UTIL @5                      = 0- 2173-
+RELOC 2 USER    GetCurrentTime
+RELOC 2 USER    SetCapture
+RELOC 2 USER    ReleaseCapture
+RELOC 2 GDI     PatBlt                   = 0- 8a2- f14- 1237- 1f81-
+RELOC 2 USER    LoadMenu
+RELOC 2 GDI     BitBlt                   = 0- 806- 1b94-
+RELOC 2 USER    CheckMenuItem            = 0- 1bac- 216d-
+RELOC 2 USER    EnableMenuItem           = 0-
+RELOC 2 USER    AppendMenu
+RELOC 2 USER    IsIconic                 = 0- 25fb-
+RELOC 2 USER    GetSubMenu
+RELOC 2 USER    DrawMenuBar              = 0- 1bb5- 2176-
+RELOC 2 USER    GetClientRect            = 0- a24- 1d8d-
+RELOC 2 KERNEL  MakeProcInstance         = 0-
+RELOC 2 USER    _wsprintf                = 0- 1618- 1818- 1d58- 2544-
+RELOC 2 KERNEL  FreeProcInstance         = 0-
+RELOC 2 GDI     SelectObject             = 0- ed9- 1334- 159a- 1c52- 266d- 2b30-
+RELOC 2 USER    BeginPaint               = 0- 260c- 2920-
+RELOC 2 USER    EndPaint                 = 0- 2624- 2880- 2cb3-
+RELOC 2 USER    CreateWindow             = 0- b9f-
+RELOC 2 USER    ShowWindow               = 0- 15b3-
+RELOC 2 GDI     CreateCompatibleDC
+RELOC 2 USER    LoadCursor               = 0- 789- 1512-
+RELOC 2 USER    LoadIcon
+RELOC 2 USER    LoadBitmap               = 0- 1b45-
+RELOC 2 GDI     CreateFontIndirect       = 0+
+RELOC 2 USER    LoadAccelerators
+RELOC 2 USER    TranslateAccelerator
+RELOC 2 USER    DestroyWindow            = 0- 15a8-
+RELOC 2 USER    RegisterClass            = 0- 75b-
+RELOC 2 GDI     DeleteDC
+RELOC 2 USER    ScrollWindow
+RELOC 2 GDI     DeleteObject             = 0- 12b2- 1c58- 268a- 2b38-
+RELOC 2 USER    GetDC                    = 0- 247b-
+RELOC 2 USER    ReleaseDC                = 0- 249a-
+RELOC 2 USER    SetCursor                = 0-
+RELOC 2 KERNEL  lstrcpy                  = 0- 12c8- 17c3- 253f-
+RELOC 2 GDI     GetDeviceCaps            = 0+
+RELOC 2 GDI     GetObject
+RELOC 2 KERNEL  lstrlen                  = 0- 1d74-
+RELOC 2 USER    InflateRect              = 0- 1e29- 2c37-
+RELOC 2 GDI     GetStockObject           = 0- 73e- bf1- 1c89-
+RELOC 2 USER    DrawText                 = 0- 1355- 1636- 21cb-
+RELOC 2 GDI     GetTextMetrics
+RELOC 2 USER    DialogBox                = 0-
+RELOC 2 USER    lstrcmpi
+RELOC 2 USER    SystemParametersInfo     = 0- 2508-
+RELOC 2 USER    AdjustWindowRect
+
+;;; SEGMENT 10 ;;;
+
+;;; SEGMENT 3 ;;;
+RELOC 3 SEGMENT 1
+RELOC 3 SEGMENT 2                        = 0- bda- fdb- 149b- 199a- 1da1- 22d3-
+RELOC 3 SEGMENT 3                        = 0- 3bf- 792- aef- ec2- 123e- 18a2- 1dc0- 2055- 24da- 289f-
+RELOC 3 SEGMENT 4                        = 0- 14b4-
+RELOC 3 KERNEL  GlobalAlloc
+RELOC 3 KERNEL  GlobalReAlloc
+RELOC 3 KERNEL  GlobalLock
+RELOC 3 KERNEL  GlobalUnlock
+RELOC 3 SEGMENT 7                        = 0- b19- efe- 1318- 15bb- 1e6a-
+RELOC 3 SEGMENT 8                        = 0- 149d- 19e1- 1d5b- 22c5- 269b-
+
+;;; SEGMENT 4 ;;;
+RELOC 4 USER    PostMessage              = 0- 8c4-
+RELOC 4 WEP4UTIL @103
+RELOC 4 SEGMENT 2                        = 0- 3bd- a27- ea8-
+RELOC 4 SEGMENT 3                        = 0- 401- 604-
+RELOC 4 SEGMENT 4                        = 0- 3a7- 71e- b21- edb-
+RELOC 4 USER    InvalidateRect
+RELOC 4 KERNEL  GlobalFree               = 0-
+RELOC 4 KERNEL  GlobalUnlock             = 0-
+RELOC 4 USER    SetWindowWord
+RELOC 4 SEGMENT 8
+RELOC 4 USER    SetCapture
+RELOC 4 USER    ReleaseCapture
+RELOC 4 USER    SetFocus
+RELOC 4 USER    EnableMenuItem           = 0-
+RELOC 4 KERNEL  MakeProcInstance
+RELOC 4 USER    _wsprintf                = 0- 905-
+RELOC 4 KERNEL  FreeProcInstance
+RELOC 4 USER    SetWindowText
+RELOC 4 USER    LoadCursor
+RELOC 4 KERNEL  OpenFile                 = 0- bf6- e4d-
+RELOC 4 WEP4UTIL @1202
+RELOC 4 KERNEL  _lclose                  = 0- b32- f16-
+RELOC 4 KERNEL  _lread                   = 0- b0d-
+RELOC 4 KERNEL  _llseek                  = 0- b6d-
+RELOC 4 USER    SetCursor                = 0- 4bc-
+RELOC 4 KERNEL  lstrcpy                  = 0+
+RELOC 4 USER    lstrcmpi                 = 0- ecf-
+RELOC 4 USER    DialogBox
+RELOC 4 USER    EndDialog
+RELOC 4 USER    GetDlgItem
+RELOC 4 USER    SetDlgItemText
+RELOC 4 USER    GetDlgItemText
+RELOC 4 USER    SendDlgItemMessage
+
+;;; SEGMENT 5 ;;;
+RELOC 5 SEGMENT 2
+RELOC 5 KERNEL  GetVersion
+RELOC 5 KERNEL  LocalFree
+RELOC 5 SEGMENT 9
+RELOC 5 USER    CheckMenuItem
+RELOC 5 USER    DrawMenuBar
+RELOC 5 USER    LoadBitmap
+RELOC 5 GDI     DeleteObject
+RELOC 5 USER    GetDC
+RELOC 5 USER    ReleaseDC
+RELOC 5 GDI     GetDeviceCaps            = 0-
+
+;;; SEGMENT 6 ;;;
+RELOC 6 SEGMENT 1
+RELOC 6 USER    PostMessage              = 0- 300-
+RELOC 6 USER    SendMessage              = 0-
+RELOC 6 WEP4UTIL @103                    = 0- 30e-
+RELOC 6 SEGMENT 2                        = 0- 3e1-
+RELOC 6 SEGMENT 4                        = 0-
+RELOC 6 USER    SetFocus                 = 0-
+RELOC 6 USER    EnableWindow
+RELOC 6 USER    _wsprintf                = 0- 3ea-
+RELOC 6 WEP4UTIL @1202                   = 0- 2eb-
+RELOC 6 USER    EndDialog                = 0- 298-
+RELOC 6 USER    GetDlgItem               = 0-
+RELOC 6 USER    SetDlgItemText           = 0- 3fc-
+RELOC 6 USER    GetDlgItemText           = 0-
+RELOC 6 USER    GetDlgItemInt
+RELOC 6 USER    SendDlgItemMessage
+
+;;; SEGMENT 7 ;;;
+RELOC 7 SEGMENT 2                        = 0- 422- 8ce- ee4- 124a- 1625- 19da-
+RELOC 7 SEGMENT 3                        = 0- 410- 7ac- ac2- ede- 121e- 1620- 1a13-
+RELOC 7 SEGMENT 4                        = 0+
+RELOC 7 SEGMENT 6
+RELOC 7 SEGMENT 7                        = 0- 3c3- 83f- cfe- 11c8- 1605- 1929-
+RELOC 7 SEGMENT 8                        = 0- a65+ 16c6- 1976-
+RELOC 7 GDI     BitBlt                   = 0- af0-
+RELOC 7 GDI     StretchBlt
+RELOC 7 KERNEL  MakeProcInstance
+RELOC 7 KERNEL  FreeProcInstance
+RELOC 7 USER    _wsprintf
+RELOC 7 GDI     SelectObject             = 0-
+RELOC 7 USER    LoadBitmap               = 0-
+RELOC 7 GDI     DeleteObject             = 0-
+RELOC 7 USER    GetDC                    = 0- 54f-
+RELOC 7 USER    ReleaseDC                = 0- 93c-
+RELOC 7 USER    DialogBox
+
+;;; SEGMENT 8 ;;;
+RELOC 8 USER    SendMessage              = 0-
+RELOC 8 SEGMENT 2                        = 0- 349-
+RELOC 8 KERNEL  LocalAlloc               = 0-
+RELOC 8 KERNEL  LocalFree                = 0-
+RELOC 8 SEGMENT 8                        = 0- 3e5-
+RELOC 8 USER    SetCapture
+RELOC 8 USER    ReleaseCapture
+RELOC 8 USER    EnableMenuItem
+RELOC 8 KERNEL  GetProcAddress           = 0-
+RELOC 8 USER    _wsprintf
+RELOC 8 USER    LoadCursor
+RELOC 8 USER    SetCursor                = 0-
+RELOC 8 KERNEL  lstrcpy                  = 0-
+RELOC 8 KERNEL  lstrlen
+RELOC 8 KERNEL  LoadLibrary
+RELOC 8 KERNEL  FreeLibrary
+RELOC 8 KERNEL  SetErrorMode             = 0-
+
+;;; SEGMENT 9 ;;;
+RELOC 9 KERNEL  GlobalUnlock
+RELOC 9 SEGMENT 9                        = 0-
+RELOC 9 KERNEL  FindResource
+RELOC 9 KERNEL  LoadResource
+RELOC 9 KERNEL  LockResource
+RELOC 9 KERNEL  FreeResource
+RELOC 9 GDI     SetDIBitsToDevice
