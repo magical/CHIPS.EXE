@@ -96,6 +96,15 @@ func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
 		return err
 	}
 	defer f.Close()
+
+	extNames, err := ReadExternalNames(f)
+	if err != nil {
+		return err
+	}
+	log.Println(extNames)
+
+	// XXX combine ReadObjNames and ReadExternalNames
+	f.Seek(0, io.SeekStart)
 	names, err := ReadObjNames(f)
 	if err != nil {
 		return err

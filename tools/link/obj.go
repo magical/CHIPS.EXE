@@ -72,6 +72,8 @@ func dump(r io.Reader) error {
 			pubdef(rec)
 		case TypeFixup:
 			fixup(rec)
+		case TypeExtdef:
+			extdef(rec)
 		}
 		fmt.Println()
 	}
@@ -133,6 +135,22 @@ func pubdef(r *Record) {
 	}
 }
 
+func extdef(r *Record) {
+	data := r.Contents
+	for i := 1; len(data) > 0; i++ {
+		n := int(data[0])
+		name := string(data[1 : n+1])
+		typeIdx := int(data[n+1])
+		skip := 1
+		if typeIdx&0x80 != 0 {
+			skip++
+		}
+
+		data = data[1+n+skip:]
+		fmt.Printf("	%d\t%s\t%d\n", i, name, typeIdx)
+	}
+}
+
 func ReadObjNames(r io.Reader) ([]ObjSymbol, error) {
 	// TODO: maybe don't read the whole file
 	var syms []ObjSymbol
@@ -151,6 +169,24 @@ func ReadObjNames(r io.Reader) ([]ObjSymbol, error) {
 	}
 }
 
+func ReadExternalNames(r io.Reader) ([]string, error) {
+	// TODO: maybe don't read the whole file
+	var names []string
+	for {
+		rec, err := ReadRecord(r)
+		if err == io.EOF {
+			return names, nil
+		}
+		if err != nil {
+			return names, err
+		}
+		switch rec.Type {
+		case TypeExtdef:
+			names = append(names, parseExtdef(rec)...)
+		}
+	}
+}
+
 type ObjSymbol struct {
 	Offset int
 	Name   string
@@ -161,6 +197,7 @@ func parsePubdef(r *Record) []ObjSymbol {
 	data = data[2:] // base group index and base seg index
 	// we ignore the segment index because the files we're
 	// concerned with only contain one segment per file
+	// FIXME: support code&data segments in a single file
 	var syms []ObjSymbol
 	for len(data) > 0 {
 		n := data[0]
@@ -170,6 +207,20 @@ func parsePubdef(r *Record) []ObjSymbol {
 		data = data[1+n+2+1:]
 	}
 	return syms
+}
+
+func parseExtdef(r *Record) []string {
+	data := r.Contents
+	var names []string
+	for len(data) > 0 {
+		n := int(data[0])
+		name := string(data[1 : n+1])
+		var typeIdx int
+		typeIdx, data = readIndex(data[1+n:])
+		_ = typeIdx // debugging data; unused by us
+		names = append(names, name)
+	}
+	return names
 }
 
 type ObjLedata struct {
