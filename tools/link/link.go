@@ -47,12 +47,14 @@ func cmdDump() {
 func cmdLink() {
 	var ld Linker
 	inputs := flag.Args()
+	// Phase 1: load symbols and patch locations
 	for _, filename := range inputs {
-		if err := ld.loadSymbols(filename); err != nil {
+		if err := ld.loadSymbols(filename, nil); err != nil {
 			log.Fatal(err)
 		}
 	}
 
+	// Phase 2: apply patches and write output
 	for _, filename := range inputs {
 		if err := ld.patch(filename); err != nil {
 			log.Println(err)
@@ -84,7 +86,11 @@ func (s *Symbol) File() string {
 	return s.input.filename
 }
 
-func (ld *Linker) loadSymbols(filename string) error {
+func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
+	if ld.symtab == nil {
+		ld.symtab = make(map[string]*Symbol)
+	}
+
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -95,6 +101,8 @@ func (ld *Linker) loadSymbols(filename string) error {
 		return err
 	}
 	// XXX close file here?
+
+	inp := &Input{filename: filename} // XXX memoize?
 
 	// TODO
 	if false {
@@ -109,6 +117,13 @@ func (ld *Linker) loadSymbols(filename string) error {
 			log.Printf("  (previously declared in %s)", other.File())
 			continue
 		}
+		symb := &Symbol{
+			name:    s.Name,
+			input:   inp,
+			segment: seg,
+			offset:  s.Offset,
+		}
+		ld.symtab[s.Name] = symb
 	}
 
 	return nil
