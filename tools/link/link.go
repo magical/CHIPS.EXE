@@ -151,6 +151,31 @@ func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
 	return nil
 }
 
+// Algorithm for applying relocation info from the script file:
+//
+// 1 read the script file. assign reloc records to a per-segment list
+//     the script may reference segments that don't exist during linking
+//     map[int][]UserRelocInfo
+// 2. when reading fixup records, associate each type of reloc record iwth a list
+//    and append each patch address to the appropriate list
+// 3. for each relocation, look up if the user specified an order.
+//    if so, sort the patch list according to that order
+// 4. build a patch chain map for the segment which maps each address to the next address in the chain
+//     map[int][int
+// 5. when patching the object file, reach from the chain map
+// 6. when writing relocation records, first loop through records from the script file and, if
+//    any references exist in the actual file, write it out. after that, go through the records
+//    from the actual object file and, if we haven't written them already, write them out.
+//
+// internal references are always grouped into the same bucket, because they are always from this segment.
+// they may or may not end up in the relocation data; they may be resolved immediately.
+// external references may be per-symbol (in the case of an imported symbol) or they may be a local symbol
+// from another segment, in which case they get lumped into a bucket with the other symbols from that segment.
+//
+// during the first pass, we know all the imported symbols and we know all the symbols from this segment,
+// but of the remaining symbols we don't know which are in which segment, so we don't know which bucket to put them in.
+
+//
 func (ld *Linker) loadPatchlist(filename string, seg *Segment) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -181,7 +206,12 @@ func (ld *Linker) loadPatchlist(filename string, seg *Segment) error {
 				// oh this isn't going to work. we need to resolve symbols
 				// in order to put the reloc data into buckets
 				// but this is part of phase 1 so we don't have full symbol info yet
-				// UNLESS i can find spans that work globally
+				//
+				// UNLESS i can find spans that work globally...
+				//
+				// actually, no, that doesn't work. even if i could assign a global order,
+				// we would still have to put then into the correct bins before creating the patch chain
+				// because a patch is only allowed to point to a patch with the same relocation info
 				typ := "unk"
 				if f.FixupType == FixupSegment {
 					typ = "seg"
