@@ -5,9 +5,12 @@ package main
 // and writes out a .bin file for each object which can then
 // be copied into the final executable.
 //
-// It follows a traditional two-pass model:
-// symbols are loaded on the first pass,
-// and fixups are performed on the second pass.
+// It follows a modified traditional two-pass model:
+// the first pass loads symbols and reads fixup locations
+// the second pass performs the fixups and writes the patched object files.
+//
+// We have to read the fixup locations before patching so that
+// we can order the relocation chains according to the link script.
 
 import (
 	"flag"
@@ -15,6 +18,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -169,4 +173,32 @@ func put16(b []byte, v int) {
 	}
 	b[0] = uint8(v)
 	b[1] = uint8(uint(v) >> 8)
+}
+
+// puts the fixups in the right order according to the spans from the linkscript
+func sortFixes(p []int, spans []RelocSpan) {
+	// first, sort in ascending order
+	sort.Ints(p)
+
+	start := 0
+	for _, span := range spans {
+		for start < len(p) && p[start] < int(span.Low) {
+			start++
+		}
+		end := start
+		for end < len(p) && p[end] < int(span.High) {
+			end++
+		}
+
+		if span.Desc {
+			reverseInts(p[start:end])
+		}
+		start = end
+	}
+}
+
+func reverseInts(p []int) {
+	for i, j := 0, len(p)-1; i < j; i, j = i+1, j-1 {
+		p[i], p[j] = p[j], p[i]
+	}
 }
