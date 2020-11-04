@@ -5,12 +5,13 @@ package main
 // and writes out a .bin file for each object which can then
 // be copied into the final executable.
 //
-// It follows a modified traditional two-pass model:
-// the first pass loads symbols and reads fixup locations
-// the second pass performs the fixups and writes the patched object files.
+// It follows a traditional two-pass model:
+// the first pass loads symbols from object files
+// the second pass performs fixups and writes the patched object files.
 //
-// We have to read the fixup locations before patching so that
-// we can order the relocation chains according to the link script.
+// The second phase actually reads each object file twice:
+// we have to read the fixup locations before patching so that
+// we can order the relocation chains correctly according to the link script.
 
 import (
 	"flag"
@@ -47,15 +48,26 @@ func cmdDump() {
 func cmdLink() {
 	var ld Linker
 	inputs := flag.Args()
-	// Phase 1: load symbols and patch locations
-	for _, filename := range inputs {
-		if err := ld.loadSymbols(filename, nil); err != nil {
+
+	ld.segments = make([]Segment, len(inputs))
+	for i := range ld.segments {
+		ld.segments[i].Index = i + 1
+	}
+
+	// Phase 1: load symbols
+	for i, filename := range inputs {
+		if err := ld.loadSymbols(filename, &ld.segments[i]); err != nil {
 			log.Fatal(err)
 		}
 	}
 
+	// Phase 1½?: resolve symbols
+
 	// Phase 2: apply patches and write output
-	for _, filename := range inputs {
+	for i, filename := range inputs {
+		if err := ld.loadPatchlist(filename, &ld.segments[i]); err != nil {
+			log.Fatal(err)
+		}
 		if err := ld.patch(filename); err != nil {
 			log.Println(err)
 			continue
@@ -69,18 +81,19 @@ type Linker struct {
 }
 
 type Segment struct {
-	Index   int
-	symbols []Symbol
-}
-type Input struct {
-	filename string
+	Index     int
+	symbols   []Symbol // exported symbols
+	extnames  []string // imported names (1-indexed)
 }
 type Symbol struct {
 	name    string
 	input   *Input
-	segment *Segment
+	module  *Module  // for external symbols
+	segment *Segment // for internal symbols
 	offset  int
 }
+type Input struct{ filename string }
+type Module struct{ name string }
 
 func (s *Symbol) File() string {
 	return s.input.filename
@@ -97,11 +110,11 @@ func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
 	}
 	defer f.Close()
 
-	extNames, err := ReadExternalNames(f)
+	extnames, err := ReadExternalNames(f)
 	if err != nil {
 		return err
 	}
-	log.Println(extNames)
+	seg.extnames = extnames
 
 	// XXX combine ReadObjNames and ReadExternalNames
 	f.Seek(0, io.SeekStart)
@@ -114,7 +127,7 @@ func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
 	inp := &Input{filename: filename} // XXX memoize?
 
 	// TODO
-	if false {
+	if true {
 		for _, s := range names {
 			fmt.Println(s.Offset, s.Name)
 		}
@@ -135,6 +148,56 @@ func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
 		ld.symtab[s.Name] = symb
 	}
 
+	return nil
+}
+
+func (ld *Linker) loadPatchlist(filename string, seg *Segment) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	var baseOffset int
+	for {
+		rec, err := ReadRecord(file)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		switch rec.Type {
+		case TypeLedata:
+			ledata := ParseLedata(rec)
+			baseOffset = ledata.StartOffset
+		case TypeFixup:
+			fixes, err := ParseFixup(rec)
+			if err != nil {
+				return err
+			}
+			for _, f := range fixes {
+				offset := baseOffset + f.DataOffset
+				// TODO: add offset to reloc data
+				// oh this isn't going to work. we need to resolve symbols
+				// in order to put the reloc data into buckets
+				// but this is part of phase 1 so we don't have full symbol info yet
+				// UNLESS i can find spans that work globally
+				typ := "unk"
+				if f.FixupType == FixupSegment {
+					typ = "seg"
+				} else if f.FixupType == FixupOffset {
+					typ = "off"
+				}
+				if f.RefType == RefExternal {
+					log.Printf("fixup: %s %x => %s", typ, offset, seg.extnames[f.RefIndex-1])
+				} else if f.RefType == RefSegment {
+					log.Printf("fixup: %s %x @ seg %d", typ, offset, f.RefIndex)
+				}
+
+				_ = offset
+			}
+		}
+	}
 	return nil
 }
 
@@ -183,6 +246,14 @@ func (ld *Linker) fixup(ledata *ObjLedata, fixes []ObjFixup) []byte {
 	last := 0xffff
 	for _, f := range fixes {
 		if f.FixupType == FixupOffset && f.RefType == RefSegment {
+			// An offset fixup for a (internal) segment reference.
+			// Nasm should have already set the correct offset,
+			// so there's nothing for us to do here.
+			// XXX maybe if there are multiple segments we have to adjust the offset?
+
+			addr := f.DataOffset + ledata.StartOffset
+			x, _ := read16(data[f.DataOffset:])
+			log.Printf("fixup: off %x seg (= %04x)", addr, x)
 			continue
 		}
 		put16(data[f.DataOffset:], last)
