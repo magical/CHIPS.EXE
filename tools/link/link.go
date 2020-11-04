@@ -212,23 +212,29 @@ func (ld *Linker) loadPatchlist(filename string, seg *Segment) error {
 				// actually, no, that doesn't work. even if i could assign a global order,
 				// we would still have to put then into the correct bins before creating the patch chain
 				// because a patch is only allowed to point to a patch with the same relocation info
-				typ := "unk"
-				if f.FixupType == FixupSegment {
-					typ = "seg"
-				} else if f.FixupType == FixupOffset {
-					typ = "off"
-				}
-				if f.RefType == RefExternal {
-					log.Printf("fixup: %s %x => %s", typ, offset, seg.extnames[f.RefIndex-1])
-				} else if f.RefType == RefSegment {
-					log.Printf("fixup: %s %x @ seg %d", typ, offset, f.RefIndex)
-				}
-
+				log.Print("fixup: ", fmtFixup(f, seg, baseOffset))
 				_ = offset
 			}
 		}
 	}
 	return nil
+}
+
+func fmtFixup(f ObjFixup, seg *Segment, base int) string {
+	offset := base + f.DataOffset
+	typ := "unk"
+	if f.FixupType == FixupSegment {
+		typ = "seg"
+	} else if f.FixupType == FixupOffset {
+		typ = "off"
+	}
+	if f.RefType == RefExternal {
+		return fmt.Sprintf("%s %x => %s", typ, offset, seg.extnames[f.RefIndex-1])
+	} else if f.RefType == RefSegment {
+		return fmt.Sprintf("%s %x @ seg %d", typ, offset, f.RefIndex)
+	} else {
+		return fmt.Sprintf("%s %x type=%d index=%d\n", typ, offset, f.RefType, f.RefIndex)
+	}
 }
 
 func (ld *Linker) patch(filename string) error {
