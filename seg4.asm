@@ -757,8 +757,9 @@ DecodeLevelFields:
 .label1: ; 713
     shl ax,1
     xchg ax,bx
-    jmp [cs:bx+0x71c]
+    jmp [cs:bx+.jumpTable]
     nop
+.jumpTable:
     dw .label2 ; ↓
     dw .label27
     dw .label3 ; ↓
