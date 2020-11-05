@@ -49,9 +49,11 @@ func cmdLink() {
 	var ld Linker
 	inputs := flag.Args()
 
+	// TODO: init elsewhere
 	ld.segments = make([]Segment, len(inputs))
 	for i := range ld.segments {
 		ld.segments[i].Index = i + 1
+		ld.segments[i].reloctab = make(map[interface{}]*RelocInfo)
 	}
 
 	// Phase 1: load symbols
@@ -68,7 +70,7 @@ func cmdLink() {
 		if err := ld.loadPatchlist(filename, &ld.segments[i]); err != nil {
 			log.Fatal(err)
 		}
-		if err := ld.patch(filename); err != nil {
+		if err := ld.patch(filename, &ld.segments[i]); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -81,10 +83,76 @@ type Linker struct {
 }
 
 type Segment struct {
-	Index     int
-	symbols   []Symbol // exported symbols
-	extnames  []string // imported names (1-indexed)
+	Index         int
+	symbols       []Symbol // exported symbols
+	extnames      []string // imported names (1-indexed)
+	// reloc chain buckets
+	reloclist []*RelocInfo
+	reloctab  map[interface{}]*RelocInfo
 }
+
+// NE Relocation record format
+// Relocation records are 8 bytes long and follow the general format:
+//    db fixup type
+//    db target type / flags
+//    dw offset
+//    dd <target info>
+//
+// There are several types of fixups & targets,
+// of which we care about exactly 3 combinations:
+//
+//    SEGMENT / INTERNALREF
+//      02 00 xxxx FF 00 ssss
+//    FARADDR / IMPORTORDINAL
+//      03 01 xxxx mmmm nnnn
+//    OFFSET / IMPORTORDINAL
+//      05 01 xxxx mmmm nnnn
+//
+//  where
+//    xxxx is the first location to fix up (the head of the relocation chain)
+//    ssss is the segment number
+//    mmmm is the module number where a symbol resides
+//    nnnn is the ordinal number of the imported symbol
+//
+// Any relocations with the same fixup type and target should share a relocation chain.
+//
+// For more details see EXEFMT.TXT (https://archive.org/details/exefmt)
+type RelocInfo struct {
+	target  RelocTarget
+	patches []int
+}
+type RelocTarget interface {
+	isRelocTarget()
+}
+
+// TODO: use more concrete values
+func (s *Symbol) isRelocTarget()  {}
+func (s *Segment) isRelocTarget() {}
+
+func (ri *RelocInfo) kind() relocKind {
+	switch s := ri.target.(type) {
+	default:
+		panic("invalid RelocInfo: unknown target")
+	case *Symbol:
+		// TODO
+		//if s.IsConst() {
+		//	return rkOffsetImportordinal
+		//}
+		_ = s
+		return rkFaraddrImportordinal
+	case *Segment:
+		return rkSegmentInternal
+	}
+}
+
+type relocKind int
+
+const (
+	rkSegmentInternal relocKind = iota
+	rkFaraddrImportordinal
+	rkOffsetImportordinal
+)
+
 type Symbol struct {
 	name    string
 	input   *Input
@@ -237,7 +305,7 @@ func fmtFixup(f ObjFixup, seg *Segment, base int) string {
 	}
 }
 
-func (ld *Linker) patch(filename string) error {
+func (ld *Linker) patch(filename string, seg *Segment) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -266,36 +334,132 @@ func (ld *Linker) patch(filename string) error {
 			if err != nil {
 				return err
 			}
-			data := ld.fixup(&ledata, fixes)
+			data := ld.fixup(filename, seg, &ledata, fixes)
 			_, err = out.Write(data)
 			if err != nil {
 				return err
 			}
 		}
 	}
+	// TODO: write reloc records
 	return out.Close()
 }
 
-func (ld *Linker) fixup(ledata *ObjLedata, fixes []ObjFixup) []byte {
+func (ld *Linker) fixup(filename string, seg *Segment, ledata *ObjLedata, fixes []ObjFixup) []byte {
 	fmt.Printf("%x\n", ledata.StartOffset)
 	data := ledata.Data
-	last := 0xffff
+	chain := make(map[*RelocInfo]int) // last patched address for a given reloc bucket
+	// FIXME: chain needs to be reused across fixup calls
 	for _, f := range fixes {
-		if f.FixupType == FixupOffset && f.RefType == RefSegment {
-			// An offset fixup for a (internal) segment reference.
-			// Nasm should have already set the correct offset,
-			// so there's nothing for us to do here.
-			// XXX maybe if there are multiple segments we have to adjust the offset?
-
-			addr := f.DataOffset + ledata.StartOffset
-			x, _ := read16(data[f.DataOffset:])
-			log.Printf("fixup: off %x seg (= %04x)", addr, x)
+		if f.DataOffset+2 > len(data) {
+			log.Printf("%s: error: fixup data offset %#x out of bounds for chunk of length %#x", filename, f.DataOffset, len(data))
 			continue
 		}
-		put16(data[f.DataOffset:], last)
-		last = f.DataOffset + ledata.StartOffset
+		var ri *RelocInfo
+		switch f.RefType {
+		case RefExternal:
+			// External (symbol) reference
+			if !(1 <= f.RefIndex && f.RefIndex <= len(seg.extnames)) {
+				log.Printf("%s: warning: fixup references external symbol %d, which is out of range", filename, f.RefIndex)
+				continue
+			}
+			name := seg.extnames[f.RefIndex-1]
+			symb, ok := ld.symtab[name]
+			if !ok {
+				ld.warnMissing(filename, name)
+				// TODO: make a dummy relocinfo?
+				continue
+			}
+			if f.FixupType == FixupOffset {
+				// we know what the offset is so we can just write it to the file
+				// no need to create relocation record.
+				// even if this is an imported symbol, the offset doesn't matter in that case
+				// so we can just write 0.
+				log.Printf("fixup @ %x: offset for %s = %x", f.DataOffset, symb.name, symb.offset)
+				put16(data[f.DataOffset:], symb.offset)
+			} else if f.FixupType == FixupSegment {
+				// this one's tricker. the segment base won't be known until the program is loaded,
+				// so we have to add a relocation record
+				ri = seg.getOrMakeRelocInfo(symb)
+				last, ok := chain[ri]
+				if !ok {
+					last = 0xffff
+				}
+				put16(data[f.DataOffset:], last)
+				chain[ri] = ledata.StartOffset + f.DataOffset
+				log.Printf("fixup @ %x: segment for %s = %x", f.DataOffset, symb.name, last)
+			} else {
+				log.Printf("%s: warning: unknown fixup type %#x", filename, f.FixupType)
+			}
+		case RefSegment:
+			// Internal (segment) reference
+			// There should only be one segment in the object file,
+			// so RefIndex should always be one
+			if f.RefIndex != 1 {
+				log.Printf("%s: warning: fixup references segment index %d, which is out of range", filename, f.RefIndex)
+				continue
+			}
+			if f.FixupType == FixupOffset {
+				// An offset fixup for a (internal) segment reference.
+				// Nasm should have already set the correct offset,
+				// so there's nothing for us to do here.
+				// XXX maybe if there are multiple segments we have to adjust the offset?
+				continue
+			}
+			// this is the reference type that is used for references to symbols in the same segment
+			// fun fact: we don't even get to know the symbol name in this case
+			ri = seg.getSelfRelocInfo()
+			last, ok := chain[ri]
+			if !ok {
+				last = 0xffff
+			}
+			put16(data[f.DataOffset:], last)
+			chain[ri] = ledata.StartOffset + f.DataOffset
+			log.Printf("fixup @ %x: self segment reference = %x", f.DataOffset, last)
+		default:
+			log.Printf("%s: warning: unknown fixup reftype: %#02x", filename, f.RefType)
+			continue
+		}
+		//put16(data[f.DataOffset:], ri.last)
+		//ri.last = f.DataOffset + ledata.StartOffset
 	}
 	return data
+}
+
+func (seg *Segment) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
+	if symb.module != nil {
+		// imported symbol
+		if ri, ok := seg.reloctab[symb]; ok {
+			return ri
+		}
+		ri := &RelocInfo{target: symb}
+		seg.reloctab[symb] = ri
+		seg.reloclist = append(seg.reloclist, ri)
+		return ri
+	} else {
+		// internal symbol, so just a segment reference
+		if ri, ok := seg.reloctab[symb.segment]; ok {
+			return ri
+		}
+		ri := &RelocInfo{target: symb.segment}
+		seg.reloctab[symb.segment] = ri
+		seg.reloclist = append(seg.reloclist, ri)
+		return ri
+	}
+}
+func (seg *Segment) getSelfRelocInfo() *RelocInfo {
+	if ri, ok := seg.reloctab[seg]; ok {
+		return ri
+	}
+	ri := &RelocInfo{target: seg}
+	seg.reloctab[seg] = ri
+	seg.reloclist = append(seg.reloclist, ri)
+	return ri
+}
+
+func (ld *Linker) warnMissing(filename string, name string) {
+	// TODO: only print once
+	log.Printf("%s: warning: unresolved symbol %q", filename, name)
 }
 
 func put16(b []byte, v int) {
