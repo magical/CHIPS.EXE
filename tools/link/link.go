@@ -479,6 +479,7 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 				// no need to create relocation record.
 				// even if this is an imported symbol, the offset doesn't matter in that case
 				// so we can just write 0.
+				// FIXME: actually FARADDR uses offset and ignores segment
 				log.Printf("fixup @ %x: offset for %s = %x", f.DataOffset, symb.name, symb.offset)
 				put16(data[f.DataOffset:], symb.offset)
 			} else if f.FixupType == FixupSegment {
