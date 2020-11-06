@@ -13,6 +13,15 @@ package main
 // we have to read the fixup locations before patching so that
 // we can order the relocation chains correctly according to the link script.
 
+// Linker TODO:
+// - [x] symbol resolution
+// - [x] write out basic patch chains
+// - decide on reloc info representation
+// - write reloc info at end of file
+// - finish linkscript parsing
+// - implement symfile loading
+// - sort patches according to linkscript
+
 import (
 	"flag"
 	"fmt"
