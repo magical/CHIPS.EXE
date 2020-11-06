@@ -93,6 +93,7 @@ type SegmentInfo struct {
 	// needed during linking a segment
 	reloclist []*RelocInfo
 	reloctab  map[interface{}]*RelocInfo
+	chain     map[*RelocInfo]int // last patched address for a given reloc bucket
 }
 
 // NE Relocation record format
@@ -340,6 +341,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	}
 	defer out.Close()
 	var ledata ObjLedata
+	seg.chain = make(map[*RelocInfo]int) // last patched address for a given reloc bucket
 	for {
 		rec, err := ReadRecord(f)
 		if err == io.EOF {
@@ -370,8 +372,6 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fixes []ObjFixup) []byte {
 	fmt.Printf("%x\n", ledata.StartOffset)
 	data := ledata.Data
-	chain := make(map[*RelocInfo]int) // last patched address for a given reloc bucket
-	// FIXME: chain needs to be reused across fixup calls
 	for _, f := range fixes {
 		if f.DataOffset+2 > len(data) {
 			log.Printf("%s: error: fixup data offset %#x out of bounds for chunk of length %#x", filename, f.DataOffset, len(data))
@@ -403,12 +403,12 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 				// this one's tricker. the segment base won't be known until the program is loaded,
 				// so we have to add a relocation record
 				ri = seg.getOrMakeRelocInfo(symb)
-				last, ok := chain[ri]
+				last, ok := seg.chain[ri]
 				if !ok {
 					last = 0xffff
 				}
 				put16(data[f.DataOffset:], last)
-				chain[ri] = ledata.StartOffset + f.DataOffset
+				seg.chain[ri] = ledata.StartOffset + f.DataOffset
 				log.Printf("fixup @ %x: segment for %s = %x", f.DataOffset, symb.name, last)
 			} else {
 				log.Printf("%s: warning: unknown fixup type %#x", filename, f.FixupType)
@@ -431,12 +431,12 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 			// this is the reference type that is used for references to symbols in the same segment
 			// fun fact: we don't even get to know the symbol name in this case
 			ri = seg.getSelfRelocInfo()
-			last, ok := chain[ri]
+			last, ok := seg.chain[ri]
 			if !ok {
 				last = 0xffff
 			}
 			put16(data[f.DataOffset:], last)
-			chain[ri] = ledata.StartOffset + f.DataOffset
+			seg.chain[ri] = ledata.StartOffset + f.DataOffset
 			log.Printf("fixup @ %x: self segment reference = %x", f.DataOffset, last)
 		default:
 			log.Printf("%s: warning: unknown fixup reftype: %#02x", filename, f.RefType)
