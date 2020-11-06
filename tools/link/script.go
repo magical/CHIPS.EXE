@@ -89,7 +89,14 @@ func (ld *Linker) scriptModule(args []string) error {
 		modname = args[2]
 	}
 
-	return ld.addModule(num, modname, symfile)
+	mod, err := ld.addModule(num, modname)
+	if err != nil {
+		return err
+	}
+	if symfile != "" {
+		return ld.readSymfile(mod, symfile)
+	}
+	return nil
 }
 
 func (ld *Linker) scriptReloc(args []string) error {
@@ -195,9 +202,9 @@ type RelocSpan struct {
 }
 
 // TODO: stubs
-func (ld *Linker) addModule(n int, name string, symfile string) error { return nil }
-func (ld *Linker) hasModule(name string) bool                         { return false }
+func (ld *Linker) hasModule(name string) bool { return false }
 func (ld *Linker) addRelocExternal(segment int, symb string /*Symbol*/, patches []RelocSpan) error {
 	return nil
 }
 func (ld *Linker) addRelocInternal(segment, toSegment int, patches []RelocSpan) error { return nil }
+func (ld *Linker) readSymfile(mod *Module, filename string) error                     { return nil }

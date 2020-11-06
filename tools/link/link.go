@@ -46,14 +46,16 @@ func cmdDump() {
 }
 
 func cmdLink() {
-	var ld Linker
 	inputs := flag.Args()
+
+	ld := NewLinker()
+	ld.preset()
 
 	// TODO: init elsewhere
 	ld.segments = make([]SegmentInfo, len(inputs))
 	for i := range ld.segments {
 		//ld.segments[i] = new(SegmentInfo)
-		ld.segments[i].num = &Segment{i + 1}
+		ld.segments[i].num = ld.addSegment(i + 1)
 		ld.segments[i].reloctab = make(map[interface{}]*RelocInfo)
 	}
 
@@ -78,9 +80,34 @@ func cmdLink() {
 	}
 }
 
+func (ld *Linker) preset() {
+	ld.symtab = make(map[string]*Symbol)
+	kernel, _ := ld.addModule(1, "KERNEL")
+	ld.addImportedSymbol(kernel, "KERNEL.GlobalLock", 18)
+	ld.addImportedSymbol(kernel, "KERNEL.GlobalUnlock", 19)
+	ld.addImportedSymbol(kernel, "KERNEL.GlobalAlloc", 15)
+	ld.addImportedSymbol(kernel, "KERNEL.GlobalReAlloc", 16)
+	ld.addLocalSymbol("rand", 1, 0xdc)
+	ld.addLocalSymbol("MoveMonster", 7, 0x18d9)
+	ld.addLocalSymbol("UpdateTile", 2, 0x1ca)
+	ld.addLocalSymbol("PlaySoundEffect", 8, 0x056c)
+	ld.addLocalSymbol("GoToLevelN", 4, 0x356)
+	ld.addLocalSymbol("SlideMovement", 7, 0x0636)
+	ld.addLocalSymbol("MoveBlock", 7, 0x0dae)
+	ld.addLocalSymbol("MoveChip", 7, 0x1183)
+}
+
 type Linker struct {
 	segments []SegmentInfo
 	symtab   map[string]*Symbol
+	segmemo  map[int]*Segment
+}
+
+func NewLinker() *Linker {
+	return &Linker{
+		symtab:  make(map[string]*Symbol),
+		segmemo: make(map[int]*Segment),
+	}
 }
 
 type Segment struct {
@@ -94,6 +121,41 @@ type SegmentInfo struct {
 	reloclist []*RelocInfo
 	reloctab  map[interface{}]*RelocInfo
 	chain     map[*RelocInfo]int // last patched address for a given reloc bucket
+}
+
+func (ld *Linker) addModule(n int, name string) (*Module, error) {
+	// TODO
+	return &Module{name: name}, nil
+}
+
+// Constructs a Segment with the given index, or returns an existing one with the same number.
+func (ld *Linker) addSegment(num int) *Segment {
+	if seg, ok := ld.segmemo[num]; ok {
+		return seg
+	}
+	seg := &Segment{num}
+	ld.segmemo[num] = seg
+	return seg
+}
+
+func (ld *Linker) addImportedSymbol(mod *Module, name string, ordinal int) error {
+	symb := &Symbol{
+		name:   name,
+		module: mod,
+		offset: ordinal, // hmm
+	}
+	ld.symtab[name] = symb
+	return nil
+}
+
+func (ld *Linker) addLocalSymbol(name string, seg, offset int) error {
+	symb := &Symbol{
+		name:    name,
+		segment: ld.addSegment(seg),
+		offset:  offset,
+	}
+	ld.symtab[name] = symb
+	return nil // TODO: error if already exists
 }
 
 // NE Relocation record format
@@ -169,6 +231,9 @@ type Input struct{ filename string }
 type Module struct{ name string }
 
 func (s *Symbol) File() string {
+	if s.input == nil {
+		return "<preset>"
+	}
 	return s.input.filename
 }
 
