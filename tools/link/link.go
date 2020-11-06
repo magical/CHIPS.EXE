@@ -50,9 +50,10 @@ func cmdLink() {
 	inputs := flag.Args()
 
 	// TODO: init elsewhere
-	ld.segments = make([]Segment, len(inputs))
+	ld.segments = make([]SegmentInfo, len(inputs))
 	for i := range ld.segments {
-		ld.segments[i].Index = i + 1
+		//ld.segments[i] = new(SegmentInfo)
+		ld.segments[i].num = &Segment{i + 1}
 		ld.segments[i].reloctab = make(map[interface{}]*RelocInfo)
 	}
 
@@ -78,15 +79,19 @@ func cmdLink() {
 }
 
 type Linker struct {
-	segments []Segment
+	segments []SegmentInfo
 	symtab   map[string]*Symbol
 }
 
 type Segment struct {
-	Index         int
-	symbols       []Symbol // exported symbols
-	extnames      []string // imported names (1-indexed)
+	Index int
+}
+type SegmentInfo struct {
+	num           *Segment
+	symbols       []*Symbol // exported symbols (XXX unused)
+	extnames      []string  // imported names (1-indexed) used when loading
 	// reloc chain buckets
+	// needed during linking a segment
 	reloclist []*RelocInfo
 	reloctab  map[interface{}]*RelocInfo
 }
@@ -167,7 +172,7 @@ func (s *Symbol) File() string {
 	return s.input.filename
 }
 
-func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
+func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
 	if ld.symtab == nil {
 		ld.symtab = make(map[string]*Symbol)
 	}
@@ -210,7 +215,7 @@ func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
 		symb := &Symbol{
 			name:    s.Name,
 			input:   inp,
-			segment: seg,
+			segment: seg.num,
 			offset:  s.Offset,
 		}
 		ld.symtab[s.Name] = symb
@@ -244,7 +249,7 @@ func (ld *Linker) loadSymbols(filename string, seg *Segment) error {
 // but of the remaining symbols we don't know which are in which segment, so we don't know which bucket to put them in.
 
 //
-func (ld *Linker) loadPatchlist(filename string, seg *Segment) error {
+func (ld *Linker) loadPatchlist(filename string, seg *SegmentInfo) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -306,7 +311,7 @@ func (ld *Linker) loadPatchlist(filename string, seg *Segment) error {
 	return nil
 }
 
-func fmtFixup(f ObjFixup, seg *Segment, base int) string {
+func fmtFixup(f ObjFixup, seg *SegmentInfo, base int) string {
 	offset := base + f.DataOffset
 	typ := "unk"
 	if f.FixupType == FixupSegment {
@@ -323,7 +328,7 @@ func fmtFixup(f ObjFixup, seg *Segment, base int) string {
 	}
 }
 
-func (ld *Linker) patch(filename string, seg *Segment) error {
+func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -363,7 +368,7 @@ func (ld *Linker) patch(filename string, seg *Segment) error {
 	return out.Close()
 }
 
-func (ld *Linker) fixup(filename string, seg *Segment, ledata *ObjLedata, fixes []ObjFixup) []byte {
+func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fixes []ObjFixup) []byte {
 	fmt.Printf("%x\n", ledata.StartOffset)
 	data := ledata.Data
 	chain := make(map[*RelocInfo]int) // last patched address for a given reloc bucket
@@ -444,7 +449,7 @@ func (ld *Linker) fixup(filename string, seg *Segment, ledata *ObjLedata, fixes 
 	return data
 }
 
-func (seg *Segment) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
+func (seg *SegmentInfo) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
 	if symb.module != nil {
 		// imported symbol
 		if ri, ok := seg.reloctab[symb]; ok {
@@ -465,11 +470,11 @@ func (seg *Segment) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
 		return ri
 	}
 }
-func (seg *Segment) getSelfRelocInfo() *RelocInfo {
+func (seg *SegmentInfo) getSelfRelocInfo() *RelocInfo {
 	if ri, ok := seg.reloctab[seg]; ok {
 		return ri
 	}
-	ri := &RelocInfo{target: seg}
+	ri := &RelocInfo{target: seg.num}
 	seg.reloctab[seg] = ri
 	seg.reloclist = append(seg.reloclist, ri)
 	return ri
