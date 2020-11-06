@@ -70,9 +70,9 @@ func cmdLink() {
 
 	// Phase 2: apply patches and write output
 	for i, filename := range inputs {
-		if err := ld.loadPatchlist(filename, &ld.segments[i]); err != nil {
-			log.Fatal(err)
-		}
+		//if err := ld.loadPatchlist(filename, &ld.segments[i]); err != nil {
+		//	log.Fatal(err)
+		//}
 		if err := ld.patch(filename, &ld.segments[i]); err != nil {
 			log.Println(err)
 			continue
