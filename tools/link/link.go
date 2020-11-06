@@ -65,7 +65,7 @@ func cmdLink() {
 	for i := range ld.segments {
 		//ld.segments[i] = new(SegmentInfo)
 		ld.segments[i].num = ld.addSegment(i + 1)
-		ld.segments[i].reloctab = make(map[interface{}]*RelocInfo)
+		ld.segments[i].reloctab = make(map[RelocTarget]*RelocInfo)
 	}
 
 	// Phase 1: load symbols
@@ -128,7 +128,7 @@ type SegmentInfo struct {
 	// reloc chain buckets
 	// needed during linking a segment
 	reloclist []*RelocInfo
-	reloctab  map[interface{}]*RelocInfo
+	reloctab  map[RelocTarget]*RelocInfo
 	chain     map[*RelocInfo]int // last patched address for a given reloc bucket
 }
 
@@ -193,6 +193,7 @@ func (ld *Linker) addLocalSymbol(name string, seg, offset int) error {
 // Any relocations with the same fixup type and target should share a relocation chain.
 //
 // For more details see EXEFMT.TXT (https://archive.org/details/exefmt)
+
 type RelocInfo struct {
 	target  RelocTarget
 	patches []int
@@ -575,11 +576,11 @@ func (seg *SegmentInfo) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
 	}
 }
 func (seg *SegmentInfo) getSelfRelocInfo() *RelocInfo {
-	if ri, ok := seg.reloctab[seg]; ok {
+	if ri, ok := seg.reloctab[seg.num]; ok {
 		return ri
 	}
 	ri := &RelocInfo{target: seg.num}
-	seg.reloctab[seg] = ri
+	seg.reloctab[seg.num] = ri
 	seg.reloclist = append(seg.reloclist, ri)
 	return ri
 }
