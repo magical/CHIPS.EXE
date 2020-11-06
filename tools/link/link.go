@@ -474,17 +474,30 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 				// TODO: make a dummy relocinfo?
 				continue
 			}
-			if f.FixupType == FixupOffset {
-				// we know what the offset is so we can just write it to the file
-				// no need to create relocation record.
-				// even if this is an imported symbol, the offset doesn't matter in that case
-				// so we can just write 0.
-				// FIXME: actually FARADDR uses offset and ignores segment
+			if symb.module != nil && f.FixupType == FixupOffset {
+				// imported symbol, this is part of a FARADDR relocation chain
+				ri = seg.getOrMakeRelocInfo(symb)
+				last, ok := seg.chain[ri]
+				if !ok {
+					last = 0xffff
+				}
+				put16(data[f.DataOffset:], last)
+				seg.chain[ri] = ledata.StartOffset + f.DataOffset
+				log.Printf("fixup @ %x: faraddr offset for %s = %x", f.DataOffset, symb.name, last)
+			} else if f.FixupType == FixupOffset {
+				// for local symbols we know what the offset is so we can just write
+				// it to the file. no need to create relocation record.
 				log.Printf("fixup @ %x: offset for %s = %x", f.DataOffset, symb.name, symb.offset)
 				put16(data[f.DataOffset:], symb.offset)
 			} else if f.FixupType == FixupSegment {
 				// this one's tricker. the segment base won't be known until the program is loaded,
 				// so we have to add a relocation record
+				if symb.module != nil {
+					// imported symbol: assume this is part of a faraddr patch,
+					// so the segment is just set to 0
+					log.Printf("fixup @ %x: faraddr segment for %s", f.DataOffset, symb.name)
+					continue
+				}
 				ri = seg.getOrMakeRelocInfo(symb)
 				last, ok := seg.chain[ri]
 				if !ok {
