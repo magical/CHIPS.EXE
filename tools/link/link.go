@@ -267,7 +267,7 @@ func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
 	// TODO
 	if true {
 		for _, s := range names {
-			fmt.Println(s.Offset, s.Name)
+			fmt.Printf("%x %s\n", s.Offset, s.Name)
 		}
 	}
 
