@@ -281,6 +281,24 @@ func (ld *Linker) loadPatchlist(filename string, seg *Segment) error {
 				// we would still have to put then into the correct bins before creating the patch chain
 				// because a patch is only allowed to point to a patch with the same relocation info
 				log.Print("fixup: ", fmtFixup(f, seg, baseOffset))
+				if f.RefType == RefExternal {
+					// External (symbol) reference
+					if !(1 <= f.RefIndex && f.RefIndex <= len(seg.extnames)) {
+						log.Printf("%s: warning: fixup references external symbol %d, which is out of range", filename, f.RefIndex)
+						continue
+					}
+					name := seg.extnames[f.RefIndex-1]
+					symb := ld.symtab[name]
+					_ = symb
+				} else if f.RefType == RefSegment {
+					// Internal (segment) reference
+					// There should only be one segment in the object file,
+					// so RefIndex should always be one
+					if f.RefIndex != 1 {
+						log.Printf("%s: warning: fixup references segment index %d, which is out of range", filename, f.RefIndex)
+						continue
+					}
+				}
 				_ = offset
 			}
 		}
