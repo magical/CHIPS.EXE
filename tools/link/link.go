@@ -87,9 +87,8 @@ type Segment struct {
 	Index int
 }
 type SegmentInfo struct {
-	num           *Segment
-	symbols       []*Symbol // exported symbols (XXX unused)
-	extnames      []string  // imported names (1-indexed) used when loading
+	num      *Segment
+	extnames []string // imported names (1-indexed) used when loading
 	// reloc chain buckets
 	// needed during linking a segment
 	reloclist []*RelocInfo
