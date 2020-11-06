@@ -434,6 +434,23 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	return out.Close()
 }
 
+func (ld *Linker) resolve(name string) (_ *Symbol, found bool) {
+	symb, ok := ld.symtab[name]
+	if !ok {
+		// Hack: auto-resolve functions named FUN_<seg>_<offset>
+		if strings.HasPrefix(name, "FUN_") {
+			var seg, offset int
+			if n, err := fmt.Sscanf(name, "FUN_%d_%x", &seg, &offset); n == 2 && err == nil {
+				log.Println("adding", name)
+				ld.addLocalSymbol(name, seg, offset)
+				symb, ok = ld.symtab[name]
+				return symb, ok
+			}
+		}
+	}
+	return symb, ok
+}
+
 func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fixes []ObjFixup) []byte {
 	fmt.Printf("%x\n", ledata.StartOffset)
 	data := ledata.Data
@@ -451,7 +468,7 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 				continue
 			}
 			name := seg.extnames[f.RefIndex-1]
-			symb, ok := ld.symtab[name]
+			symb, ok := ld.resolve(name)
 			if !ok {
 				ld.warnMissing(filename, name)
 				// TODO: make a dummy relocinfo?
