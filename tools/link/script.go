@@ -137,10 +137,11 @@ func (ld *Linker) scriptReloc(args []string) error {
 		// TODO: modname technically shouldn't be necessary for looking up a symbol
 		symb, ok := ld.lookup(modname, symbol)
 		if !ok {
-			// XXX
-			log.Printf("module %s: no such symbol %s", modname, symbol)
-			return nil
-			return fmt.Errorf("module %s: no such symbol %s", modname, symbol)
+			// ignore missing symbols from modules with no symfile
+			// XXX don't do this
+			if ld.hasSyms(modname) {
+				return fmt.Errorf("module %s: no such symbol %s", modname, symbol)
+			}
 		}
 		patches, err := parsePatchlist(patchlist)
 		if err != nil {
@@ -252,5 +253,15 @@ func (ld *Linker) readSymfile(mod *Module, filename string) error {
 			ld.addImportedSymbol(mod, name, ord)
 		}
 	}
+	mod.hasSyms = true
 	return nil
+}
+
+func (ld *Linker) hasSyms(module string) bool {
+	for _, m := range ld.modules {
+		if m.name == module {
+			return m.hasSyms
+		}
+	}
+	return false
 }

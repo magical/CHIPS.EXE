@@ -140,7 +140,10 @@ func NewLinker() *Linker {
 	}
 }
 
-type Module struct{ name string }
+type Module struct {
+	name    string
+	hasSyms bool
+}
 type Segment struct {
 	Index int
 }
