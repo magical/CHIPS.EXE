@@ -135,6 +135,7 @@ func NewLinker() *Linker {
 	}
 }
 
+type Module struct{ name string }
 type Segment struct {
 	Index int
 }
@@ -190,6 +191,23 @@ func (ld *Linker) addImportedSymbol(mod *Module, name string, ordinal int) error
 	return nil
 }
 
+type Input struct{ filename string }
+type Symbol struct {
+	name     string
+	input    *Input
+	module   *Module  // for external symbols
+	segment  *Segment // for internal symbols
+	offset   int
+	constant bool // symbol is a constant, not a function
+}
+
+func (s *Symbol) File() string {
+	if s.input == nil {
+		return "<preset>"
+	}
+	return s.input.filename
+}
+
 func (ld *Linker) addImportedConstant(mod *Module, name string, ordinal int) error {
 	symb := &Symbol{
 		name:     name,
@@ -209,6 +227,58 @@ func (ld *Linker) addLocalSymbol(name string, seg, offset int) error {
 	}
 	ld.symtab[name] = symb
 	return nil // TODO: error if already exists
+}
+
+func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
+	if ld.symtab == nil {
+		ld.symtab = make(map[string]*Symbol)
+	}
+
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	extnames, err := ReadExternalNames(f)
+	if err != nil {
+		return err
+	}
+	seg.extnames = extnames
+
+	// XXX combine ReadObjNames and ReadExternalNames
+	f.Seek(0, io.SeekStart)
+	names, err := ReadObjNames(f)
+	if err != nil {
+		return err
+	}
+	// XXX close file here?
+
+	inp := &Input{filename: filename} // XXX memoize?
+
+	// TODO
+	if true {
+		for _, s := range names {
+			fmt.Printf("%x %s\n", s.Offset, s.Name)
+		}
+	}
+
+	for _, s := range names {
+		if other, found := ld.symtab[s.Name]; found {
+			log.Printf("warning: symbol %s redeclared in %s", s.Name, filename)
+			log.Printf("  (previously declared in %s)", other.File())
+			continue
+		}
+		symb := &Symbol{
+			name:    s.Name,
+			input:   inp,
+			segment: seg.num,
+			offset:  s.Offset,
+		}
+		ld.symtab[s.Name] = symb
+	}
+
+	return nil
 }
 
 // NE Relocation record format
@@ -272,75 +342,6 @@ const (
 	rkOffsetImportordinal
 )
 
-type Symbol struct {
-	name     string
-	input    *Input
-	module   *Module  // for external symbols
-	segment  *Segment // for internal symbols
-	offset   int
-	constant bool // symbol is a constant, not a function
-}
-type Input struct{ filename string }
-type Module struct{ name string }
-
-func (s *Symbol) File() string {
-	if s.input == nil {
-		return "<preset>"
-	}
-	return s.input.filename
-}
-
-func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
-	if ld.symtab == nil {
-		ld.symtab = make(map[string]*Symbol)
-	}
-
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	extnames, err := ReadExternalNames(f)
-	if err != nil {
-		return err
-	}
-	seg.extnames = extnames
-
-	// XXX combine ReadObjNames and ReadExternalNames
-	f.Seek(0, io.SeekStart)
-	names, err := ReadObjNames(f)
-	if err != nil {
-		return err
-	}
-	// XXX close file here?
-
-	inp := &Input{filename: filename} // XXX memoize?
-
-	// TODO
-	if true {
-		for _, s := range names {
-			fmt.Printf("%x %s\n", s.Offset, s.Name)
-		}
-	}
-
-	for _, s := range names {
-		if other, found := ld.symtab[s.Name]; found {
-			log.Printf("warning: symbol %s redeclared in %s", s.Name, filename)
-			log.Printf("  (previously declared in %s)", other.File())
-			continue
-		}
-		symb := &Symbol{
-			name:    s.Name,
-			input:   inp,
-			segment: seg.num,
-			offset:  s.Offset,
-		}
-		ld.symtab[s.Name] = symb
-	}
-
-	return nil
-}
 
 // Algorithm for applying relocation info from the script file:
 //
