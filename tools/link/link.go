@@ -178,7 +178,7 @@ func (ld *Linker) addLocalSymbol(name string, seg, offset int) error {
 // of which we care about exactly 3 combinations:
 //
 //    SEGMENT / INTERNALREF
-//      02 00 xxxx FF 00 ssss
+//      02 00 xxxx ss 00 0000
 //    FARADDR / IMPORTORDINAL
 //      03 01 xxxx mmmm nnnn
 //    OFFSET / IMPORTORDINAL
@@ -186,7 +186,7 @@ func (ld *Linker) addLocalSymbol(name string, seg, offset int) error {
 //
 //  where
 //    xxxx is the first location to fix up (the head of the relocation chain)
-//    ssss is the segment number
+//    ss   is the segment number
 //    mmmm is the module number where a symbol resides
 //    nnnn is the ordinal number of the imported symbol
 //
@@ -467,12 +467,12 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
 		case rkSegmentInternal:
 			//    SEGMENT / INTERNALREF
-			//      02 00 xxxx FF 00 ssss
+			//      02 00 xxxx ss 00 0000
 			buf[0] = 2
 			buf[1] = 0
 			put16(buf[2:], seg.chain[ri])
-			put16(buf[4:], 0x00FF)
-			put16(buf[6:], ri.target.(*Segment).Index)
+			put16(buf[4:], int(uint8(ri.target.(*Segment).Index)))
+			put16(buf[6:], 0)
 			out.Write(buf[:])
 			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
 		default:
