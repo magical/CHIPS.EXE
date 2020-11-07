@@ -64,7 +64,7 @@ func cmdLink() {
 	ld.segments = make([]SegmentInfo, len(inputs))
 	for i := range ld.segments {
 		//ld.segments[i] = new(SegmentInfo)
-		ld.segments[i].num = ld.addSegment(i + 1)
+		ld.segments[i].num = &Segment{} //ld.addSegment(i + 1)
 		ld.segments[i].reloctab = make(map[RelocTarget]*RelocInfo)
 	}
 
@@ -441,6 +441,44 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 		}
 	}
 	// TODO: write reloc records
+	out.Write([]byte{uint8(len(seg.reloclist)), 0})
+	for _, ri := range seg.reloclist {
+		var buf [8]byte
+		switch ri.kind() {
+		case rkOffsetImportordinal:
+			//    OFFSET / IMPORTORDINAL
+			//      05 01 xxxx mmmm nnnn
+			buf[0] = 5
+			buf[1] = 1
+			put16(buf[2:], seg.chain[ri])
+			put16(buf[4:], 1)                          // TODO: seg.module.num
+			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
+			out.Write(buf[:])
+			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
+		case rkFaraddrImportordinal:
+			//    FARADDR / IMPORTORDINAL
+			//      03 01 xxxx mmmm nnnn
+			buf[0] = 3
+			buf[1] = 1
+			put16(buf[2:], seg.chain[ri])
+			put16(buf[4:], 1)                          // TODO: seg.module.num
+			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
+			out.Write(buf[:])
+			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
+		case rkSegmentInternal:
+			//    SEGMENT / INTERNALREF
+			//      02 00 xxxx FF 00 ssss
+			buf[0] = 2
+			buf[1] = 0
+			put16(buf[2:], seg.chain[ri])
+			put16(buf[4:], 0x00FF)
+			put16(buf[6:], ri.target.(*Segment).Index)
+			out.Write(buf[:])
+			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
+		default:
+			fmt.Println("reloc:", ri.target)
+		}
+	}
 	return out.Close()
 }
 
@@ -590,14 +628,6 @@ func (ld *Linker) warnMissing(filename string, name string) {
 	log.Printf("%s: warning: unresolved symbol %q", filename, name)
 }
 
-func put16(b []byte, v int) {
-	if v&0xFFFF != v {
-		panic(fmt.Sprint("put16: value exceeds 16 bits:", v))
-	}
-	b[0] = uint8(v)
-	b[1] = uint8(uint(v) >> 8)
-}
-
 // puts the fixups in the right order according to the spans from the linkscript
 func sortFixes(p []int, spans []RelocSpan) {
 	// first, sort in ascending order
@@ -624,4 +654,12 @@ func reverseInts(p []int) {
 	for i, j := 0, len(p)-1; i < j; i, j = i+1, j-1 {
 		p[i], p[j] = p[j], p[i]
 	}
+}
+
+func put16(b []byte, v int) {
+	if v&0xFFFF != v {
+		panic(fmt.Sprint("put16: value exceeds 16 bits:", v))
+	}
+	b[0] = uint8(v)
+	b[1] = uint8(uint(v) >> 8)
 }
