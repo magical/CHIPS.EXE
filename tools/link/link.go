@@ -154,7 +154,6 @@ type SegmentInfo struct {
 	// needed during linking a segment
 	reloclist []*RelocInfo
 	reloctab  map[RelocTarget]*RelocInfo
-	chain     map[*RelocInfo]int // last patched address for a given reloc bucket
 }
 
 func (ld *Linker) addModule(n int, name string) (*Module, error) {
@@ -323,6 +322,7 @@ type RelocTarget interface {
 type RelocInfo struct {
 	target  RelocTarget
 	patches []int // fixup addresses
+	last    int   // last patched address for this reloc bucket
 }
 
 type UserRelocInfo struct {
@@ -489,7 +489,6 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	}
 	defer out.Close()
 	var ledata ObjLedata
-	seg.chain = make(map[*RelocInfo]int) // last patched address for a given reloc bucket
 	for {
 		rec, err := ReadRecord(f)
 		if err == io.EOF {
@@ -523,7 +522,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			//      05 01 xxxx mmmm nnnn
 			buf[0] = 5
 			buf[1] = 1
-			put16(buf[2:], seg.chain[ri])
+			put16(buf[2:], ri.last)
 			put16(buf[4:], 1)                          // TODO: seg.module.num
 			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
 			out.Write(buf[:])
@@ -533,7 +532,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			//      03 01 xxxx mmmm nnnn
 			buf[0] = 3
 			buf[1] = 1
-			put16(buf[2:], seg.chain[ri])
+			put16(buf[2:], ri.last)
 			put16(buf[4:], 1)                          // TODO: seg.module.num
 			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
 			out.Write(buf[:])
@@ -543,7 +542,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			//      02 00 xxxx ss 00 0000
 			buf[0] = 2
 			buf[1] = 0
-			put16(buf[2:], seg.chain[ri])
+			put16(buf[2:], ri.last)
 			put16(buf[4:], int(uint8(ri.target.(*Segment).Index)))
 			put16(buf[6:], 0)
 			out.Write(buf[:])
@@ -602,12 +601,8 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 			if symb.module != nil && f.FixupType == FixupOffset {
 				// imported symbol, this is part of a FARADDR relocation chain
 				ri = seg.getOrMakeRelocInfo(symb)
-				last, ok := seg.chain[ri]
-				if !ok {
-					last = 0xffff
-				}
+				last := ri.chain(ledata.StartOffset + f.DataOffset)
 				put16(data[f.DataOffset:], last)
-				seg.chain[ri] = ledata.StartOffset + f.DataOffset
 				if debug {
 					log.Printf("fixup @ %x: faraddr offset for %s = %x", f.DataOffset, symb.name, last)
 				}
@@ -630,12 +625,8 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 					continue
 				}
 				ri = seg.getOrMakeRelocInfo(symb)
-				last, ok := seg.chain[ri]
-				if !ok {
-					last = 0xffff
-				}
+				last := ri.chain(ledata.StartOffset + f.DataOffset)
 				put16(data[f.DataOffset:], last)
-				seg.chain[ri] = ledata.StartOffset + f.DataOffset
 				if debug {
 					log.Printf("fixup @ %x: segment for %s = %x", f.DataOffset, symb.name, last)
 				}
@@ -660,12 +651,8 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 			// this is the reference type that is used for references to symbols in the same segment
 			// fun fact: we don't even get to know the symbol name in this case
 			ri = seg.getSelfRelocInfo()
-			last, ok := seg.chain[ri]
-			if !ok {
-				last = 0xffff
-			}
+			last := ri.chain(ledata.StartOffset + f.DataOffset)
 			put16(data[f.DataOffset:], last)
-			seg.chain[ri] = ledata.StartOffset + f.DataOffset
 			if debug {
 				log.Printf("fixup @ %x: self segment reference = %x", f.DataOffset, last)
 			}
@@ -679,13 +666,19 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 	return data
 }
 
+func (ri *RelocInfo) chain(addr int) int {
+	last := ri.last
+	ri.last = addr
+	return last
+}
+
 func (seg *SegmentInfo) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
 	if symb.module != nil {
 		// imported symbol
 		if ri, ok := seg.reloctab[symb]; ok {
 			return ri
 		}
-		ri := &RelocInfo{target: symb}
+		ri := newRelocInfo(symb)
 		seg.reloctab[symb] = ri
 		seg.reloclist = append(seg.reloclist, ri)
 		return ri
@@ -694,7 +687,7 @@ func (seg *SegmentInfo) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
 		if ri, ok := seg.reloctab[symb.segment]; ok {
 			return ri
 		}
-		ri := &RelocInfo{target: symb.segment}
+		ri := newRelocInfo(symb.segment)
 		seg.reloctab[symb.segment] = ri
 		seg.reloclist = append(seg.reloclist, ri)
 		return ri
@@ -704,10 +697,14 @@ func (seg *SegmentInfo) getSelfRelocInfo() *RelocInfo {
 	if ri, ok := seg.reloctab[seg.num]; ok {
 		return ri
 	}
-	ri := &RelocInfo{target: seg.num}
+	ri := newRelocInfo(seg.num)
 	seg.reloctab[seg.num] = ri
 	seg.reloclist = append(seg.reloclist, ri)
 	return ri
+}
+
+func newRelocInfo(target RelocTarget) *RelocInfo {
+	return &RelocInfo{target: target, last: 0xffff}
 }
 
 func (ld *Linker) warnMissing(filename string, name string) {
