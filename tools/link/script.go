@@ -126,24 +126,35 @@ func (ld *Linker) scriptReloc(args []string) error {
 		if err != nil {
 			return err
 		}
-		return ld.addRelocInternal(seg, int(n), patches)
+		ld.addRelocInternal(seg, int(n), patches)
+		return nil
 	} else {
-		symbol := args[3]
-		// TODO orginals
 		if !ld.hasModule(modname) {
 			return fmt.Errorf("no such module: %s", modname)
 		}
-		//symb, err := ld.lookup(modname, symbol)
-		//if err != nil {
-		//	return fmt.Errorf("module %s: no such symbol %s", modname, symbol) // XXX wrap err?
-		//}
+		symbol := args[3]
+		// TODO handle ordinals
+		// TODO: modname technically shouldn't be necessary for looking up a symbol
+		symb, ok := ld.lookup(modname, symbol)
+		if !ok {
+			// XXX
+			log.Printf("module %s: no such symbol %s", modname, symbol)
+			return nil
+			return fmt.Errorf("module %s: no such symbol %s", modname, symbol)
+		}
 		patches, err := parsePatchlist(patchlist)
 		if err != nil {
 			return err
 		}
-		symb := symbol // XXX
-		return ld.addRelocExternal(seg, symb, patches)
+		ld.addRelocExternal(seg, symb, patches)
+		return nil
 	}
+}
+
+func (ld *Linker) lookup(module, name string) (_ *Symbol, found bool) {
+	// external symbols are prefixed with their module name when we load them
+	symb, ok := ld.symtab[module+"."+name]
+	return symb, ok
 }
 
 // MaxSpan is the largest possible value for a span address
@@ -241,9 +252,3 @@ func (ld *Linker) readSymfile(mod *Module, filename string) error {
 	}
 	return nil
 }
-
-// TODO: stubs
-func (ld *Linker) addRelocExternal(segment int, symb string /*Symbol*/, patches []RelocSpan) error {
-	return nil
-}
-func (ld *Linker) addRelocInternal(segment, toSegment int, patches []RelocSpan) error { return nil }

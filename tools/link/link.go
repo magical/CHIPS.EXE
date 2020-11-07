@@ -125,13 +125,15 @@ type Linker struct {
 	modules  []*Module
 	segments []SegmentInfo
 	symtab   map[string]*Symbol
-	segmemo  map[int]*Segment
+	segmemo  map[int]*Segment        // key = segment num
+	userinfo map[int][]UserRelocInfo // key = segment num
 }
 
 func NewLinker() *Linker {
 	return &Linker{
-		symtab:  make(map[string]*Symbol),
-		segmemo: make(map[int]*Segment),
+		symtab:   make(map[string]*Symbol),
+		segmemo:  make(map[int]*Segment),
+		userinfo: make(map[int][]UserRelocInfo),
 	}
 }
 
@@ -308,15 +310,20 @@ func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
 //
 // For more details see EXEFMT.TXT (https://archive.org/details/exefmt)
 
-type RelocInfo struct {
-	target  RelocTarget
-	patches []int
-}
 type RelocTarget interface {
 	isRelocTarget()
 }
 
-// TODO: use more concrete values
+type RelocInfo struct {
+	target  RelocTarget
+	patches []int // fixup addresses
+}
+
+type UserRelocInfo struct {
+	target RelocTarget
+	spans  []RelocSpan
+}
+
 func (s *Symbol) isRelocTarget()  {}
 func (s *Segment) isRelocTarget() {}
 
@@ -342,6 +349,22 @@ const (
 	rkOffsetImportordinal
 )
 
+func (ld *Linker) addRelocExternal(segment int, symb *Symbol, spans []RelocSpan) {
+	ri := UserRelocInfo{
+		target: symb,
+		spans:  spans,
+	}
+	ld.userinfo[segment] = append(ld.userinfo[segment], ri)
+}
+
+func (ld *Linker) addRelocInternal(segment, toSegment int, spans []RelocSpan) {
+	seg := ld.addSegment(toSegment)
+	ri := UserRelocInfo{
+		target: seg,
+		spans:  spans,
+	}
+	ld.userinfo[segment] = append(ld.userinfo[segment], ri)
+}
 
 // Algorithm for applying relocation info from the script file:
 //
