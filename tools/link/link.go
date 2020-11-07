@@ -34,7 +34,8 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	dumpMode := flag.Bool("dump", false, "dump contents instead of linking")
+	dumpMode := flag.Bool("dump", false, "dump object contents instead of linking")
+	//scriptFlag := flag.String("script", "", "linkscript filename")
 	flag.Parse()
 	if *dumpMode {
 		cmdDump()
@@ -59,6 +60,11 @@ func cmdLink() {
 
 	ld := NewLinker()
 	ld.preset()
+
+	// XXX don't hardcode script name
+	if err := ld.loadScript("chips.link"); err != nil {
+		log.Fatal("chips.link:", err)
+	}
 
 	// TODO: init elsewhere
 	ld.segments = make([]SegmentInfo, len(inputs))
@@ -91,11 +97,11 @@ func cmdLink() {
 
 func (ld *Linker) preset() {
 	ld.symtab = make(map[string]*Symbol)
-	kernel, _ := ld.addModule(1, "KERNEL")
-	ld.addImportedSymbol(kernel, "KERNEL.GlobalLock", 18)
-	ld.addImportedSymbol(kernel, "KERNEL.GlobalUnlock", 19)
-	ld.addImportedSymbol(kernel, "KERNEL.GlobalAlloc", 15)
-	ld.addImportedSymbol(kernel, "KERNEL.GlobalReAlloc", 16)
+	//kernel, _ := ld.addModule(1, "KERNEL")
+	//ld.addImportedSymbol(kernel, "KERNEL.GlobalLock", 18)
+	//ld.addImportedSymbol(kernel, "KERNEL.GlobalUnlock", 19)
+	//ld.addImportedSymbol(kernel, "KERNEL.GlobalAlloc", 15)
+	//ld.addImportedSymbol(kernel, "KERNEL.GlobalReAlloc", 16)
 	ld.addLocalSymbol("rand", 1, 0xdc)
 	ld.addLocalSymbol("MoveMonster", 7, 0x18d9)
 	ld.addLocalSymbol("UpdateTile", 2, 0x1ca)
@@ -106,7 +112,17 @@ func (ld *Linker) preset() {
 	ld.addLocalSymbol("MoveChip", 7, 0x1183)
 }
 
+func (ld *Linker) loadScript(filename string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return ld.ParseScript(f)
+}
+
 type Linker struct {
+	modules  []*Module
 	segments []SegmentInfo
 	symtab   map[string]*Symbol
 	segmemo  map[int]*Segment
@@ -134,7 +150,24 @@ type SegmentInfo struct {
 
 func (ld *Linker) addModule(n int, name string) (*Module, error) {
 	// TODO
-	return &Module{name: name}, nil
+	for _, m := range ld.modules {
+		if m.name == name {
+			// TODO: error?
+			return m, nil
+		}
+	}
+	m := &Module{name: name}
+	ld.modules = append(ld.modules, m)
+	return m, nil
+}
+
+func (ld *Linker) hasModule(name string) bool {
+	for _, m := range ld.modules {
+		if m.name == name {
+			return true
+		}
+	}
+	return false
 }
 
 // Constructs a Segment with the given index, or returns an existing one with the same number.
@@ -152,6 +185,17 @@ func (ld *Linker) addImportedSymbol(mod *Module, name string, ordinal int) error
 		name:   name,
 		module: mod,
 		offset: ordinal, // hmm
+	}
+	ld.symtab[name] = symb
+	return nil
+}
+
+func (ld *Linker) addImportedConstant(mod *Module, name string, ordinal int) error {
+	symb := &Symbol{
+		name:     name,
+		module:   mod,
+		offset:   ordinal, // hmm
+		constant: true,
 	}
 	ld.symtab[name] = symb
 	return nil
@@ -211,11 +255,9 @@ func (ri *RelocInfo) kind() relocKind {
 	default:
 		panic("invalid RelocInfo: unknown target")
 	case *Symbol:
-		// TODO
-		//if s.IsConst() {
-		//	return rkOffsetImportordinal
-		//}
-		_ = s
+		if s.constant {
+			return rkOffsetImportordinal
+		}
 		return rkFaraddrImportordinal
 	case *Segment:
 		return rkSegmentInternal
@@ -231,11 +273,12 @@ const (
 )
 
 type Symbol struct {
-	name    string
-	input   *Input
-	module  *Module  // for external symbols
-	segment *Segment // for internal symbols
-	offset  int
+	name     string
+	input    *Input
+	module   *Module  // for external symbols
+	segment  *Segment // for internal symbols
+	offset   int
+	constant bool // symbol is a constant, not a function
 }
 type Input struct{ filename string }
 type Module struct{ name string }

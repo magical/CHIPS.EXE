@@ -7,20 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
 )
 
 func (ld *Linker) ParseScript(r io.Reader) error {
-	//f, err := os.Open(module + ".sym")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer f.Close()
-	//br := bufio.NewReader(f)
-
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(r)
 	//var m = make(map[int]string)
 	lineno := 0
 	for scanner.Scan() {
@@ -152,6 +146,15 @@ func (ld *Linker) scriptReloc(args []string) error {
 	}
 }
 
+// MaxSpan is the largest possible value for a span address
+const MaxSpan = 1<<16 - 1
+
+type RelocSpan struct {
+	Low  uint // start of the span, inclusive
+	High uint // end of the span, inclusive
+	Desc bool // ascending (false) or descending (true)
+}
+
 // Parses a patchlist into a sequance of spans.
 //
 // A patchlist is a list of increasing hexadecimal addresses, with each address
@@ -192,19 +195,50 @@ func parsePatchlist(list []string) ([]RelocSpan, error) {
 	return spans, nil
 }
 
-// MaxSpan is the largest possible value for a span address
-const MaxSpan = 1<<16 - 1
-
-type RelocSpan struct {
-	Low  uint // start of the span, inclusive
-	High uint // end of the span, inclusive
-	Desc bool // ascending (false) or descending (true)
+func (ld *Linker) readSymfile(mod *Module, filename string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	br := bufio.NewReader(f)
+	for {
+		line, err := br.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			continue
+		}
+		var ord int
+		var a, b, name string
+		var c int64
+		n, err := fmt.Sscan(line, &ord, &a, &b, &c)
+		if err != nil && err != io.EOF {
+			fmt.Println(err)
+			continue
+		}
+		switch n {
+		case 2:
+			name = a
+		case 3, 4:
+			name = b
+		default:
+			continue
+		}
+		name = mod.name + "." + name // XXX
+		if n > 2 && a == "equate" {
+			ld.addImportedConstant(mod, name, ord)
+		} else {
+			log.Printf("adding symbol %s = @%d", name, ord)
+			ld.addImportedSymbol(mod, name, ord)
+		}
+	}
+	return nil
 }
 
 // TODO: stubs
-func (ld *Linker) hasModule(name string) bool { return false }
 func (ld *Linker) addRelocExternal(segment int, symb string /*Symbol*/, patches []RelocSpan) error {
 	return nil
 }
 func (ld *Linker) addRelocInternal(segment, toSegment int, patches []RelocSpan) error { return nil }
-func (ld *Linker) readSymfile(mod *Module, filename string) error                     { return nil }
