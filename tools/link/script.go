@@ -226,7 +226,12 @@ func (ld *Linker) readSymfile(mod *Module, filename string) error {
 		default:
 			continue
 		}
-		name = mod.name + "." + name // XXX
+		// The convention in the assembly files is to refer to exported symbols
+		// as MODULE.Function, with the symbol prefixed by the module name and a dot.
+		// So when loading symbols from a symfile (which just use the bare name),
+		// we need to mangle them to add the module name.
+		name = mod.name + "." + name
+
 		if n > 2 && a == "equate" {
 			ld.addImportedConstant(mod, name, ord)
 		} else {
