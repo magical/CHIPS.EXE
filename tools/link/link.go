@@ -32,8 +32,11 @@ import (
 	"strings"
 )
 
+var debug bool
+
 func main() {
 	log.SetFlags(0)
+	flag.BoolVar(&debug, "debug", true, "print debug info during linking")
 	dumpMode := flag.Bool("dump", false, "dump object contents instead of linking")
 	//scriptFlag := flag.String("script", "", "linkscript filename")
 	flag.Parse()
@@ -259,7 +262,7 @@ func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
 	inp := &Input{filename: filename} // XXX memoize?
 
 	// TODO
-	if true {
+	if debug {
 		for _, s := range names {
 			fmt.Printf("%x %s\n", s.Offset, s.Name)
 		}
@@ -556,7 +559,9 @@ func (ld *Linker) resolve(name string) (_ *Symbol, found bool) {
 		if strings.HasPrefix(name, "FUN_") {
 			var seg, offset int
 			if n, err := fmt.Sscanf(name, "FUN_%d_%x", &seg, &offset); n == 2 && err == nil {
-				log.Println("adding", name)
+				if debug {
+					log.Println("adding", name)
+				}
 				ld.addLocalSymbol(name, seg, offset)
 				symb, ok = ld.symtab[name]
 				return symb, ok
@@ -567,7 +572,9 @@ func (ld *Linker) resolve(name string) (_ *Symbol, found bool) {
 }
 
 func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fixes []ObjFixup) []byte {
-	fmt.Printf("%x\n", ledata.StartOffset)
+	if debug {
+		fmt.Printf("%x\n", ledata.StartOffset)
+	}
 	data := ledata.Data
 	for _, f := range fixes {
 		if f.DataOffset+2 > len(data) {
@@ -598,11 +605,15 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 				}
 				put16(data[f.DataOffset:], last)
 				seg.chain[ri] = ledata.StartOffset + f.DataOffset
-				log.Printf("fixup @ %x: faraddr offset for %s = %x", f.DataOffset, symb.name, last)
+				if debug {
+					log.Printf("fixup @ %x: faraddr offset for %s = %x", f.DataOffset, symb.name, last)
+				}
 			} else if f.FixupType == FixupOffset {
 				// for local symbols we know what the offset is so we can just write
 				// it to the file. no need to create relocation record.
-				log.Printf("fixup @ %x: offset for %s = %x", f.DataOffset, symb.name, symb.offset)
+				if debug {
+					log.Printf("fixup @ %x: offset for %s = %x", f.DataOffset, symb.name, symb.offset)
+				}
 				put16(data[f.DataOffset:], symb.offset)
 			} else if f.FixupType == FixupSegment {
 				// this one's tricker. the segment base won't be known until the program is loaded,
@@ -610,7 +621,9 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 				if symb.module != nil {
 					// imported symbol: assume this is part of a faraddr patch,
 					// so the segment is just set to 0
-					log.Printf("fixup @ %x: faraddr segment for %s", f.DataOffset, symb.name)
+					if debug {
+						log.Printf("fixup @ %x: faraddr segment for %s", f.DataOffset, symb.name)
+					}
 					continue
 				}
 				ri = seg.getOrMakeRelocInfo(symb)
@@ -620,7 +633,9 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 				}
 				put16(data[f.DataOffset:], last)
 				seg.chain[ri] = ledata.StartOffset + f.DataOffset
-				log.Printf("fixup @ %x: segment for %s = %x", f.DataOffset, symb.name, last)
+				if debug {
+					log.Printf("fixup @ %x: segment for %s = %x", f.DataOffset, symb.name, last)
+				}
 			} else {
 				log.Printf("%s: warning: unknown fixup type %#x", filename, f.FixupType)
 			}
@@ -648,7 +663,9 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 			}
 			put16(data[f.DataOffset:], last)
 			seg.chain[ri] = ledata.StartOffset + f.DataOffset
-			log.Printf("fixup @ %x: self segment reference = %x", f.DataOffset, last)
+			if debug {
+				log.Printf("fixup @ %x: self segment reference = %x", f.DataOffset, last)
+			}
 		default:
 			log.Printf("%s: warning: unknown fixup reftype: %#02x", filename, f.RefType)
 			continue

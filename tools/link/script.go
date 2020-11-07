@@ -246,7 +246,9 @@ func (ld *Linker) readSymfile(mod *Module, filename string) error {
 		if n > 2 && a == "equate" {
 			ld.addImportedConstant(mod, name, ord)
 		} else {
-			log.Printf("adding symbol %s = @%d", name, ord)
+			if debug {
+				log.Printf("adding symbol %s = @%d", name, ord)
+			}
 			ld.addImportedSymbol(mod, name, ord)
 		}
 	}
