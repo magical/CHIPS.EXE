@@ -18,6 +18,7 @@ package main
 // - [x] write out basic patch chains
 // - decide on reloc info representation
 // - [x] write reloc info at end of file
+// - sort reloc info according to linkscript
 // - finish linkscript parsing
 // - [x] implement symfile loading
 // - sort patches according to linkscript
@@ -73,7 +74,9 @@ func cmdLink() {
 	ld.segments = make([]SegmentInfo, len(inputs))
 	for i := range ld.segments {
 		//ld.segments[i] = new(SegmentInfo)
-		ld.segments[i].num = &Segment{} //ld.addSegment(i + 1)
+		//ld.segments[i].num = ld.addSegment(i + 1)
+		//ld.segments[i].num = &Segment{}
+		ld.segments[i].num = ld.addSegment(3) // XXX hardcoded for testing
 		ld.segments[i].reloctab = make(map[RelocTarget]*RelocInfo)
 	}
 
@@ -489,6 +492,11 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 		return err
 	}
 	defer out.Close()
+	// preload user reloc info, if any, so that it appears in the right order at the end
+	for _, u := range ld.userinfo[seg.num.Index] {
+		_ = seg.getOrMakeRelocInfo(u.target)
+	}
+	// perform fixups
 	var ledata ObjLedata
 	for {
 		rec, err := ReadRecord(f)
@@ -513,9 +521,12 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			}
 		}
 	}
-	// TODO: write reloc records
+	// write reloc records
 	out.Write([]byte{uint8(len(seg.reloclist)), 0})
 	for _, ri := range seg.reloclist {
+		if len(ri.patches) == 0 {
+			continue
+		}
 		var buf [8]byte
 		switch ri.kind() {
 		case rkOffsetImportordinal:
@@ -601,7 +612,7 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 			}
 			if symb.module != nil && f.FixupType == FixupOffset {
 				// imported symbol, this is part of a FARADDR relocation chain
-				ri = seg.getOrMakeRelocInfo(symb)
+				ri = seg.getOrMakeRelocInfoForSymbol(symb)
 				last := ri.chain(ledata.StartOffset + f.DataOffset)
 				put16(data[f.DataOffset:], last)
 				if debug {
@@ -625,7 +636,7 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 					}
 					continue
 				}
-				ri = seg.getOrMakeRelocInfo(symb)
+				ri = seg.getOrMakeRelocInfoForSymbol(symb)
 				last := ri.chain(ledata.StartOffset + f.DataOffset)
 				put16(data[f.DataOffset:], last)
 				if debug {
@@ -661,6 +672,9 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 			log.Printf("%s: warning: unknown fixup reftype: %#02x", filename, f.RefType)
 			continue
 		}
+		if ri != nil {
+			ri.patches = append(ri.patches, ledata.StartOffset+f.DataOffset)
+		}
 		//put16(data[f.DataOffset:], ri.last)
 		//ri.last = f.DataOffset + ledata.StartOffset
 	}
@@ -673,33 +687,26 @@ func (ri *RelocInfo) chain(addr int) int {
 	return last
 }
 
-func (seg *SegmentInfo) getOrMakeRelocInfo(symb *Symbol) *RelocInfo {
+func (seg *SegmentInfo) getOrMakeRelocInfoForSymbol(symb *Symbol) *RelocInfo {
 	if symb.module != nil {
 		// imported symbol
-		if ri, ok := seg.reloctab[symb]; ok {
-			return ri
-		}
-		ri := newRelocInfo(symb)
-		seg.reloctab[symb] = ri
-		seg.reloclist = append(seg.reloclist, ri)
-		return ri
+		return seg.getOrMakeRelocInfo(symb)
 	} else {
 		// internal symbol, so just a segment reference
-		if ri, ok := seg.reloctab[symb.segment]; ok {
-			return ri
-		}
-		ri := newRelocInfo(symb.segment)
-		seg.reloctab[symb.segment] = ri
-		seg.reloclist = append(seg.reloclist, ri)
-		return ri
+		return seg.getOrMakeRelocInfo(symb.segment)
 	}
 }
+
 func (seg *SegmentInfo) getSelfRelocInfo() *RelocInfo {
-	if ri, ok := seg.reloctab[seg.num]; ok {
+	return seg.getOrMakeRelocInfo(seg.num)
+}
+
+func (seg *SegmentInfo) getOrMakeRelocInfo(target RelocTarget) *RelocInfo {
+	if ri, ok := seg.reloctab[target]; ok {
 		return ri
 	}
-	ri := newRelocInfo(seg.num)
-	seg.reloctab[seg.num] = ri
+	ri := newRelocInfo(target)
+	seg.reloctab[target] = ri
 	seg.reloclist = append(seg.reloclist, ri)
 	return ri
 }
@@ -718,6 +725,7 @@ func sortFixes(p []int, spans []RelocSpan) {
 	// first, sort in ascending order
 	sort.Ints(p)
 
+	// then, find descending spans and reverse them
 	start := 0
 	for _, span := range spans {
 		for start < len(p) && p[start] < int(span.Low) {
