@@ -43,7 +43,7 @@ To build, you'll need the following programs installed:
 * awk
 * golang (optional, for building tools)
 
-You'll also need an existing copy of `CHIPS.EXE` with the sha26sum given above,
+You'll also need an existing copy of `CHIPS.EXE` with the sha256sum given above,
 to fill in the incomplete portions of the disassembly.
 
 Some tools require python3, but they aren't used in the build.
