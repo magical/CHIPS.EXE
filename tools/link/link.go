@@ -141,6 +141,7 @@ func NewLinker() *Linker {
 }
 
 type Module struct {
+	num     int
 	name    string
 	hasSyms bool
 }
@@ -157,14 +158,14 @@ type SegmentInfo struct {
 }
 
 func (ld *Linker) addModule(n int, name string) (*Module, error) {
-	// TODO
 	for _, m := range ld.modules {
+		// TODO: check num too?
 		if m.name == name {
 			// TODO: error?
 			return m, nil
 		}
 	}
-	m := &Module{name: name}
+	m := &Module{num: n, name: name}
 	ld.modules = append(ld.modules, m)
 	return m, nil
 }
@@ -523,7 +524,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			buf[0] = 5
 			buf[1] = 1
 			put16(buf[2:], ri.last)
-			put16(buf[4:], 1)                          // TODO: seg.module.num
+			put16(buf[4:], ri.target.(*Symbol).module.num)
 			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
 			out.Write(buf[:])
 			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
@@ -533,7 +534,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			buf[0] = 3
 			buf[1] = 1
 			put16(buf[2:], ri.last)
-			put16(buf[4:], 1)                          // TODO: seg.module.num
+			put16(buf[4:], ri.target.(*Symbol).module.num)
 			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
 			out.Write(buf[:])
 			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
