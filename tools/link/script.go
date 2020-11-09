@@ -79,7 +79,7 @@ func (ld *Linker) scriptModule(args []string) error {
 		if n == 0 {
 			return fmt.Errorf("module number can't be zero")
 		}
-		num = int(num)
+		num = int(n)
 		modname = args[2]
 	}
 
@@ -181,7 +181,7 @@ func parsePatchlist(list []string) ([]RelocSpan, error) {
 	}
 	var spans []RelocSpan
 	for _, s := range list {
-		desc := !strings.HasSuffix(s, "-")
+		desc := strings.HasSuffix(s, "-")
 		if t := strings.TrimRight(s, "+-"); len(t) != len(s)-1 {
 			if len(t) == len(s) {
 				return nil, fmt.Errorf("invalid address: %q has no direction", s)

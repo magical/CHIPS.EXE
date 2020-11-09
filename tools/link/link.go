@@ -16,12 +16,12 @@ package main
 // Linker TODO:
 // - [x] symbol resolution
 // - [x] write out basic patch chains
-// - decide on reloc info representation
+// - [~] decide on reloc info representation
 // - [x] write reloc info at end of file
-// - sort reloc info according to linkscript
+// - [x] sort reloc info according to linkscript
 // - finish linkscript parsing
 // - [x] implement symfile loading
-// - sort patches according to linkscript
+// - [x] sort patches according to linkscript
 
 import (
 	"flag"
@@ -87,13 +87,8 @@ func cmdLink() {
 		}
 	}
 
-	// Phase 1½?: resolve symbols
-
 	// Phase 2: apply patches and write output
 	for i, filename := range inputs {
-		//if err := ld.loadPatchlist(filename, &ld.segments[i]); err != nil {
-		//	log.Fatal(err)
-		//}
 		if err := ld.patch(filename, &ld.segments[i]); err != nil {
 			log.Println(err)
 			continue
@@ -109,7 +104,7 @@ func (ld *Linker) preset() {
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalAlloc", 15)
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalReAlloc", 16)
 	ld.addLocalSymbol("rand", 1, 0xdc)
-	ld.addLocalSymbol("MoveMonster", 7, 0x18d9)
+	ld.addLocalSymbol("MoveMonster", 7, 0x18da)
 	ld.addLocalSymbol("UpdateTile", 2, 0x1ca)
 	ld.addLocalSymbol("PlaySoundEffect", 8, 0x056c)
 	ld.addLocalSymbol("GoToLevelN", 4, 0x356)
@@ -267,7 +262,6 @@ func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
 
 	inp := &Input{filename: filename} // XXX memoize?
 
-	// TODO
 	if debug {
 		for _, s := range names {
 			fmt.Printf("%x %s\n", s.Offset, s.Name)
@@ -379,18 +373,36 @@ func (ld *Linker) addRelocInternal(segment, toSegment int, spans []RelocSpan) {
 // Algorithm for applying relocation info from the script file:
 //
 // 1 read the script file. assign reloc records to a per-segment list
-//     the script may reference segments that don't exist during linking
+//   the script may reference segments that don't exist during linking
 //     map[int][]UserRelocInfo
-// 2. when reading fixup records, associate each type of reloc record iwth a list
-//    and append each patch address to the appropriate list
-// 3. for each relocation, look up if the user specified an order.
-//    if so, sort the patch list according to that order
-// 4. build a patch chain map for the segment which maps each address to the next address in the chain
-//     map[int][int
-// 5. when patching the object file, reach from the chain map
-// 6. when writing relocation records, first loop through records from the script file and, if
-//    any references exist in the actual file, write it out. after that, go through the records
-//    from the actual object file and, if we haven't written them already, write them out.
+//
+// fixups are processed in two phases. first is the processing phase,
+// second is the fixup phase (yes, we have to fix the fixups).
+// both of these phases takes place during the second pass of the linker,
+// after symbols are loaded.
+//
+// phase 1:
+// 2. before processing, pre-load the list of reloc records with the user-specified relocations,
+//    ensuring that those records will be written out in the correct order afterwards.
+//    as fixup records are processed, any new (not in the user-supplied data)
+//    relocation records will be appended to the end of the list.
+//
+// 3. when reading fixup records, accumulate patch addresses into a reloc record
+//    associated with the appropriate type of relocation for each fixup. (RelocInfo)
+//
+// 4. copy the object data into the output file
+//
+// phase two:
+// 5. sort the patches. for each relocation, look up if the user specified an order and,
+//    if so, sort the patch list according to that order.
+//
+// 6. build a patch chain map for the segment which maps each address to the next address in the chain
+//     map[int]int
+//
+// 7. fixup. iterate through the list of patch locations. seek to that point in the output file
+//    and write the address from the chain map
+//
+// 8. finally, write the relocation records to the end of the output file
 //
 // internal references are always grouped into the same bucket, because they are always from this segment.
 // they may or may not end up in the relocation data; they may be resolved immediately.
@@ -399,69 +411,6 @@ func (ld *Linker) addRelocInternal(segment, toSegment int, spans []RelocSpan) {
 //
 // during the first pass, we know all the imported symbols and we know all the symbols from this segment,
 // but of the remaining symbols we don't know which are in which segment, so we don't know which bucket to put them in.
-
-//
-func (ld *Linker) loadPatchlist(filename string, seg *SegmentInfo) error {
-	file, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	var baseOffset int
-	for {
-		rec, err := ReadRecord(file)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		switch rec.Type {
-		case TypeLedata:
-			ledata := ParseLedata(rec)
-			baseOffset = ledata.StartOffset
-		case TypeFixup:
-			fixes, err := ParseFixup(rec)
-			if err != nil {
-				return err
-			}
-			for _, f := range fixes {
-				offset := baseOffset + f.DataOffset
-				// TODO: add offset to reloc data
-				// oh this isn't going to work. we need to resolve symbols
-				// in order to put the reloc data into buckets
-				// but this is part of phase 1 so we don't have full symbol info yet
-				//
-				// UNLESS i can find spans that work globally...
-				//
-				// actually, no, that doesn't work. even if i could assign a global order,
-				// we would still have to put then into the correct bins before creating the patch chain
-				// because a patch is only allowed to point to a patch with the same relocation info
-				log.Print("fixup: ", fmtFixup(f, seg, baseOffset))
-				if f.RefType == RefExternal {
-					// External (symbol) reference
-					if !(1 <= f.RefIndex && f.RefIndex <= len(seg.extnames)) {
-						log.Printf("%s: warning: fixup references external symbol %d, which is out of range", filename, f.RefIndex)
-						continue
-					}
-					name := seg.extnames[f.RefIndex-1]
-					symb := ld.symtab[name]
-					_ = symb
-				} else if f.RefType == RefSegment {
-					// Internal (segment) reference
-					// There should only be one segment in the object file,
-					// so RefIndex should always be one
-					if f.RefIndex != 1 {
-						log.Printf("%s: warning: fixup references segment index %d, which is out of range", filename, f.RefIndex)
-						continue
-					}
-				}
-				_ = offset
-			}
-		}
-	}
-	return nil
-}
 
 func fmtFixup(f ObjFixup, seg *SegmentInfo, base int) string {
 	offset := base + f.DataOffset
@@ -496,7 +445,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	for _, u := range ld.userinfo[seg.num.Index] {
 		_ = seg.getOrMakeRelocInfo(u.target)
 	}
-	// perform fixups
+	// phase one: process data and write provisional fixups
 	var ledata ObjLedata
 	for {
 		rec, err := ReadRecord(f)
@@ -521,7 +470,41 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			}
 		}
 	}
-	// write reloc records
+	// phase two: sort the fixup addresses according to the user relocation info and
+	// alter the output file to use the new patch chains
+	userinfo := ld.userinfo[seg.num.Index]
+	if len(userinfo) > 0 {
+		var patches []struct{ addr, value int }
+		for _, u := range userinfo {
+			if ri, ok := seg.reloctab[u.target]; ok {
+				sortFixes(ri.patches, u.spans)
+				//fmt.Printf("%v %x\n", ri.target, ri.patches)
+				last := 0xffff
+				for _, addr := range ri.patches {
+					patches = append(patches, struct{ addr, value int }{addr, last})
+					last = addr
+				}
+				ri.last = last
+			}
+		}
+		// sort the patches first for good locality when writing
+		sort.Slice(patches, func(i, j int) bool { return patches[i].addr < patches[j].addr })
+		var buf [2]byte
+		for _, p := range patches {
+			if debug {
+				log.Printf("patch @ %x = %x", p.addr, p.value)
+			}
+			put16(buf[:], p.value)
+			if _, err := out.WriteAt(buf[:], int64(p.addr)); err != nil {
+				return err
+			}
+		}
+	}
+	// finalize: write reloc records
+	// XXX this seek is probably unnecessary
+	if _, err := out.Seek(0, io.SeekEnd); err != nil {
+		return err
+	}
 	out.Write([]byte{uint8(len(seg.reloclist)), 0})
 	for _, ri := range seg.reloclist {
 		if len(ri.patches) == 0 {
@@ -591,6 +574,7 @@ func (ld *Linker) fixup(filename string, seg *SegmentInfo, ledata *ObjLedata, fi
 	}
 	data := ledata.Data
 	for _, f := range fixes {
+		//log.Print("fixup: ", fmtFixup(f, seg, ledata.DataOffset))
 		if f.DataOffset+2 > len(data) {
 			log.Printf("%s: error: fixup data offset %#x out of bounds for chunk of length %#x", filename, f.DataOffset, len(data))
 			continue
@@ -722,6 +706,11 @@ func (ld *Linker) warnMissing(filename string, name string) {
 
 // puts the fixups in the right order according to the spans from the linkscript
 func sortFixes(p []int, spans []RelocSpan) {
+	if debug {
+		log.Println("SortFixes:")
+		log.Println("spans = ", spans)
+		log.Printf("%x\n", p)
+	}
 	// first, sort in ascending order
 	sort.Ints(p)
 
@@ -741,6 +730,10 @@ func sortFixes(p []int, spans []RelocSpan) {
 		}
 		start = end
 	}
+	if debug {
+		log.Printf("%x\n", p)
+	}
+
 }
 
 func reverseInts(p []int) {
