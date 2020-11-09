@@ -37,14 +37,15 @@ var debug bool
 
 func main() {
 	log.SetFlags(0)
-	flag.BoolVar(&debug, "debug", true, "print debug info during linking")
+	flag.BoolVar(&debug, "debug", false, "print debug info during linking")
 	dumpMode := flag.Bool("dump", false, "dump object contents instead of linking")
 	scriptFlag := flag.String("script", "chips.link", "linkscript filename")
+	segFlag := flag.Int("seg", 0, "for testing: the segment number to use when linking a single object")
 	flag.Parse()
 	if *dumpMode {
 		cmdDump()
 	} else {
-		cmdLink(*scriptFlag)
+		cmdLink(*scriptFlag, *segFlag)
 	}
 }
 
@@ -59,7 +60,7 @@ func cmdDump() {
 	}
 }
 
-func cmdLink(script string) {
+func cmdLink(script string, singleObjectSegmentNumber int) {
 	inputs := flag.Args()
 
 	ld := NewLinker()
@@ -73,11 +74,12 @@ func cmdLink(script string) {
 	// TODO: init elsewhere
 	ld.segments = make([]SegmentInfo, len(inputs))
 	for i := range ld.segments {
-		//ld.segments[i] = new(SegmentInfo)
-		//ld.segments[i].num = ld.addSegment(i + 1)
-		//ld.segments[i].num = &Segment{}
-		ld.segments[i].num = ld.addSegment(3) // XXX hardcoded for testing
+		ld.segments[i].num = ld.addSegment(i + 1)
 		ld.segments[i].reloctab = make(map[RelocTarget]*RelocInfo)
+	}
+
+	if len(inputs) == 1 && singleObjectSegmentNumber > 0 {
+		ld.segments[0].num = ld.addSegment(singleObjectSegmentNumber) // for testing
 	}
 
 	// Phase 1: load symbols
