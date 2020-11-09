@@ -39,12 +39,12 @@ func main() {
 	log.SetFlags(0)
 	flag.BoolVar(&debug, "debug", true, "print debug info during linking")
 	dumpMode := flag.Bool("dump", false, "dump object contents instead of linking")
-	//scriptFlag := flag.String("script", "", "linkscript filename")
+	scriptFlag := flag.String("script", "chips.link", "linkscript filename")
 	flag.Parse()
 	if *dumpMode {
 		cmdDump()
 	} else {
-		cmdLink()
+		cmdLink(*scriptFlag)
 	}
 }
 
@@ -59,15 +59,15 @@ func cmdDump() {
 	}
 }
 
-func cmdLink() {
+func cmdLink(script string) {
 	inputs := flag.Args()
 
 	ld := NewLinker()
 	ld.preset()
 
-	// XXX don't hardcode script name
-	if err := ld.loadScript("chips.link"); err != nil {
-		log.Fatal("chips.link:", err)
+	if err := ld.loadScript(script); err != nil {
+		// TODO; add filename lower in the call stack?
+		log.Fatal(script+":", err)
 	}
 
 	// TODO: init elsewhere
