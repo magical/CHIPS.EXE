@@ -76,7 +76,7 @@ NEHeader:
     dw NEImportedNameTab-NEHeader   ; 2a Imported names table
     dd NENonResidentNameTab ; 2c Non-resident name table, absolute address
     dw 0                    ; 30 Number of movable entries in entry table
-    dw 9                    ; 32 Sector alignment shift
+    dw SectorShift          ; 32 Sector alignment shift
     dw 0                    ; 34 Number of resource entries
     db 0x2                  ; 36 Executable type. 2 = Windows
     db 0x8                  ; 37-3F Reserved
