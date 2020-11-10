@@ -89,15 +89,15 @@ NEHeader:
 NESegmentLen equ 10
 NESegmentTab:
     ; sector, length, flags, alloc
-    dw (Segment1-$$)>>SectorShift, 0x952, 0x1d50, 0x952 ; Segment 1
+    dw (Segment1-$$)>>SectorShift, 0x952,  0x1d50, 0x952 ; Segment 1
     dw (Segment2-$$)>>SectorShift, 0x2dca, 0x1d50, 0x2dca ; Segment 2
     dw (Logic-$$)>>SectorShift,    0x2a70, 0x1d10, 0x2a70 ; Segment 3
     dw (Segment4-$$)>>SectorShift, 0x1208, 0x1d10, 0x1208 ; Segment 4
-    dw (Segment5-$$)>>SectorShift, 0x1bc, 0x1d10, 0x1bc ; Segment 5
-    dw (Segment6-$$)>>SectorShift, 0x75b, 0x1d10, 0x75c ; Segment 6
+    dw (Segment5-$$)>>SectorShift, 0x1bc,  0x1d10, 0x1bc ; Segment 5
+    dw (Segment6-$$)>>SectorShift, 0x75b,  0x1d10, 0x75c ; Segment 6
     dw (Segment7-$$)>>SectorShift, 0x1cd4, 0x1d10, 0x1cd4 ; Segment 7
-    dw (Segment8-$$)>>SectorShift, 0x620, 0x1d10, 0x620 ; Segment 8
-    dw (Digits-$$)>>SectorShift,   0x150, 0x1d10, 0x150 ; Segment 9
+    dw (Segment8-$$)>>SectorShift, 0x620,  0x1d10, 0x620 ; Segment 8
+    dw (Digits-$$)>>SectorShift,   0x150,  0x1d10, 0x150 ; Segment 9
     dw (Data-$$)>>SectorShift,     0x1738, 0x0c51, 0x1738 ; Segment 10
 
 ; 490
@@ -188,10 +188,10 @@ NEModuleRefTab:
 ; 67b
 NEImportedNameTab:
     db 0
-    .KERNEL: db 6, "KERNEL"
-    .GDI: db 3, "GDI"
-    .USER: db 4, "USER"
-    .WEP4UTIL: db 8, "WEP4UTIL"
+    .KERNEL     db 6, "KERNEL"
+    .GDI        db 3, "GDI"
+    .USER       db 4, "USER"
+    .WEP4UTIL   db 8, "WEP4UTIL"
 
 ; 694
 NEEntryTabSize          equ 0x31
@@ -204,6 +204,7 @@ NEEntryTab:
         db 1  ; EXPORTED flag
         dw %1 ; offset
     %endmacro
+    ; TODO: get these addresses from the linker
     BUNDLE 2, 2
         ENTRY 0x225c    ; 1 MAINWNDPROC
         ENTRY 0x296a    ; 2 COUNTERWNDPROC
