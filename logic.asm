@@ -247,7 +247,7 @@ func GrowArray
     cmp word [bx],byte +0x0
     jz .globalAlloc
     push word [bx]
-    call 0x0:0xffff ; 1bc KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; 1bc
     mov bx,[hMem]
     push word [bx]
     ; Compute (*len + numToAlloc) * size
@@ -259,7 +259,7 @@ func GrowArray
     push dx         ; dwBytes
     push ax
     push byte +0x2  ; GMEM_MOVABLE
-    call 0x0:0xffff ; 1d6 KERNEL.GlobalReAlloc
+    call far KERNEL.GlobalReAlloc ; 1d6
     jmp short .lock
     nop
 .globalAlloc: ; 1de
@@ -270,7 +270,7 @@ func GrowArray
     cwd
     push dx         ; dwBytes
     push ax
-    call 0x0:0xffff ; 1e9 KERNEL.GlobalAlloc
+    call far KERNEL.GlobalAlloc ; 1e9
 
 .lock: ; 1ee
     ; update hMem
@@ -284,7 +284,7 @@ func GrowArray
 .noupdate: ; 1f9
     mov bx,[hMem]
     push word [bx]
-    call 0x0:0xffff ; 1fe KERNEL.GlobalLock
+    call far KERNEL.GlobalLock ; 1fe
     mov bx,[ptr]
     mov [bx],ax
     mov [bx+0x2],dx
@@ -336,7 +336,7 @@ func NewMonster
     mov ax,bx
     add ax,MonsterListHandle
     push ax
-    call 0x383:GrowArray ; 25a 3:1a4
+    call far GrowArray ; 25a 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .growSucceeded
@@ -465,7 +465,7 @@ func NewMonster
     push byte -0x1
     push word [y]
     push word [x]
-    call 0xffff:EnterTrap ; 380 3:21aa
+    call far EnterTrap ; 380 3:21aa
     add sp,byte +0x8
     jmp short .end
 
@@ -517,7 +517,7 @@ func DeleteMonster
     push word [es:bx+Monster.x]
     mov al,[es:bx+Monster.tile]
     push ax                 ; unused
-    call 0x474:DeleteSlipperAt  ; 3f6 3:12be
+    call far DeleteSlipperAt ; 3f6 3:12be
     add sp,byte +0x8
 .notSlipping: ; 3fe
     ; If we're already at the end of the list, skip the loop.
@@ -571,10 +571,10 @@ func DeleteMonsterAt
     %arg dunno:word x:word, y:word
     push word [y]
     push word [x]
-    call 0x47d:FindMonster ; 471 3:471
+    call far FindMonster ; 471 3:471
     add sp,byte +0x4
     push ax
-    call 0x5c9:DeleteMonster ; 47a 3:47a
+    call far DeleteMonster ; 47a 3:47a
 endfunc
 
 ; 486
@@ -751,7 +751,7 @@ func InitBoard
     push cx  ; x
     mov al,[tile]
     push ax
-    call 0x661:NewMonster ; 5c6 3:228
+    call far NewMonster ; 5c6 3:228
     add sp,byte +0xc
 .next: ; 5ce
     add si,byte +0x2
@@ -834,7 +834,7 @@ func InitBoard
     mov ax,bx
     add ax,ToggleListHandle
     push ax
-    call 0x6bf:GrowArray ; 65e 3:1a4
+    call far GrowArray ; 65e 3:1a4
     add sp,byte +0xa
     or ax,ax
     jz .nextX
@@ -870,7 +870,7 @@ func InitBoard
     ; Add teleport to teleport list.
     push di ; y
     push si ; x
-    call 0x25d:AddTeleport ; 6bc 3:295e
+    call far AddTeleport ; 6bc 3:295e
     add sp,byte +0x4
     jmp short .nextX
 
@@ -920,7 +920,7 @@ endfunc
 ; Returns a random integer between 0 and n-1.
 func RandInt
     sub sp,byte +0x2
-    call 0xffff:0xdc ; 73b 1:dc rand
+    call far rand ; 73b 1:dc
     sub dx,dx
     div word [bp+0x6]
     mov ax,dx
@@ -1045,7 +1045,7 @@ func MonsterLoop
     push ax
     push word [ydir]
     push word [xdir]
-    call 0x880:TurnLeft ; 860 3:b0
+    call far TurnLeft ; 860 3:b0
     add sp,byte +0x8
 .bug.dontTurn: ; 868
 
@@ -1058,7 +1058,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0x8ed:SetTileDir ; 87d 3:486
+    call far SetTileDir ; 87d 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1070,7 +1070,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x909:0x18da ; 899 7:18da MoveMonster
+    call far MoveMonster ; 899 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1108,7 +1108,7 @@ func MonsterLoop
     les bx,[bx+MonsterListPtr]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0x94b:SetTileDir ; 8ea 3:486
+    call far SetTileDir ; 8ea 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1120,7 +1120,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x991:0x18da ; 906 7:18da MoveMonster
+    call far MoveMonster ; 906 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1151,7 +1151,7 @@ func MonsterLoop
     push cx
     push word [ydir]
     push word [xdir]
-    call 0x975:TurnRight ; 948 3:116
+    call far TurnRight ; 948 3:116
     add sp,byte +0x8
     push word [ynewdir]
     ; The rest of the logic is shared with the paramecium.
@@ -1170,7 +1170,7 @@ func MonsterLoop
     les bx,[bx+MonsterListPtr]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0x9e5:SetTileDir ; 972 3:486
+    call far SetTileDir ; 972 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1182,7 +1182,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xa01:0x18da ; 98e 7:18da MoveMonster
+    call far MoveMonster ; 98e 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1220,7 +1220,7 @@ func MonsterLoop
     les bx,[bx+MonsterListPtr]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0xa50:SetTileDir ; 9e2 3:486
+    call far SetTileDir ; 9e2 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1232,7 +1232,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xadb:0x18da ; 9fe 7:18da MoveMonster
+    call far MoveMonster ; 9fe 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1243,7 +1243,7 @@ func MonsterLoop
     push word [y]
     push word [x]
     push word [hDC]
-    call 0xffff:0x1ca ; a19 2:1ca UpdateTile
+    call far UpdateTile ; a19 2:1ca
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les si,[bx+MonsterListPtr]
@@ -1257,7 +1257,7 @@ func MonsterLoop
     add bx,[offset]
     push word [es:bx+Monster.y]
     push word [es:bx+Monster.x]
-    call 0xabf:FindTrap ; a4d 3:22be
+    call far FindTrap ; a4d 3:22be
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -1303,7 +1303,7 @@ func MonsterLoop
     les bx,[bx+MonsterListPtr]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0x3f9:SetTileDir ; abc 3:486
+    call far SetTileDir ; abc 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1315,7 +1315,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xffff:0x18da ; ad8 7:18da MoveMonster
+    call far MoveMonster ; ad8 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1346,7 +1346,7 @@ func MonsterLoop
     push cx
     push word [ydir]
     push word [xdir]
-    call 0xb3a:TurnLeft ; b1a 3:b0
+    call far TurnLeft ; b1a 3:b0
     add sp,byte +0x8
     push word [ynewdir]
 .glider.moveLeft: ; b25
@@ -1357,7 +1357,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0xb76:SetTileDir ; b37 3:486
+    call far SetTileDir ; b37 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1369,7 +1369,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xc3e:0x18da ; b53 7:18da MoveMonster
+    call far MoveMonster ; b53 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1383,7 +1383,7 @@ func MonsterLoop
     push cx
     push word [ydir]
     push word [xdir]
-    call 0xc22:TurnRight ; b73 3:116
+    call far TurnRight ; b73 3:116
     ; The rest of this logic is shared with parameciums.
     jmp word .paramecium.tryThirdMove
     nop
@@ -1465,7 +1465,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0xcd0:SetTileDir ; c1f 3:486
+    call far SetTileDir ; c1f 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1477,7 +1477,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xcec:0x18da ; c3b 7:18da MoveMonster
+    call far MoveMonster ; c3b 7:18da
     add sp,byte +0xc
     ; Check if we succeeded
     mov [deadflag],ax
@@ -1540,7 +1540,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0xd60:SetTileDir ; ccd 3:486
+    call far SetTileDir ; ccd 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1552,7 +1552,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xdd9:0x18da ; ce9 7:18da MoveMonster
+    call far MoveMonster ; ce9 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1601,7 +1601,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0xdbd:SetTileDir ; d5d 3:486
+    call far SetTileDir ; d5d 3:486
     add sp,byte +0x6
     mov bx,[y]
     shl bx,byte 0x5
@@ -1618,7 +1618,7 @@ func MonsterLoop
     push word [y]
     push word [x]
     push word [hDC]
-    call 0xa1c:0x1ca ; d93 2:1ca UpdateTile
+    call far UpdateTile ; d93 2:1ca
     add sp,byte +0x6
     jmp word .next
 
@@ -1635,7 +1635,7 @@ func MonsterLoop
     les bx,[bx+MonsterListPtr]
     mov al,[es:bx+si+Monster.tile]
     push ax
-    call 0xe25:SetTileDir ; dba 3:486
+    call far SetTileDir ; dba 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1647,7 +1647,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xebf:0x18da ; dd6 7:18da MoveMonster
+    call far MoveMonster ; dd6 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1691,7 +1691,7 @@ func MonsterLoop
 .walker.pickRandomDirection: ; e20
     ; Random choice of 0, 1, or 2.
     push byte +0x3
-    call 0xe4e:RandInt ; e22 3:72e
+    call far RandInt ; e22 3:72e
     add sp,byte +0x2
     or ax,ax
     jz .walker.turnLeft
@@ -1712,7 +1712,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xe6a:TurnLeft ; e4b 3:b0
+    call far TurnLeft ; e4b 3:b0
     jmp short .walker.cleanStack
 
 .walker.turnRight: ; e52
@@ -1726,7 +1726,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xe86:TurnRight ; e67 3:116
+    call far TurnRight ; e67 3:116
     jmp short .walker.cleanStack
 
 .walker.turnAround: ; e6e
@@ -1740,7 +1740,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xea3:TurnAround ; e83 3:17c
+    call far TurnAround ; e83 3:17c
 .walker.cleanStack: ; e88
     add sp,byte +0x8
 
@@ -1753,7 +1753,7 @@ func MonsterLoop
     add bx,[offset]
     mov al,[es:bx+Monster.tile]
     push ax
-    call 0x863:SetTileDir ; ea0 3:486
+    call far SetTileDir ; ea0 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1765,7 +1765,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x89c:0x18da ; ebc 7:18da MoveMonster
+    call far MoveMonster ; ebc 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1782,12 +1782,12 @@ func MonsterLoop
     jmp word .next
 .blob.loop: ; edb
     push byte +0x3
-    call 0xeee:RandInt ; edd 3:72e
+    call far RandInt ; edd 3:72e
     add sp,byte +0x2
     dec ax
     mov [xnewdir],ax
     push byte +0x3
-    call 0xf20:RandInt ; eeb 3:72e
+    call far RandInt ; eeb 3:72e
     add sp,byte +0x2
     dec ax
     mov [ynewdir],ax
@@ -1808,7 +1808,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si]
     push ax
-    call 0xf66:SetTileDir ; f1d 3:486
+    call far SetTileDir ; f1d 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1820,7 +1820,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x1001:0x18da ; f39 7:18da MoveMonster
+    call far MoveMonster ; f39 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1838,7 +1838,7 @@ func MonsterLoop
     jmp word .next
 .blob.moveBlocked.loopContinue: ; f61
     push byte +0x3
-    call 0xf90:RandInt ; f63 3:72e
+    call far RandInt ; f63 3:72e
     add sp,byte +0x2
     or ax,ax
     jz .blob.moveBlocked.turnLeft
@@ -1858,7 +1858,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xfac:TurnLeft ; f8d 3:b0
+    call far TurnLeft ; f8d 3:b0
     jmp short .blob.moveBlocked.tryMoveJump
 .blob.moveBlocked.turnRight: ; f94
     test si,0x2
@@ -1870,7 +1870,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xfc8:TurnRight ; fa9 3:116
+    call far TurnRight ; fa9 3:116
     jmp short .blob.moveBlocked.tryMoveJump
 .blob.moveBlocked.turnAround: ; fb0
     test si,0x4
@@ -1882,7 +1882,7 @@ func MonsterLoop
     push ax
     push word [bp-0x4]
     push di
-    call 0xfe5:TurnAround ; fc5 3:17c
+    call far TurnAround ; fc5 3:17c
 .blob.moveBlocked.tryMoveJump: ; fca
     add sp,byte +0x8
 .blob.moveBlocked.tryMove: ; fcd
@@ -1893,7 +1893,7 @@ func MonsterLoop
     add bx,[offset]
     mov al,[es:bx]
     push ax
-    call 0x1041:SetTileDir ; fe2 3:486
+    call far SetTileDir ; fe2 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1905,7 +1905,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x107a:0x18da ; ffe 7:18da MoveMonster
+    call far MoveMonster ; ffe 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1933,7 +1933,7 @@ func MonsterLoop
     push ax
     push word [ydir]
     push word [xdir]
-    call 0x105e:TurnRight ; 103e 3:116
+    call far TurnRight ; 103e 3:116
     add sp,byte +0x8
 .paramecium.tryMove: ; 1046
     push word [ynewdir]
@@ -1943,7 +1943,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si]
     push ax
-    call 0x10bd:SetTileDir ; 105b 3:486
+    call far SetTileDir ; 105b 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1955,7 +1955,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x10d9:0x18da ; 1077 7:18da MoveMonster
+    call far MoveMonster ; 1077 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -1983,7 +1983,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si]
     push ax
-    call 0x10f9:SetTileDir ; 10ba 3:486
+    call far SetTileDir ; 10ba 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -1995,7 +1995,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x1132:0x18da ; 10d6 7:18da MoveMonster
+    call far MoveMonster ; 10d6 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2008,7 +2008,7 @@ func MonsterLoop
     push cx
     push word [ydir]
     push word [xdir]
-    call 0x1116:TurnLeft ; 10f6 3:b0
+    call far TurnLeft ; 10f6 3:b0
 
 .paramecium.tryThirdMove: ; 10fb
     ; shared with gliders
@@ -2020,7 +2020,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si]
     push ax
-    call 0x114f:SetTileDir ; 1113 3:486
+    call far SetTileDir ; 1113 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -2032,7 +2032,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0x1188:0x18da ; 112f 7:18da MoveMonster
+    call far MoveMonster ; 112f 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2045,7 +2045,7 @@ func MonsterLoop
     push cx
     push word [ydir]
     push word [xdir]
-    call 0x116c:TurnAround ; 114c 3:17c
+    call far TurnAround ; 114c 3:17c
     add sp,byte +0x8
     push word [ynewdir]
     push word [xnewdir]
@@ -2054,7 +2054,7 @@ func MonsterLoop
     mov si,[offset]
     mov al,[es:bx+si]
     push ax
-    call 0x11f6:SetTileDir ; 1169 3:486
+    call far SetTileDir ; 1169 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ynewdir]
@@ -2066,7 +2066,7 @@ func MonsterLoop
     lea ax,[x]
     push ax
     push word [hDC]
-    call 0xb56:0x18da ; 1185 7:18da MoveMonster
+    call far MoveMonster ; 1185 7:18da
     add sp,byte +0xc
     mov [deadflag],ax
     or ax,ax
@@ -2108,7 +2108,7 @@ func MonsterLoop
     ; The monster died.
     ; Remove it from the monster list.
     push word [i]
-    call 0xb1d:DeleteMonster ; 11f3 3:3b4
+    call far DeleteMonster ; 11f3 3:3b4
     add sp,byte +0x2
     dec word [i]
     dec word [len]
@@ -2126,17 +2126,17 @@ func MonsterLoop
     cmp word [bx+Autopsy],byte +0x0
     jz .notDeadYet
     push byte +0x1
-    call 0x1233:0xcbe ; 121c 2:cbe
+    call far FUN_2_0cbe ; 121c 2:cbe
     add sp,byte +0x2
     push byte +0x1
     push byte ChipDeathSound
-    call 0xffff:0x56c ; 1228 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 1228 8:56c
     add sp,byte +0x4
-    call 0xd96:0xb9a ; 1230 2:b9a ShowDeathMessage
+    call far ShowDeathMessage ; 1230 2:b9a
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xffff:0x356 ; 123f 4:356
+    call far FUN_4_0356 ; 123f 4:356
     add sp,byte +0x4
 .notDeadYet: ; 1247
 
@@ -2163,7 +2163,7 @@ func NewSlipper
     mov ax,bx
     add ax,SlipListHandle
     push ax
-    call 0x12e7:GrowArray ; 1281 3:1a4
+    call far GrowArray ; 1281 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .label0
@@ -2203,7 +2203,7 @@ func DeleteSlipperAt
 .nonzero: ; 12de
     push word [y]
     push word [x]
-    call 0x1316:FindSlipper ; 12e4 3:58
+    call far FindSlipper ; 12e4 3:58
     add sp,byte +0x4
     mov di,ax
     cmp di,byte -1
@@ -2221,7 +2221,7 @@ func DeleteSlipperAt
     jz .notAMonster
     push word [y]
     push word [x]
-    call 0x13ac:FindMonster ; 1313 3:0
+    call far FindMonster ; 1313 3:0
     add sp,byte +0x4
     mov bx,ax
     shl bx,byte 0x2
@@ -2279,7 +2279,7 @@ func FindSlipperAt
     %local slipperIdx:word
     push word [y]
     push word [x]
-    call 0x1431:FindSlipper ; 13a9 3:58
+    call far FindSlipper ; 13a9 3:58
     add sp,byte +0x4
     mov [slipperIdx],ax
     inc ax
@@ -2341,7 +2341,7 @@ func SlipLoop
     add bx,si
     push word [es:bx+Slipper.y]
     push word [es:bx+Slipper.x]
-    call 0x148d:FindMonster ; 142e 3:0
+    call far FindMonster ; 142e 3:0
     add sp,byte +0x4
     mov [monsterIndex],ax
     mov bx,[GameStatePtr]
@@ -2368,7 +2368,7 @@ func SlipLoop
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
     push ax ; tile
-    call 0x151c:SetTileDir ; 148a 3:486
+    call far SetTileDir ; 148a 3:486
     add sp,byte +0x6
     push ax         ; tile
     lea ax,[ydir]
@@ -2380,7 +2380,7 @@ func SlipLoop
     lea ax,[x]
     push ax
     push di  ; wnd
-    call 0x14fe:0x18da ; 14a4 MoveMonster
+    call far MoveMonster ; 14a4 7:18da
     add sp,byte +0xc
     mov [monsterStatus],ax
     or ax,ax
@@ -2418,7 +2418,7 @@ func SlipLoop
     push word [x]
     push word [y]
     push word [x]
-    call 0x1536:0x636 ; 14fb 7:636 SlideMovement
+    call far SlideMovement ; 14fb 7:636
     add sp,byte +0x10
     push word [ydir]
     push word [xdir]
@@ -2428,7 +2428,7 @@ func SlipLoop
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
     push ax
-    call 0x15bb:SetTileDir ; 1519 3:486
+    call far SetTileDir ; 1519 3:486
     add sp,byte +0x6
     push ax
     lea ax,[ydir]
@@ -2440,7 +2440,7 @@ func SlipLoop
     lea ax,[x]
     push ax
     push di ; hDC
-    call 0xf3c:0x18da ; 1533 7:18da MoveMonster
+    call far MoveMonster ; 1533 7:18da
     add sp,byte +0xc
     mov [monsterStatus],ax
     or ax,ax
@@ -2487,7 +2487,7 @@ func SlipLoop
     mov al,[bx+Upper]
     push ax
     mov [local_16],cx
-    call 0x15d8:SetTileDir ; 15b8 3:486
+    call far SetTileDir ; 15b8 3:486
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
@@ -2497,7 +2497,7 @@ func SlipLoop
     nop
 .label11: ; 15d2
     push word [monsterIndex]
-    call 0xee0:DeleteMonster ; 15d5 3:3b4 DeleteMonster
+    call far DeleteMonster ; 15d5 3:3b4
     add sp,byte +0x2
     jmp word .next
 .label9: ; 15e0
@@ -2534,7 +2534,7 @@ func SlipLoop
     push ax
     push word [x]
     push di
-    call 0x168d:0xdae ; 163c MoveBlock
+    call far MoveBlock ; 163c 7:dae
     add sp,byte +0xe
     or ax,ax
     jz .label14
@@ -2565,7 +2565,7 @@ func SlipLoop
     push word [x]
     push word [y]
     push word [x]
-    call 0x16a7:0x636 ; 168a 7:636 slide movement
+    call far SlideMovement ; 168a 7:636 slide movement
     add sp,byte +0x10
     push byte +0x0
     push word 0xff
@@ -2574,7 +2574,7 @@ func SlipLoop
     push word [y]
     push word [x]
     push di
-    call 0x16d2:0xdae ; 16a4 MoveBlock
+    call far MoveBlock ; 16a4 7:dae
     add sp,byte +0xe
     or ax,ax
     jnz .next
@@ -2592,7 +2592,7 @@ func SlipLoop
     push word [x]
     push word [y]
     push word [x]
-    call 0x14a7:0x636 ; 16cf 7:636 SlideMovement
+    call far SlideMovement ; 16cf 7:636
     add sp,byte +0x10
 
 .next: ; 16d7
@@ -2612,17 +2612,17 @@ func SlipLoop
     cmp word [bx+Autopsy],byte +0x0
     jz .label19
     push byte +0x1
-    call 0x1716:0xcbe ; 16ff 2:cbe
+    call far FUN_2_0cbe ; 16ff 2:cbe
     add sp,byte +0x2
     push byte +0x1
     push byte ChipDeathSound
-    call 0x17fb:0x56c ; 170b 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 170b 8:56c
     add sp,byte +0x4
-    call 0x121f:0xb9a ; 1713 ShowDeathMessage
+    call far ShowDeathMessage ; 1713 2:b9a
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0x1242:0x356 ; 1722 4:356
+    call far FUN_4_0356 ; 1722 4:356
     add sp,byte +0x4
 .label19: ; 172a
     pop si
@@ -2721,7 +2721,7 @@ func PickUpKeyOrBoot
     mov [InventoryDirty],ax
     push ax
     push cx
-    call 0x122b:0x56c ; 17f8 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 17f8 8:56c
 endfunc
 
 ; 1804
@@ -3206,7 +3206,7 @@ func ChipCanEnterTile
     ; instead of whatever the table says
     mov al,[tile]
     push ax
-    call 0x1b91:HaveBootsForTile ; 1b68 3:187c
+    call far HaveBootsForTile ; 1b68 3:187c
     add sp,byte +0x2
     or ax,ax
     jnz .label10 ; ↓
@@ -3224,7 +3224,7 @@ func ChipCanEnterTile
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1bab:CheckPanelWalls ; 1b8e 3:1934
+    call far CheckPanelWalls ; 1b8e 3:1934
     add sp,byte +0x8
 .label12: ; 1b96
     or ax,ax
@@ -3239,7 +3239,7 @@ func ChipCanEnterTile
     push si
     mov al,[tile]
     push ax
-    call 0x1bdd:CanOpenDoor ; 1ba8 3:1804
+    call far CanOpenDoor ; 1ba8 3:1804
     add sp,byte +0x4
     or ax,ax
     jnz .label15 ; ↓
@@ -3252,7 +3252,7 @@ func ChipCanEnterTile
     push byte +0x1
     push byte OpenDoorSound
 .label17: ; 1bc2
-    call 0x1c34:0x56c ; 1bc2 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 1bc2 8:56c
     add sp,byte +0x4
     jmp word .return1 ; ↑
     nop
@@ -3264,7 +3264,7 @@ func ChipCanEnterTile
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1c3e:CheckPanelWalls ; 1bda 3:1934
+    call far CheckPanelWalls ; 1bda 3:1934
     add sp,byte +0x8
     or ax,ax
     jnz .label19 ; ↓
@@ -3293,7 +3293,7 @@ func ChipCanEnterTile
     mov byte [bx+si+Upper],Wall
     push ax
     push di
-    call 0x1702:0x2b2 ; 1c19 2:2b2 InvalidateTile
+    call far InvalidateTile ; 1c19 2:2b2
     add sp,byte +0x4
     jmp short .nope ; ↓
     nop
@@ -3306,10 +3306,10 @@ func ChipCanEnterTile
 .label25: ; 1c2d
     push byte +0x1
     push byte ThiefSound
-    call 0x170e:0x56c ; 1c31 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 1c31 8:56c
     add sp,byte +0x4
     push byte +0x1
-    call 0x1c8b:ResetInventory ; 1c3b 3:1734
+    call far ResetInventory ; 1c3b 3:1734
     add sp,byte +0x2
     jmp word .return1 ; ↑
 
@@ -3344,7 +3344,7 @@ func ChipCanEnterTile
     push word [xdir]
     push word [y]
     push word [x]
-    call 0x1d31:ChipCanEnterTile ; 1c88 3:1a56
+    call far ChipCanEnterTile ; 1c88 3:1a56
     add sp,byte +0xe
     jmp word .label12 ; ↑
     nop
@@ -3433,7 +3433,7 @@ func BlockCanEnterTile
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1284:CheckPanelWalls ; 1d2e 3:1934
+    call far CheckPanelWalls ; 1d2e 3:1934
     add sp,byte +0x8
     or ax,ax
     jnz .label0 ; ↑
@@ -3595,7 +3595,7 @@ func MonsterCanEnterTile
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1edc:CheckPanelWalls ; 1e4a 3:1934
+    call far CheckPanelWalls ; 1e4a 3:1934
     add sp,byte +0x8
     or ax,ax
     jz .clearOutAndReturnZero ; ↓
@@ -3626,7 +3626,7 @@ func PressTankButton
 
     push word [bp+0x8]
     push byte SwitchSound
-    call 0x2130:0x56c ; 1e7e 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 1e7e 8:56c
     add sp,byte +0x4
     mov word [index],0x0
     mov bx,[GameStatePtr]
@@ -3663,7 +3663,7 @@ func PressTankButton
     push cx
     mov dl,[tile]
     push dx
-    call 0x1ef2:GetMonsterDir ; 1ed9 3:4d8
+    call far GetMonsterDir ; 1ed9 3:4d8
     add sp,byte +0x6
     ; turn tile left and store in map
     lea ax,[ydir]
@@ -3672,13 +3672,13 @@ func PressTankButton
     push cx
     push word [ydir]
     push word [xdir]
-    call 0x1f04:TurnLeft ; 1eef 3:b0
+    call far TurnLeft ; 1eef 3:b0
     add sp,byte +0x8
     push word [ydir]
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1f3b:SetTileDir ; 1f01 3:486
+    call far SetTileDir ; 1f01 3:486
     add sp,byte +0x6
     mov bx,[x]
     shl bx,byte 0x5
@@ -3691,7 +3691,7 @@ func PressTankButton
     push cx ; y
     push word [hDC]
     mov di,bx
-    call 0x204d:0x1ca ; 1f22 2:1ca UpdateTile
+    call far UpdateTile ; 1f22 2:1ca
     add sp,byte +0x6
     ; turn direction left again (180 degrees total)
     ; and store new direction in monster list
@@ -3701,7 +3701,7 @@ func PressTankButton
     push cx
     push word [ydir]
     push word [xdir]
-    call 0x1f6b:TurnLeft ; 1f38 3:b0
+    call far TurnLeft ; 1f38 3:b0
     add sp,byte +0x8
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
@@ -3716,7 +3716,7 @@ func PressTankButton
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x1b6b:SetTileDir ; 1f68 3:486
+    call far SetTileDir ; 1f68 3:486
     add sp,byte +0x6
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
@@ -3813,7 +3813,7 @@ func PressToggleButton
     push word [y]
     push word [x]
     push word [hDC]
-    call 0x1c1c:0x1ca ; 204a 2:1ca UpdateTile
+    call far UpdateTile ; 204a 2:1ca
     add sp,byte +0x6
     ; check loop condition
     add si,byte Point_size
@@ -3925,11 +3925,11 @@ func PressTrapButton
     push si
     push word [arg]
     push byte SwitchSound
-    call 0x1bc5:0x56c ; 212d 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 212d 8:56c
     add sp,byte +0x4
     push word [y]
     push word [x]
-    call 0x216f:FindTrapByButton ; 213b 3:2270
+    call far FindTrapByButton ; 213b 3:2270
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -3947,7 +3947,7 @@ func PressTrapButton
     add bx,si
     push word [es:bx+Connection.toY]
     push word [es:bx+Connection.toX]
-    call 0x21ca:FindTrapSpan ; 216c 3:206c
+    call far FindTrapSpan ; 216c 3:206c
     add sp,byte +0x8
     or ax,ax
     jz .end ; ↓
@@ -3991,7 +3991,7 @@ func EnterTrap
     push ax
     push word [ydest]
     push word [xdest]
-    call 0x234d:FindTrapSpan ; 21c7 3:206c
+    call far FindTrapSpan ; 21c7 3:206c
     add sp,byte +0x8
     or ax,ax
     jnz .label0 ; ↓
@@ -4169,7 +4169,7 @@ func AddTrap_Unused
     mov ax,bx
     add ax,TrapListHandle
     push ax
-    call 0x2467:GrowArray ; 234a 3:1a4
+    call far GrowArray ; 234a 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .longEnough ; ↓
@@ -4275,13 +4275,13 @@ func PressCloneButton
     ; Play the button sound
     push word [bp+0xc]
     push byte SwitchSound
-    call 0x1e81:0x56c ; 2456 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 2456 8:56c
     add sp,byte +0x4
     ; Find the index in the clone connection list
     ; store it in si
     push word [buttonY]
     push word [buttonX]
-    call 0x24b2:FindCloneMachine ; 2464 3:260e
+    call far FindCloneMachine ; 2464 3:260e
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -4315,7 +4315,7 @@ func PressCloneButton
     mov [cloneTile],al
     ; Get xdir and ydir from monster tile
     push ax
-    call 0x1e4d:GetMonsterDir ; 24af 3:4d8
+    call far GetMonsterDir ; 24af 3:4d8
     add sp,byte +0x6
     ; Did GetMonsterDir succeed?
     ; if so, we're cloning a monster
@@ -4355,7 +4355,7 @@ func PressCloneButton
     push word [destX]
     mov al,[cloneTile]
     push ax
-    call 0x252a:MonsterCanEnterTile ; 24fe 3:1d4a
+    call far MonsterCanEnterTile ; 24fe 3:1d4a
     add sp,byte +0xc
     or ax,ax
     jnz .findMonster ; ↓
@@ -4375,7 +4375,7 @@ func PressCloneButton
     ; monster list. if it's not there, add it
     push word [monsterY]
     push word [monsterX]
-    call 0x254a:FindMonster ; 2527 3:0
+    call far FindMonster ; 2527 3:0
     add sp,byte +0x4
     inc ax
     jz .addMonster ; ↓
@@ -4388,11 +4388,11 @@ func PressCloneButton
     push word [monsterX]
     mov al,[cloneTile]
     push ax
-    call 0x25d9:NewMonster ; 2547 3:228
+    call far NewMonster ; 2547 3:228
     add sp,byte +0xc
     push word [destY]
     push word [destX]
-    call 0x1f25:0x2b2 ; 2555 2:2b2 InvalidateTile
+    call far InvalidateTile ; 2555 2:2b2
     add sp,byte +0x4
     jmp .end ; ↓
 
@@ -4451,7 +4451,7 @@ func PressCloneButton
     push word [destY]
     push word [destX]
     push byte +0xa
-    call 0x2691:BlockCanEnterTile ; 25d6 3:1ca4
+    call far BlockCanEnterTile ; 25d6 3:1ca4
     add sp,byte +0xc
     or ax,ax
     jz .end ; ↓
@@ -4467,7 +4467,7 @@ func PressCloneButton
     sub ax,[xdir]
     push ax
     push word [hDC]
-    call 0x2855:0xdae ; 25fd 7:dae MoveBlock
+    call far MoveBlock ; 25fd 7:dae
     add sp,byte +0xe
 .end: ; 2605
     pop si
@@ -4532,7 +4532,7 @@ func AddCloneMachine_Unused
     mov ax,bx
     add ax,CloneListHandle
     push ax
-    call 0x2786:GrowArray ; 268e 3:1a4
+    call far GrowArray ; 268e 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .havespace ; ↓
@@ -4622,7 +4622,7 @@ func EnterTeleport
     push word [bx]
     mov si,[bp+0x8]
     push word [si]
-    call 0x2871:FindTeleport ; 2783 3:2910
+    call far FindTeleport ; 2783 3:2910
     add sp,byte +0x4
     mov di,ax
     mov bx,[bp+0xa]
@@ -4708,7 +4708,7 @@ func EnterTeleport
     push word [bp-0x4]
     push word [bp-0x6]
     push word [bp+0x6]
-    call 0x163f:0xdae ; 2852 7:dae MoveBlock
+    call far MoveBlock ; 2852 7:dae
     add sp,byte +0xe
     or ax,ax
     jz .label13 ; ↓
@@ -4721,7 +4721,7 @@ func EnterTeleport
     push si
     push word [bp-0x4]
     push word [bp-0x6]
-    call 0x288f:ChipCanEnterTile ; 286e 3:1a56
+    call far ChipCanEnterTile ; 286e 3:1a56
     add sp,byte +0xe
     or ax,ax
     jz .label13 ; ↓
@@ -4735,7 +4735,7 @@ func EnterTeleport
     push word [bp-0x6]
     mov al,[bp-0x7]
     push ax
-    call 0x213e:BlockCanEnterTile ; 288c 3:1ca4
+    call far BlockCanEnterTile ; 288c 3:1ca4
     add sp,byte +0xc
     or ax,ax
     jz .label13 ; ↓
@@ -4749,7 +4749,7 @@ func EnterTeleport
     push word [bp-0x6]
     mov al,[bp-0x7]
     push ax
-    call 0x2993:MonsterCanEnterTile ; 28aa 3:1d4a
+    call far MonsterCanEnterTile ; 28aa 3:1d4a
     add sp,byte +0xc
     or ax,ax
     jnz .label17 ; ↓
@@ -4770,7 +4770,7 @@ func EnterTeleport
 .label16: ; 28d4
     push byte +0x1
     push byte +0xc
-    call 0x2459:0x56c ; 28d8 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 28d8 8:56c
     add sp,byte +0x4
 .label17: ; 28e0
     mov bx,[GameStatePtr]
@@ -4849,7 +4849,7 @@ func AddTeleport
     mov ax,bx
     add ax,TeleportListHandle
     push ax
-    call 0x2501:GrowArray ; 2990 3:1a4
+    call far GrowArray ; 2990 3:1a4
     add sp,byte +0xa
     or ax,ax
     jnz .allswell

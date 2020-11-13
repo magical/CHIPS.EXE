@@ -13,7 +13,7 @@ func ShowMessageBox
     %arg flags:word ; +c
     sub sp,byte +0x2
     push si
-    call 0x6d:PauseTimer ; e 2:17a2
+    call far PauseTimer ; e 2:17a2
     ; if sound is enabled, play a message beep before
     ; popping the message box open
     cmp word [SoundEnabled],byte +0x0
@@ -44,7 +44,7 @@ func ShowMessageBox
     and si,byte +0x20 ; MB_ICONQUESTION
 .playBeep: ; 4d
     push si
-    call 0x0:0xffff ; 4e USER.MessageBeep
+    call far USER.MessageBeep ; 4e
 .showMessage: ; 53
     push word [hWnd]
     push word [message+2] ; segment
@@ -52,9 +52,9 @@ func ShowMessageBox
     push ds
     push word MessageBoxCaption
     push word [flags]
-    call 0x0:0xffff ; 63 USER.MessageBox
+    call far USER.MessageBox ; 63
     mov si,ax
-    call 0x1e2:UnpauseTimer ; 6a 2:17ba
+    call far UnpauseTimer ; 6a 2:17ba
     mov ax,si
     pop si
 endfunc
@@ -119,13 +119,13 @@ DrawTile:
     jmp .label3 ; ↓
 .label2: ; ec
     push byte +0x20
-    call 0x103:0x2a3e ; ee 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; ee 3:2a3e
     add sp,byte +0x2
     mov [bp-0xa],ax
     mov [bp-0x8],dx
     mov al,[bp+0xe]
     push ax
-    call 0x12f:0x2a3e ; 100 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 100 3:2a3e
     add sp,byte +0x2
     push word [TileDC]
     push word [bp-0xa]
@@ -137,11 +137,11 @@ DrawTile:
     push dx
     push word 0xcc
     push byte +0x20
-    call 0x0:0x14f ; 121 GDI.BitBlt
+    call far GDI.BitBlt ; 121
     mov al,[bp+0xc]
     add al,0x60
     push ax
-    call 0x15c:0x2a3e ; 12c 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 12c 3:2a3e
     add sp,byte +0x2
     push word [TileDC]
     push word [bp-0xa]
@@ -153,11 +153,11 @@ DrawTile:
     push dx
     push word 0xee
     push word 0x86
-    call 0x0:0x17c ; 14e GDI.BitBlt
+    call far GDI.BitBlt ; 14e
     mov al,[bp+0xc]
     add al,0x30
     push ax
-    call 0x1a1:0x2a3e ; 159 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 159 3:2a3e
     add sp,byte +0x2
     push word [TileDC]
     push word [bp-0xa]
@@ -169,7 +169,7 @@ DrawTile:
     push dx
     push word 0x88
     push word 0xc6
-    call 0x0:0x1bf ; 17b GDI.BitBlt
+    call far GDI.BitBlt ; 17b
     push word [bp+0x6]
     push word [bp+0x8]
     push word [bp+0xa]
@@ -183,7 +183,7 @@ DrawTile:
 .label3: ; 19a
     mov al,[bp+0xc]
     push ax
-    call 0xffff:0x2a3e ; 19e 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 19e 3:2a3e
     add sp,byte +0x2
     push word [bp+0x6]
     push word [bp+0x8]
@@ -196,7 +196,7 @@ DrawTile:
 .label4: ; 1b9
     push word 0xcc
     push byte +0x20
-    call 0x0:0xffff ; 1be GDI.BitBlt
+    call far GDI.BitBlt ; 1be
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -218,7 +218,7 @@ UpdateTile:
     mov si,[bp+0xa]
     push si
     push word [bp+0x8]
-    call 0x224:IsCoordOnscreen ; 1df 2:7a IsCoordOnscreen
+    call far IsCoordOnscreen ; 1df 2:7a
     add sp,byte +0x4
     or ax,ax
     jz .label0 ; ↓
@@ -241,7 +241,7 @@ UpdateTile:
     shl ax,byte TileShift
     push ax
     push word [bp+0x6]
-    call 0x251:DrawTile ; 221 2:c4 DrawTile
+    call far DrawTile ; 221 2:c4
     add sp,byte +0xa
 .label0: ; 229
     pop si
@@ -269,7 +269,7 @@ DrawInventoryTile:
     push word [bp+0xa]
     push word [bp+0x8]
     push word [bp+0x6]
-    call 0x270:DrawTile ; 24e 2:c4 DrawTile
+    call far DrawTile ; 24e 2:c4
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -285,7 +285,7 @@ func InvertTile_Unused
     ; if the coordinate isn't onscreen, do nothing
     push word [bp+0xa]
     push word [bp+0x8]
-    call 0x2ca:IsCoordOnscreen ; 26d 2:7a IsCoordOnscreen
+    call far IsCoordOnscreen ; 26d 2:7a
     add sp,byte +0x4
     or ax,ax
     jz .end ; ↓
@@ -306,7 +306,7 @@ func InvertTile_Unused
     push byte TileHeight
     push byte +0x55 ; DSTINVERT
     push byte +0x9
-    call 0x0:0xffff ; 2a6 GDI.PatBlt
+    call far GDI.PatBlt ; 2a6
 .end: ; 2ab
 endfunc
 
@@ -326,13 +326,13 @@ InvalidateTile:
     push si
     push word [bp+0x8]
     push word [bp+0x6]
-    call 0xffff:IsCoordOnscreen ; 2c7 2:7a IsCoordOnscreen
+    call far IsCoordOnscreen ; 2c7 2:7a
     add sp,byte +0x4
     or ax,ax
     jz .label0 ; ↓
     push word [bp+0x8]
     push word [bp+0x6]
-    call 0xffff:0x0 ; 2d9 4:0
+    call far GetTileRect ; 2d9 4:0
     add sp,byte +0x4
     lea di,[bp-0xa]
     mov si,ax
@@ -347,7 +347,7 @@ InvalidateTile:
     push ss
     push ax
     push byte +0x0
-    call 0x0:0xffff ; 2f7 USER.InvalidateRect
+    call far USER.InvalidateRect ; 2f7
 .label0: ; 2fc
     pop si
     pop di
@@ -412,7 +412,7 @@ func ScrollViewport
     lea ax,[rect]
     push ss
     push ax
-    call 0x0:0xffff ; 347 USER.GetClientRect
+    call far USER.GetClientRect ; 347
     ; vw-0
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportWidth]
@@ -474,7 +474,7 @@ func ScrollViewport
     push word [newChipY]
     push word [newChipX]
     push word [bp+0x6]
-    call 0x3f5:UpdateTile ; 3b2 2:1ca UpdateTile
+    call far UpdateTile ; 3b2 2:1ca
     add sp,byte +0x6
     ; ScrollWindow(hwndBoard, -32*(dx-0), -32*(dy-0), NULL, NULL)
     push word [hwndBoard]
@@ -490,7 +490,7 @@ func ScrollViewport
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0xffff ; 3d1 USER.ScrollWindow
+    call far USER.ScrollWindow ; 3d1
     ; update ViewportX and ViewportY
     mov bx,[GameStatePtr]
     add [bx+ViewportX],di
@@ -501,7 +501,7 @@ func ScrollViewport
     push word [oldChipY]
     push word [oldChipX]
     push word [bp+0x6]
-    call 0x454:UpdateTile ; 3f2 2:1ca UpdateTile
+    call far UpdateTile ; 3f2 2:1ca
     add sp,byte +0x6
     ;; Now draw any tiles that were
     ;; scrolled into view
@@ -545,7 +545,7 @@ func ScrollViewport
     add ax,si
     push ax
     push di
-    call 0x50b:UpdateTile ; 451 2:1ca UpdateTile
+    call far UpdateTile ; 451 2:1ca
     add sp,byte +0x6
     inc si
     cmp si,[local_8]
@@ -579,7 +579,7 @@ func ScrollViewport
     lea ax,[rect]
     push ss
     push ax
-    call 0x0:0x560 ; 4ac USER.ValidateRect
+    call far USER.ValidateRect ; 4ac
 .check_y_delta: ; 4b1
     ; if y delta is nonzero
     cmp word [yScrollPixels],byte +0x0
@@ -619,7 +619,7 @@ func ScrollViewport
     push ax
     push word [local_6]
     push di
-    call 0x5ee:UpdateTile ; 508 2:1ca UpdateTile
+    call far UpdateTile ; 508 2:1ca
     add sp,byte +0x6
     inc si
     cmp si,[local_4]
@@ -652,7 +652,7 @@ func ScrollViewport
     lea ax,[bp-0x18]
     push ss
     push ax
-    call 0x0:0xffff ; 55f USER.ValidateRect
+    call far USER.ValidateRect ; 55f
 .end: ; 564
     pop si
     pop di
@@ -730,13 +730,13 @@ func UpdateChip
     push word [oldY]
     push word [oldX]
     push si
-    call 0x5fd:UpdateTile ; 5eb 2:1ca UpdateTile
+    call far UpdateTile ; 5eb 2:1ca
     add sp,byte +0x6
     ; UpdateTile(hdc, newX, newY)
     push word [newY]
     push word [newX]
     push si
-    call 0x61a:UpdateTile ; 5fa 2:1ca UpdateTile
+    call far UpdateTile ; 5fa 2:1ca
     add sp,byte +0x6
     jmp short .label5 ; ↓
     ; if viewport has moved, scroll the board
@@ -748,7 +748,7 @@ func UpdateChip
     push ax            ; viewport y diff
     push word [bp-0x6] ; viewport x diff
     push word [hdc]    ; hdc probably
-    call 0x652:ScrollViewport ; 617 2:306
+    call far ScrollViewport ; 617 2:306
     add sp,byte +0xe
 .label5: ; 61f
     pop si
@@ -764,7 +764,7 @@ func WinMain
     %arg hInstance:word ; +e
     sub sp,byte +0x14
     push word 0x218
-    call 0x0:0xffff ; 638 WEP4UTIL.2
+    call far WEP4UTIL.2 ; 638
     or ax,ax
     jnz .label1 ; ↓
 .returnZero: ; 641
@@ -775,14 +775,14 @@ func WinMain
     cmp word [hPrevInstance],byte +0x0
     jnz .label2 ; ↓
     push word [hInstance]
-    call 0x664:CreateClasses ; 64f 2:6c8 CreateClasses
+    call far CreateClasses ; 64f 2:6c8
     add sp,byte +0x2
     or ax,ax
     jz .returnZero
 .label2: ; 65b
     push word [nCmdShow]
     push word [hInstance]
-    call 0x6e6:CreateWindows ; 661 2:8e8 CreateWindows
+    call far CreateWindows ; 661 2:8e8
     add sp,byte +0x4
     or ax,ax
     jz .returnZero
@@ -795,7 +795,7 @@ func WinMain
     push byte +0x0
     push byte +0x0
     push byte +0x1
-    call 0x0:0xffff ; 680 USER.PeekMessage
+    call far USER.PeekMessage ; 680
     or ax,ax
     ; FIXME: call WaitMessage if ax==0
     jz .label3 ; ↑
@@ -806,17 +806,17 @@ func WinMain
     lea ax,[bp-0x14]
     push ss
     push ax
-    call 0x0:0xffff ; 69c USER.TranslateAccelerator
+    call far USER.TranslateAccelerator ; 69c
     or ax,ax
     jnz .label3 ; ↑
     lea ax,[bp-0x14]
     push ss
     push ax
-    call 0x0:0xffff ; 6aa USER.TranslateMessage
+    call far USER.TranslateMessage ; 6aa
     lea ax,[bp-0x14]
     push ss
     push ax
-    call 0x0:0xffff ; 6b4 USER.DispatchMessage
+    call far USER.DispatchMessage ; 6b4
     jmp short .label3 ; ↑
     nop
 .label4: ; 6bc
@@ -847,15 +847,15 @@ CreateClasses:
     push si
     push ax
     push word 0x100
-    call 0x0:0xffff ; 6f8 USER.LoadIcon
+    call far USER.LoadIcon ; 6f8
     mov [bp-0x5e],ax                    ; hIcon
     push byte +0x0
     push byte +0x0
     push word 0x7f00
-    call 0x0:0x75f ; 707 USER.LoadCursor
+    call far USER.LoadCursor ; 707
     mov [bp-0x5c],ax                    ; hCursor
     push byte +0x4
-    call 0x0:0xffff ; 711 GDI.GetStockObject
+    call far GDI.GetStockObject ; 711
     mov [bp-0x5a],ax                    ; hbcBackground
     sub ax,ax
     mov [bp-0x56],ax                    ; lpszMenuName
@@ -865,7 +865,7 @@ CreateClasses:
     lea ax,[bp-0x6a]
     push ss
     push ax
-    call 0x0:0xffff ; 72e USER.RegisterClass
+    call far USER.RegisterClass ; 72e
     or ax,ax
     jnz .label1 ; ↓
 .label0: ; 737
@@ -883,10 +883,10 @@ CreateClasses:
     push ax
     push ax
     push word 0x7f03
-    call 0x0:0xffff ; 75e USER.LoadCursor
+    call far USER.LoadCursor ; 75e
     mov [bp-0x5c],ax
     push byte +0x4
-    call 0x0:0x7bb ; 768 GDI.GetStockObject
+    call far GDI.GetStockObject ; 768
     mov [bp-0x5a],ax
     sub ax,ax
     mov [bp-0x56],ax
@@ -896,7 +896,7 @@ CreateClasses:
     lea ax,[bp-0x6a]
     push ss
     push ax
-    call 0x0:0x7d8 ; 785 USER.RegisterClass
+    call far USER.RegisterClass ; 785
     or ax,ax
     jz .label0 ; ↑
     mov word [bp-0x6a],0x8
@@ -910,10 +910,10 @@ CreateClasses:
     push ax
     push ax
     push word 0x7f00
-    call 0x0:0x80a ; 7b0 USER.LoadCursor
+    call far USER.LoadCursor ; 7b0
     mov [bp-0x5c],ax
     push byte +0x4
-    call 0x0:0x814 ; 7ba GDI.GetStockObject
+    call far GDI.GetStockObject ; 7ba
     mov [bp-0x5a],ax
     sub ax,ax
     mov [bp-0x56],ax
@@ -923,7 +923,7 @@ CreateClasses:
     lea ax,[bp-0x6a]
     push ss
     push ax
-    call 0x0:0x831 ; 7d7 USER.RegisterClass
+    call far USER.RegisterClass ; 7d7
     or ax,ax
     jnz .label2 ; ↓
     jmp .label0 ; ↑
@@ -939,10 +939,10 @@ CreateClasses:
     push ax
     push ax
     push word 0x7f00
-    call 0x0:0x85f ; 809 USER.LoadCursor
+    call far USER.LoadCursor ; 809
     mov [bp-0x5c],ax
     push byte +0x4
-    call 0x0:0x869 ; 813 GDI.GetStockObject
+    call far GDI.GetStockObject ; 813
     mov [bp-0x5a],ax
     sub ax,ax
     mov [bp-0x56],ax
@@ -952,7 +952,7 @@ CreateClasses:
     lea ax,[bp-0x6a]
     push ss
     push ax
-    call 0x0:0x886 ; 830 USER.RegisterClass
+    call far USER.RegisterClass ; 830
     or ax,ax
     jnz .label3 ; ↓
     jmp .label0 ; ↑
@@ -968,10 +968,10 @@ CreateClasses:
     push ax
     push ax
     push word 0x7f00
-    call 0x0:0x8b4 ; 85e USER.LoadCursor
+    call far USER.LoadCursor ; 85e
     mov [bp-0x5c],ax
     push byte +0x4
-    call 0x0:0x8be ; 868 GDI.GetStockObject
+    call far GDI.GetStockObject ; 868
     mov [bp-0x5a],ax
     sub ax,ax
     mov [bp-0x56],ax
@@ -981,7 +981,7 @@ CreateClasses:
     lea ax,[bp-0x6a]
     push ss
     push ax
-    call 0x0:0x8db ; 885 USER.RegisterClass
+    call far USER.RegisterClass ; 885
     or ax,ax
     jnz .label4 ; ↓
     jmp .label0 ; ↑
@@ -997,10 +997,10 @@ CreateClasses:
     push ax
     push ax
     push word 0x7f00
-    call 0x0:0x708 ; 8b3 USER.LoadCursor
+    call far USER.LoadCursor ; 8b3
     mov [bp-0x5c],ax
     push byte +0x4
-    call 0x0:0x712 ; 8bd GDI.GetStockObject
+    call far GDI.GetStockObject ; 8bd
     mov [bp-0x5a],ax
     sub ax,ax
     mov [bp-0x56],ax
@@ -1010,7 +1010,7 @@ CreateClasses:
     lea ax,[bp-0x6a]
     push ss
     push ax
-    call 0x0:0x72f ; 8da USER.RegisterClass
+    call far USER.RegisterClass ; 8da
 .label5: ; 8df
     pop si
     lea sp,[bp-0x2]
@@ -1035,11 +1035,11 @@ func CreateWindows
     push si
     push ds
     push word s_ChipsMenu
-    call 0x0:0xffff ; 90d USER.LoadMenu
+    call far USER.LoadMenu ; 90d
     mov [hMenu],ax
     push byte +0x40
     push word GameStateSize
-    call 0x0:0xffff ; 91a KERNEL.LocalAlloc
+    call far KERNEL.LocalAlloc ; 91a
     mov [0x1722],ax
     mov [GameStatePtr],ax
     or ax,ax
@@ -1048,12 +1048,12 @@ func CreateWindows
     xor ax,ax
     jmp .label16 ; ↓
 .label1: ; 92e
-    call 0x0:0xffff ; 92e USER.GetCurrentTime
+    call far USER.GetCurrentTime ; 92e
     push ax
-    call 0xffff:0xc4 ; 934 1:c4 srand
+    call far srand ; 934 1:c4
     add sp,byte +0x2
     push byte +0x1
-    call 0xffff:0x0 ; 93e 5:0 InitGraphics
+    call far InitGraphics ; 93e 5:0
     add sp,byte +0x2
     mov ax,[HorizontalPadding]
     mov [bp-0xe],ax
@@ -1077,7 +1077,7 @@ func CreateWindows
     push word (WS_CLIPCHILDREN | WS_TILEDWINDOW)>>16    ; dwStyle
     push dx ; 0
     push byte +0x1                                      ; bMenu
-    call 0x0:0xffff ; 984 USER.AdjustWindowRect
+    call far USER.AdjustWindowRect ; 984
     push ds
     push word s_MainClass
     push ds
@@ -1097,7 +1097,7 @@ func CreateWindows
     push si
     push byte +0x0
     push byte +0x0
-    call 0x0:0x9f1 ; 9b5 USER.CreateWindow
+    call far USER.CreateWindow ; 9b5
     mov [hwndMain],ax
     or ax,ax
     jnz .label2 ; ↓
@@ -1122,7 +1122,7 @@ func CreateWindows
     push si
     push byte +0x0
     push byte +0x0
-    call 0x0:0xa2c ; 9f0 USER.CreateWindow
+    call far USER.CreateWindow ; 9f0
     mov [hwndBoard],ax
     or ax,ax
     jnz .label3 ; ↓
@@ -1147,7 +1147,7 @@ func CreateWindows
     push si
     push byte +0x0
     push byte +0x0
-    call 0x0:0xa58 ; a2b USER.CreateWindow
+    call far USER.CreateWindow ; a2b
     mov [hwndInfo],ax
     or ax,ax
     jnz .label4 ; ↓
@@ -1168,7 +1168,7 @@ func CreateWindows
     push si
     push byte +0x0
     push byte +0x0
-    call 0x0:0xa87 ; a57 USER.CreateWindow
+    call far USER.CreateWindow ; a57
     mov [hwndCounter],ax
     or ax,ax
     jnz .label5 ; ↓
@@ -1189,7 +1189,7 @@ func CreateWindows
     push si
     push byte +0x0
     push byte +0x0
-    call 0x0:0xab7 ; a86 USER.CreateWindow
+    call far USER.CreateWindow ; a86
     mov [hwndCounter2],ax
     or ax,ax
     jnz .label6 ; ↓
@@ -1210,7 +1210,7 @@ func CreateWindows
     push si
     push byte +0x0
     push byte +0x0
-    call 0x0:0xae8 ; ab6 USER.CreateWindow
+    call far USER.CreateWindow ; ab6
     mov [hwndCounter3],ax
     or ax,ax
     jnz .label7 ; ↓
@@ -1231,7 +1231,7 @@ func CreateWindows
     push si
     push byte +0x0
     push byte +0x0
-    call 0x0:0xffff ; ae7 USER.CreateWindow
+    call far USER.CreateWindow ; ae7
     mov [hwndInventory],ax
     or ax,ax
     jnz .label8 ; ↓
@@ -1245,16 +1245,16 @@ func CreateWindows
     cmp di,byte +0x7
     jnz .label10 ; ↓
 .label9: ; b08
-    call 0x3b5:PauseTimer ; b08 2:17a2
+    call far PauseTimer ; b08 2:17a2
     inc word [GamePaused]
 .label10: ; b11
     push word [hwndMain]
     push di
-    call 0x0:0xc67 ; b16 USER.ShowWindow
+    call far USER.ShowWindow ; b16
     push word [hwndMain]
-    call 0x0:0xffff ; b1f USER.UpdateWindow
+    call far USER.UpdateWindow ; b1f
     push word ID_CurrentLevel
-    call 0xb40:GetIniInt ; b27 2:198e
+    call far GetIniInt ; b27 2:198e
     add sp,byte +0x2
     cmp ax,0x1
     jnl .label11 ; ↓
@@ -1263,12 +1263,12 @@ func CreateWindows
     nop
 .label11: ; b3a
     push word ID_CurrentLevel
-    call 0xb4d:GetIniInt ; b3d 2:198e
+    call far GetIniInt ; b3d 2:198e
     add sp,byte +0x2
     mov si,ax
 .label12: ; b47
     push word ID_CurrentScore
-    call 0xb62:GetIniLong; b4a 2:1a1c
+    call far GetIniLong ; b4a 2:1a1c
     add sp,byte +0x2
     or dx,dx
     jnl .label13 ; ↓
@@ -1278,7 +1278,7 @@ func CreateWindows
     nop
 .label13: ; b5c
     push word ID_CurrentScore
-    call 0xc08:GetIniLong; b5f 2:1a1c
+    call far GetIniLong ; b5f 2:1a1c
     add sp,byte +0x2
 .label14: ; b67
     mov [TotalScore],ax
@@ -1286,7 +1286,7 @@ func CreateWindows
     cmp si,byte +0x1
     jng .label15 ; ↓
     push si
-    call 0xb89:0xe48 ; b74 4:e48
+    call far FUN_4_0e48 ; b74 4:e48
     add sp,byte +0x2
     or ax,ax
     jnz .label15 ; ↓
@@ -1294,7 +1294,7 @@ func CreateWindows
 .label15: ; b83
     push byte +0x0
     push si
-    call 0x2dc:0x356 ; b86 4:356
+    call far FUN_4_0356 ; b86 4:356
     add sp,byte +0x4
     mov ax,0x1
 .label16: ; b91
@@ -1356,7 +1356,7 @@ func ShowDeathMessage
     push ds
     push cx
     push word [hwndMain]
-    call 0xdae:ShowMessageBox ; c05 2:0 ShowMessageBox
+    call far ShowMessageBox ; c05 2:0
     add sp,byte +0x8
     mov [SoundEnabled],si
     pop si
@@ -1390,16 +1390,16 @@ ShowHint:
     push word [OurHInstance]
     push byte +0x0
     push byte +0x0
-    call 0x0:0x9b6 ; c54 USER.CreateWindow
+    call far USER.CreateWindow ; c54
     mov [hwndHint],ax
     or ax,ax
     jz .label0 ; ↓
     push word [hwndCounter3]
     push byte +0x0
-    call 0x0:0xc72 ; c66 USER.ShowWindow
+    call far USER.ShowWindow ; c66
     push word [hwndInventory]
     push byte +0x0
-    call 0x0:0xca8 ; c71 USER.ShowWindow
+    call far USER.ShowWindow ; c71
 .label0: ; c76
     lea sp,[bp-0x2]
     pop ds
@@ -1415,14 +1415,14 @@ func HideHint
     cmp word [hwndHint],byte +0x0
     jz .end ; ↓
     push word [hwndHint]
-    call 0x0:0xffff ; c96 USER.DestroyWindow
+    call far USER.DestroyWindow ; c96
     mov word [hwndHint],0x0
     push word [hwndCounter3]
     push byte +0x5
-    call 0x0:0xcb3 ; ca7 USER.ShowWindow
+    call far USER.ShowWindow ; ca7
     push word [hwndInventory]
     push byte +0x5
-    call 0x0:0xffff ; cb2 USER.ShowWindow
+    call far USER.ShowWindow ; cb2
 .end: ; cb7
 endfunc
 
@@ -1446,10 +1446,10 @@ FUN_2_0cbe:
     push word [hwndCounter2]
     push byte +0x0
     push word [TimeRemaining]
-    call 0x0:0xd06 ; ce0 USER.SetWindowWord
+    call far USER.SetWindowWord ; ce0
     push word [hwndCounter2]
     push byte +0x2
-    call 0x0:0xffff ; ceb USER.GetWindowWord
+    call far USER.GetWindowWord ; ceb
     and al,0xfe
     mov di,ax
     cmp word [TimeRemaining],byte +0xf
@@ -1459,31 +1459,31 @@ FUN_2_0cbe:
     push word [hwndCounter2]
     push byte +0x2
     push di
-    call 0x0:0xd2a ; d05 USER.SetWindowWord
+    call far USER.SetWindowWord ; d05
     push word [hwndCounter2]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0xd4e ; d14 USER.InvalidateRect
+    call far USER.InvalidateRect ; d14
 .label1: ; d19
     test si,0x2
     jz .label2 ; ↓
     push word [hwndCounter3]
     push byte +0x0
     push word [ChipsRemainingCount]
-    call 0x0:0xd3f ; d29 USER.SetWindowWord
+    call far USER.SetWindowWord ; d29
     push word [hwndCounter3]
     push byte +0x2
     cmp word [ChipsRemainingCount],byte +0x1
     sbb ax,ax
     neg ax
     push ax
-    call 0x0:0xd67 ; d3e USER.SetWindowWord
+    call far USER.SetWindowWord ; d3e
     push word [hwndCounter3]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0xd76 ; d4d USER.InvalidateRect
+    call far USER.InvalidateRect ; d4d
 .label2: ; d52
     test si,0x20
     jz .label3 ; ↓
@@ -1491,12 +1491,12 @@ FUN_2_0cbe:
     push byte +0x0
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0x0:0xffff ; d66 USER.SetWindowWord
+    call far USER.SetWindowWord ; d66
     push word [hwndCounter]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0xd8b ; d75 USER.InvalidateRect
+    call far USER.InvalidateRect ; d75
 .label3: ; d7a
     test si,0x4
     jz .label4 ; ↓
@@ -1504,7 +1504,7 @@ FUN_2_0cbe:
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x2f8 ; d8a USER.InvalidateRect
+    call far USER.InvalidateRect ; d8a
 .label4: ; d8f
     mov ax,si
     test al,0x8
@@ -1515,10 +1515,10 @@ FUN_2_0cbe:
     add si,[bx+ChipX]
     cmp byte [bx+si+Lower],Hint
     jnz .label5 ; ↓
-    call 0xdb5:ShowHint ; dab 2:c1a ShowHint
+    call far ShowHint ; dab 2:c1a
     jmp short .label6 ; ↓
 .label5: ; db2
-    call 0x79b:HideHint ; db2 2:c7e HideHint
+    call far HideHint ; db2 2:c7e
 .label6: ; db7
     mov word [InventoryDirty],0x0
     pop si
@@ -1546,7 +1546,7 @@ FUN_2_0dc6:
     push word [OurHInstance]
     push ds
     push word s_background
-    call 0x0:0xffff ; ddd USER.LoadBitmap
+    call far USER.LoadBitmap ; ddd
     mov si,ax
     or si,si
     jnz .label0 ; ↓
@@ -1555,14 +1555,14 @@ FUN_2_0dc6:
     mov di,[bp+0x8]
     push word [TileDC]
     push si
-    call 0x0:0xe71 ; df3 GDI.SelectObject
+    call far GDI.SelectObject ; df3
     mov [bp-0x8],ax
     push si
     push byte +0xe
     lea ax,[bp-0x20]
     push ss
     push ax
-    call 0x0:0xffff ; e03 GDI.GetObject
+    call far GDI.GetObject ; e03
     mov ax,[di+0x6]
     cwd
     idiv word [bp-0x1c]
@@ -1591,7 +1591,7 @@ FUN_2_0dc6:
     push byte +0x0
     push word 0xcc
     push byte +0x20
-    call 0x0:0x122 ; e4b GDI.BitBlt
+    call far GDI.BitBlt ; e4b
     add si,[bp-0x1c]
     cmp si,[di+0xa]
     jl .label2 ; ↑
@@ -1605,9 +1605,9 @@ FUN_2_0dc6:
 .label4: ; e69
     push word [TileDC]
     push word [bp-0x8]
-    call 0x0:0xffff ; e70 GDI.SelectObject
+    call far GDI.SelectObject ; e70
     push si
-    call 0x0:0xffff ; e76 GDI.DeleteObject
+    call far GDI.DeleteObject ; e76
     jmp short .label6 ; ↓
     nop
 .label5: ; e7e
@@ -1623,7 +1623,7 @@ FUN_2_0dc6:
     push ax
     push byte +0x0
     push byte +0x42
-    call 0x0:0x2a7 ; e9b GDI.PatBlt
+    call far GDI.PatBlt ; e9b
 .label6: ; ea0
     mov ax,[HorizontalPadding]
     mov [bp-0x12],ax
@@ -1640,14 +1640,14 @@ FUN_2_0dc6:
     push word [bp-0x12]
     mov bx,[bp+0x8]
     push word [bx]
-    call 0xef7:DrawSolidBorder ; ec9 2:1006
+    call far DrawSolidBorder ; ec9 2:1006
     add sp,byte +0xc
     lea ax,[bp-0x12]
     push ss
     push ax
     push byte +0x2
     push byte +0x2
-    call 0x0:0xf62 ; eda USER.InflateRect
+    call far USER.InflateRect ; eda
     push byte +0x1
     push byte +0x4
     push word [bp-0xc]
@@ -1656,7 +1656,7 @@ FUN_2_0dc6:
     push word [bp-0x12]
     mov bx,[bp+0x8]
     push word [bx]
-    call 0xb2a:Draw3DBorder; ef4 2:f06
+    call far Draw3DBorder ; ef4 2:f06
     add sp,byte +0xe
     pop si
     pop di
@@ -1692,7 +1692,7 @@ func Draw3DBorder
     sbb ax,ax
     and ax,0x2
     push ax
-    call 0x0:0xf33 ; f21 GDI.GetStockObject
+    call far GDI.GetStockObject ; f21
     mov di,ax
     ; get a GRAY_BRUSH or a WHITE_BRUSH
     ; depending on whether si != 0 or not
@@ -1701,12 +1701,12 @@ func Draw3DBorder
     sbb ax,ax
     and ax,0x2
     push ax
-    call 0x0:0x101c ; f32 GDI.GetStockObject
+    call far GDI.GetStockObject ; f32
     mov [bp-0x4],ax
     ; select the first brush
     push word [hdc]
     push di
-    call 0x0:0xf6b ; f3e GDI.SelectObject
+    call far GDI.SelectObject ; f3e
     mov [savedObj],ax
     cmp word [borderWidth],byte +0x0
     jg .loopinit
@@ -1721,10 +1721,10 @@ func Draw3DBorder
     push ax
     push byte +0x1
     push byte +0x1
-    call 0x0:0x103f ; f61 USER.InflateRect
+    call far USER.InflateRect ; f61
     push si
     push word [topLeftBrush]
-    call 0x0:0xfae ; f6a GDI.SelectObject
+    call far GDI.SelectObject ; f6a
     push si
     mov ax,[rect.x0]
     inc ax
@@ -1737,7 +1737,7 @@ func Draw3DBorder
     push byte +0x1
     push word 0xf0 ; PATCOPY
     push byte +0x21
-    call 0x0:0xfa5 ; f89 GDI.PatBlt
+    call far GDI.PatBlt ; f89
     push si
     push word [rect.x0]
     push word [rect.y0]
@@ -1748,10 +1748,10 @@ func Draw3DBorder
     push ax
     push word 0xf0
     push byte +0x21
-    call 0x0:0xfcb ; fa4 GDI.PatBlt
+    call far GDI.PatBlt ; fa4
     push si
     push word [bottomRightBrush]
-    call 0x0:0xff8 ; fad GDI.SelectObject
+    call far GDI.SelectObject ; fad
     push si
     push word [rect.x0]
     mov ax,[rect.y1]
@@ -1764,7 +1764,7 @@ func Draw3DBorder
     push byte +0x1
     push word 0xf0 ; PATCOPY
     push byte +0x21
-    call 0x0:0xfe7 ; fca GDI.PatBlt
+    call far GDI.PatBlt ; fca
     push si
     mov ax,[rect.x1]
     dec ax
@@ -1776,7 +1776,7 @@ func Draw3DBorder
     push ax
     push word 0xf0 ; PATCOPY
     push byte +0x21
-    call 0x0:0x105e ; fe6 GDI.PatBlt
+    call far GDI.PatBlt ; fe6
     dec di
     jz .cleanup ; ↓
     jmp .loop ; ↑
@@ -1784,7 +1784,7 @@ func Draw3DBorder
     ; restore the selected object
     push word [hdc]
     push word [savedObj]
-    call 0x0:0x1022 ; ff7 GDI.SelectObject
+    call far GDI.SelectObject ; ff7
     pop si
     pop di
 endfunc
@@ -1808,9 +1808,9 @@ func DrawSolidBorder
     ; get a light gray brush and select it
     push si
     push byte +0x1 ; LTGRAY BRUSH
-    call 0x0:0x769 ; 101b GDI.GetStockObject
+    call far GDI.GetStockObject ; 101b
     push ax
-    call 0x0:0x10c1 ; 1021 GDI.SelectObject
+    call far GDI.SelectObject ; 1021
     mov [savedObj],ax
     ; check a flag
     cmp word [borderWidth],byte +0x0
@@ -1824,7 +1824,7 @@ func DrawSolidBorder
     push ax
     push byte +0x1
     push byte +0x1
-    call 0x0:0xffff ; 103e USER.InflateRect
+    call far USER.InflateRect ; 103e
     push si ; HDC
     mov ax,[rect.x0]
     inc ax
@@ -1837,7 +1837,7 @@ func DrawSolidBorder
     push byte +0x1
     push word 0xf0 ; PATCOPY
     push byte +0x21
-    call 0x0:0x1079 ; 105d GDI.PatBlt
+    call far GDI.PatBlt ; 105d
     push si ; HDC
     push word [rect.x0]
     push word [rect.y0]
@@ -1848,7 +1848,7 @@ func DrawSolidBorder
     push ax
     push word 0xf0 ; PATCOPY
     push byte +0x21
-    call 0x0:0x1096 ; 1078 GDI.PatBlt
+    call far GDI.PatBlt ; 1078
     push si ; HDC
     push word [rect.x0]
     mov ax,[rect.y1]
@@ -1861,7 +1861,7 @@ func DrawSolidBorder
     push byte +0x1
     push word 0xf0 ; PATCOPY
     push byte +0x21
-    call 0x0:0x10b2 ; 1095 GDI.PatBlt
+    call far GDI.PatBlt ; 1095
     push si ; HDC
     mov ax,[rect.x1]
     dec ax
@@ -1873,14 +1873,14 @@ func DrawSolidBorder
     push ax
     push word 0xf0 ; PATCOPY
     push byte +0x21
-    call 0x0:0x111d ; 10b1 GDI.PatBlt
+    call far GDI.PatBlt ; 10b1
     dec di
     jz .cleanup ; ↓
     jmp .loop ; ↑
 .cleanup: ; 10bc
     push si ; HDC
     push word [savedObj]
-    call 0x0:0x1178 ; 10c0 GDI.SelectObject
+    call far GDI.SelectObject ; 10c0
     pop si
     pop di
 endfunc
@@ -1914,7 +1914,7 @@ FUN_2_10ce:
     lea ax,[bp-0x26]
     push ss
     push ax
-    call 0x0:0x348 ; 10fd USER.GetClientRect
+    call far USER.GetClientRect ; 10fd
     push word [si]
     push word [bp-0x26]
     push word [bp-0x24]
@@ -1926,7 +1926,7 @@ FUN_2_10ce:
     push ax
     push byte +0x0
     push byte +0x42
-    call 0x0:0xe9c ; 111c GDI.PatBlt
+    call far GDI.PatBlt ; 111c
     ; computes font height by multiplying the desired point size by the screen's DPI,
     ; as suggested by Microsoft's documentation:
     ; (https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-logfonta)
@@ -1935,10 +1935,10 @@ FUN_2_10ce:
     push byte -0x20
     push word [si]
     push byte +0x5a ; LOGPIXELSY
-    call 0x0:0xffff ; 1127 GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 1127
     push ax
     push byte +0x48
-    call 0x0:0xffff ; 112f GDI.MulDiv
+    call far GDI.MulDiv ; 112f
     mov [LOGFONT.lfHeight],ax
     mov word [LOGFONT.lfWeight],400
     mov byte [LOGFONT.lfItalic],0
@@ -1955,10 +1955,10 @@ FUN_2_10ce:
     mov [bp-0x4],ds
     push ds
     push ax
-    call 0x0:0xffff ; 115d KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 115d
     push ds
     push word LOGFONT
-    call 0x0:0xffff ; 1166 GDI.CreateFontIndirect
+    call far GDI.CreateFontIndirect ; 1166
     mov di,ax
     or di,di
     jnz .label4 ; ↓
@@ -1966,16 +1966,16 @@ FUN_2_10ce:
 .label4: ; 1174
     push word [si]
     push di
-    call 0x0:0x121a ; 1177 GDI.SelectObject
+    call far GDI.SelectObject ; 1177
     mov [bp-0x1a],ax
     push word [si]
     push byte +0x2
-    call 0x0:0x11ea ; 1183 GDI.SetBkMode
+    call far GDI.SetBkMode ; 1183
     mov [bp-0x1c],ax
     push word [si]
     push byte +0x0
     push byte +0x0
-    call 0x0:0x11fb ; 1191 GDI.SetBkColor
+    call far GDI.SetBkColor ; 1191
     mov [bp-0x14],ax
     mov [bp-0x12],dx
     push word [si]
@@ -1993,7 +1993,7 @@ FUN_2_10ce:
 .label6: ; 11ba
     push dx
     push ax
-    call 0x0:0xffff ; 11bc GDI.SetTextColor
+    call far GDI.SetTextColor ; 11bc
     mov [bp-0x18],ax
     mov [bp-0x16],dx
     mov bx,[bp-0xc8]
@@ -2005,25 +2005,25 @@ FUN_2_10ce:
     push ss
     push ax
     push word 0x925
-    call 0x0:0xffff ; 11db USER.DrawText
+    call far USER.DrawText ; 11db
     mov bx,[bp-0xc8]
     push word [bx]
     push word [bp-0x1c]
-    call 0x0:0xffff ; 11e9 GDI.SetBkMode
+    call far GDI.SetBkMode ; 11e9
     mov bx,[bp-0xc8]
     push word [bx]
     push word [bp-0x12]
     push word [bp-0x14]
-    call 0x0:0x120c ; 11fa GDI.SetBkColor
+    call far GDI.SetBkColor ; 11fa
     mov bx,[bp-0xc8]
     push word [bx]
     push word [bp-0x16]
     push word [bp-0x18]
-    call 0x0:0xffff ; 120b GDI.SetBkColor
+    call far GDI.SetBkColor ; 120b
     mov bx,[bp-0xc8]
     push word [bx]
     push word [bp-0x1a]
-    call 0x0:0xdf4 ; 1219 GDI.SelectObject
+    call far GDI.SelectObject ; 1219
     push word [bp-0xca]
     jmp .label42 ; ↓
     nop
@@ -2032,7 +2032,7 @@ FUN_2_10ce:
     cmp word [bx+EndingTick],byte +0x0
     jz .label8 ; ↓
     push byte +0x1
-    call 0xffff:0xa74 ; 1233 7:a74 EndGame
+    call far EndGame ; 1233 7:a74
     add sp,byte +0x2
     jmp .label43 ; ↓
 .label8: ; 123e
@@ -2110,7 +2110,7 @@ FUN_2_10ce:
     push si
     mov bx,[bp+0x8]
     push word [bx]
-    call 0xecc:UpdateTile ; 12f2 2:1ca UpdateTile
+    call far UpdateTile ; 12f2 2:1ca
     add sp,byte +0x6
     inc si
     cmp si,di
@@ -2147,7 +2147,7 @@ FUN_2_10ce:
     push ax
     push byte +0x0
     push byte +0x42
-    call 0x0:0x1370 ; 134e GDI.PatBlt
+    call far GDI.PatBlt ; 134e
 .label20: ; 1353
     cmp [si+0xa],di
     jng .label21 ; ↓
@@ -2162,7 +2162,7 @@ FUN_2_10ce:
     push di
     push byte +0x0
     push byte +0x42
-    call 0x0:0x15c7 ; 136f GDI.PatBlt
+    call far GDI.PatBlt ; 136f
 .label21: ; 1374
     mov bx,[GameStatePtr]
     cmp word [bx+IsLevelPlacardVisible],byte +0x0
@@ -2191,18 +2191,18 @@ FUN_2_10ce:
     mov [bp-0x4],dx
     push word [si]
     push byte +0x2
-    call 0x0:0x1184 ; 13b7 GDI.SetBkMode
+    call far GDI.SetBkMode ; 13b7
     mov [bp-0x1c],ax
     push word [si]
     push byte +0x0
     push byte +0x0
-    call 0x0:0x1192 ; 13c5 GDI.SetBkColor
+    call far GDI.SetBkColor ; 13c5
     mov [bp-0x14],ax
     mov [bp-0x12],dx
     push word [si]
     push word [bp-0x4]
     push word [bp-0x6]
-    call 0x0:0x11bd ; 13d8 GDI.SetTextColor
+    call far GDI.SetTextColor ; 13d8
     mov [bp-0x18],ax
     mov [bp-0x16],dx
     mov word [bp-0x1e],0x0
@@ -2214,10 +2214,10 @@ FUN_2_10ce:
     mov bx,[bp+0x8]
     push word [bx]
     push byte +0x5a ; LOGPIXELSY
-    call 0x0:0x1128 ; 13fa GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 13fa
     push ax
     push byte +0x48
-    call 0x0:0x1130 ; 1402 GDI.MulDiv
+    call far GDI.MulDiv ; 1402
     mov [LOGFONT.lfHeight],ax
     mov word [LOGFONT.lfWeight],700
     mov byte [LOGFONT.lfItalic],0
@@ -2235,17 +2235,17 @@ FUN_2_10ce:
     mov [bp-0x4],ds
     push ds
     push ax
-    call 0x0:0x115e ; 1430 KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 1430
     push ds
     push word LOGFONT
-    call 0x0:0x1167 ; 1439 GDI.CreateFontIndirect
+    call far GDI.CreateFontIndirect ; 1439
     mov [bp-0x10],ax
     or ax,ax
     jz .label30 ; ↓
     mov bx,[bp+0x8]
     push word [bx]
     push ax
-    call 0x0:0xf3f ; 144b GDI.SelectObject
+    call far GDI.SelectObject ; 144b
     mov [bp-0x1a],ax
 .label30: ; 1453
     mov bx,[bp+0x8]
@@ -2253,7 +2253,7 @@ FUN_2_10ce:
     lea ax,[bp-0x46]
     push ss
     push ax
-    call 0x0:0xffff ; 145d GDI.GetTextMetrics
+    call far GDI.GetTextMetrics ; 145d
     mov ax,[bp-0x46]
     mov [bp-0x4],ax
     xor ax,ax
@@ -2283,7 +2283,7 @@ FUN_2_10ce:
     lea cx,[bp-0xc6]
     push ss
     push cx
-    call 0x0:0x151e ; 14ad USER._wsprintf
+    call far USER._wsprintf ; 14ad
     add sp,byte +0xc
     mov si,ax
     mov bx,[bp+0x8]
@@ -2296,7 +2296,7 @@ FUN_2_10ce:
     push ss
     push ax
     push word 0xd21
-    call 0x0:0x153f ; 14cb USER.DrawText
+    call far USER.DrawText ; 14cb
     mov [bp-0x20],ax
     mov ax,[bp-0x22]
     sub ax,[bp-0x26]
@@ -2330,7 +2330,7 @@ FUN_2_10ce:
     lea ax,[bp-0xc6]
     push ss
     push ax
-    call 0x0:0x15f6 ; 151d USER._wsprintf
+    call far USER._wsprintf ; 151d
     add sp,byte +0xc
     mov [bp-0xc],ax
     mov bx,[bp+0x8]
@@ -2343,7 +2343,7 @@ FUN_2_10ce:
     push ss
     push ax
     push word 0xd21
-    call 0x0:0x1614 ; 153e USER.DrawText
+    call far USER.DrawText ; 153e
     mov [bp-0x20],ax
     mov ax,[bp-0x22]
     sub ax,[bp-0x26]
@@ -2396,7 +2396,7 @@ FUN_2_10ce:
     push word [bp-0xa]
     push byte +0x0
     push byte +0x42
-    call 0x0:0xf8a ; 15c6 GDI.PatBlt
+    call far GDI.PatBlt ; 15c6
     mov word [bp-0x26],0x0
     mov ax,[bp-0x4]
     add ax,[bp-0x24]
@@ -2414,7 +2414,7 @@ FUN_2_10ce:
     lea ax,[bp-0xc6]
     push ss
     push ax
-    call 0x0:0xffff ; 15f5 USER._wsprintf
+    call far USER._wsprintf ; 15f5
     add sp,byte +0xc
     mov di,ax
     mov bx,[bp+0x8]
@@ -2427,7 +2427,7 @@ FUN_2_10ce:
     push ss
     push ax
     push word 0x821
-    call 0x0:0x11dc ; 1613 USER.DrawText
+    call far USER.DrawText ; 1613
     mov ax,[bp-0x4]
     add [bp-0x24],ax
     add [bp-0x20],ax
@@ -2443,7 +2443,7 @@ FUN_2_10ce:
     lea ax,[bp-0xc6]
     push ss
     push ax
-    call 0x0:0x14ae ; 1637 USER._wsprintf
+    call far USER._wsprintf ; 1637
     add sp,byte +0xc
     mov si,ax
     mov bx,[bp+0x8]
@@ -2456,7 +2456,7 @@ FUN_2_10ce:
     push ss
     push ax
     push word 0x821
-    call 0x0:0x14cc ; 1655 USER.DrawText
+    call far USER.DrawText ; 1655
     mov ax,[bp-0x4]
     add [bp-0x24],ax
     add [bp-0x20],ax
@@ -2479,7 +2479,7 @@ FUN_2_10ce:
     push word [bp-0x26]
     mov bx,[bp+0x8]
     push word [bx]
-    call 0x1746:Draw3DBorder; 1695 2:f06
+    call far Draw3DBorder ; 1695 2:f06
     add sp,byte +0xe
 .label40: ; 169d
     dec word [bp-0xe]
@@ -2491,26 +2491,26 @@ FUN_2_10ce:
     mov bx,[bp+0x8]
     push word [bx]
     push word [bp-0x1c]
-    call 0x0:0x13b8 ; 16b4 GDI.SetBkMode
+    call far GDI.SetBkMode ; 16b4
     mov bx,[bp+0x8]
     push word [bx]
     push word [bp-0x12]
     push word [bp-0x14]
-    call 0x0:0x16d5 ; 16c4 GDI.SetBkColor
+    call far GDI.SetBkColor ; 16c4
     mov bx,[bp+0x8]
     push word [bx]
     push word [bp-0x16]
     push word [bp-0x18]
-    call 0x0:0x13c6 ; 16d4 GDI.SetBkColor
+    call far GDI.SetBkColor ; 16d4
     or di,di
     jz .label43 ; ↓
     mov bx,[bp+0x8]
     push word [bx]
     push word [bp-0x1a]
-    call 0x0:0x144c ; 16e5 GDI.SelectObject
+    call far GDI.SelectObject ; 16e5
     push di
 .label42: ; 16eb
-    call 0x0:0xe77 ; 16eb GDI.DeleteObject
+    call far GDI.DeleteObject ; 16eb
 .label43: ; 16f0
     pop si
     pop di
@@ -2557,21 +2557,21 @@ FUN_2_16fa:
     push si             ; uElapse
     push byte +0x0      ; lpTimerFunc
     push byte +0x0
-    call 0x0:0xffff ; 1730 USER.SetTimer
+    call far USER.SetTimer ; 1730
     or ax,ax
     jnz .label4 ; ↓
     push byte +0x30
     push ds
     push word SystemTimerErrorMsg
     push word [hwndMain]
-    call 0x17ea:ShowMessageBox ; 1743 2:0 ShowMessageBox
+    call far ShowMessageBox ; 1743 2:0
     add sp,byte +0x8
     push word [hwndMain]
     push word 0x111
     push byte +0x6a
     push byte +0x0
     push byte +0x0
-    call 0x0:0xffff ; 1758 USER.PostMessage
+    call far USER.PostMessage ; 1758
     xor ax,ax
     jmp short .label5 ; ↓
     nop
@@ -2614,7 +2614,7 @@ FUN_2_176e:
 .label2: ; 1792
     push cx
     push si
-    call 0x0:0xffff ; 1794 USER.KillTimer
+    call far USER.KillTimer ; 1794
     pop si
     lea sp,[bp-0x2]
     pop ds
@@ -2660,7 +2660,7 @@ PauseGame:
     push ds
     mov ds,ax
     sub sp,byte +0x2
-    call 0x1893:PauseTimer ; 17e7 2:17a2
+    call far PauseTimer ; 17e7 2:17a2
     push word [hMenu]
     push byte ID_PAUSE
     inc word [GamePaused]
@@ -2672,17 +2672,17 @@ PauseGame:
     xor ax,ax
 .label1: ; 1804
     push ax
-    call 0x0:0x1860 ; 1805 USER.CheckMenuItem
+    call far USER.CheckMenuItem ; 1805
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     push word [hwndMain]
-    call 0x187c:0x134 ; 1816 4:134 UpdateWindowTitle
+    call far UpdateWindowTitle ; 1816 4:134
     add sp,byte +0x4
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x188c ; 1828 USER.InvalidateRect
+    call far USER.InvalidateRect ; 1828
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -2717,20 +2717,20 @@ UnpauseGame:
     xor ax,ax
 .label2: ; 185e
     push ax
-    call 0x0:0xffff ; 185f USER.CheckMenuItem
+    call far USER.CheckMenuItem ; 185f
     push word [hwndMain]
-    call 0x0:0xffff ; 1868 USER.DrawMenuBar
+    call far USER.DrawMenuBar ; 1868
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     push word [hwndMain]
-    call 0xb77:0x134 ; 1879 4:134 UpdateWindowTitle
+    call far UpdateWindowTitle ; 1879 4:134
     add sp,byte +0x4
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0xd15 ; 188b USER.InvalidateRect
-    call 0x19a6:UnpauseTimer ; 1890 2:17ba
+    call far USER.InvalidateRect ; 188b
+    call far UnpauseTimer ; 1890 2:17ba
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -2741,7 +2741,7 @@ UnpauseGame:
 
 func PauseMusic
     sub sp,byte +0x2
-    call 0x18d5:0x2d4 ; 18a9 8:2d4
+    call far FUN_8_02d4 ; 18a9 8:2d4
 endfunc
 
 ; 18b6
@@ -2752,7 +2752,7 @@ func UnpauseMusic
     jz .end ; ↓
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xffff:0x308 ; 18d2 8:308
+    call far FUN_8_0308 ; 18d2 8:308
 .end: ; 18d7
 endfunc
 
@@ -2864,7 +2864,7 @@ func GetIniInt
     lea ax,[bp-0x8]
     push ax
     push word [bp+0x6]
-    call 0x12f5:GetIniKey ; 19a3 2:18de
+    call far GetIniKey ; 19a3 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2875,7 +2875,7 @@ func GetIniInt
     push word [bp-0x8]
     push ds
     push word IniFileName
-    call 0x0:0xffff ; 19bd KERNEL.GetPrivateProfileInt
+    call far KERNEL.GetPrivateProfileInt ; 19bd
     pop si
 endfunc
 
@@ -2887,7 +2887,7 @@ func StoreIniInt
     push si
     push byte +0x0
     push word [bp+0x6]
-    call 0x1a34:GetIniKey ; 19dd 2:18de
+    call far GetIniKey ; 19dd 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2897,7 +2897,7 @@ func StoreIniInt
     lea ax,[bp-0x16]
     push ss
     push ax
-    call 0x0:0x1a4e ; 19f6 USER._wsprintf
+    call far USER._wsprintf ; 19f6
     add sp,byte +0xa
     push ds
     push word IniSectionName
@@ -2908,7 +2908,7 @@ func StoreIniInt
     push ax
     push ds
     push word IniFileName
-    call 0x0:0x1acf ; 1a0f KERNEL.WritePrivateProfileString
+    call far KERNEL.WritePrivateProfileString ; 1a0f
     pop si
 endfunc
 
@@ -2923,7 +2923,7 @@ func GetIniLong
     lea ax,[bp-0x8]
     push ax
     push word [bp+0x6]
-    call 0x1a9c:GetIniKey ; 1a31 2:18de
+    call far GetIniKey ; 1a31 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2936,7 +2936,7 @@ func GetIniLong
     lea ax,[bp-0x18]
     push ss
     push ax
-    call 0x0:0x1ab6 ; 1a4d USER._wsprintf
+    call far USER._wsprintf ; 1a4d
     add sp,byte +0xc
     push ds
     push word IniSectionName
@@ -2951,10 +2951,10 @@ func GetIniLong
     push byte +0x10
     push ds
     push word IniFileName
-    call 0x0:0x1b18 ; 1a6d KERNEL.GetPrivateProfileString
+    call far KERNEL.GetPrivateProfileString ; 1a6d
     lea ax,[bp-0x28]
     push ax
-    call 0x1ba2:0xc0 ; 1a76 1:c0 atol
+    call far atol ; 1a76 1:c0
     add sp,byte +0x2
     pop si
 endfunc
@@ -2967,7 +2967,7 @@ func StoreIniLong
     push si
     push byte +0x0
     push word [bp+0x6]
-    call 0x1698:GetIniKey ; 1a99 2:18de
+    call far GetIniKey ; 1a99 2:18de
     add sp,byte +0x4
     mov si,ax
     mov [bp-0x4],dx
@@ -2978,7 +2978,7 @@ func StoreIniLong
     lea ax,[bp-0x16]
     push ss
     push ax
-    call 0x0:0x1af8 ; 1ab5 USER._wsprintf
+    call far USER._wsprintf ; 1ab5
     add sp,byte +0xc
     push ds
     push word IniSectionName
@@ -2989,7 +2989,7 @@ func StoreIniLong
     push ax
     push ds
     push word IniFileName
-    call 0x0:0x1c94 ; 1ace KERNEL.WritePrivateProfileString
+    call far KERNEL.WritePrivateProfileString ; 1ace
     pop si
 endfunc
 
@@ -3010,7 +3010,7 @@ func GetLevelProgressFromIni
     lea ax,[bp-0x10]
     push ss
     push ax
-    call 0x0:0x1c3a ; 1af7 USER._wsprintf
+    call far USER._wsprintf ; 1af7
     add sp,byte +0xa
     push ds
     push word IniSectionName
@@ -3025,7 +3025,7 @@ func GetLevelProgressFromIni
     push byte +0x13
     push ds
     push word IniFileName
-    call 0x0:0x1cee ; 1b17 KERNEL.GetPrivateProfileString
+    call far KERNEL.GetPrivateProfileString ; 1b17
     mov di,ax
     cmp di,byte +0x4
     jnl .label0 ; ↓
@@ -3052,7 +3052,7 @@ func GetLevelProgressFromIni
     lea ax,[bp-0x24]
     push ss
     push ax
-    call 0x0:0x1d82 ; 1b53 KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 1b53
 .label3: ; 1b58
     cmp word [bp+0xa],byte +0x0
     jz .label4 ; ↓
@@ -3084,7 +3084,7 @@ func GetLevelProgressFromIni
     cmp word [bp+0xa],byte +0x0
     jz .label10 ; ↓
     push word [bp-0x4]
-    call 0x1bba:0xbc ; 1b9f 1:bc atoi
+    call far atoi ; 1b9f 1:bc
     add sp,byte +0x2
     or ax,ax
     jnl .label9 ; ↓
@@ -3093,7 +3093,7 @@ func GetLevelProgressFromIni
     jmp short .label10 ; ↓
 .label9: ; 1bb4
     push word [bp-0x4]
-    call 0x1bed:0xbc ; 1bb7 1:bc atoi
+    call far atoi ; 1bb7 1:bc
     add sp,byte +0x2
     mov bx,[bp+0xa]
     mov [bx],ax
@@ -3116,7 +3116,7 @@ func GetLevelProgressFromIni
     or di,di
     jz .label14 ; ↓
     push word [bp-0x4]
-    call 0x1c06:0xc0 ; 1bea 1:c0 atol
+    call far atol ; 1bea 1:c0
     add sp,byte +0x2
     or dx,dx
     jnl .label13 ; ↓
@@ -3127,7 +3127,7 @@ func GetLevelProgressFromIni
     nop
 .label13: ; 1c00
     push word [bp-0x4]
-    call 0x937:0xc0 ; 1c03 1:c0 atol
+    call far atol ; 1c03 1:c0
     add sp,byte +0x2
     mov [di],ax
     mov [di+0x2],dx
@@ -3154,7 +3154,7 @@ func SaveLevelProgressToIni
     lea ax,[bp-0xc]
     push ss
     push ax
-    call 0x0:0x1c5e ; 1c39 USER._wsprintf
+    call far USER._wsprintf ; 1c39
     add sp,byte +0xa
     or si,si
     jl .label0 ; ↓
@@ -3170,7 +3170,7 @@ func SaveLevelProgressToIni
     lea ax,[bp-0x4c]
     push ss
     push ax
-    call 0x0:0x1c7a ; 1c5d USER._wsprintf
+    call far USER._wsprintf ; 1c5d
     add sp,byte +0x12
     jmp short .label1 ; ↓
     nop
@@ -3185,7 +3185,7 @@ func SaveLevelProgressToIni
     lea ax,[bp-0x4c]
     push ss
     push ax
-    call 0x0:0x1cce ; 1c79 USER._wsprintf
+    call far USER._wsprintf ; 1c79
     add sp,byte +0xc
 .label1: ; 1c81
     push ds
@@ -3198,7 +3198,7 @@ func SaveLevelProgressToIni
     push ax
     push ds
     push word IniFileName
-    call 0x0:0xffff ; 1c93 KERNEL.WritePrivateProfileString
+    call far KERNEL.WritePrivateProfileString ; 1c93
     pop si
 endfunc
 
@@ -3230,7 +3230,7 @@ FUN_2_1ca0:
     lea ax,[bp-0x16]
     push ss
     push ax
-    call 0x0:0x1638 ; 1ccd USER._wsprintf
+    call far USER._wsprintf ; 1ccd
     add sp,byte +0xa
     lea di,[bp-0x16]
 .label1: ; 1cd8
@@ -3245,7 +3245,7 @@ FUN_2_1ca0:
     push word [bp+0xa]
     push ds
     push word IniFileName
-    call 0x0:0xffff ; 1ced KERNEL.GetPrivateProfileString
+    call far KERNEL.GetPrivateProfileString ; 1ced
     mov bx,[bp+0x8]
     cmp byte [bx],'$'
     jz .label2 ; ↓
@@ -3283,12 +3283,12 @@ FUN_2_1ca0:
     shl bx,1
     push ds
     push word [MidiFileDefaultArray+bx]
-    call 0x0:0xffff ; 1d45 KERNEL.lstrlen
+    call far KERNEL.lstrlen ; 1d45
     sub ax,[bp+0xa]
     neg ax
     dec ax
     push ax
-    call 0x0:0xffff ; 1d51 KERNEL.GetWindowsDirectory
+    call far KERNEL.GetWindowsDirectory ; 1d51
     mov si,ax
     or si,si
     jz .label7 ; ↓
@@ -3309,7 +3309,7 @@ FUN_2_1ca0:
     push ds
     push word [bx+MidiFileDefaultArray]
 .label8: ; 1d81
-    call 0x0:0x1431 ; 1d81 KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 1d81
     push ds
     push word IniSectionName
     push ds
@@ -3318,11 +3318,11 @@ FUN_2_1ca0:
     push word [bp+0x8]
     push ds
     push word IniFileName
-    call 0x0:0x1df9 ; 1d96 KERNEL.WritePrivateProfileString
+    call far KERNEL.WritePrivateProfileString ; 1d96
 .label9: ; 1d9b
     push ds
     push word [bp+0x8]
-    call 0x0:0x1d46 ; 1d9f KERNEL.lstrlen
+    call far KERNEL.lstrlen ; 1d9f
     pop si
     pop di
     lea sp,[bp-0x2]
@@ -3348,7 +3348,7 @@ FUN_2_1dae:
     push si
     mov si,0x1
     push word ID_HighestLevel
-    call 0x1e0a:GetIniInt ; 1dc3 2:198e
+    call far GetIniInt ; 1dc3 2:198e
     add sp,byte +0x2
     mov di,ax
     cmp di,byte +0x1
@@ -3361,7 +3361,7 @@ FUN_2_1dae:
     lea ax,[bp-0xe]
     push ss
     push ax
-    call 0x0:0x19f7 ; 1ddf USER._wsprintf
+    call far USER._wsprintf ; 1ddf
     add sp,byte +0xa
     push ds
     push word IniSectionName
@@ -3372,19 +3372,19 @@ FUN_2_1dae:
     push byte +0x0
     push ds
     push word IniFileName
-    call 0x0:0x1a10 ; 1df8 KERNEL.WritePrivateProfileString
+    call far KERNEL.WritePrivateProfileString ; 1df8
     inc si
     cmp si,di
     jng .loop ; ↑
 .label1: ; 1e02
     push byte FirstLevel
     push word ID_HighestLevel
-    call 0x1e19:StoreIniInt ; 1e07 2:19ca
+    call far StoreIniInt ; 1e07 2:19ca
     add sp,byte +0x4
     push byte +0x0
     push byte +0x0
     push word ID_CurrentScore
-    call 0x1e93:StoreIniLong ; 1e16 2:1a86
+    call far StoreIniLong ; 1e16 2:1a86
     add sp,byte +0x6
     pop si
     pop di
@@ -3446,17 +3446,17 @@ MenuItemCallback:
     push word [bp+0xa]
     push word [bp+0xe]
     push word [bp+0xc]
-    call 0x0:0xffff ; 1e87 USER.DefWindowProc
+    call far USER.DefWindowProc ; 1e87
     jmp .label43 ; ↓
     nop
 
 .label1: ; 1e90
-    call 0x1ea4:PauseGame ; 1e90 2:17da PauseGame
+    call far PauseGame ; 1e90 2:17da
     push word [OurHInstance]
     push word [bp+0x6]
-    call 0x0:0xffff ; 1e9c WEP4UTIL.4
+    call far WEP4UTIL.4 ; 1e9c
 .label2: ; 1ea1
-    call 0x1fa4:UnpauseGame ; 1ea1 2:1834 UnpauseGame
+    call far UnpauseGame ; 1ea1 2:1834
     jmp .label42 ; ↓
     nop
 
@@ -3464,9 +3464,9 @@ MenuItemCallback:
     mov si,[bp+0x6]
     push si
     push byte +0x0
-    call 0x0:0xb17 ; 1eb0 USER.ShowWindow
+    call far USER.ShowWindow ; 1eb0
     push si
-    call 0x0:0xc97 ; 1eb6 USER.DestroyWindow
+    call far USER.DestroyWindow ; 1eb6
     jmp .label42 ; ↓
 
 .label4: ; 1ebe
@@ -3477,7 +3477,7 @@ MenuItemCallback:
     push ds
     push word s_Contents
 .label5: ; 1ed2
-    call 0x0:0xffff ; 1ed2 WEP4UTIL.5
+    call far WEP4UTIL.5 ; 1ed2
     jmp .label42 ; ↓
 
 .label6: ; 1eda
@@ -3493,9 +3493,9 @@ MenuItemCallback:
     sbb ax,ax
     and ax,0x8
     push ax
-    call 0x0:0x20a0 ; 1ef6 USER.CheckMenuItem
+    call far USER.CheckMenuItem ; 1ef6
     push word [hwndMain]
-    call 0x0:0x20a9 ; 1eff USER.DrawMenuBar
+    call far USER.DrawMenuBar ; 1eff
     jmp .label42 ; ↓
     nop
 
@@ -3515,7 +3515,7 @@ MenuItemCallback:
     inc ax
     push ax
     push word [bp+0x6]
-    call 0x1f49:0x115c ; 1f2b 4:115c
+    call far FUN_4_115c ; 1f2b 4:115c
     add sp,byte +0x4
     or ax,ax
     jnz .label10 ; ↓
@@ -3528,7 +3528,7 @@ MenuItemCallback:
 .label11: ; 1f45
     push ax
 .label12: ; 1f46
-    call 0x1f74:0x356 ; 1f46 4:356
+    call far FUN_4_0356 ; 1f46 4:356
 .label13: ; 1f4b
     add sp,byte +0x4
     jmp .label42 ; ↓
@@ -3548,7 +3548,7 @@ MenuItemCallback:
 .label16: ; 1f6d
     push ax
     push word [bp+0x6]
-    call 0x1819:0x115c ; 1f71 4:115c
+    call far FUN_4_115c ; 1f71 4:115c
     add sp,byte +0x4
     or ax,ax
     jnz .label17 ; ↓
@@ -3571,7 +3571,7 @@ MenuItemCallback:
 
 .label19: ; 1f9e
     push word ID_HighestLevel
-    call 0x1fb9:GetIniInt ; 1fa1 2:198e
+    call far GetIniInt ; 1fa1 2:198e
     add sp,byte +0x2
     dec ax
     jz .label20 ; ↓
@@ -3579,13 +3579,13 @@ MenuItemCallback:
     push ds
     push word NewGamePrompt
     push word [hwndMain]
-    call 0x1fc9:ShowMessageBox ; 1fb6 2:0 ShowMessageBox
+    call far ShowMessageBox ; 1fb6 2:0
     add sp,byte +0x8
     cmp ax,0x6
     jz .label20 ; ↓
     jmp .label42 ; ↓
 .label20: ; 1fc6
-    call 0x1fdd:FUN_2_1dae ; 1fc6 2:1dae
+    call far FUN_2_1dae ; 1fc6 2:1dae
     sub ax,ax
     mov [TotalScore+2],ax
     mov [TotalScore],ax
@@ -3595,11 +3595,11 @@ MenuItemCallback:
     nop
 
 .label21: ; 1fda
-    call 0x201e:PauseGame ; 1fda 2:17da PauseGame
+    call far PauseGame ; 1fda 2:17da
     push word 0x20ca ; 1fdd 6:18e BESTTIMESMSGPROC
     push word 0x18e
     push word [OurHInstance]
-    call 0x0:0x20d4 ; 1fe9 KERNEL.MakeProcInstance
+    call far KERNEL.MakeProcInstance ; 1fe9
     mov si,ax
     mov [bp-0x4],dx
     push word [OurHInstance]
@@ -3610,21 +3610,21 @@ MenuItemCallback:
     push ax
     push si
     mov di,dx
-    call 0x0:0x20fc ; 2005 USER.DialogBox
+    call far USER.DialogBox ; 2005
     push di
     push si
-    call 0x0:0x2107 ; 200c KERNEL.FreeProcInstance
+    call far KERNEL.FreeProcInstance ; 200c
     jmp .label2 ; ↑
 
 .label22: ; 2014
     cmp word [GamePaused],byte +0x0
     jz .label23 ; ↓
-    call 0x2027:UnpauseMusic ; 201b 2:18b6 UnpauseMusic
+    call far UnpauseMusic ; 201b 2:18b6
     jmp .label2 ; ↑
     nop
 .label23: ; 2024
-    call 0x202c:PauseMusic ; 2024 2:189c PauseMusic
-    call 0x2063:PauseGame ; 2029 2:17da PauseGame
+    call far PauseMusic ; 2024 2:189c
+    call far PauseGame ; 2029 2:17da
     jmp .label42 ; ↓
     nop
 
@@ -3635,18 +3635,18 @@ MenuItemCallback:
     mov [MusicEnabled],ax
     or ax,ax
     jnz .label25 ; ↓
-    call 0x2055:0x2d4 ; 2042 8:2d4
+    call far FUN_8_02d4 ; 2042 8:2d4
     jmp short .label26 ; ↓
     nop
 .label25: ; 204a
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0x20be:0x308 ; 2052 8:308
+    call far FUN_8_0308 ; 2052 8:308
     add sp,byte +0x2
 .label26: ; 205a
     push word [MusicEnabled]
     push byte ID_BGM
-    call 0x2088:StoreIniInt ; 2060 2:19ca
+    call far StoreIniInt ; 2060 2:19ca
     add sp,byte +0x4
     push word [hMenu]
     push byte ID_BGM
@@ -3660,7 +3660,7 @@ MenuItemCallback:
     mov [SoundEnabled],ax
     push ax
     push byte ID_SOUND
-    call 0x20c7:StoreIniInt ; 2085 2:19ca
+    call far StoreIniInt ; 2085 2:19ca
     add sp,byte +0x4
     push word [hMenu]
     push byte ID_SOUND
@@ -3669,25 +3669,25 @@ MenuItemCallback:
     sbb ax,ax
     and ax,0x8
     push ax
-    call 0x0:0x1806 ; 209f USER.CheckMenuItem
+    call far USER.CheckMenuItem ; 209f
     push word [hwndMain]
-    call 0x0:0x1869 ; 20a8 USER.DrawMenuBar
+    call far USER.DrawMenuBar ; 20a8
     cmp word [SoundEnabled],byte +0x0
     jnz .label28 ; ↓
     jmp .label42 ; ↓
 .label28: ; 20b7
     push byte +0x1
     push byte +0x7
-    call 0x18ac:0x56c ; 20bb 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 20bb 8:56c
     jmp .label13 ; ↑
     nop
 
 .label29: ; 20c4
-    call 0x210e:PauseGame ; 20c4 2:17da PauseGame
+    call far PauseGame ; 20c4 2:17da
     push word 0xffff ; 20c7 6:0 GOTOLEVELMSGPROC
     push word 0x0
     push word [OurHInstance]
-    call 0x0:0xffff ; 20d3 KERNEL.MakeProcInstance
+    call far KERNEL.MakeProcInstance ; 20d3
     mov si,ax
     mov [bp-0x6],dx
     mov bx,[GameStatePtr]
@@ -3701,11 +3701,11 @@ MenuItemCallback:
     push si
     mov [bp-0xc],si
     mov [bp-0xa],ax
-    call 0x0:0xffff ; 20fb USER.DialogBox
+    call far USER.DialogBox ; 20fb
     push word [bp-0xa]
     push word [bp-0xc]
-    call 0x0:0xffff ; 2106 KERNEL.FreeProcInstance
-    call 0x19e0:UnpauseGame ; 210b 2:1834 UnpauseGame
+    call far KERNEL.FreeProcInstance ; 2106
+    call far UnpauseGame ; 210b 2:1834
     mov bx,[GameStatePtr]
     mov ax,[bx+LevelNumber]
     mov [bp-0x4],ax
@@ -3745,12 +3745,12 @@ MenuItemCallback:
     push byte +0x0
     push byte +0x0
     push word 0x7f02
-    call 0x0:0x7b1 ; 216d USER.LoadCursor
+    call far USER.LoadCursor ; 216d
     mov si,ax
     push word [hwndMain]
-    call 0x0:0xffff ; 2178 USER.SetCapture
+    call far USER.SetCapture ; 2178
     push si
-    call 0x0:0x2247 ; 217e USER.SetCursor
+    call far USER.SetCursor ; 217e
     mov di,ax
     cmp word [ColorMode],byte +0x1
     jz .label34 ; ↓
@@ -3758,41 +3758,41 @@ MenuItemCallback:
     jmp short .label35 ; ↓
 .label34: ; 2194
     push byte +0x0
-    call 0x21ab:0x0 ; 2196 5:0 InitGraphics
+    call far InitGraphics ; 2196 5:0
     add sp,byte +0x2
 .label35: ; 219e
     push byte +0x1
     lea ax,[bp-0x6]
     push ax
     push word [OurHInstance]
-    call 0x22e2:0x112 ; 21a8 5:112 LoadTiles
+    call far LoadTiles ; 21a8 5:112
     add sp,byte +0x6
     or ax,ax
     jz .label36 ; ↓
     push word [TileDC]
     push word [bp-0x6]
-    call 0x0:0x2323 ; 21bb GDI.SelectObject
+    call far GDI.SelectObject ; 21bb
     push ax
-    call 0x0:0x2428 ; 21c1 GDI.DeleteObject
+    call far GDI.DeleteObject ; 21c1
     mov ax,[bp-0x6]
     mov [TileBitmapObj],ax
     push word [hwndBoard]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x21e6 ; 21d6 USER.InvalidateRect
+    call far USER.InvalidateRect ; 21d6
     push word [hwndInventory]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x21fc ; 21e5 USER.InvalidateRect
+    call far USER.InvalidateRect ; 21e5
     cmp word [hwndHint],byte +0x0
     jz .label37 ; ↓
     push word [hwndHint]
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x1829 ; 21fb USER.InvalidateRect
+    call far USER.InvalidateRect ; 21fb
     jmp short .label37 ; ↓
 .label36: ; 2202
     mov ax,[bp-0x4]
@@ -3807,7 +3807,7 @@ MenuItemCallback:
 .label39: ; 2216
     push ax
     push byte ID_COLOR
-    call 0x2339:StoreIniInt ; 2219 2:19ca
+    call far StoreIniInt ; 2219 2:19ca
     add sp,byte +0x4
     push word [hMenu]
     push byte ID_COLOR
@@ -3820,12 +3820,12 @@ MenuItemCallback:
     xor ax,ax
 .label41: ; 2236
     push ax
-    call 0x0:0x236b ; 2237 USER.CheckMenuItem
+    call far USER.CheckMenuItem ; 2237
     push word [hwndMain]
-    call 0x0:0x23b2 ; 2240 USER.DrawMenuBar
+    call far USER.DrawMenuBar ; 2240
     push di
-    call 0x0:0xffff ; 2246 USER.SetCursor
-    call 0x0:0xffff ; 224b USER.ReleaseCapture
+    call far USER.SetCursor ; 2246
+    call far USER.ReleaseCapture ; 224b
 
 .label42: ; 2250
     xor ax,ax
@@ -3898,7 +3898,7 @@ func MAINWNDPROC
     push word [OurHInstance]
     push ds
     push word s_ChipsMenu2
-    call 0x0:0xffff ; 22c4 USER.LoadAccelerators
+    call far USER.LoadAccelerators ; 22c4
     mov [hAccel],ax
     or ax,ax
     jnz .label11 ; ↓
@@ -3908,7 +3908,7 @@ func MAINWNDPROC
     push byte +0x0
     push word TileBitmapObj
     push word [OurHInstance]
-    call 0x243d:0x112 ; 22df 5:112 LoadTiles
+    call far LoadTiles ; 22df 5:112
     add sp,byte +0x6
     or ax,ax
     jnz .label12 ; ↓
@@ -3916,7 +3916,7 @@ func MAINWNDPROC
 .label12: ; 22ee
     mov si,[hwnd]
     push si
-    call 0x0:0xffff ; 22f2 USER.GetDC
+    call far USER.GetDC ; 22f2
     mov di,ax
     or di,di
     jnz .label13 ; ↓
@@ -3924,11 +3924,11 @@ func MAINWNDPROC
 .label13: ; 2300
     ; create a memory DC that's compatible with our main window
     push di
-    call 0x0:0xffff ; 2301 GDI.CreateCompatibleDC
+    call far GDI.CreateCompatibleDC ; 2301
     mov [TileDC],ax
     push si
     push di
-    call 0x0:0xffff ; 230b USER.ReleaseDC
+    call far USER.ReleaseDC ; 230b
     cmp word [TileDC],byte +0x0
     jnz .label14 ; ↓
     jmp .label16 ; ↓
@@ -3936,21 +3936,21 @@ func MAINWNDPROC
     ; select our tile bitmap into it
     push word [TileDC]
     push word [TileBitmapObj]
-    call 0x0:0x241f ; 2322 GDI.SelectObject
+    call far GDI.SelectObject ; 2322
     mov [SavedObj],ax
     push byte +0x1 ; free game lists
-    call 0x23fb:0x320 ; 232c 4:320 ClearGameState
+    call far ClearGameState ; 232c 4:320
     add sp,byte +0x2
     push byte ID_BGM
-    call 0x2346:GetIniInt ; 2336 2:198e
+    call far GetIniInt ; 2336 2:198e
     add sp,byte +0x2
     mov [MusicEnabled],ax
     push byte ID_SOUND
-    call 0x23db:GetIniInt ; 2343 2:198e
+    call far GetIniInt ; 2343 2:198e
     add sp,byte +0x2
     mov [SoundEnabled],ax
-    call 0x2356:0x0 ; 234e 8:0 InitSound
-    call 0x23e3:0x4a0 ; 2353 8:4a0
+    call far InitSound ; 234e 8:0
+    call far FUN_8_04a0 ; 2353 8:4a0
     push word [hMenu]
     push byte ID_BGM
     cmp word [MusicEnabled],byte +0x1
@@ -3958,7 +3958,7 @@ func MAINWNDPROC
     sbb ax,ax
     and ax,0x8
     push ax
-    call 0x0:0x2382 ; 236a USER.CheckMenuItem
+    call far USER.CheckMenuItem ; 236a
     push word [hMenu]
     push byte ID_SOUND
     cmp word [SoundEnabled],byte +0x1
@@ -3966,23 +3966,23 @@ func MAINWNDPROC
     sbb ax,ax
     and ax,0x8
     push ax
-    call 0x0:0x1ef7 ; 2381 USER.CheckMenuItem
+    call far USER.CheckMenuItem ; 2381
     push word [hMenu]
     push byte ID_BGM
     cmp word [MusicMenuItemEnabled],byte +0x1
     sbb ax,ax
     neg ax
     push ax
-    call 0x0:0x23ac ; 2396 USER.EnableMenuItem
+    call far USER.EnableMenuItem ; 2396
     push word [hMenu]
     push byte ID_SOUND
     cmp word [SoundMenuItemEnabled],byte +0x1
     sbb ax,ax
     neg ax
     push ax
-    call 0x0:0xffff ; 23ab USER.EnableMenuItem
+    call far USER.EnableMenuItem ; 23ab
     push si
-    call 0x0:0x1f00 ; 23b1 USER.DrawMenuBar
+    call far USER.DrawMenuBar ; 23b1
     jmp .label67 ; ↓
     nop
 .label15: ; 23ba
@@ -3994,7 +3994,7 @@ func MAINWNDPROC
     push ds
     push word MessageBoxCaption
     push word 0x1030
-    call 0x0:0x64 ; 23c9 USER.MessageBox
+    call far USER.MessageBox ; 23c9
     mov ax,0xffff
 .label17: ; 23d1
     cwd
@@ -4003,15 +4003,15 @@ func MAINWNDPROC
 .label18: ; 23d6
     ; WM_DESTROY
     push byte +0x1
-    call 0x23f3:FUN_2_176e ; 23d8 2:176e
+    call far FUN_2_176e ; 23d8 2:176e
     add sp,byte +0x2
-    call 0x2442:0x2d4 ; 23e0 8:2d4
+    call far FUN_8_02d4 ; 23e0 8:2d4
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     push word ID_CurrentLevel
-    call 0x2492:StoreIniInt ; 23f0 2:19ca
+    call far StoreIniInt ; 23f0 2:19ca
     add sp,byte +0x4
-    call 0x1f2e:0x240 ; 23f8 4:240 FreeGameLists
+    call far FreeGameLists ; 23f8 4:240
     cmp word [Var2a],byte +0x0
     jz .label19 ; ↓
     push word [OurHInstance]
@@ -4019,19 +4019,19 @@ func MAINWNDPROC
     push byte +0x2
     push byte +0x0
     push byte +0x0
-    call 0x0:0x1ed3 ; 2411 WEP4UTIL.5
+    call far WEP4UTIL.5 ; 2411
 .label19: ; 2416
     push word [TileDC]
     push word [SavedObj]
-    call 0x0:0x16e6 ; 241e GDI.SelectObject
+    call far GDI.SelectObject ; 241e
     push word [TileBitmapObj]
-    call 0x0:0x16ec ; 2427 GDI.DeleteObject
-    call 0xffff:0xbc ; 242c 9:bc
+    call far GDI.DeleteObject ; 2427
+    call far FreeDigits ; 242c 9:bc
     push word [TileDC]
-    call 0x0:0xffff ; 2435 GDI.DeleteDC
-    call 0x941:0x17c ; 243a 5:17c
-    call 0x2447:0x5b8 ; 243f 8:5b8
-    call 0x2045:0xe6 ; 2444 8:e6 TeardownSound
+    call far GDI.DeleteDC ; 2435
+    call far FUN_5_017c ; 243a 5:17c
+    call far FUN_8_05b8 ; 243f 8:5b8
+    call far TeardownSound ; 2444 8:e6
     cmp word [IsWin31],byte +0x0
     jz .label20 ; ↓
     push byte +0x17     ; uiAction = SPI_SETKEYBOARDDELAY
@@ -4039,15 +4039,15 @@ func MAINWNDPROC
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x24d9 ; 245c USER.SystemParametersInfo
+    call far USER.SystemParametersInfo ; 245c
 .label20: ; 2461
     cmp word [0x1722],byte +0x0
     jz .label21 ; ↓
     push word [0x1722]
-    call 0x0:0xffff ; 246c KERNEL.LocalFree
+    call far KERNEL.LocalFree ; 246c
 .label21: ; 2471
     push byte +0x0
-    call 0x0:0xffff ; 2473 USER.PostQuitMessage
+    call far USER.PostQuitMessage ; 2473
     jmp .label67 ; ↓
     nop
 .label22: ; 247c
@@ -4056,17 +4056,17 @@ func MAINWNDPROC
     lea ax,[bp-0x26]
     push ss
     push ax
-    call 0x0:0xffff ; 2485 USER.BeginPaint
+    call far USER.BeginPaint ; 2485
     lea ax,[bp-0x26]
     push ax
     push si
-    call 0x1dc6:FUN_2_0dc6 ; 248f 2:dc6
+    call far FUN_2_0dc6 ; 248f 2:dc6
     add sp,byte +0x4
     push si
     lea ax,[bp-0x26]
     push ss
     push ax
-    call 0x0:0xffff ; 249d USER.EndPaint
+    call far USER.EndPaint ; 249d
     jmp .label67 ; ↓
     nop
 .label23: ; 24a6
@@ -4078,7 +4078,7 @@ func MAINWNDPROC
     push word s_KeyboardDelay
     push word [lParam+2]
     push word [lParam]
-    call 0x0:0xffff ; 24ba USER.lstrcmpi
+    call far USER.lstrcmpi ; 24ba
     or ax,ax
     jz .label25 ; ↓
     mov ax,[lParam+2]
@@ -4092,23 +4092,23 @@ func MAINWNDPROC
     push word KeyboardDelay ; pvParam
 .label26: ; 24d6
     push byte +0x0      ; fWinIni
-    call 0x0:0xffff ; 24d8 USER.SystemParametersInfo
+    call far USER.SystemParametersInfo ; 24d8
     jmp .label67 ; ↓
 .label27: ; 24e0
     cmp word [Var2c],byte +0x0
     jz .label29 ; ↓
     push word [hwnd]
-    call 0x0:0xffff ; 24ea USER.IsIconic
+    call far USER.IsIconic ; 24ea
     or ax,ax
     jnz .label29 ; ↓
     cmp [wParam],ax
     jnz .label28 ; ↓
-    call 0x2500:PauseMusic ; 24f8 2:189c PauseMusic
-    call 0x2507:PauseGame ; 24fd 2:17da PauseGame
+    call far PauseMusic ; 24f8 2:189c
+    call far PauseGame ; 24fd 2:17da
     jmp short .label29 ; ↓
 .label28: ; 2504
-    call 0x250c:UnpauseMusic ; 2504 2:18b6 UnpauseMusic
-    call 0x256c:UnpauseGame ; 2509 2:1834 UnpauseGame
+    call far UnpauseMusic ; 2504 2:18b6
+    call far UnpauseGame ; 2509 2:1834
 .label29: ; 250e
     cmp word [IsWin31],byte +0x0
     jnz .label30 ; ↓
@@ -4128,7 +4128,7 @@ func MAINWNDPROC
     push ds
     push word KeyboardDelay ; pvParam
     push byte +0x0      ; fWinIni
-    call 0x0:0x245d ; 2534 USER.SystemParametersInfo
+    call far USER.SystemParametersInfo ; 2534
     push byte +0x17
     push byte +0x0
     jmp short .label31 ; ↑
@@ -4142,10 +4142,10 @@ func MAINWNDPROC
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x2806 ; 255b USER.InvalidateRect
+    call far USER.InvalidateRect ; 255b
     push word [hwndBoard]
-    call 0x0:0x280f ; 2564 USER.UpdateWindow
-    call 0x26dc:UnpauseTimer ; 2569 2:17ba
+    call far USER.UpdateWindow ; 2564
+    call far UnpauseTimer ; 2569 2:17ba
 .label34: ; 256e
     mov ax,[wParam]
     cmp ax,0x74
@@ -4196,7 +4196,7 @@ func MAINWNDPROC
     push word 0xf020
     push byte +0x0
     push byte +0x0
-    call 0x0:0x1759 ; 25c9 USER.PostMessage
+    call far USER.PostMessage ; 25c9
     jmp .label67 ; ↓
     nop
 
@@ -4218,7 +4218,7 @@ func MAINWNDPROC
     mov word [bp-0x6],0x1
 .label48: ; 25fc
     push word [hwndBoard]
-    call 0x0:0x22f3 ; 2600 USER.GetDC
+    call far USER.GetDC ; 2600
     mov si,ax
     or si,si
     jnz .label49 ; ↓
@@ -4229,16 +4229,16 @@ func MAINWNDPROC
     push word [bp-0x6]
     push word [bp-0x4]
     push si
-    call 0x27d3:0x1184 ; 2619 7:1184 MoveChip
+    call far MoveChip ; 2619 7:1184
     add sp,byte +0xa
     push word [hwndBoard]
     push si
-    call 0x0:0x230c ; 2626 USER.ReleaseDC
+    call far USER.ReleaseDC ; 2626
     jmp .label67 ; ↓
 
 .label50: ; 262e
     push byte VK_CONTROL
-    call 0x0:0x2647 ; 2630 USER.GetKeyState
+    call far USER.GetKeyState ; 2630
     or ax,ax
     jl .label51 ; ↓
     jmp .label67 ; ↓
@@ -4248,7 +4248,7 @@ func MAINWNDPROC
     nop
 .label52: ; 2644
     push byte VK_CONTROL
-    call 0x0:0x265d ; 2646 USER.GetKeyState
+    call far USER.GetKeyState ; 2646
     or ax,ax
     jl .label53 ; ↓
     jmp .label67 ; ↓
@@ -4258,7 +4258,7 @@ func MAINWNDPROC
     nop
 .label54: ; 265a
     push byte VK_CONTROL
-    call 0x0:0xffff ; 265c USER.GetKeyState
+    call far USER.GetKeyState ; 265c
     or ax,ax
     jl .label55 ; ↓
     jmp .label67 ; ↓
@@ -4283,7 +4283,7 @@ func MAINWNDPROC
 .label60: ; 268e
     push word [hMenu]
     push byte +0x0
-    call 0x0:0xffff ; 2694 USER.GetSubMenu
+    call far USER.GetSubMenu ; 2694
     mov si,ax
     or si,si
     jnz .label61 ; ↓
@@ -4294,14 +4294,14 @@ func MAINWNDPROC
     push byte ID_CHEAT
     push ds
     push word CheatMenuText
-    call 0x0:0xffff ; 26ab USER.AppendMenu
+    call far USER.AppendMenu ; 26ab
     mov word [CheatVisible],0x1
     push word [hwnd]
     push word 0x111
     push byte ID_CHEAT
     push byte +0x0
     push byte +0x0
-    call 0x0:0xffff ; 26c2 USER.SendMessage
+    call far USER.SendMessage ; 26c2
     jmp short .label67 ; ↓
     nop
 
@@ -4311,7 +4311,7 @@ func MAINWNDPROC
     push word [wParam]
     push word [uMsg]
     push word [hwnd]
-    call 0x26fd:MenuItemCallback ; 26d9 2:1e28 MenuItemCallback
+    call far MenuItemCallback ; 26d9 2:1e28
     add sp,byte +0xa
     jmp short .label69 ; ↓
     nop
@@ -4326,23 +4326,23 @@ func MAINWNDPROC
     jz .label65 ; ↓
     jmp short .label68 ; ↓
 .label64: ; 26fa
-    call 0x2702:PauseMusic ; 26fa 2:189c PauseMusic
-    call 0x2715:PauseGame ; 26ff 2:17da PauseGame
+    call far PauseMusic ; 26fa 2:189c
+    call far PauseGame ; 26ff 2:17da
     jmp short .label68 ; ↓
 .label65: ; 2706
     push word [hwnd]
-    call 0x0:0x24eb ; 2709 USER.IsIconic
+    call far USER.IsIconic ; 2709
     or ax,ax
     jz .label68 ; ↓
-    call 0x271a:UnpauseMusic ; 2712 2:18b6 UnpauseMusic
-    call 0x279c:UnpauseGame ; 2717 2:1834 UnpauseGame
+    call far UnpauseMusic ; 2712 2:18b6
+    call far UnpauseGame ; 2717 2:1834
     jmp short .label68 ; ↓
 
 .label66: ; 271e
     mov ax,[wParam]
     dec ax
     jnz .label67 ; ↓
-    call 0x2351:0x22a ; 2724 8:22a
+    call far FUN_8_022a ; 2724 8:22a
 
 .label67: ; 2729
     xor ax,ax
@@ -4353,7 +4353,7 @@ func MAINWNDPROC
     push word [wParam]
     push word [lParam+2]
     push word [lParam]
-    call 0x0:0x277e ; 273d USER.DefWindowProc
+    call far USER.DefWindowProc ; 273d
 .label69: ; 2742
     pop si
     pop di
@@ -4381,7 +4381,7 @@ func BOARDWNDPROC
     push word [wParam]
     push word [lParam+2]
     push word [lParam]
-    call 0x0:0x288d ; 277d USER.DefWindowProc
+    call far USER.DefWindowProc ; 277d
     jmp .label9 ; ↓
     nop
 .label0: ; 2786
@@ -4390,17 +4390,17 @@ func BOARDWNDPROC
     lea ax,[bp-0x22]
     push ss
     push ax
-    call 0x0:0x289d ; 278f USER.BeginPaint
+    call far USER.BeginPaint ; 278f
     lea ax,[bp-0x22]
     push ax
     push si
-    call 0x2816:FUN_2_10ce ; 2799 2:10ce
+    call far FUN_2_10ce ; 2799 2:10ce
     add sp,byte +0x4
     push si
     lea ax,[bp-0x22]
     push ss
     push ax
-    call 0x0:0x249e ; 27a7 USER.EndPaint
+    call far USER.EndPaint ; 27a7
     jmp .label8 ; ↓
     nop
 .label1: ; 27b0
@@ -4417,14 +4417,14 @@ func BOARDWNDPROC
     cmp word [bx+EndingTick],byte +0x0
     jz .label5 ; ↓
     push byte +0x0
-    call 0x27e5:0xa74 ; 27d0 7:a74 EndGame
+    call far EndGame ; 27d0 7:a74
 .label4: ; 27d5
     add sp,byte +0x2
     jmp short .label8 ; ↓
 .label5: ; 27da
     inc word [CurrentTick]
     push word [CurrentTick]
-    call 0x1236:0x0 ; 27e2 7:0 DoTick
+    call far DoTick ; 27e2 7:0
     jmp short .label4 ; ↑
     nop
 .label6: ; 27ea
@@ -4436,10 +4436,10 @@ func BOARDWNDPROC
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0x21d7 ; 2805 USER.InvalidateRect
+    call far USER.InvalidateRect ; 2805
     push word [hwndBoard]
-    call 0x0:0xb20 ; 280e USER.UpdateWindow
-    call 0x221c:UnpauseTimer ; 2813 2:17ba
+    call far USER.UpdateWindow ; 280e
+    call far UnpauseTimer ; 2813 2:17ba
 .label7: ; 2818
     mov bx,[GameStatePtr]
     mov word [bx+HaveMouseTarget],0x1
@@ -4483,24 +4483,24 @@ func INFOWNDPROC
     push word [wParam]
     push word [lParam+2]
     push word [lParam]
-    call 0x0:0x1e88 ; 288c USER.DefWindowProc
+    call far USER.DefWindowProc ; 288c
     jmp .label6 ; ↓
 .label0: ; 2894
     push word [hwnd]
     lea ax,[bp-0x24]
     push ss
     push ax
-    call 0x0:0x2486 ; 289c USER.BeginPaint
+    call far USER.BeginPaint ; 289c
     push word [OurHInstance]
     push ds
     push word s_infownd
-    call 0x0:0xdde ; 28a9 USER.LoadBitmap
+    call far USER.LoadBitmap ; 28a9
     mov si,ax
     or si,si
     jz .label1 ; ↓
     push word [TileDC]
     push si
-    call 0x0:0x28e5 ; 28b9 GDI.SelectObject
+    call far GDI.SelectObject ; 28b9
     mov di,ax
     push word [bp-0x24]
     push byte +0x0
@@ -4512,23 +4512,23 @@ func INFOWNDPROC
     push byte +0x0
     push word 0xcc
     push byte +0x20
-    call 0x0:0xe4c ; 28da GDI.BitBlt
+    call far GDI.BitBlt ; 28da
     push word [TileDC]
     push di
-    call 0x0:0x2904 ; 28e4 GDI.SelectObject
+    call far GDI.SelectObject ; 28e4
     push si
-    call 0x0:0x21c2 ; 28ea GDI.DeleteObject
+    call far GDI.DeleteObject ; 28ea
     jmp short .label5 ; ↓
     nop
 .label1: ; 28f2
     push byte +0x1
-    call 0x0:0xf22 ; 28f4 GDI.GetStockObject
+    call far GDI.GetStockObject ; 28f4
     mov si,ax
     or si,si
     jz .label2 ; ↓
     push word [bp-0x24]
     push si
-    call 0x0:0x294a ; 2903 GDI.SelectObject
+    call far GDI.SelectObject ; 2903
     mov [bp-0x4],ax
 .label2: ; 290b
     push word [bp-0x24]
@@ -4553,18 +4553,18 @@ func INFOWNDPROC
 .label4: ; 2936
     push dx
     push ax
-    call 0x0:0x2c4d ; 2938 GDI.PatBlt
+    call far GDI.PatBlt ; 2938
     cmp word [bp-0x26],byte +0x0
     jz .label5 ; ↓
     push word [bp-0x24]
     push word [bp-0x4]
-    call 0x0:0x21bc ; 2949 GDI.SelectObject
+    call far GDI.SelectObject ; 2949
 .label5: ; 294e
     push word [hwnd]
     lea ax,[bp-0x24]
     push ss
     push ax
-    call 0x0:0x2a88 ; 2956 USER.EndPaint
+    call far USER.EndPaint ; 2956
     xor ax,ax
     cwd
 .label6: ; 295e
@@ -4591,7 +4591,7 @@ func COUNTERWNDPROC
     push word [wParam]
     push word [lParam+2]
     push word [lParam]
-    call 0x0:0x2ac0 ; 2990 USER.DefWindowProc
+    call far USER.DefWindowProc ; 2990
     jmp .label5 ; ↓
 .label0: ; 2998
     mov di,[hwnd]
@@ -4599,14 +4599,14 @@ func COUNTERWNDPROC
     lea ax,[bp-0x36]
     push ss
     push ax
-    call 0x0:0x2ad2 ; 29a1 USER.BeginPaint
+    call far USER.BeginPaint ; 29a1
     push di
     push byte +0x0
-    call 0x0:0x29b4 ; 29a9 USER.GetWindowWord
+    call far USER.GetWindowWord ; 29a9
     mov si,ax
     push di
     push byte +0x2
-    call 0x0:0xcec ; 29b3 USER.GetWindowWord
+    call far USER.GetWindowWord ; 29b3
     mov cx,ax
     and ax,0x1
     mov [bp-0xa],ax
@@ -4654,7 +4654,7 @@ func COUNTERWNDPROC
     lea ax,[bp-0x16]
     push ss
     push ax
-    call 0x0:0x2c04 ; 2a19 USER.GetClientRect
+    call far USER.GetClientRect ; 2a19
     mov ax,[bp-0x10]
     sub ax,0x17
     cwd
@@ -4672,7 +4672,7 @@ func COUNTERWNDPROC
     mov [bp-0x6],ax
     push ax
     push word [bp-0x36]
-    call 0x2a61:0xea ; 2a43 9:ea DrawDigit
+    call far DrawDigit ; 2a43 9:ea
     add sp,byte +0xa
     push word [bp-0xa]
     push word [bp-0x8]
@@ -4681,7 +4681,7 @@ func COUNTERWNDPROC
     add ax,0x11
     push ax
     push word [bp-0x36]
-    call 0x2a7c:0xea ; 2a5e 9:ea DrawDigit
+    call far DrawDigit ; 2a5e 9:ea
     add sp,byte +0xa
     push word [bp-0xa]
     push word [bp-0xe]
@@ -4690,13 +4690,13 @@ func COUNTERWNDPROC
     add ax,0x22
     push ax
     push word [bp-0x36]
-    call 0x242f:0xea ; 2a79 9:ea DrawDigit
+    call far DrawDigit ; 2a79 9:ea
     add sp,byte +0xa
     push di
     lea ax,[bp-0x36]
     push ss
     push ax
-    call 0x0:0x2bad ; 2a87 USER.EndPaint
+    call far USER.EndPaint ; 2a87
     xor ax,ax
     cwd
 .label5: ; 2a8f
@@ -4722,7 +4722,7 @@ func INVENTORYWNDPROC
     push word [wParam]
     push word [lParam+2]
     push word [lParam]
-    call 0x0:0x2be6 ; 2abf USER.DefWindowProc
+    call far USER.DefWindowProc ; 2abf
     jmp .label1 ; ↓
     nop
 .label0: ; 2ac8
@@ -4731,7 +4731,7 @@ func INVENTORYWNDPROC
     lea ax,[bp-0x22]
     push ss
     push ax
-    call 0x0:0x2bf7 ; 2ad1 USER.BeginPaint
+    call far USER.BeginPaint ; 2ad1
     cmp word [RedKeyCount],byte +0x1
     cmc
     sbb al,al
@@ -4740,7 +4740,7 @@ func INVENTORYWNDPROC
     push byte +0x0
     push byte +0x0
     push word [bp-0x22]
-    call 0x2b05:DrawInventoryTile ; 2ae8 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2ae8 2:232
     add sp,byte +0x8
     cmp word [BlueKeyCount],byte +0x1
     cmc
@@ -4750,7 +4750,7 @@ func INVENTORYWNDPROC
     push byte +0x0
     push byte TileWidth * 1
     push word [bp-0x22]
-    call 0x2b1f:DrawInventoryTile ; 2b02 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2b02 2:232
     add sp,byte +0x8
     cmp word [YellowKeyCount],byte +0x1
     cmc
@@ -4760,7 +4760,7 @@ func INVENTORYWNDPROC
     push byte +0x0
     push byte TileWidth * 2
     push word [bp-0x22]
-    call 0x2b39:DrawInventoryTile ; 2b1c 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2b1c 2:232
     add sp,byte +0x8
     cmp word [GreenKeyCount],byte +0x1
     cmc
@@ -4770,7 +4770,7 @@ func INVENTORYWNDPROC
     push byte +0x0
     push byte TileWidth * 3
     push word [bp-0x22]
-    call 0x2b53:DrawInventoryTile ; 2b36 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2b36 2:232
     add sp,byte +0x8
     cmp word [IceSkateCount],byte +0x1
     cmc
@@ -4780,7 +4780,7 @@ func INVENTORYWNDPROC
     push byte TileHeight
     push byte +0x0
     push word [bp-0x22]
-    call 0x2b6d:DrawInventoryTile ; 2b50 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2b50 2:232
     add sp,byte +0x8
     cmp word [SuctionBootCount],byte +0x1
     cmc
@@ -4790,7 +4790,7 @@ func INVENTORYWNDPROC
     push byte TileHeight
     push byte TileWidth * 1
     push word [bp-0x22]
-    call 0x2b87:DrawInventoryTile ; 2b6a 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2b6a 2:232
     add sp,byte +0x8
     cmp word [FireBootCount],byte +0x1
     cmc
@@ -4800,7 +4800,7 @@ func INVENTORYWNDPROC
     push byte TileHeight
     push byte TileWidth * 2
     push word [bp-0x22]
-    call 0x2ba1:DrawInventoryTile ; 2b84 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2b84 2:232
     add sp,byte +0x8
     cmp word [FlipperCount],byte +0x1
     cmc
@@ -4810,13 +4810,13 @@ func INVENTORYWNDPROC
     push byte TileHeight
     push byte TileWidth * 3
     push word [bp-0x22]
-    call 0x2c2c:DrawInventoryTile ; 2b9e 2:232 DrawInventoryTile
+    call far DrawInventoryTile ; 2b9e 2:232
     add sp,byte +0x8
     push si
     lea ax,[bp-0x22]
     push ss
     push ax
-    call 0x0:0x27a8 ; 2bac USER.EndPaint
+    call far USER.EndPaint ; 2bac
     xor ax,ax
     cwd
 .label1: ; 2bb4
@@ -4867,7 +4867,7 @@ func HINTWNDPROC
     push word [wParam]
     push word [lParam+2]
     push word [lParam]
-    call 0x0:0x273e ; 2be5 USER.DefWindowProc
+    call far USER.DefWindowProc ; 2be5
     jmp .end ; ↓
     nop
 .paint: ; 2bee
@@ -4875,18 +4875,18 @@ func HINTWNDPROC
     lea ax,[hdcPaint]
     push ss             ; lpPaint
     push ax
-    call 0x0:0x2790 ; 2bf6 USER.BeginPaint
+    call far USER.BeginPaint ; 2bf6
     push word [hwnd]
     lea ax,[rect]
     push ss
     push ax
-    call 0x0:0x10fe ; 2c03 USER.GetClientRect
+    call far USER.GetClientRect ; 2c03
     lea ax,[rect]
     push ss
     push ax
     push byte -0x3
     push byte -0x3
-    call 0x0:0xedb ; 2c11 USER.InflateRect
+    call far USER.InflateRect ; 2c11
     push byte +0x0
     push byte +0x3
     push word [rect.bottom]
@@ -4894,7 +4894,7 @@ func HINTWNDPROC
     push word [rect.top]
     push word [rect.left]
     push word [hdcPaint]
-    call 0x24fb:Draw3DBorder; 2c29 2:f06
+    call far Draw3DBorder ; 2c29 2:f06
     add sp,byte +0xe
     push word [hdcPaint]
     push word [rect.left]
@@ -4907,13 +4907,13 @@ func HINTWNDPROC
     push ax
     push byte +0x0
     push byte +0x42
-    call 0x0:0x134f ; 2c4c GDI.PatBlt
+    call far GDI.PatBlt ; 2c4c
     lea ax,[rect]
     push ss
     push ax
     push byte -0x1
     push byte -0x1
-    call 0x0:0x2c12 ; 2c5a USER.InflateRect
+    call far USER.InflateRect ; 2c5a
     ; set text color to white or yellow depending on ColorMode
     push word [hdcPaint]
     cmp word [ColorMode],byte +0x1
@@ -4926,14 +4926,14 @@ func HINTWNDPROC
     mov dx,0xff
     push dx
     push ax
-    call 0x0:0x2d9d ; 2c76 GDI.SetTextColor
+    call far GDI.SetTextColor ; 2c76
     mov [bp-0x10],ax
     mov [bp-0xe],dx
     ; set background color to black
     push word [hdcPaint]
     push byte +0x0
     push byte +0x0
-    call 0x0:0x2dab ; 2c88 GDI.SetBkColor
+    call far GDI.SetBkColor ; 2c88
     mov [bp-0x14],ax
     mov [bp-0x12],dx
     ; prepend "Hint: " to the hint and place on stack
@@ -4946,7 +4946,7 @@ func HINTWNDPROC
     lea ax,[bp-0xc8]
     push ss
     push ax
-    call 0x0:0x1de0 ; 2ca5 USER._wsprintf
+    call far USER._wsprintf ; 2ca5
     add sp,byte +0xc
     mov [bp-0x8],ax
     mov word [bp-0x16],0x0
@@ -4961,10 +4961,10 @@ func HINTWNDPROC
     push ax
     push word [hdcPaint]
     push byte +0x5a ; LOGPIXELSY
-    call 0x0:0x13fb ; 2cc5 GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 2cc5
     push ax
     push byte +0x48
-    call 0x0:0x1403 ; 2ccd GDI.MulDiv
+    call far GDI.MulDiv ; 2ccd
     mov [LOGFONT.lfHeight],ax
     mov word [LOGFONT.lfWeight],700
     mov byte [LOGFONT.lfItalic],1
@@ -4981,19 +4981,19 @@ func HINTWNDPROC
     mov [local_a],ds
     push ds
     push ax
-    call 0x0:0x1b54 ; 2cfa KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 2cfa
     ; try and load the font
     ; if it fails no biggie, just use
     ; whatever font was already selected
     push ds
     push word LOGFONT
-    call 0x0:0x143a ; 2d03 GDI.CreateFontIndirect
+    call far GDI.CreateFontIndirect ; 2d03
     mov [hFont],ax
     or ax,ax
     jz .createFontFailed ; ↓
     push word [hdcPaint]
     push ax
-    call 0x0:0x2d7b ; 2d13 GDI.SelectObject
+    call far GDI.SelectObject ; 2d13
     mov [hSavedObj],ax
 .createFontFailed: ; 2d1b
     ; copy rect
@@ -5015,7 +5015,7 @@ func HINTWNDPROC
     push ss
     push ax
     push word 0xc11 ; DT_NOPREFIX | DT_CALCRECT | DT_WORDBREAK | DT_CENTER
-    call 0x0:0x2d65 ; 2d3d USER.DrawText
+    call far USER.DrawText ; 2d3d
     ; if the bottom of the text bounding box extends
     ; below the bottom of the hint box,
     ; decrease the font size and try again
@@ -5036,7 +5036,7 @@ func HINTWNDPROC
     push ss
     push ax
     push word 0x811 ; DT_NOPREFIX | DT_WORDBREAK | DT_CENTER
-    call 0x0:0x1656 ; 2d64 USER.DrawText
+    call far USER.DrawText ; 2d64
     mov word [bp-0x16],0x1
 .label8: ; 2d6e
     ; free the font object and restore the old HGDIOBJ if necessary
@@ -5044,9 +5044,9 @@ func HINTWNDPROC
     jz .nextFontSize ; ↓
     push word [hdcPaint]
     push word [hSavedObj]
-    call 0x0:0x28ba ; 2d7a GDI.SelectObject
+    call far GDI.SelectObject ; 2d7a
     push word [hFont]
-    call 0x0:0x28eb ; 2d82 GDI.DeleteObject
+    call far GDI.DeleteObject ; 2d82
 .nextFontSize: ; 2d87
     dec word [fontSize]
     cmp word [bp-0x16],byte +0x0
@@ -5057,16 +5057,16 @@ func HINTWNDPROC
     push word [hdcPaint]
     push word [bp-0xe]
     push word [bp-0x10]
-    call 0x0:0x13d9 ; 2d9c GDI.SetTextColor
+    call far GDI.SetTextColor ; 2d9c
     push word [hdcPaint]
     push word [bp-0x12]
     push word [bp-0x14]
-    call 0x0:0x16c5 ; 2daa GDI.SetBkColor
+    call far GDI.SetBkColor ; 2daa
     push word [hwnd]  ; hWnd
     lea ax,[hdcPaint] ; lpPaint
     push ss
     push ax
-    call 0x0:0x2957 ; 2db7 USER.EndPaint
+    call far USER.EndPaint ; 2db7
     xor ax,ax
     cwd
 .end: ; 2dbf

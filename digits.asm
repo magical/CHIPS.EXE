@@ -27,7 +27,7 @@ func FindBitmap
     push ax
     push dx             ; lpType
     push byte +0x2 ; RT_BITMAP
-    call 0x0:0xffff ; 1b KERNEL.FindResource
+    call far KERNEL.FindResource ; 1b
 endfunc
 
 ; 28
@@ -63,25 +63,25 @@ func LoadDigits
     push si
 
     push word 200       ; ID of the digits resource
-    call 0x8f:0x0  ; 60 9:0 FindBitmap
+    call far FindBitmap ; 60 9:0
     add sp,byte +0x2
     mov si,ax
 
     push word [OurHInstance]  ; hModule
     push si             ; hResInfo
-    call 0x0:0xffff ; 6f KERNEL.LoadResource
+    call far KERNEL.LoadResource ; 6f
     mov [DigitResourceHandle],ax
 
     or ax,ax
     jz .end
     push ax             ; hResInfo
-    call 0x0:0xffff ; 7c KERNEL.LockResource
+    call far KERNEL.LockResource ; 7c
     mov [DigitBitmapData],ax
     mov [DigitBitmapData+2],dx
 
     push byte DigitHeight ; y dimension of digits
     push byte DigitWidth ; x dimension of digits
-    call 0xffff:0x28 ; 8c 9:0x28 BitmapSize
+    call far BitmapSize ; 8c 9:28 9:0x28
     add sp,byte +0x4
 
     ; Store near pointers to digits in DigitPtrArray
@@ -109,9 +109,9 @@ func FreeDigits
     cmp word [DigitResourceHandle],byte +0x0
     jz .null
     push word [DigitResourceHandle]
-    call 0x0:0xffff ; d4 KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; d4
     push word [DigitResourceHandle]
-    call 0x0:0xffff ; dd KERNEL.FreeResource
+    call far KERNEL.FreeResource ; dd
 .null: ; e2
 endfunc
 
@@ -155,7 +155,7 @@ func DrawDigit
     push dx             ; lpbmi
     push word [DigitBitmapData]
     push byte +0x0      ; fuColorUse
-    call 0x0:0xffff ; 143 GDI.SetDIBitsToDevice
+    call far GDI.SetDIBitsToDevice ; 143
 endfunc
 
 ; vim: syntax=nasm

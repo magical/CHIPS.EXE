@@ -105,24 +105,24 @@ func ReadLevelDataOrDie
     push ds
     push word DataFileName ; "CHIPS.DAT"
     push si
-    call 0xfd:ReadLevelData ; ee 4:a56 ReadLevelData
+    call far ReadLevelData ; ee 4:a56
     add sp,byte +0x6
     or ax,ax
     jnz .success ; ↓
     ; load failed... show and error message and quit the game
-    call 0x336:ResetLevelData ; fa 4:5e
+    call far ResetLevelData ; fa 4:5e
     push byte +0x10
     push ds
     push word CorruptDataMessage
     push word [hwndMain]
-    call 0x236:0x0 ; 109 2:0 ShowMessageBox
+    call far ShowMessageBox ; 109 2:0
     add sp,byte +0x8
     push word [hwndMain]
     push word 0x111
     push byte ID_QUIT
     push byte +0x0
     push byte +0x0
-    call 0x0:0xffff ; 11e USER.PostMessage
+    call far USER.PostMessage ; 11e
 .success: ; 123
     mov bx,[GameStatePtr]
     mov [bx+LevelNumber],si
@@ -172,13 +172,13 @@ UpdateWindowTitle:
     lea ax,[bp-0x8a]
     push ss
     push ax
-    call 0x0:0xffff ; 182 USER._wsprintf
+    call far USER._wsprintf ; 182
     add sp,byte +0x14
     push word [bp+0x6]
     lea ax,[bp-0x8a]
     push ss
     push ax
-    call 0x0:0xffff ; 193 USER.SetWindowText
+    call far USER.SetWindowText ; 193
     lea sp,[bp-0x2]
     pop ds
     pop bp
@@ -211,7 +211,7 @@ UpdateNextPrevMenuItems:
     mov ax,0x1
 .label1: ; 1c7
     push ax
-    call 0x0:0x1f0 ; 1c8 USER.EnableMenuItem
+    call far USER.EnableMenuItem ; 1c8
     mov ax,[bp-0x4]
     mov bx,[GameStatePtr]
     cmp [bx+NumLevelsInSet],ax
@@ -226,7 +226,7 @@ UpdateNextPrevMenuItems:
     push word [hMenu]
     push byte ID_NEXT
     push cx
-    call 0x0:0xffff ; 1ef USER.EnableMenuItem
+    call far USER.EnableMenuItem ; 1ef
     pop si
     lea sp,[bp-0x2]
     pop ds
@@ -251,9 +251,9 @@ func ResetTimerAndChipCount
     sbb ax,ax
     and ax,0x2
     push ax
-    call 0x0:0xffff ; 22c USER.SetWindowWord
+    call far USER.SetWindowWord ; 22c
     push byte +0x1
-    call 0x398:0x16fa ; 233 2:16fa
+    call far FUN_2_16fa ; 233 2:16fa
 endfunc
 
 ; 240
@@ -274,10 +274,10 @@ FreeGameLists:
     or ax,ax
     jz .label0 ; ↓
     push ax
-    call 0x0:0x280 ; 25d KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; 25d
     mov bx,[GameStatePtr]
     push word [bx+SlipListHandle]
-    call 0x0:0x28d ; 26a KERNEL.GlobalFree
+    call far KERNEL.GlobalFree ; 26a
 .label0: ; 26f
     mov bx,[GameStatePtr]
     mov ax,[bx+MonsterListHandle]
@@ -285,10 +285,10 @@ FreeGameLists:
     or ax,ax
     jz .label1 ; ↓
     push ax
-    call 0x0:0x2a2 ; 27f KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; 27f
     mov bx,[GameStatePtr]
     push word [bx+MonsterListHandle]
-    call 0x0:0x2af ; 28c KERNEL.GlobalFree
+    call far KERNEL.GlobalFree ; 28c
 .label1: ; 291
     mov bx,[GameStatePtr]
     mov ax,[bx+ToggleListHandle]
@@ -296,10 +296,10 @@ FreeGameLists:
     or ax,ax
     jz .label2 ; ↓
     push ax
-    call 0x0:0x2c4 ; 2a1 KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; 2a1
     mov bx,[GameStatePtr]
     push word [bx+ToggleListHandle]
-    call 0x0:0x2d1 ; 2ae KERNEL.GlobalFree
+    call far KERNEL.GlobalFree ; 2ae
 .label2: ; 2b3
     mov bx,[GameStatePtr]
     mov ax,[bx+TrapListHandle]
@@ -307,10 +307,10 @@ FreeGameLists:
     or ax,ax
     jz .label3 ; ↓
     push ax
-    call 0x0:0x2e6 ; 2c3 KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; 2c3
     mov bx,[GameStatePtr]
     push word [bx+TrapListHandle]
-    call 0x0:0x2f3 ; 2d0 KERNEL.GlobalFree
+    call far KERNEL.GlobalFree ; 2d0
 .label3: ; 2d5
     mov bx,[GameStatePtr]
     mov ax,[bx+CloneListHandle]
@@ -318,10 +318,10 @@ FreeGameLists:
     or ax,ax
     jz .label4 ; ↓
     push ax
-    call 0x0:0x308 ; 2e5 KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; 2e5
     mov bx,[GameStatePtr]
     push word [bx+CloneListHandle]
-    call 0x0:0x315 ; 2f2 KERNEL.GlobalFree
+    call far KERNEL.GlobalFree ; 2f2
 .label4: ; 2f7
     mov bx,[GameStatePtr]
     mov ax,[bx+TeleportListHandle]
@@ -329,10 +329,10 @@ FreeGameLists:
     or ax,ax
     jz .label5 ; ↓
     push ax
-    call 0x0:0xffff ; 307 KERNEL.GlobalUnlock
+    call far KERNEL.GlobalUnlock ; 307
     mov bx,[GameStatePtr]
     push word [bx+TeleportListHandle]
-    call 0x0:0xffff ; 314 KERNEL.GlobalFree
+    call far KERNEL.GlobalFree ; 314
 .label5: ; 319
     lea sp,[bp-0x2]
     pop ds
@@ -351,7 +351,7 @@ func ClearGameState
     sub sp,byte +0x4
     cmp word [flag],byte +0x0
     jnz .dontFree ; ↓
-    call 0xffff:FreeGameLists ; 333 4:240
+    call far FreeGameLists ; 333 4:240
 .dontFree: ; 338
     ; memset(gamestateptr, 0, sizeof *gamestateptr)
     mov bx,[GameStatePtr]
@@ -386,18 +386,18 @@ FUN_4_0356:
     push byte +0x0
     push byte +0x0
     push word 0x7f02
-    call 0x0:0xffff ; 37a USER.LoadCursor
+    call far USER.LoadCursor ; 37a
     mov di,ax
     push word [hwndBoard]
-    call 0x0:0xffff ; 385 USER.SetCapture
+    call far USER.SetCapture ; 385
     push di
-    call 0x0:0xffff ; 38b USER.SetCursor
+    call far USER.SetCursor ; 38b
     mov [bp-0x8],ax
     push byte +0x1
-    call 0xffff:0x176e ; 395 2:176e
+    call far FUN_2_176e ; 395 2:176e
     add sp,byte +0x2
     push byte +0x0
-    call 0xffff:0x1734 ; 39f 3:1734 ResetInventory
+    call far ResetInventory ; 39f 3:1734
     add sp,byte +0x2
     or si,si
     jz .label1 ; ↓
@@ -416,7 +416,7 @@ FUN_4_0356:
     push ds
     push word MelindaMessage
     push word [hwndMain]
-    call 0x550:0x0 ; 3dd 2:0 ShowMessageBox
+    call far ShowMessageBox ; 3dd 2:0
     add sp,byte +0x8
     cmp ax,0x6
     jnz .label0 ; ↓
@@ -437,7 +437,7 @@ FUN_4_0356:
     mov [bp-0x4],ax
 .label2: ; 412
     push byte +0x0 ; don't free lists
-    call 0x43c:ClearGameState ; 414 4:320
+    call far ClearGameState ; 414 4:320
     add sp,byte +0x2
     or si,si
     jz .label3 ; ↓
@@ -449,7 +449,7 @@ FUN_4_0356:
     mov [bx+MelindaCount],ax
 .label3: ; 436
     push word [bp+0x6]
-    call 0x53b:ReadLevelDataOrDie ; 439 4:d8
+    call far ReadLevelDataOrDie ; 439 4:d8
     add sp,byte +0x2
     cmp word [GamePaused],byte +0x0
     jnz .label4 ; ↓
@@ -457,10 +457,10 @@ FUN_4_0356:
     jnz .label4 ; ↓
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xffff:0x308 ; 454 8:308
+    call far FUN_8_0308 ; 454 8:308
     add sp,byte +0x2
 .label4: ; 45c
-    call 0x3a2:0x54c ; 45c 3:54c InitBoard
+    call far InitBoard ; 45c 3:54c
     cmp word [DebugModeEnabled],byte +0x0
     jz .label5 ; ↓
     mov bx,[GameStatePtr]
@@ -535,21 +535,21 @@ FUN_4_0356:
 .label9: ; 534
     mov [bx+ViewportY],ax
 .label10: ; 538
-    call 0x561:ResetTimerAndChipCount ; 538 4:1fc ResetTimerAndChipCount
+    call far ResetTimerAndChipCount ; 538 4:1fc
     mov bx,[GameStatePtr]
     mov word [bx+IsLevelPlacardVisible],0x1
     cmp word [bp-0x6],byte +0x0
     jnz .label11 ; ↓
-    call 0x59e:0x17a2 ; 54d 2:17a2 PauseTimer
+    call far PauseTimer ; 54d 2:17a2
 .label11: ; 552
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     push word [hwndMain]
-    call 0x571:UpdateWindowTitle ; 55e 4:134 UpdateWindowTitle
+    call far UpdateWindowTitle ; 55e 4:134
     add sp,byte +0x4
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xf1:UpdateNextPrevMenuItems ; 56e 4:1a0 UpdateNextPrevMenuItems
+    call far UpdateNextPrevMenuItems ; 56e 4:1a0
     add sp,byte +0x2
     mov bx,[GameStatePtr]
     mov word [bx+UnusedOffsetX],0x0
@@ -559,9 +559,9 @@ FUN_4_0356:
     push byte +0x0
     push byte +0x0
     push byte +0x0
-    call 0x0:0xffff ; 594 USER.InvalidateRect
+    call far USER.InvalidateRect ; 594
     push byte +0x3f
-    call 0x5b0:0xcbe ; 59b 2:cbe
+    call far FUN_2_0cbe ; 59b 2:cbe
     add sp,byte +0x2
     or si,si
     jnz .label12 ; ↓
@@ -569,7 +569,7 @@ FUN_4_0356:
     push si
     push si
     push word [bp+0x6]
-    call 0x5c3:0x1adc ; 5ad 2:1adc
+    call far GetLevelProgressFromIni ; 5ad 2:1adc
     add sp,byte +0x8
     or ax,ax
     jnz .label12 ; ↓
@@ -577,21 +577,21 @@ FUN_4_0356:
     push ax
     push byte -0x1
     push word [bp+0x6]
-    call 0x5ce:0x1c1c ; 5c0 2:1c1c
+    call far SaveLevelProgressToIni ; 5c0 2:1c1c
     add sp,byte +0x8
     push word ID_HighestLevel
-    call 0x5e1:0x198e ; 5cb 2:198e GetIniInt
+    call far GetIniInt ; 5cb 2:198e
     add sp,byte +0x2
     cmp ax,[bp+0x6]
     jnl .label12 ; ↓
     push word [bp+0x6]
     push word ID_HighestLevel
-    call 0x10c:0x19ca ; 5de 2:19ca StoreIniInt
+    call far StoreIniInt ; 5de 2:19ca
     add sp,byte +0x4
 .label12: ; 5e6
     push word [bp-0x8]
-    call 0x0:0x38c ; 5e9 USER.SetCursor
-    call 0x0:0xffff ; 5ee USER.ReleaseCapture
+    call far USER.SetCursor ; 5e9
+    call far USER.ReleaseCapture ; 5ee
     pop si
     pop di
     lea sp,[bp-0x2]
@@ -794,7 +794,7 @@ DecodeLevelFields:
     push ax
     push ds
     push si
-    call 0x0:0xffff ; 760 KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 760
     jmp .label25 ; ↓
 .label6: ; 768
     mov [bp-0x6],si
@@ -819,7 +819,7 @@ DecodeLevelFields:
     push ax
     lea ax,[bx+TrapListHandle]
     push ax
-    call 0x846:0x1a4 ; 7a4 3:1a4 GrowArray
+    call far GrowArray ; 7a4 3:1a4
     add sp,byte +0xa
     or ax,ax
     jz .label11 ; ↓
@@ -875,7 +875,7 @@ DecodeLevelFields:
     push ax
     lea ax,[bx+CloneListHandle]
     push ax
-    call 0x45f:0x1a4 ; 843 3:1a4 GrowArray
+    call far GrowArray ; 843 3:1a4
     add sp,byte +0xa
     or ax,ax
     jz .label16 ; ↓
@@ -922,11 +922,11 @@ DecodeLevelFields:
     push ax
     push ds
     push si
-    call 0x0:0x761 ; 8ba KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 8ba
     mov ax,[GameStatePtr]
     add ax,LevelPassword
     push ax
-    call 0xa3e:DecodePassword ; 8c6 4:6b0 DecodePassword
+    call far DecodePassword ; 8c6 4:6b0
     add sp,byte +0x2
     jmp short .label25 ; ↓
 .label19: ; 8d0
@@ -1007,7 +1007,7 @@ FUN_4_0950:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0x988 ; 969 KERNEL._lread
+    call far KERNEL._lread ; 969
     cmp ax,0x2
     jnc .label1 ; ↓
 .label0: ; 973
@@ -1022,7 +1022,7 @@ FUN_4_0950:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0x9a0 ; 987 KERNEL._lread
+    call far KERNEL._lread ; 987
     cmp ax,0x2
     jc .label0 ; ↑
     cmp word [bp-0x4],byte +0x2
@@ -1032,7 +1032,7 @@ FUN_4_0950:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0x9d7 ; 99f KERNEL._lread
+    call far KERNEL._lread ; 99f
     cmp ax,0x2
     jc .label0 ; ↑
     mov ax,[bp-0x4]
@@ -1067,14 +1067,14 @@ FUN_4_09b4:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xac6 ; 9d6 KERNEL._lread
+    call far KERNEL._lread ; 9d6
     cmp ax,0x2
     jc .label2 ; ↓
     push si
     push byte +0x0
     push word [bp-0x4]
     push byte +0x1
-    call 0x0:0xffff ; 9e8 KERNEL._llseek
+    call far KERNEL._llseek ; 9e8
     cmp ax,0xffff
     jnz .label1 ; ↓
     cmp dx,ax
@@ -1119,7 +1119,7 @@ FUN_4_0a0e:
     push ss
     push ax
     push byte +0x0
-    call 0x0:0xa75 ; a2a KERNEL.OpenFile
+    call far KERNEL.OpenFile ; a2a
     mov di,ax
     cmp di,byte -0x1
     jnz .label0 ; ↓
@@ -1127,11 +1127,11 @@ FUN_4_0a0e:
     jmp short .label1 ; ↓
 .label0: ; a3a
     push di
-    call 0xa88:FUN_4_0950 ; a3b 4:950
+    call far FUN_4_0950 ; a3b 4:950
     add sp,byte +0x2
     mov si,ax
     push di
-    call 0x0:0xffff ; a46 KERNEL._lclose
+    call far KERNEL._lclose ; a46
     mov ax,si
 .label1: ; a4d
     pop si
@@ -1161,14 +1161,14 @@ ReadLevelData:
     push ss
     push ax
     push byte +0x20
-    call 0x0:0xffff ; a74 KERNEL.OpenFile
+    call far KERNEL.OpenFile ; a74
     mov [bp-0x4],ax
     inc ax
     jnz .label0 ; ↓
     jmp .label14 ; ↓
 .label0: ; a82
     push word [bp-0x4]
-    call 0xaaf:FUN_4_0950 ; a85 4:950
+    call far FUN_4_0950 ; a85 4:950
     add sp,byte +0x2
     mov si,ax
     mov bx,[GameStatePtr]
@@ -1184,7 +1184,7 @@ ReadLevelData:
 .label2: ; aa8
     push di
     push word [bp-0x4]
-    call 0x417:FUN_4_09b4 ; aac 4:9b4
+    call far FUN_4_09b4 ; aac 4:9b4
     add sp,byte +0x4
     or ax,ax
     jnz .label3 ; ↓
@@ -1195,7 +1195,7 @@ ReadLevelData:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xadd ; ac5 KERNEL._lread
+    call far KERNEL._lread ; ac5
     cmp ax,0x2
     jnc .label4 ; ↓
     jmp .label13 ; ↓
@@ -1205,7 +1205,7 @@ ReadLevelData:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xaff ; adc KERNEL._lread
+    call far KERNEL._lread ; adc
     cmp ax,0x2
     jnc .label5 ; ↓
     jmp .label13 ; ↓
@@ -1220,7 +1220,7 @@ ReadLevelData:
     push ds
     push ax
     push byte +0x2
-    call 0x0:0xffff ; afe KERNEL._lread
+    call far KERNEL._lread ; afe
     cmp ax,0x2
     jnc .label7 ; ↓
     jmp .label13 ; ↓
@@ -1231,7 +1231,7 @@ ReadLevelData:
     push ds
     push ax
     push byte +0x2
-    call 0x0:0xb30 ; b18 KERNEL._lread
+    call far KERNEL._lread ; b18
     cmp ax,0x2
     jnc .label8 ; ↓
     jmp .label13 ; ↓
@@ -1241,7 +1241,7 @@ ReadLevelData:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xb56 ; b2f KERNEL._lread
+    call far KERNEL._lread ; b2f
     cmp ax,0x2
     jnc .label9 ; ↓
     jmp .label13 ; ↓
@@ -1257,7 +1257,7 @@ ReadLevelData:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xb6f ; b55 KERNEL._lread
+    call far KERNEL._lread ; b55
     cmp ax,0x2
     jnc .label11 ; ↓
     jmp .label13 ; ↓
@@ -1267,7 +1267,7 @@ ReadLevelData:
     push ss
     push ax
     push word [bp-0x6]
-    call 0x0:0xba1 ; b6e KERNEL._lread
+    call far KERNEL._lread ; b6e
     cmp ax,[bp-0x6]
     jnc .label12 ; ↓
     jmp .label13 ; ↓
@@ -1279,14 +1279,14 @@ ReadLevelData:
     push word [bp-0x6]
     lea ax,[bp-0x490]
     push ax
-    call 0xbd9:FUN_4_05fc ; b8e 4:5fc
+    call far FUN_4_05fc ; b8e 4:5fc
     add sp,byte +0xc
     push word [bp-0x4]
     lea ax,[bp-0x6]
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xbb7 ; ba0 KERNEL._lread
+    call far KERNEL._lread ; ba0
     cmp ax,0x2
     jc .label13 ; ↓
     push word [bp-0x4]
@@ -1294,7 +1294,7 @@ ReadLevelData:
     push ss
     push ax
     push word [bp-0x6]
-    call 0x0:0xbe9 ; bb6 KERNEL._lread
+    call far KERNEL._lread ; bb6
     cmp ax,[bp-0x6]
     jc .label13 ; ↓
     push byte +0x20
@@ -1306,14 +1306,14 @@ ReadLevelData:
     push word [bp-0x6]
     lea ax,[bp-0x490]
     push ax
-    call 0xc13:FUN_4_05fc ; bd6 4:5fc
+    call far FUN_4_05fc ; bd6 4:5fc
     add sp,byte +0xc
     push word [bp-0x4]
     lea ax,[bp-0x6]
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xbff ; be8 KERNEL._lread
+    call far KERNEL._lread ; be8
     cmp ax,0x2
     jc .label13 ; ↓
     push word [bp-0x4]
@@ -1321,22 +1321,22 @@ ReadLevelData:
     push ss
     push ax
     push word [bp-0x6]
-    call 0x0:0xc52 ; bfe KERNEL._lread
+    call far KERNEL._lread ; bfe
     cmp ax,[bp-0x6]
     jc .label13 ; ↓
     push word [bp-0x6]
     lea ax,[bp-0x490]
     push ax
-    call 0xd87:DecodeLevelFields ; c10 4:6d8 DecodeLevelFields
+    call far DecodeLevelFields ; c10 4:6d8
     add sp,byte +0x4
     push word [bp-0x4]
-    call 0x0:0xc2a ; c1b KERNEL._lclose
+    call far KERNEL._lclose ; c1b
     mov ax,0x1
     jmp short .label15 ; ↓
     nop
 .label13: ; c26
     push word [bp-0x4]
-    call 0x0:0xe2c ; c29 KERNEL._lclose
+    call far KERNEL._lclose ; c29
 .label14: ; c2e
     xor ax,ax
 .label15: ; c30
@@ -1367,7 +1367,7 @@ FUN_4_0c3a:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xc69 ; c51 KERNEL._lread
+    call far KERNEL._lread ; c51
     cmp ax,0x2
     jnc .label0 ; ↓
     jmp .error ; ↓
@@ -1378,7 +1378,7 @@ FUN_4_0c3a:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xc8b ; c68 KERNEL._lread
+    call far KERNEL._lread ; c68
     cmp ax,0x2
     jnc .label1 ; ↓
     jmp .error ; ↓
@@ -1395,7 +1395,7 @@ FUN_4_0c3a:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xca2 ; c8a KERNEL._lread
+    call far KERNEL._lread ; c8a
     cmp ax,0x2
     jnc .label3 ; ↓
     jmp .error ; ↓
@@ -1405,7 +1405,7 @@ FUN_4_0c3a:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xcb9 ; ca1 KERNEL._lread
+    call far KERNEL._lread ; ca1
     cmp ax,0x2
     jnc .label4 ; ↓
     jmp .error ; ↓
@@ -1416,7 +1416,7 @@ FUN_4_0c3a:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xcdc ; cb8 KERNEL._lread
+    call far KERNEL._lread ; cb8
     cmp ax,0x2
     jnc .label5 ; ↓
     jmp .error ; ↓
@@ -1433,42 +1433,42 @@ FUN_4_0c3a:
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xcff ; cdb KERNEL._lread
+    call far KERNEL._lread ; cdb
     cmp ax,0x2
     jc .error ; ↓
     push word [bp+0x6]
     push byte +0x0
     push word [bp-0x4]
     push byte +0x1
-    call 0x0:0xd13 ; cef KERNEL._llseek
+    call far KERNEL._llseek ; cef
     ; read a word and skip that many bytes (again)
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xd22 ; cfe KERNEL._lread
+    call far KERNEL._lread ; cfe
     cmp ax,0x2
     jc .error ; ↓
     push word [bp+0x6]
     push byte +0x0
     push word [bp-0x4]
     push byte +0x1
-    call 0x0:0x9e9 ; d12 KERNEL._llseek
+    call far KERNEL._llseek ; d12
     ; read a word and then read that many bytes into arg 3
     push word [bp+0x6]
     lea ax,[bp-0x4]
     push ss
     push ax
     push byte +0x2
-    call 0x0:0xd36 ; d21 KERNEL._lread
+    call far KERNEL._lread ; d21
     cmp ax,0x2
     jc .error ; ↓
     push word [bp+0x6]
     push ds
     push word [bp+0xa]
     push word [bp-0x4]
-    call 0x0:0x96a ; d35 KERNEL._lread
+    call far KERNEL._lread ; d35
     cmp ax,[bp-0x4]
     jc .error ; ↓
     ; store number of bytes in arg 4
@@ -1510,7 +1510,7 @@ FUN_4_0d58:
     push ss
     push ax
     push byte +0x20
-    call 0x0:0xa2b ; d74 KERNEL.OpenFile
+    call far KERNEL.OpenFile ; d74
     mov di,ax
     cmp di,byte -0x1
     jnz .label0 ; ↓
@@ -1518,7 +1518,7 @@ FUN_4_0d58:
 .label0: ; d83
     ; read signature & levels
     push di
-    call 0xda4:FUN_4_0950 ; d84 4:950
+    call far FUN_4_0950 ; d84 4:950
     add sp,byte +0x2
     mov si,ax
     or si,si
@@ -1533,7 +1533,7 @@ FUN_4_0d58:
     ; find level
     push word [bp+0x6]
     push di
-    call 0xdc5:FUN_4_09b4 ; da1 4:9b4
+    call far FUN_4_09b4 ; da1 4:9b4
     add sp,byte +0x4
     or ax,ax
     jnz .label3 ; ↓
@@ -1547,7 +1547,7 @@ FUN_4_0d58:
     push ax
     push word [bp+0x6]
     push di
-    call 0xe23:FUN_4_0c3a ; dc2 4:c3a
+    call far FUN_4_0c3a ; dc2 4:c3a
     add sp,byte +0x8
     or ax,ax
     jz .cleanup ; ↓
@@ -1583,21 +1583,21 @@ FUN_4_0d58:
     push word [bp+0x8]
     push ds
     push si
-    call 0x0:0x8bb ; e12 KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; e12
     cmp byte [bp-0x3],0x8
     jz .label7 ; ↓
     push word [bp+0x8]
-    call 0xe7d:DecodePassword ; e20 4:6b0 DecodePassword
+    call far DecodePassword ; e20 4:6b0
     add sp,byte +0x2
 .label7: ; e28
     push word [bp-0x8]
-    call 0x0:0xe38 ; e2b KERNEL._lclose
+    call far KERNEL._lclose ; e2b
     mov ax,0x1
     jmp short .label10 ; ↓
     nop
 .cleanup: ; e36
     push di
-    call 0x0:0xa47 ; e37 KERNEL._lclose
+    call far KERNEL._lclose ; e37
 .error: ; e3c
     xor ax,ax
 .label10: ; e3e
@@ -1631,14 +1631,14 @@ FUN_4_0e48:
     lea ax,[bp-0x42]
     push ax
     push si
-    call 0x3e0:0x1adc ; e68 2:1adc
+    call far GetLevelProgressFromIni ; e68 2:1adc
     add sp,byte +0x8
     or ax,ax
     jz .label0 ; ↓
     lea ax,[bp-0x82]
     push ax
     push si
-    call 0xec0:FUN_4_0d58 ; e7a 4:d58
+    call far FUN_4_0d58 ; e7a 4:d58
     add sp,byte +0x4
     or ax,ax
     jz .label0 ; ↓
@@ -1648,7 +1648,7 @@ FUN_4_0e48:
     lea ax,[bp-0x82]
     push ss
     push ax
-    call 0x0:0xffff ; e91 USER.lstrcmpi
+    call far USER.lstrcmpi ; e91
     or ax,ax
     jz .label1 ; ↓
 .label0: ; e9a
@@ -1683,7 +1683,7 @@ FUN_4_0eaa:
     push si
     mov di,[bp+0x6]
     ; get number of levels
-    call 0x8c9:FUN_4_0a0e ; ebd 4:a0e
+    call far FUN_4_0a0e ; ebd 4:a0e
     mov [bp-0xe],ax
     cmp word [di],byte +0x0
     jz .label3 ; ↓
@@ -1699,7 +1699,7 @@ FUN_4_0eaa:
     lea ax,[bp-0x1a]
     push ax
     push word [di]
-    call 0x110c:0x1adc ; ee0 2:1adc
+    call far GetLevelProgressFromIni ; ee0 2:1adc
     add sp,byte +0x8
     or ax,ax
     jnz .label0 ; ↑
@@ -1707,7 +1707,7 @@ FUN_4_0eaa:
     lea ax,[bp-0x26]
     push ax
     push word [di]
-    call 0xf36:FUN_4_0d58 ; ef2 4:d58
+    call far FUN_4_0d58 ; ef2 4:d58
     add sp,byte +0x4
     or ax,ax
     jnz .label2 ; ↓
@@ -1719,7 +1719,7 @@ FUN_4_0eaa:
     lea ax,[bp-0x26]
     push ss
     push ax
-    call 0x0:0xfcb ; f0a USER.lstrcmpi
+    call far USER.lstrcmpi ; f0a
     or ax,ax
     jz .label0 ; ↑
     jmp .label17 ; ↓
@@ -1731,14 +1731,14 @@ FUN_4_0eaa:
     push ss
     push ax
     push byte +0x20
-    call 0x0:0xd75 ; f22 KERNEL.OpenFile
+    call far KERNEL.OpenFile ; f22
     mov [bp-0xa],ax
     inc ax
     jnz .label4 ; ↓
     jmp .label17 ; ↓
 .label4: ; f30
     push word [bp-0xa]
-    call 0xf67:FUN_4_0950 ; f33 4:950
+    call far FUN_4_0950 ; f33 4:950
     add sp,byte +0x2
     or ax,ax
     jnz .label5 ; ↓
@@ -1756,7 +1756,7 @@ FUN_4_0eaa:
     push ax
     push word [bp-0x8]
     push word [bp-0xa]
-    call 0xfbc:FUN_4_0c3a ; f64 4:c3a
+    call far FUN_4_0c3a ; f64 4:c3a
     add sp,byte +0x8
     or ax,ax
     jnz .label7 ; ↓
@@ -1787,12 +1787,12 @@ FUN_4_0eaa:
     push ax
     push ds
     push si
-    call 0x0:0xe13 ; faa KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; faa
     cmp byte [bp-0x3],0x8
     jz .label11 ; ↓
     lea ax,[bp-0x26]
     push ax
-    call 0x118d:DecodePassword ; fb9 4:6b0 DecodePassword
+    call far DecodePassword ; fb9 4:6b0
     add sp,byte +0x2
 .label11: ; fc1
     push ds
@@ -1800,7 +1800,7 @@ FUN_4_0eaa:
     lea ax,[bp-0x26]
     push ss
     push ax
-    call 0x0:0x10c9 ; fca USER.lstrcmpi
+    call far USER.lstrcmpi ; fca
     or ax,ax
     jz .label15 ; ↓
 .label12: ; fd3
@@ -1819,7 +1819,7 @@ FUN_4_0eaa:
     jmp short .label16 ; ↓
 .label15: ; fee
     push word [bp-0xa]
-    call 0x0:0x1006 ; ff1 KERNEL._lclose
+    call far KERNEL._lclose ; ff1
     mov ax,[bp-0x8]
     mov bx,[bp+0x6]
     mov [bx],ax
@@ -1827,7 +1827,7 @@ FUN_4_0eaa:
     nop
 .label16: ; 1002
     push word [bp-0xa]
-    call 0x0:0xc1c ; 1005 KERNEL._lclose
+    call far KERNEL._lclose ; 1005
 .label17: ; 100a
     xor ax,ax
 .label18: ; 100c
@@ -1872,7 +1872,7 @@ PASSWORDMSGPROC:
     push word [bp+0xa]
     push word [bp+0x8]
     push word [bp+0x6]
-    call 0x0:0xffff ; 1051 WEP4UTIL.1202
+    call far WEP4UTIL.1202 ; 1051
     jmp .label12 ; ↓
     nop
 .label1: ; 105a
@@ -1881,26 +1881,26 @@ PASSWORDMSGPROC:
     push byte +0x2
     push byte +0x0
     push byte +0x0
-    call 0x0:0x11f ; 1066 USER.PostMessage
+    call far USER.PostMessage ; 1066
     jmp .label11 ; ↓
 .label2: ; 106e
     mov si,[bp+0xe]
     push si
-    call 0x0:0xffff ; 1072 WEP4UTIL.103
+    call far WEP4UTIL.103 ; 1072
     push word [PasswordPromptLevel]
     push ds
     push word PasswordPromptMessage
     lea ax,[bp-0x4c]
     push ss
     push ax
-    call 0x0:0x10e6 ; 1084 USER._wsprintf
+    call far USER._wsprintf ; 1084
     add sp,byte +0xa
     push si
     push byte +0x64
     lea ax,[bp-0x4c]
     push ss
     push ax
-    call 0x0:0xffff ; 1094 USER.SetDlgItemText
+    call far USER.SetDlgItemText ; 1094
     jmp .label11 ; ↓
 .label3: ; 109c
     mov ax,[bp+0xa]
@@ -1920,13 +1920,13 @@ PASSWORDMSGPROC:
     push ss
     push ax
     push byte +0xa
-    call 0x0:0xffff ; 10b9 USER.GetDlgItemText
+    call far USER.GetDlgItemText ; 10b9
     lea ax,[bp-0xc]
     push ss
     push ax
     push ds
     push word [PasswordPromptPassword]
-    call 0x0:0xe92 ; 10c8 USER.lstrcmpi
+    call far USER.lstrcmpi ; 10c8
     or ax,ax
     jz .label8 ; ↓
     cmp byte [bp-0xc],0x0
@@ -1939,7 +1939,7 @@ PASSWORDMSGPROC:
     lea ax,[bp-0x4c]
     push ss
     push ax
-    call 0x0:0x10fa ; 10e5 USER._wsprintf
+    call far USER._wsprintf ; 10e5
     add sp,byte +0xc
     jmp short .label7 ; ↓
     nop
@@ -1949,7 +1949,7 @@ PASSWORDMSGPROC:
     lea ax,[bp-0x4c]
     push ss
     push ax
-    call 0x0:0x183 ; 10f9 USER._wsprintf
+    call far USER._wsprintf ; 10f9
     add sp,byte +0x8
 .label7: ; 1101
     push byte +0x10
@@ -1957,20 +1957,20 @@ PASSWORDMSGPROC:
     push ss
     push ax
     push si
-    call 0x1199:0x0 ; 1109 2:0 ShowMessageBox
+    call far ShowMessageBox ; 1109 2:0
     add sp,byte +0x8
     push si
     push byte +0x65
-    call 0x0:0xffff ; 1114 USER.GetDlgItem
+    call far USER.GetDlgItem ; 1114
     push ax
-    call 0x0:0xffff ; 111a USER.SetFocus
+    call far USER.SetFocus ; 111a
     push si
     push byte +0x65
     push word 0x401
     push byte +0x0
     push byte -0x1
     push byte +0x0
-    call 0x0:0xffff ; 112b USER.SendDlgItemMessage
+    call far USER.SendDlgItemMessage ; 112b
     jmp short .label11 ; ↓
 .label8: ; 1132
     mov word [PasswordPromptLevel],0x1
@@ -1983,7 +1983,7 @@ PASSWORDMSGPROC:
     push word [bp+0xe]
     push byte +0x0
 .label10: ; 1149
-    call 0x0:0xffff ; 1149 USER.EndDialog
+    call far USER.EndDialog ; 1149
 .label11: ; 114e
     mov ax,0x1
 .label12: ; 1151
@@ -2020,15 +2020,15 @@ FUN_4_115c:
     jnz .label2 ; ↓
 .label0: ; 1189
     push si
-    call 0x11a5:FUN_4_0e48 ; 118a 4:e48
+    call far FUN_4_0e48 ; 118a 4:e48
     add sp,byte +0x2
     or ax,ax
     jnz .label2 ; ↓
-    call 0x11ee:0x17da ; 1196 2:17da PauseGame
+    call far PauseGame ; 1196 2:17da
     lea ax,[bp-0x10]
     push ax
     push word [bp+0x8]
-    call 0x11bb:FUN_4_0d58 ; 11a2 4:d58
+    call far FUN_4_0d58 ; 11a2 4:d58
     add sp,byte +0x4
     or ax,ax
     jz .label1 ; ↓
@@ -2039,7 +2039,7 @@ FUN_4_115c:
     push word 0xb91
     push word PASSWORDMSGPROC
     push word [OurHInstance]
-    call 0x0:0xffff ; 11c4 KERNEL.MakeProcInstance
+    call far KERNEL.MakeProcInstance ; 11c4
     mov di,ax
     mov [bp-0x4],dx
     push word [OurHInstance]
@@ -2050,16 +2050,16 @@ FUN_4_115c:
     push ax
     push di
     mov si,dx
-    call 0x0:0xffff ; 11df USER.DialogBox
+    call far USER.DialogBox ; 11df
     push si
     push di
-    call 0x0:0xffff ; 11e6 KERNEL.FreeProcInstance
-    call 0x11f9:0x1834 ; 11eb 2:1834 UnpauseGame
+    call far KERNEL.FreeProcInstance ; 11e6
+    call far UnpauseGame ; 11eb 2:1834
     mov ax,[PasswordPromptLevel]
     jmp short .label3 ; ↓
     nop
 .label1: ; 11f6
-    call 0xe6b:0x1834 ; 11f6 2:1834 UnpauseGame
+    call far UnpauseGame ; 11f6 2:1834
 .label2: ; 11fb
     mov ax,0x1
 .label3: ; 11fe
