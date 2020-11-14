@@ -32,6 +32,10 @@ clean:
 	nasm -O0 -f obj -o $@ $<.tmp
 	rm $<.tmp
 
+headers:
+	$(SHELL) extern.sh >extern.inc
+	grep -E -e '(KERNEL|USER|GDI|WEP4UTIL)\.\w+' --only-matching --no-filename $(CODE) | sort -u | sed -e 's/^/EXTERN /' >windows.inc
+
 # additional dependencies
 logic.bin: constants.asm structs.asm variables.asm func.mac
 movement.bin: constants.asm structs.asm variables.asm func.mac
