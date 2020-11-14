@@ -89,12 +89,18 @@ func cmdLink(script string, singleObjectSegmentNumber int) {
 		}
 	}
 
+	errors := 0
 	// Phase 2: apply patches and write output
 	for i, filename := range inputs {
 		if err := ld.patch(filename, &ld.segments[i]); err != nil {
-			log.Println(err)
+			log.Print(filename, ": ", err)
+			errors++
 			continue
 		}
+	}
+
+	if errors > 0 {
+		log.Fatal("there were errors")
 	}
 }
 
