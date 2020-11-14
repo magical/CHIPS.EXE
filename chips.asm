@@ -265,8 +265,7 @@ Segment1:
 
 ; 1600
 Segment2:
-    INCBIN "seg2.bin"
-    INCBIN "base.exe", 0x1600+0x2dca, 0x2ba
+    INCBIN "seg2.linked.bin"
     ALIGN SectorSize, db 0
 
 ; 4800
@@ -279,72 +278,38 @@ Data:
 ; 6200
 ; Segment 3
 Logic:
-    INCBIN "logic.bin"
-    INCBIN "base.exe", 0x8c70, 0x52
+    INCBIN "logic.linked.bin"
     ALIGN SectorSize, db 0
 
 ; 8e00
 Segment4:
-    INCBIN "seg4.bin"
-    INCBIN "base.exe", 0x8e00+0x1208, 0x10a
+    INCBIN "seg4.linked.bin"
     ALIGN SectorSize, db 0
 
 ; a200
 Segment5:
-    INCBIN "seg5.bin"
-
-    ; Relocation info
-    dw 11 ; number of entries
-    %macro reloc_segment 2
-        db 2 ; relocation type = SEGMENT
-        db 0 ; flags = INTERNALREF
-        dw %1 ; offset to first relocation
-        db %2 ; target segment
-        db 0
-        dw 0  ; offset into segment(?)
-    %endmacro
-    %macro reloc_ordinal 3
-        db 3 ; relocation type = FARADDR
-        db 1 ; flags = IMPORTORDINAL
-        dw %1 ; offset to first relocation
-        dw %2 ; index into module reference table
-        dw %3 ; procedure ordinal number
-    %endmacro
-    reloc_segment 0x53, 2
-    reloc_ordinal 0xc7, 1, 3 ; KERNEL.GetVersion
-    reloc_ordinal 0x1ab, 1, 7 ; KERNEL.LocalFree
-    reloc_segment 0x166, 9
-    reloc_ordinal 0xfc, 3, 0x9a ; USER.CheckMenuItem
-    reloc_ordinal 0x105, 3, 0xa0 ; USER.DrawMenuBar
-    reloc_ordinal 0x153, 3, 0xaf ; USER.LoadBitmap
-    reloc_ordinal 0x195, 2, 0x45 ; GDI.DeleteObject
-    reloc_ordinal 0x14, 3, 0x42 ; USER.GetDC
-    reloc_ordinal 0xc2, 3, 0x44 ; USER.ReleaseDC
-    reloc_ordinal 0x1f, 2, 0x50 ; GDI.GetDeviceCaps
-
+    INCBIN "seg5.linked.bin"
     ALIGN SectorSize, db 0
 
 ; a600
 Segment6:
-    INCBIN "seg6.bin"
-    INCBIN "base.exe", 0xa600+0x75b, 130
+    INCBIN "seg6.linked.bin"
     ALIGN SectorSize, db 0
 
 ; ae00
 Segment7:
-    INCBIN "movement.bin"
-    INCBIN "base.exe", 0xae00+0x1cd4, 300
+    INCBIN "movement.linked.bin"
+    ALIGN SectorSize, db 0
 
 ; cc00
 Segment8:
-    INCBIN "sound.bin"
-    INCBIN "base.exe", 0xcc00+0x620, 0x1e0
+    INCBIN "sound.linked.bin"
+    ALIGN SectorSize, db 0
 
 ; d400
 ; Segment 9
 Digits:
-    INCBIN "digits.bin"
-    INCBIN "base.exe", 0xd550, 0x3a
+    INCBIN "digits.linked.bin"
     ALIGN SectorSize, db 0
 
 ; d600

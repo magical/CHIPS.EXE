@@ -1,26 +1,30 @@
-SEGMENTS=data.bin seg2.bin logic.bin seg4.bin seg5.bin seg6.bin movement.bin sound.bin digits.bin
+# *Don't* reorder the list of asm files. The linker assigns segment numbers based on the order of the input files.
+CODE=seg2.asm logic.asm seg4.asm seg5.asm seg6.asm movement.asm sound.asm digits.asm
+OBJ=$(CODE:.asm=.obj)
 RESOURCES=chips.ico res/*
-chips.exe: chips.asm base.exe $(SEGMENTS) $(RESOURCES) Makefile
+
+chips.exe: chips.asm base.exe data.bin link.stamp $(RESOURCES) Makefile
 	nasm -o $@ $<
 
 BASE=basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
 check: $(BASE) chips.exe Makefile
 	-cmp basedata.bin data.bin
-	-cmp baseseg2.bin seg2.bin
-	-cmp baselogic.bin logic.bin
-	-cmp baseseg4.bin seg4.bin
-	-cmp baseseg5.bin seg5.bin
-	-cmp baseseg6.bin seg6.bin
-	-cmp basemovement.bin movement.bin
-	-cmp baseseg8.bin sound.bin
-	-cmp basedigits.bin digits.bin
+	-cmp baseseg2.bin seg2.linked.bin
+	-cmp baselogic.bin logic.linked.bin
+	-cmp baseseg4.bin seg4.linked.bin
+	-cmp baseseg5.bin seg5.linked.bin
+	-cmp baseseg6.bin seg6.linked.bin
+	-cmp basemovement.bin movement.linked.bin
+	-cmp baseseg8.bin sound.linked.bin
+	-cmp basedigits.bin digits.linked.bin
 	cmp base.exe chips.exe
 
 clean:
-	rm *.bin
+	rm *.bin *.obj
 	rm chips.exe
 	rm data.map
+	rm link.stamp
 
 %.bin: %.asm fixmov.awk Makefile
 	awk -f fixmov.awk $< >$<.tmp
@@ -32,19 +36,26 @@ clean:
 	nasm -O0 -f obj -o $@ $<.tmp
 	rm $<.tmp
 
+link.stamp: bin/link chips.link $(OBJ) Makefile
+	bin/link -script chips.link $(OBJ)
+	@# touch a file to tell make we did the thing
+	@touch $@
+
 headers:
 	$(SHELL) extern.sh >extern.inc
 	grep -E -e '(KERNEL|USER|GDI|WEP4UTIL)\.\w+' --only-matching --no-filename $(CODE) | LC_ALL=C sort -u | sed -e 's/^/EXTERN /' >windows.inc
 
 # additional dependencies
-logic.bin: constants.asm structs.asm variables.asm func.mac
-movement.bin: constants.asm structs.asm variables.asm func.mac
-seg2.bin: constants.asm structs.asm variables.asm func.mac
-seg4.bin: constants.asm structs.asm variables.asm
-seg5.bin: constants.asm variables.asm func.mac
-seg6.bin: constants.asm structs.asm variables.asm
-sound.bin: constants.asm variables.asm func.mac
-digits.bin: variables.asm func.mac
+logic.obj: constants.asm structs.asm variables.asm func.mac
+movement.obj: constants.asm structs.asm variables.asm func.mac
+seg2.obj: constants.asm structs.asm variables.asm func.mac
+seg4.obj: constants.asm structs.asm variables.asm
+seg5.obj: constants.asm variables.asm func.mac
+seg6.obj: constants.asm structs.asm variables.asm
+sound.obj: constants.asm variables.asm func.mac
+digits.obj: variables.asm func.mac
+
+$(OBJ): extern.inc windows.inc
 
 variables.asm: data.bin genvars.sh Makefile
 	sh genvars.sh >variables.asm
