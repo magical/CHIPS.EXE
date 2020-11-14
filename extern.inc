@@ -130,7 +130,7 @@ EXTERN FreeTiles                     ; 5:17e
 ; seg6.asm
 %if SEGMENT_NUMBER != 6
 EXTERN GOTOLEVELMSGPROC              ; 6:0
-EXTERN BESTTIMEMSGPROC               ; 6:18e
+EXTERN BESTTIMESMSGPROC              ; 6:18e
 EXTERN COMPLETEMSGPROC               ; 6:3c6
 %endif
 
