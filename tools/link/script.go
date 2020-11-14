@@ -133,7 +133,16 @@ func (ld *Linker) scriptReloc(args []string) error {
 			return fmt.Errorf("no such module: %s", modname)
 		}
 		symbol := args[3]
-		// TODO handle ordinals
+		if strings.HasPrefix(symbol, "@") {
+			// Strip @ from beginning of ordinal
+			ord, err := strconv.Atoi(symbol[1:])
+			if err != nil {
+				return fmt.Errorf("module %s: invalid ordinal %q", modname, symbol)
+			}
+			mod, _ := ld.addModule(0, modname)
+			ld.addImportedSymbol(mod, symbol[1:], ord)
+			symbol = symbol[1:]
+		}
 		// TODO: modname technically shouldn't be necessary for looking up a symbol
 		symb, ok := ld.lookup(modname, symbol)
 		if !ok {
