@@ -516,6 +516,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	out.Write([]byte{uint8(len(seg.reloclist)), 0})
 	for _, ri := range seg.reloclist {
 		if len(ri.patches) == 0 {
+			log.Printf("warning: skipping empty reloc %v", ri.target)
 			continue
 		}
 		var buf [8]byte
@@ -529,7 +530,9 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			put16(buf[4:], ri.target.(*Symbol).module.num)
 			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
 			out.Write(buf[:])
-			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
+			if debug {
+				fmt.Printf("%s: reloc: %v = % x\n", filename, ri.target, buf)
+			}
 		case rkFaraddrImportordinal:
 			//    FARADDR / IMPORTORDINAL
 			//      03 01 xxxx mmmm nnnn
@@ -539,7 +542,9 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			put16(buf[4:], ri.target.(*Symbol).module.num)
 			put16(buf[6:], ri.target.(*Symbol).offset) // ordinal
 			out.Write(buf[:])
-			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
+			if debug {
+				fmt.Printf("%s: reloc: %v = % x\n", filename, ri.target, buf)
+			}
 		case rkSegmentInternal:
 			//    SEGMENT / INTERNALREF
 			//      02 00 xxxx ss 00 0000
@@ -549,9 +554,14 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			put16(buf[4:], int(uint8(ri.target.(*Segment).Index)))
 			put16(buf[6:], 0)
 			out.Write(buf[:])
-			fmt.Printf("reloc: %v = % x\n", ri.target, buf)
+			if debug {
+				fmt.Printf("%s: reloc: %v = % x\n", filename, ri.target, buf)
+			}
 		default:
-			fmt.Println("reloc:", ri.target)
+			if debug {
+				fmt.Println("reloc:", ri.target)
+			}
+			panic("unreachable")
 		}
 	}
 	return out.Close()
