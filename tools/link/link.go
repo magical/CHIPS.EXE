@@ -73,8 +73,9 @@ func cmdLink(script string, singleObjectSegmentNumber int) {
 
 	// TODO: init elsewhere
 	ld.segments = make([]SegmentInfo, len(inputs))
+	base := 2 // XXX don't hardcode this
 	for i := range ld.segments {
-		ld.segments[i].num = ld.addSegment(i + 1)
+		ld.segments[i].num = ld.addSegment(base + i)
 		ld.segments[i].reloctab = make(map[RelocTarget]*RelocInfo)
 	}
 
