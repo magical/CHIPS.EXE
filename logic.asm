@@ -7,8 +7,13 @@ SEGMENT CODE ; 3
 %include "variables.asm"
 %include "func.mac"
 
-EXTERN MoveMonster
-EXTERN GlobalUnlock@16
+%define SEGMENT_NUMBER 3
+%include "extern.inc"
+%include "windows.inc"
+
+EXTERN atoi
+EXTERN atol
+EXTERN rand
 
 ; 0
 

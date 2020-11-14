@@ -4,6 +4,12 @@ SEGMENT CODE ; 6
 %include "structs.asm"
 %include "variables.asm"
 
+%define SEGMENT_NUMBER 6
+%include "extern.inc"
+%include "windows.inc"
+
+EXTERN div32_probably
+
 ; 0
 
 GOTOLEVELMSGPROC:

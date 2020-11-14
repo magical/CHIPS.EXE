@@ -7,6 +7,20 @@ SEGMENT CODE ; 2
 %include "variables.asm"
 %include "func.mac"
 
+%define SEGMENT_NUMBER 2
+%include "extern.inc"
+%include "windows.inc"
+
+EXTERN srand
+EXTERN atoi
+EXTERN atol
+EXTERN FUN_5_017c
+
+GLOBAL UpdateTile
+GLOBAL InvalidateTile
+GLOBAL PauseGame
+GLOBAL UnpauseGame
+
 func ShowMessageBox
     %arg hWnd:word ; +6
     %arg message:dword ; +8
