@@ -77,23 +77,23 @@ bin/res: tools/res/res.go
 baseseg1.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0xa00 -count 0x952
 baseseg2.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0x1600 -count 0x2dca
+	bin/dd <base.exe >$@ -skip 0x1600 -count 0x3084
 basedata.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x4800 -count 0x1738
 baselogic.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0x6200 -count 0x2a70
+	bin/dd <base.exe >$@ -skip 0x6200 -count 0x2ac2
 baseseg4.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0x8e00 -count 0x1208
+	bin/dd <base.exe >$@ -skip 0x8e00 -count 0x1312
 baseseg5.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xa200 -count 0x1bc
+	bin/dd <base.exe >$@ -skip 0xa200 -count 0x216
 baseseg6.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xa600 -count 0x75b
+	bin/dd <base.exe >$@ -skip 0xa600 -count 0x7dd
 basemovement.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xae00 -count 0x1cd4
+	bin/dd <base.exe >$@ -skip 0xae00 -count 0x1d5e
 baseseg8.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xcc00 -count 0x620
+	bin/dd <base.exe >$@ -skip 0xcc00 -count 0x6aa
 basedigits.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xd400 -count 0x150
+	bin/dd <base.exe >$@ -skip 0xd400 -count 0x18a
 
 %.dis: %.bin
 	ndisasm $< >$@
