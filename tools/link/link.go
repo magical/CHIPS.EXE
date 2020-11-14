@@ -111,14 +111,14 @@ func (ld *Linker) preset() {
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalUnlock", 19)
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalAlloc", 15)
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalReAlloc", 16)
-	ld.addLocalSymbol("rand", 1, 0xdc)
-	ld.addLocalSymbol("MoveMonster", 7, 0x18da)
-	ld.addLocalSymbol("UpdateTile", 2, 0x1ca)
-	ld.addLocalSymbol("PlaySoundEffect", 8, 0x056c)
-	ld.addLocalSymbol("GoToLevelN", 4, 0x356)
-	ld.addLocalSymbol("SlideMovement", 7, 0x0636)
-	ld.addLocalSymbol("MoveBlock", 7, 0x0dae)
-	ld.addLocalSymbol("MoveChip", 7, 0x1183)
+	//ld.addLocalSymbol("rand", 1, 0xdc)
+	//ld.addLocalSymbol("MoveMonster", 7, 0x18da)
+	//ld.addLocalSymbol("UpdateTile", 2, 0x1ca)
+	//ld.addLocalSymbol("PlaySoundEffect", 8, 0x056c)
+	//ld.addLocalSymbol("GoToLevelN", 4, 0x356)
+	//ld.addLocalSymbol("SlideMovement", 7, 0x0636)
+	//ld.addLocalSymbol("MoveBlock", 7, 0x0dae)
+	//ld.addLocalSymbol("MoveChip", 7, 0x1183)
 }
 
 func (ld *Linker) loadScript(filename string) error {
