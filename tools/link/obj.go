@@ -115,9 +115,14 @@ func fixup(r *Record) {
 			frameType := int(data[2] >> 4)
 			targetType := int(data[2] & 7)
 			datum := int(data[3])
+			extra := 0
+			if datum&0x80 != 0 {
+				datum = datum&0x7f<<8 | int(data[4])
+				extra++
+			}
 
 			fmt.Printf("FIXUP %s @ %#x, F%d T%d, datum %d\n", locationStr, dataOffset, frameType, targetType, datum)
-			data = data[4:] // TODO
+			data = data[4+extra:] // TODO
 		}
 	}
 }
@@ -306,8 +311,13 @@ func ParseFixup(r *Record) ([]ObjFixup, error) {
 		f.FixupType = ft
 		f.RefType = rt
 		f.RefIndex = int(data[3]) // either a segment index or a symbol index
+		extra := 0
+		if f.RefIndex&0x80 != 0 {
+			f.RefIndex = f.RefIndex&0x7f<<8 | int(data[4])
+			extra = 1
+		}
 		list = append(list, f)
-		data = data[4:]
+		data = data[4+extra:]
 	}
 	return list, nil
 }
