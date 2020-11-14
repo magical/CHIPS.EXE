@@ -4,3 +4,4 @@ base.exe
 *.obj
 *.dis
 data.map
+link.stamp
