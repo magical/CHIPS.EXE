@@ -58,6 +58,8 @@ bin/dd: tools/dd/dd.go
 	go build -o bin/dd ./tools/dd
 bin/label: tools/label/label.go
 	go build -o bin/label ./tools/label
+bin/link: tools/link/*.go
+	go build -o bin/link ./tools/link
 bin/res: tools/res/res.go
 	go build -o bin/res ./tools/res
 
