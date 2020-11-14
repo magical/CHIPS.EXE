@@ -120,6 +120,14 @@ func (ld *Linker) preset() {
 	//ld.addLocalSymbol("SlideMovement", 7, 0x0636)
 	//ld.addLocalSymbol("MoveBlock", 7, 0x0dae)
 	//ld.addLocalSymbol("MoveChip", 7, 0x1183)
+
+	ld.addLocalSymbol("entry", 1, 0x1a)
+	ld.addLocalSymbol("atoi", 1, 0xbc)
+	ld.addLocalSymbol("atol", 1, 0xc0)
+	ld.addLocalSymbol("srand", 1, 0xc4)
+	ld.addLocalSymbol("rand", 1, 0xdc)
+	ld.addLocalSymbol("div32_probably", 1, 0x110)
+	ld.addLocalSymbol("mul32", 1, 0x662)
 }
 
 func (ld *Linker) loadScript(filename string) error {
