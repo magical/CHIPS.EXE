@@ -24,6 +24,7 @@ package main
 // - [x] sort patches according to linkscript
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -41,11 +42,12 @@ func main() {
 	dumpMode := flag.Bool("dump", false, "dump object contents instead of linking")
 	scriptFlag := flag.String("script", "chips.link", "linkscript filename")
 	segFlag := flag.Int("seg", 0, "for testing: the segment number to use when linking a single object")
+	mapFlag := flag.String("map", "", "filename to write map file to")
 	flag.Parse()
 	if *dumpMode {
 		cmdDump()
 	} else {
-		cmdLink(*scriptFlag, *segFlag)
+		cmdLink(*scriptFlag, *mapFlag, *segFlag)
 	}
 }
 
@@ -60,7 +62,7 @@ func cmdDump() {
 	}
 }
 
-func cmdLink(script string, singleObjectSegmentNumber int) {
+func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 	inputs := flag.Args()
 
 	ld := NewLinker()
@@ -87,6 +89,13 @@ func cmdLink(script string, singleObjectSegmentNumber int) {
 	for i, filename := range inputs {
 		if err := ld.loadSymbols(filename, &ld.segments[i]); err != nil {
 			log.Fatal(err)
+		}
+	}
+
+	// write exported symbols to .map file
+	if mapfile != "" {
+		if err := ld.writeMapFile(mapfile); err != nil {
+			log.Print(err)
 		}
 	}
 
@@ -172,7 +181,8 @@ type Segment struct {
 }
 type SegmentInfo struct {
 	num      *Segment
-	extnames []string // imported names (1-indexed) used when loading
+	symbols  []*Symbol // exported symbols
+	extnames []string  // imported names (1-indexed) used when loading
 	// reloc chain buckets
 	// needed during linking a segment
 	reloclist []*RelocInfo
@@ -305,6 +315,7 @@ func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
 			offset:  s.Offset,
 		}
 		ld.symtab[s.Name] = symb
+		seg.symbols = append(seg.symbols, symb)
 	}
 
 	return nil
@@ -782,4 +793,38 @@ func put16(b []byte, v int) {
 	}
 	b[0] = uint8(v)
 	b[1] = uint8(uint(v) >> 8)
+}
+
+// writemapfile writes a list of all exported symbols and their addresses
+func (ld *Linker) writeMapFile(filename string) error {
+	if !strings.HasSuffix(filename, ".map") {
+		// refuse to overwrite non-map files
+		if _, err := os.Stat(filename); err == nil {
+			return fmt.Errorf("file %q already exists; refusing to overwrite", filename)
+		}
+	}
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	bw := bufio.NewWriter(f)
+
+	// mimicks nasms map format for now
+	// TODO: replace with something better
+	fmt.Fprintln(bw, "-- Symbols --------------------------------------------------------------------")
+	fmt.Fprintln(bw)
+	for i := range ld.segments {
+		if i > 0 {
+			fmt.Fprintln(bw)
+		}
+		// TODO: use actual segment name
+		fmt.Fprintln(bw, "---- Section CODE -------------------------------------------------------------")
+		fmt.Fprintln(bw)
+		fmt.Fprintln(bw, "Real              Virtual           Name")
+		for _, symb := range ld.segments[i].symbols {
+			fmt.Fprintf(bw, "%16x  %16x  %s\n", symb.offset, symb.offset, symb.name)
+		}
+	}
+	return bw.Flush()
 }
