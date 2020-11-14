@@ -1,0 +1,102 @@
+Linker needs to do three^H^H^H^H^H four^H^H^H three things:
+
+1) resolve internal references. all the information to do this in in the object files:
+   the exported symbols for each segment and the references to those symbols in each segment.
+   we just need to know what segment number to assign to each object file. (which i
+   think can go in the metadata)
+
+1a) resolve data references. these are like internal references except.. no. actually,
+    they're exactly the same as function references, except that we just have to resolve
+    the offset part, not the segment (since the segment is always ds). 
+
+    i think i'll just stick to my current method of handing the data segment for now
+    (using data.map to generate variables.asm) because none of the relocations reference
+    the data segment, so there's nothing that actually requires involving the linker.
+    and i'd have to stick a bunch of GLOBALs in it otherwise.
+
+    later on i want to experiment with splitting up the data segment and including the
+    relevant bits in the same files as the code segments. but that's more complicated.
+
+2) resolve external (dll) references. traditionally this is done by supplying
+   an object file to the linker with a bunch of IMPDEF records mapping the symbol
+   name to an ordinal number in the DLL. but that's just a convention. nasm can
+   create IMPDEF records with the IMPORT keyword, but i'd still have to teach my linker
+   about them. that sounds boring and complicated. since i'm writing the linker i could use
+   any method i want.
+
+   i could either reuse the symbol files from tools/reloc or, hey, since we already need a
+   linkscript for relocations, why not put the dll symbols in there?
+
+   could also borrow the windows DEF file format or wine's spec format
+
+3) write relocation data. both the relocation list and the patch list for each relocation
+   need to be in the right order to match MSCC.
+
+
+Design criteria
+
+- i want only a single file. i don't want to deal with a file per segment.
+  so it either needs to have per-segment groups or the segment number needs to be in each
+  directive.
+
+- keep it simple to parse
+
+- keep it easy to read
+
+
+we're not writing a whole exe file, so the linker doesn't have to worry about generating
+the module imports. but we'll need some directive to tell it which dlls are imported and
+that their module numbers are.
+
+    MODULE 1 KERNEL KERNEL.sym
+    MODULE 2 GDI GDI.sym
+
+format:
+    
+    MODULE [num] [name] [symfile]
+
+
+relocation data: 
+
+the patch list addresses are in loosely increasing sequential order (TODO: find a better
+name). it is composed of spans which may be increasing or decreasing, but overall each
+span is greater than the previous one. (eg x+10-2(x%10))
+
+e.g.
+
+    RELOC 2 KERNEL GlobalUnlock
+    RELOC 2 SEGMENT 3 = 0- 7a0- 1004 2aa0+ 2cc8-
+
+format:
+
+    RELOC [seg] [module] [symbol] [= patchlist]?
+
+the relocation can also refer to a segment, in which case the module name should be the
+special value "SEGMENT", and the segment number should be given instead of a symbol.
+
+patchlist is optional. if present, it consists of a sequence of hexadecimal numbers
+each followed by a plus sign or a minus sign.
+the sign attached to an address indicates that the span between that address and the next
+address are either ascending or descending order. the span includes the lower endpoint but
+not the higher endpoint.
+for the last address, all patches after that address are part of the span.
+
+a missing patchlist is equivalent to 0+.
+
+
+
+Appendix: DEF file example
+
+    EXPORTS
+    DllCanUnloadNow      @1          PRIVATE
+    DllWindowName = WindowName       DATA
+    DllGetClassObject    @4 NONAME   PRIVATE
+    DllRegisterServer    @7
+    DllUnregisterServer
+
+
+Resources:
+
+* https://refspecs.linuxfoundation.org/elf/TIS1.1.pdf (OMF section)
+* https://docs.microsoft.com/en-us/cpp/build/reference/exports?view=msvc-160 DEF files
+* https://linux.die.net/man/1/winebuild wine spec files
