@@ -2044,7 +2044,7 @@ FUN_4_115c:
     mov [PasswordPromptLevel],ax
     lea ax,[bp-0x10]
     mov [PasswordPromptPassword],ax
-    push word 0xb91
+    push word SEG PASSWORDMSGPROC
     push word PASSWORDMSGPROC
     push word [OurHInstance]
     call far KERNEL.MakeProcInstance ; 11c4

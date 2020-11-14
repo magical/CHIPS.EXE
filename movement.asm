@@ -1543,8 +1543,8 @@ func EndLevel
     call far PauseTimer ; cd9 2:17a2
 
     ; Show level completed dialog
-    push word 0xffff ; 6:
-    push word 0x3c6  ; CompleteMsgProc
+    push word SEG COMPLETEMSGPROC
+    push word COMPLETEMSGPROC
     push word [OurHInstance]
     call far KERNEL.MakeProcInstance ; ce8
     mov si,ax

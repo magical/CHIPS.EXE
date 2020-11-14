@@ -853,7 +853,7 @@ CreateClasses:
     mov si,[bp+0x6]
     mov word [bp-0x6a],0x1000           ; style
     mov word [bp-0x68],MAINWNDPROC      ; lpfnWndProc
-    mov word [bp-0x66],0x749            ;
+    mov word [bp-0x66],SEG MAINWNDPROC  ;
     xor ax,ax
     mov [bp-0x64],ax                    ; cbClassExtra
     mov [bp-0x62],ax                    ; cbWndExtra
@@ -888,7 +888,7 @@ CreateClasses:
 .label1: ; 73c
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],BOARDWNDPROC
-    mov word [bp-0x66],0x11
+    mov word [bp-0x66],SEG BOARDWNDPROC
     xor ax,ax
     mov [bp-0x64],ax
     mov [bp-0x62],ax
@@ -915,7 +915,7 @@ CreateClasses:
     jz .label0 ; ↑
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],INFOWNDPROC
-    mov word [bp-0x66],0x7f0
+    mov word [bp-0x66],SEG INFOWNDPROC
     xor ax,ax
     mov [bp-0x64],ax
     mov [bp-0x62],ax
@@ -944,7 +944,7 @@ CreateClasses:
 .label2: ; 7e3
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],COUNTERWNDPROC
-    mov word [bp-0x66],0x849
+    mov word [bp-0x66],SEG COUNTERWNDPROC
     mov word [bp-0x64],0x0
     mov word [bp-0x62],0x4
     mov [bp-0x60],si
@@ -973,7 +973,7 @@ CreateClasses:
 .label3: ; 83c
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],INVENTORYWNDPROC
-    mov word [bp-0x66],0x89e
+    mov word [bp-0x66],SEG INVENTORYWNDPROC
     xor ax,ax
     mov [bp-0x64],ax
     mov [bp-0x62],ax
@@ -1002,7 +1002,7 @@ CreateClasses:
 .label4: ; 891
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],HINTWNDPROC
-    mov word [bp-0x66],0xb0b
+    mov word [bp-0x66],SEG HINTWNDPROC
     xor ax,ax
     mov [bp-0x64],ax
     mov [bp-0x62],ax
@@ -3610,8 +3610,8 @@ MenuItemCallback:
 
 .label21: ; 1fda
     call far PauseGame ; 1fda 2:17da
-    push word 0x20ca ; 1fdd 6:18e BESTTIMESMSGPROC
-    push word 0x18e
+    push word SEG BESTTIMESMSGPROC ; 1fdd 6:18e BESTTIMESMSGPROC
+    push word BESTTIMESMSGPROC
     push word [OurHInstance]
     call far KERNEL.MakeProcInstance ; 1fe9
     mov si,ax
@@ -3698,8 +3698,8 @@ MenuItemCallback:
 
 .label29: ; 20c4
     call far PauseGame ; 20c4 2:17da
-    push word 0xffff ; 20c7 6:0 GOTOLEVELMSGPROC
-    push word 0x0
+    push word SEG GOTOLEVELMSGPROC ; 20c7 6:0 GOTOLEVELMSGPROC
+    push word GOTOLEVELMSGPROC
     push word [OurHInstance]
     call far KERNEL.MakeProcInstance ; 20d3
     mov si,ax
