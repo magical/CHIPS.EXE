@@ -128,6 +128,13 @@ func (ld *Linker) preset() {
 	ld.addLocalSymbol("rand", 1, 0xdc)
 	ld.addLocalSymbol("div32_probably", 1, 0x110)
 	ld.addLocalSymbol("mul32", 1, 0x662)
+
+	wep4, _ := ld.addModule(4, "WEP4UTIL")
+	ld.addImportedSymbol(wep4, "WEP4UTIL.2", 2)
+	ld.addImportedSymbol(wep4, "WEP4UTIL.4", 4)
+	ld.addImportedSymbol(wep4, "WEP4UTIL.5", 5)
+	ld.addImportedSymbol(wep4, "WEP4UTIL.103", 103)
+	ld.addImportedSymbol(wep4, "WEP4UTIL.1202", 1202)
 }
 
 func (ld *Linker) loadScript(filename string) error {
