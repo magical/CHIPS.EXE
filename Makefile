@@ -43,7 +43,7 @@ link.stamp: bin/link chips.link $(OBJ) Makefile
 
 headers:
 	$(SHELL) extern.sh >extern.inc
-	grep -E -e '(KERNEL|USER|GDI|WEP4UTIL)\.\w+' --only-matching --no-filename $(CODE) | LC_ALL=C sort -u | sed -e 's/^/EXTERN /' >windows.inc
+	grep -E -e '(KERNEL|USER|GDI)\.\w+' --only-matching --no-filename $(CODE) | LC_ALL=C sort -u | sed -e 's/^/EXTERN /' >windows.inc
 
 # additional dependencies
 logic.obj: constants.asm structs.asm variables.asm func.mac

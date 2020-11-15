@@ -11,6 +11,9 @@ SEGMENT CODE ; 4
 %include "extern.inc"
 %include "windows.inc"
 
+EXTERN WEP4UTIL.103
+EXTERN WEP4UTIL.1202
+
 GLOBAL UpdateWindowTitle
 GLOBAL FreeGameLists
 GLOBAL GetTileRect
