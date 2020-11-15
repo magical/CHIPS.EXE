@@ -10,14 +10,14 @@ BASE=basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.
 
 check: $(BASE) chips.exe Makefile
 	-cmp basedata.bin data.bin
-	-cmp baseseg2.bin seg2.linked.bin
-	-cmp baselogic.bin logic.linked.bin
-	-cmp baseseg4.bin seg4.linked.bin
-	-cmp baseseg5.bin seg5.linked.bin
-	-cmp baseseg6.bin seg6.linked.bin
-	-cmp basemovement.bin movement.linked.bin
-	-cmp baseseg8.bin sound.linked.bin
-	-cmp basedigits.bin digits.linked.bin
+	-cmp baseseg2.bin seg2.bin
+	-cmp baselogic.bin logic.bin
+	-cmp baseseg4.bin seg4.bin
+	-cmp baseseg5.bin seg5.bin
+	-cmp baseseg6.bin seg6.bin
+	-cmp basemovement.bin movement.bin
+	-cmp baseseg8.bin sound.bin
+	-cmp basedigits.bin digits.bin
 	cmp base.exe chips.exe
 
 clean:
