@@ -265,7 +265,7 @@ Segment1:
 
 ; 1600
 Segment2:
-    INCBIN "seg2.linked.bin"
+    INCBIN "seg2.bin"
     ALIGN SectorSize, db 0
 
 ; 4800
@@ -278,38 +278,38 @@ Data:
 ; 6200
 ; Segment 3
 Logic:
-    INCBIN "logic.linked.bin"
+    INCBIN "logic.bin"
     ALIGN SectorSize, db 0
 
 ; 8e00
 Segment4:
-    INCBIN "seg4.linked.bin"
+    INCBIN "seg4.bin"
     ALIGN SectorSize, db 0
 
 ; a200
 Segment5:
-    INCBIN "seg5.linked.bin"
+    INCBIN "seg5.bin"
     ALIGN SectorSize, db 0
 
 ; a600
 Segment6:
-    INCBIN "seg6.linked.bin"
+    INCBIN "seg6.bin"
     ALIGN SectorSize, db 0
 
 ; ae00
 Segment7:
-    INCBIN "movement.linked.bin"
+    INCBIN "movement.bin"
     ALIGN SectorSize, db 0
 
 ; cc00
 Segment8:
-    INCBIN "sound.linked.bin"
+    INCBIN "sound.bin"
     ALIGN SectorSize, db 0
 
 ; d400
 ; Segment 9
 Digits:
-    INCBIN "digits.linked.bin"
+    INCBIN "digits.bin"
     ALIGN SectorSize, db 0
 
 ; d600

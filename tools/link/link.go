@@ -459,7 +459,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 		return err
 	}
 	defer f.Close()
-	outfile := strings.TrimSuffix(filename, ".obj") + ".linked.bin"
+	outfile := strings.TrimSuffix(filename, ".obj") + ".bin"
 	out, err := os.Create(outfile)
 	if err != nil {
 		return err
