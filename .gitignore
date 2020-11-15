@@ -1,5 +1,7 @@
 chips.exe
 base.exe
 *.bin
+*.obj
 *.dis
 data.map
+link.stamp

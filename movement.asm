@@ -7,6 +7,10 @@ SEGMENT CODE ; 7
 %include "variables.asm"
 %include "func.mac"
 
+%define SEGMENT_NUMBER 7
+%include "extern.inc"
+%include "windows.inc"
+
 ; 0
 
 ; DoTick advances the game one tick.
@@ -29,7 +33,7 @@ func DoTick
 
     ; get the device context
     push word [hwndBoard]    ; hWnd
-    call 0x0:0xffff ; 13 KERNEL.GetDC
+    call far USER.GetDC ; 13  KERNEL.GetDC
     mov [hDC],ax
 
     ; check whether we're on an even tick or an odd tick
@@ -64,7 +68,7 @@ func DoTick
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push ax
-    call 0x11e:MoveChip ; 61 7:1184
+    call far MoveChip ; 61 7:1184
     add sp,byte +0xa
 .label6: ; 69
     ; ...and clear the keystroke regardless
@@ -161,7 +165,7 @@ func DoTick
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x19d:MoveChip ; 11b 7:1184
+    call far MoveChip ; 11b 7:1184
     add sp,byte +0xa
     or ax,ax
     ; If we succeeded, or chip died, go deal with it
@@ -230,7 +234,7 @@ func DoTick
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x2aa:MoveChip ; 19a 7:1184
+    call far MoveChip ; 19a 7:1184
     add sp,byte +0xa
     or ax,ax
     jnz .dead
@@ -311,7 +315,7 @@ func DoTick
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0xffff:0x1ca ; 24b 2:1ca UpdateTile
+    call far UpdateTile ; 24b 2:1ca
     add sp,byte +0x6
 
     ;;; PHASE 2 ;;;
@@ -328,7 +332,7 @@ func DoTick
     neg ax
     push ax ; tick&3 == 0
     push word [hDC]
-    call 0xffff:0x74e ; 26f 3:74e Monster loop
+    call far MonsterLoop ; 26f 3:74e Monster loop
     add sp,byte +0x4
     jmp short .doChipSlideMovement
     nop
@@ -352,7 +356,7 @@ func DoTick
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push ax
-    call 0x2ed:MoveChip ; 2a7 7:1184
+    call far MoveChip ; 2a7 7:1184
     add sp,byte +0xa
 .label36: ; 2af
     ; ...if chip /is/ dead, clear the keystroke and mouse target instead.
@@ -380,7 +384,7 @@ func DoTick
     push word [bx+SlideY]
     push word [bx+SlideX]
     push word [hDC]
-    call 0x33b:MoveChip ; 2ea 7:1184
+    call far MoveChip ; 2ea 7:1184
     add sp,byte +0xa
     or ax,ax
     jz .label39
@@ -407,7 +411,7 @@ func DoTick
     push word [bx+ChipX]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x356:SlideMovement ; 338 7:636
+    call far SlideMovement ; 338 7:636
     add sp,byte +0x10
     push byte +0x1
     push byte +0x0
@@ -415,7 +419,7 @@ func DoTick
     push word [bx+SlideY]
     push word [bx+SlideX]
     push word [hDC]
-    call 0x398:MoveChip ; 353 7:1184
+    call far MoveChip ; 353 7:1184
     add sp,byte +0xa
     or ax,ax
     jnz .moveChipAfterSliding
@@ -436,7 +440,7 @@ func DoTick
     push word [bx+ChipX]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0xffff:SlideMovement ; 395 7:636
+    call far SlideMovement ; 395 7:636
     add sp,byte +0x10
 
     ; Allow chip to get a move in after sliding
@@ -468,7 +472,7 @@ func DoTick
     push word [bx+BufferedY]
     push word [bx+BufferedX]
     push word [hDC]
-    call 0x4b8:MoveChip ; 3ea 7:1184
+    call far MoveChip ; 3ea 7:1184
     add sp,byte +0xa
 .label44: ; 3f2
     mov bx,[GameStatePtr]
@@ -554,7 +558,7 @@ func DoTick
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x56a:MoveChip ; 4b5 7:1184
+    call far MoveChip ; 4b5 7:1184
     add sp,byte +0xa
     or ax,ax
     jz .label59
@@ -629,7 +633,7 @@ func DoTick
     push word [ydir]
     push word [xdir]
     push word [hDC]
-    call 0x64:MoveChip ; 567 7:1184
+    call far MoveChip ; 567 7:1184
     add sp,byte +0xa
     or ax,ax
     jnz .label55
@@ -657,7 +661,7 @@ func DoTick
 .doMonsterSlideMovement: ; 5a6
     ; Do slip list loop and release DC
     push word [hDC]
-    call 0x6a7:0x13de ; 5a9 3:13de Slip loop
+    call far SlipLoop ; 5a9 3:13de Slip loop
 
     ;;; PHASE 5 ;;;;
     ; clean up, timer
@@ -665,7 +669,7 @@ func DoTick
     add sp,byte +0x2
     push word [hwndBoard]
     push word [hDC]
-    call 0x0:0xffff ; 5b8 USER.ReleaseDC
+    call far USER.ReleaseDC ; 5b8
 
     ; countdown timer?
     cmp word [TimeRemaining],byte +0x0
@@ -683,25 +687,25 @@ func DoTick
     jg .label71
     push byte +0x1
     push byte TickSound
-    call 0x607:0x56c ; 5e7 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 5e7 8:56c
     add sp,byte +0x4
 .label71: ; 5ef
     push byte +0x1
-    call 0x619:0xcbe ; 5f1 2:cbe
+    call far FUN_2_0cbe ; 5f1 2:cbe
     add sp,byte +0x2
     cmp word [TimeRemaining],byte +0x0
     jnz .end
     push byte +0x1
     push byte ChipDeathByTimeSound
-    call 0xffff:0x56c ; 604 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 604 8:56c
     add sp,byte +0x4
     mov bx,[GameStatePtr]
     mov word [bx+Autopsy],OutOfTime
-    call 0x24e:0xb9a ; 616 2:b9a ShowDeathMessage
+    call far ShowDeathMessage ; 616 2:b9a
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xffff:0x356 ; 625 4:356 load level
+    call far FUN_4_0356 ; 625 4:356 load level
     add sp,byte +0x4
 .end: ; 62d
     pop si
@@ -795,13 +799,13 @@ func SlideMovement
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0x6b9:0x1396 ; 6a4 3:1396 FindSlipperAt
+    call far FindSlipperAt ; 6a4 3:1396
     add sp,byte +0x6
     mov [slipptr],ax
     mov [slipseg],dx
     or dx,ax
     jnz .label4
-    call 0x272:0x1250 ; 6b6 3:1250 NewSlipper
+    call far NewSlipper ; 6b6 3:1250
     mov [slipptr],ax
     mov [slipseg],dx
 .label4: ; 6c1
@@ -1040,7 +1044,7 @@ func SlideMovement
     push word [xdir]
     mov al,[di]
     push ax
-    call 0x8b3:0x486 ; 89a 3:486 SetTileDir
+    call far SetTileDir ; 89a 3:486
     add sp,byte +0x6
     mov [di],al
 .label41: ; 8a4
@@ -1053,7 +1057,7 @@ func SlideMovement
     ; Force Random
 .forceRandom: ; 8ae
     push byte +0x4
-    call 0x91e:0x72e ; 8b0 3:72e RandInt
+    call far RandInt ; 8b0 3:72e
     add sp,byte +0x2
     or ax,ax
     jnz .label44
@@ -1106,7 +1110,7 @@ func SlideMovement
     jnz .return
     push word [ysrc]
     push word [xsrc]
-    call 0x993:0x0 ; 91b 3:0 FindMonster
+    call far FindMonster ; 91b 3:0
     add sp,byte +0x4
     mov si,ax
     cmp byte [di],0xff
@@ -1167,13 +1171,13 @@ func DrawStretchedTile
     jmp word .label1
 .label3: ; 98e
     push byte +0x20
-    call 0x9a5:0x2a3e ; 990 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 990 3:2a3e
     add sp,byte +0x2
     mov [tilexpos],ax
     mov [tileypos],dx
     mov al,[lowertile]
     push ax
-    call 0x9d1:0x2a3e ; 9a2 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 9a2 3:2a3e
     add sp,byte +0x2
     push word [TileDC]
     push word [tilexpos]
@@ -1185,11 +1189,11 @@ func DrawStretchedTile
     push dx
     push word 0xcc
     push byte +0x20
-    call 0x0:0x9f1 ; 9c3 GDI.BitBlt
+    call far GDI.BitBlt ; 9c3
     mov al,[uppertile]
     add al,0x60
     push ax
-    call 0x9fe:0x2a3e ; 9ce 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 9ce 3:2a3e
     add sp,byte +0x2
     push word [TileDC]
     push word [tilexpos]
@@ -1201,11 +1205,11 @@ func DrawStretchedTile
     push dx
     push word 0xee
     push word 0x86
-    call 0x0:0xa1e ; 9f0 GDI.BitBlt
+    call far GDI.BitBlt ; 9f0
     mov al,[uppertile]
     add al,0x30
     push ax
-    call 0xa45:0x2a3e ; 9fb 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; 9fb 3:2a3e
     add sp,byte +0x2
     push word [TileDC]
     push word [tilexpos]
@@ -1217,7 +1221,7 @@ func DrawStretchedTile
     push dx
     push word 0x88
     push word 0xc6
-    call 0x0:0xffff ; a1d GDI.BitBlt
+    call far GDI.BitBlt ; a1d
     push word [hDC]
     push word [xpos]
     push word [ypos]
@@ -1231,7 +1235,7 @@ func DrawStretchedTile
 .label1: ; a3e
     mov al,[uppertile]
     push ax
-    call 0x5ac:0x2a3e ; a42 3:2a3e GetTileImagePos
+    call far GetTileImagePos ; a42 3:2a3e
     add sp,byte +0x2
     push word [hDC]
     push word [xpos]
@@ -1246,7 +1250,7 @@ func DrawStretchedTile
     push byte TileHeight
     push word 0xcc
     push byte +0x20
-    call 0x0:0xffff ; a68 GDI.StretchBlt
+    call far GDI.StretchBlt ; a68
 endfunc
 
 ; a74
@@ -1268,7 +1272,7 @@ func EndGame
     %define msgbuf (bp-0x19e) ; length = 0x192 = 402
 
     push word [hwndBoard]
-    call 0x0:0x14 ; a88 USER.GetDC
+    call far USER.GetDC ; a88
     mov [hDC],ax
     mov bx,[GameStatePtr]
 
@@ -1339,7 +1343,7 @@ func EndGame
 
 .callDrawStretchedTile: ; b0c
     push word [hDC]
-    call 0x3ed:DrawStretchedTile ; b0f 7:966
+    call far DrawStretchedTile ; b0f 7:966
     add sp,byte +0xe
     jmp word .done
 
@@ -1364,7 +1368,7 @@ func EndGame
 
     ; if random int is 0, push ChipS; if >=1, ChipExit
     push cx
-    call 0xe13:0x72e ; b3b 3:72e RandInt
+    call far RandInt ; b3b 3:72e
     add sp,byte +0x2
     cmp ax,0x1
     sbb al,al
@@ -1393,18 +1397,18 @@ func EndGame
     push ds
     push word GreatJobChipMsg
     push word [hwndMain]
-    call 0xbe4:0x0 ; b7e 2:0 ShowMessageBox
+    call far ShowMessageBox ; b7e 2:0
     add sp,byte +0x8
     push word [OurHInstance]
     push ds
     push word Chipend
-    call 0x0:0xc59 ; b8e USER.LoadBitmap
+    call far USER.LoadBitmap ; b8e
     mov [hBitmap],ax
     or ax,ax
     jz .loadBitmapFailed
     push word [TileDC]
     push ax
-    call 0x0:0xbcb ; b9f GDI.SelectObject
+    call far GDI.SelectObject ; b9f
     mov si,ax
     push word [hDC]
     push byte +0x0
@@ -1416,18 +1420,18 @@ func EndGame
     push byte +0x0
     push word 0xcc
     push byte +0x20
-    call 0x0:0xc8a ; bc0 GDI.BitBlt
+    call far GDI.BitBlt ; bc0
     push word [TileDC]
     push si
-    call 0x0:0xc69 ; bca GDI.SelectObject
+    call far GDI.SelectObject ; bca
     push word [hBitmap]
-    call 0x0:0xc9a ; bd2 GDI.DeleteObject
+    call far GDI.DeleteObject ; bd2
 .loadBitmapFailed: ; bd7
     push byte +0x0
     push ds
     push word MelindaHerselfMsg
     push word [hwndMain]
-    call 0xbfb:0x0 ; be1 2:0 ShowMessageBox
+    call far ShowMessageBox ; be1 2:0
     add sp,byte +0x8
 
     mov si,0x1
@@ -1438,7 +1442,7 @@ func EndGame
     push byte +0x0
     push byte +0x0
     push si
-    call 0xc42:0x1adc ; bf8 2:1adc GetLevelProgressFromIni
+    call far GetLevelProgressFromIni ; bf8 2:1adc
     add sp,byte +0x8
     or ax,ax
     jz .label15
@@ -1461,14 +1465,14 @@ func EndGame
     lea ax,[msgbuf]
     push ss
     push ax
-    call 0x0:0xffff ; c2b USER._wsprintf
+    call far USER._wsprintf ; c2b
     add sp,byte +0xe
     push byte +0x0
     lea ax,[msgbuf]
     push ss
     push ax
     push word [hwndMain]
-    call 0xcdc:0x0 ; c3f 2:0 ShowMessageBox
+    call far ShowMessageBox ; c3f 2:0
     add sp,byte +0x8
     jmp short .done
     nop
@@ -1481,13 +1485,13 @@ func EndGame
     push word [OurHInstance]
     push ds
     push word Chipend2
-    call 0x0:0xffff ; c58 USER.LoadBitmap
+    call far USER.LoadBitmap ; c58
     mov si,ax
     or si,si
     jz .else
     push word [TileDC]
     push si
-    call 0x0:0xc94 ; c68 GDI.SelectObject
+    call far GDI.SelectObject ; c68
     mov di,ax
     push word [hDC]
     push byte +0x0
@@ -1499,12 +1503,12 @@ func EndGame
     push byte +0x0
     push word 0xcc
     push byte +0x20
-    call 0x0:0x9c4 ; c89 GDI.BitBlt
+    call far GDI.BitBlt ; c89
     push word [TileDC]
     push di
-    call 0x0:0xffff ; c93 GDI.SelectObject
+    call far GDI.SelectObject ; c93
     push si
-    call 0x0:0xffff ; c99 GDI.DeleteObject
+    call far GDI.DeleteObject ; c99
 
 .else: ; c9e
     mov bx,[GameStatePtr]
@@ -1519,7 +1523,7 @@ func EndGame
 .label19: ; cb5
     push word [hwndBoard]
     push word [hDC]
-    call 0x0:0x5b9 ; cbc USER.ReleaseDC
+    call far USER.ReleaseDC ; cbc
     pop si
     pop di
 endfunc
@@ -1536,13 +1540,13 @@ func EndLevel
 
     %arg hWnd:word
 
-    call 0xd51:0x17a2 ; cd9 2:17a2 PauseTimer
+    call far PauseTimer ; cd9 2:17a2
 
     ; Show level completed dialog
-    push word 0xffff ; 6:
-    push word 0x3c6  ; CompleteMsgProc
+    push word SEG COMPLETEMSGPROC
+    push word COMPLETEMSGPROC
     push word [OurHInstance]
-    call 0x0:0xffff ; ce8  KERNEL.MakeProcInstance
+    call far KERNEL.MakeProcInstance ; ce8
     mov si,ax
     push word [OurHInstance]  ; hInstance
     push ds
@@ -1552,10 +1556,10 @@ func EndLevel
     push ax
     push si             ; lpDialogFunc
     mov di,ax
-    call 0x0:0xffff ; d00 USER.DialogBox
+    call far USER.DialogBox ; d00
     push di
     push si
-    call 0x0:0xffff ; d07 KERNEL.FreeProcInstance
+    call far KERNEL.FreeProcInstance ; d07
     mov bx,[GameStatePtr]
     cmp word [bx+LevelNumber],FakeLastLevel
     jz .lastLevel
@@ -1585,17 +1589,17 @@ func EndLevel
     push ds
     push word [DecadeMessages + si - 5*2]
     push word [hwndMain]
-    call 0xd59:0x0 ; d4e 2:0 ShowMessageBox
+    call far ShowMessageBox ; d4e 2:0
     add sp,byte +0x8
 
 .noDecadeMsg: ; d56
-    call 0xda3:0x17ba ; d56 2:17ba UnpauseTimer
+    call far UnpauseTimer ; d56 2:17ba
     push byte +0x0
     mov bx,[GameStatePtr]
     mov ax,[bx+LevelNumber]
     inc ax
     push ax
-    call 0x628:0x356 ; d67 4:356
+    call far FUN_4_0356 ; d67 4:356
     add sp,byte +0x4
     jmp short .end
     nop
@@ -1610,7 +1614,7 @@ func EndLevel
     mov word [bx+SlipListLen],0x0
     mov bx,[GameStatePtr]
     mov word [bx+MonsterListLen],0x0
-    call 0x5f4:0x17ba ; da0 2:17ba UnpauseTimer
+    call far UnpauseTimer ; da0 2:17ba
 .end: ; da5
     pop si
     pop di
@@ -1678,7 +1682,7 @@ func MoveBlock
     jnz .label5
     push word [ysrc]
     push word [xsrc]
-    call 0xe5d:0x22be ; e10 3:22be FindTrap
+    call far FindTrap ; e10 3:22be
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -1710,7 +1714,7 @@ func MoveBlock
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0xe8c:0x1934 ; e5a 3:1934 CheckPanelWalls
+    call far CheckPanelWalls ; e5a 3:1934
     add sp,byte +0x8
     or ax,ax
     jnz .label9
@@ -1730,7 +1734,7 @@ func MoveBlock
     push word [xdest]
     mov al,[tile]
     push ax
-    call 0x89d:0x1ca4 ; e89 3:1ca4 BlockCanEnterTile
+    call far BlockCanEnterTile ; e89 3:1ca4
     add sp,byte +0xc
     or ax,ax
     jnz .label10
@@ -1763,7 +1767,7 @@ func MoveBlock
 .action2: ; eba
     push byte +0x1
     push byte SplashSound
-    call 0x5ea:0x56c ; ebe 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; ebe 8:56c
     add sp,byte +0x4
     mov byte [blockTile],Dirt
     jmp short .endOfSwitch
@@ -1780,7 +1784,7 @@ func MoveBlock
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xf8f:SlideMovement ; ee6 7:636
+    call far SlideMovement ; ee6 7:636
     add sp,byte +0x10
 
 .action1: ; eee
@@ -1808,7 +1812,7 @@ func MoveBlock
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0xf69:0x12be ; f2c 3:12be DeleteSlipperAt
+    call far DeleteSlipperAt ; f2c 3:12be
     add sp,byte +0x8
 .label21: ; f34
     cmp byte [blockTile],0xff
@@ -1822,7 +1826,7 @@ func MoveBlock
 .action5: ; f44
     push byte +0x1
     push byte BombSound
-    call 0xec1:0x56c ; f48 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; f48 8:56c
     add sp,byte +0x4
     mov byte [blockTile],Floor
     jmp short .endOfSwitch
@@ -1833,7 +1837,7 @@ func MoveBlock
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0xfa3:0x1396 ; f66 3:1396 FindSlipperAt
+    call far FindSlipperAt ; f66 3:1396
     add sp,byte +0x6
     or dx,ax
     jz .label25
@@ -1848,14 +1852,14 @@ func MoveBlock
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xfe4:SlideMovement ; f8c 7:636
+    call far SlideMovement ; f8c 7:636
     add sp,byte +0x10
 .label25: ; f94
     push word [ysrc]
     push word [xsrc]
     push word [ydest]
     push word [xdest]
-    call 0xfc2:0x21aa ; fa0 3:21aa EnterTrap
+    call far EnterTrap ; fa0 3:21aa
     add sp,byte +0x8
     jmp word .action1
     nop
@@ -1868,7 +1872,7 @@ func MoveBlock
     lea cx,[xdest]
     push cx
     push word [hDC]
-    call 0x10a2:0x276a ; fbf 3:276a EnterTeleport
+    call far EnterTeleport ; fbf 3:276a
     add sp,byte +0xc
     lea ax,[blockTile]
     push ax
@@ -1881,7 +1885,7 @@ func MoveBlock
     push word [xdest]
     push word [ysrc]
     push word [xsrc]
-    call 0xb12:SlideMovement ; fe1 7:636
+    call far SlideMovement ; fe1 7:636
     add sp,byte +0x10
     mov bx,[ydest]
     shl bx,byte 0x5
@@ -1907,7 +1911,7 @@ func MoveBlock
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x105c:0x1ca ; 1021 2:1ca UpdateTile
+    call far UpdateTile ; 1021 2:1ca
     add sp,byte +0x6
 
 ; delet from source tile if not on a clone machine
@@ -1929,7 +1933,7 @@ func MoveBlock
     push word [ysrc]
     push word [xsrc]
     push word [hDC]
-    call 0xb81:0x1ca ; 1059 2:1ca UpdateTile
+    call far UpdateTile ; 1059 2:1ca
     add sp,byte +0x6
 
 ; handle any button presses
@@ -1963,7 +1967,7 @@ func MoveBlock
     nop
 .toggleButton: ; 109c
     push word [hDC]
-    call 0x10b8:0x1fac ; 109f 3:1fac PressToggleButton
+    call far PressToggleButton ; 109f 3:1fac
     add sp,byte +0x2
     jmp short .label34
     nop
@@ -1972,7 +1976,7 @@ func MoveBlock
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x10cb:0x2442 ; 10b5 3:2442 PressCloneButton
+    call far PressCloneButton ; 10b5 3:2442
     add sp,byte +0x8
     jmp short .label34
     nop
@@ -1980,13 +1984,13 @@ func MoveBlock
     push byte +0x0
     push word [ydest]
     push word [xdest]
-    call 0x10da:0x211a ; 10c8 3:211a PressTrapButton
+    call far PressTrapButton ; 10c8 3:211a
     add sp,byte +0x6
     jmp short .label34
 .tankButton: ; 10d2
     push byte +0x0
     push word [hDC]
-    call 0x1174:0x1e6a ; 10d7 3:1e6a PressTankButton
+    call far PressTankButton ; 10d7 3:1e6a
     add sp,byte +0x4
     jmp short .label34
     nop
@@ -2056,7 +2060,7 @@ func MoveBlock
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax
-    call 0xb3e:0x12be ; 1171 3:12be DeleteSlipperAt
+    call far DeleteSlipperAt ; 1171 3:12be
     add sp,byte +0x8
 .return0: ; 1179
     xor ax,ax
@@ -2237,7 +2241,7 @@ func MoveChip
     jnz .checkPanelWalls
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x1311:0x22be ; 12c4 3:22be FindTrap
+    call far FindTrap ; 12c4 3:22be
     add sp,byte +0x4
     mov si,ax
     or si,si
@@ -2269,7 +2273,7 @@ func MoveChip
     push word [xdir]
     mov al,[tile1]
     push ax
-    call 0x134a:0x1934 ; 130e 3:1934 CanEnterOrExitPanelWalls
+    call far CheckPanelWalls ; 130e 3:1934 CanEnterOrExitPanelWalls
     add sp,byte +0x8
     or ax,ax
     jnz .checkBlock
@@ -2291,7 +2295,7 @@ func MoveChip
 .label23: ; 1341
     push word [ydest]
     push word [xdest]
-    call 0x13df:0x58 ; 1347 3:58 FindSlipper
+    call far FindSlipper ; 1347 3:58
     add sp,byte +0x4
     mov [blocktmp],ax
     inc ax
@@ -2332,7 +2336,7 @@ func MoveChip
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x15b4:MoveBlock ; 13a8 7:dae
+    call far MoveBlock ; 13a8 7:dae
     add sp,byte +0xe
     mov [blocktmp],ax
     mov bx,[GameStatePtr]
@@ -2354,7 +2358,7 @@ func MoveChip
     push word [xdir]
     push word [ydest]
     push word [xdest]
-    call 0x1473:0x1a56 ; 13dc 3:1a56 probably ChipCanEnterTile
+    call far ChipCanEnterTile ; 13dc 3:1a56 probably
     add sp,byte +0xe
     mov [canenter],ax
     or ax,ax
@@ -2389,7 +2393,7 @@ func MoveChip
     cmp byte [bx+Upper],Hint
     jnz .label30
     push byte +0x8
-    call 0x154f:0xcbe ; 1433 2:cbe
+    call far FUN_2_0cbe ; 1433 2:cbe
     add sp,byte +0x2
 
 ; Jump based on the returned action
@@ -2425,7 +2429,7 @@ func MoveChip
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
     push ax
-    call 0x151c:0x1770 ; 1470 3:1770 PickUpKeyOrBoot
+    call far PickUpKeyOrBoot ; 1470 3:1770
     add sp,byte +0x2
     jmp word .label41
     nop
@@ -2488,7 +2492,7 @@ func MoveChip
     push word [ydir]
     push word [xdir]
     push byte +0x6c
-    call 0x1611:0x486 ; 1519 3:486 SetTileDir
+    call far SetTileDir ; 1519 3:486
     add sp,byte +0x6
     mov bx,[ydest]
     shl bx,byte 0x5
@@ -2509,23 +2513,23 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x1572:0x56e ; 154c 2:56e UpdateChip
+    call far UpdateChip ; 154c 2:56e
     add sp,byte +0xa
     push byte +0x1
     push byte ChipDeathSound
-    call 0xf4b:0x56c ; 1558 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 1558 8:56c
     add sp,byte +0x4
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x157a:0x1ca ; 156f 2:1ca UpdateTile
+    call far UpdateTile ; 156f 2:1ca
     add sp,byte +0x6
-    call 0x1024:0xb9a ; 1577 2:b9a ShowDeathMessage
+    call far ShowDeathMessage ; 1577 2:b9a
     push byte +0x1
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
-    call 0xd6a:0x356 ; 1586 4:356 load level
+    call far FUN_4_0356 ; 1586 4:356 load level
     add sp,byte +0x4
     jmp word .returnZero
     nop
@@ -2543,7 +2547,7 @@ func MoveChip
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0xee9:SlideMovement ; 15b1 7:636
+    call far SlideMovement ; 15b1 7:636
     add sp,byte +0x10
     mov bx,[GameStatePtr]
     cmp word [bx+IsBuffered],byte +0x0
@@ -2577,7 +2581,7 @@ func MoveChip
     push si
     push word [ydest]
     push word [xdest]
-    call 0xf2f:0x21aa ; 160e 3:21aa EnterTrap
+    call far EnterTrap ; 160e 3:21aa
     add sp,byte +0x8
     jmp short .label34
 
@@ -2591,7 +2595,7 @@ func MoveChip
     lea cx,[xdest]
     push cx
     push word [hDC]
-    call 0x16b0:0x276a ; 162b 3:276a EnterTeleport
+    call far EnterTeleport ; 162b 3:276a
     add sp,byte +0xc
     push word DummyVarForSlideMovement
     push byte +0x0 ; chip
@@ -2604,7 +2608,7 @@ func MoveChip
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x183c:SlideMovement ; 1652 7:636
+    call far SlideMovement ; 1652 7:636
     add sp,byte +0x10
     mov word [action],0x5
     ; fallthrough
@@ -2651,7 +2655,7 @@ func MoveChip
 
 .callSetTileDir: ; 16ac
     push ax
-    call 0x172a:0x486 ; 16ad 3:486 SetTileDir
+    call far SetTileDir ; 16ad 3:486
     add sp,byte +0x6
 
     ; set upper tile to returned tile
@@ -2665,13 +2669,13 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x16e5:0x56e ; 16cb 2:56e UpdateChip
+    call far UpdateChip ; 16cb 2:56e
     add sp,byte +0xa
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x176f:0x1ca ; 16e2 2:1ca UpdateTile
+    call far UpdateTile ; 16e2 2:1ca
     add sp,byte +0x6
 
 ; deal with buttons and hints
@@ -2703,7 +2707,7 @@ func MoveChip
 
 .toggleButton: ; 1724
     push word [hDC]
-    call 0x173e:0x1fac ; 1727 3:1fac PressToggleButton
+    call far PressToggleButton ; 1727 3:1fac
     jmp short .label60
 
 .cloneButton: ; 172e
@@ -2711,7 +2715,7 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x1753:0x2442 ; 173b 3:2442 PressCloneButton
+    call far PressCloneButton ; 173b 3:2442
     add sp,byte +0x8
     jmp short .label54
     nop
@@ -2720,20 +2724,20 @@ func MoveChip
     push byte +0x1
     push word [bx+ChipY]
     push word [bx+ChipX]
-    call 0x1762:0x211a ; 1750 3:211a PressTrapButton
+    call far PressTrapButton ; 1750 3:211a
     add sp,byte +0x6
     jmp short .label54
 
 .tankButton: ; 175a
     push byte +0x1
     push word [hDC]
-    call 0x17a6:0x1e6a ; 175f 3:1e6a PressTankButton
+    call far PressTankButton ; 175f 3:1e6a
     add sp,byte +0x4
     jmp short .label54
     nop
 .showHint: ; 176a
     push byte +0x8
-    call 0x17ef:0xcbe ; 176c 2:cbe
+    call far FUN_2_0cbe ; 176c 2:cbe
 .label60: ; 1771
     add sp,byte +0x2
 
@@ -2761,7 +2765,7 @@ func MoveChip
     nop
 .label62: ; 17a0
     push word [hDC]
-    call 0x17bc:0x1fac ; 17a3 3:1fac PressToggleButton
+    call far PressToggleButton ; 17a3 3:1fac
     add sp,byte +0x2
     jmp short .label61
     nop
@@ -2770,7 +2774,7 @@ func MoveChip
     push word [buttonY]
     push word [buttonX]
     push word [hDC]
-    call 0x17cf:0x2442 ; 17b9 3:2442 PressCloneButton
+    call far PressCloneButton ; 17b9 3:2442
     add sp,byte +0x8
     jmp short .label61
     nop
@@ -2778,13 +2782,13 @@ func MoveChip
     push byte +0x0
     push word [buttonY]
     push word [buttonX]
-    call 0x17de:0x211a ; 17cc 3:211a PressTrapButton
+    call far PressTrapButton ; 17cc 3:211a
     add sp,byte +0x6
     jmp short .label61
 .label65: ; 17d6
     push byte +0x0
     push word [hDC]
-    call 0x1894:0x1e6a ; 17db 3:1e6a PressTankButton
+    call far PressTankButton ; 17db 3:1e6a
     add sp,byte +0x4
 
 ; Invalidate the inventory window if the inventory changed
@@ -2792,7 +2796,7 @@ func MoveChip
     cmp word [InventoryDirty],byte +0x0
     jz .label66
     push byte +0x6
-    call 0x18b0:0xcbe ; 17ec 2:cbe
+    call far FUN_2_0cbe ; 17ec 2:cbe
     add sp,byte +0x2
 
 ; if chip is sliding and action != 5, stop sliding
@@ -2818,10 +2822,10 @@ func MoveChip
     jnz .label68
     push byte +0x1
     push byte LevelCompleteSound
-    call 0x185b:0x56c ; 182d 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 182d 8:56c
     add sp,byte +0x4
     push word [hwndBoard] ; hWnd
-    call 0x13ab:EndLevel ; 1839 7:cca
+    call far EndLevel ; 1839 7:cca
     add sp,byte +0x2
     ; return 1
     mov ax,0x1
@@ -2838,7 +2842,7 @@ func MoveChip
     ; play oof sound
     push byte +0x1
     push byte BlockedMoveSound
-    call 0x18c8:0x56c ; 1858 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 1858 8:56c
     add sp,byte +0x4
 
 .label69: ; 1860
@@ -2869,7 +2873,7 @@ func MoveChip
     mov al,ChipN
 .label71: ; 1890
     push ax
-    call 0x1956:0x486 ; 1891 SetTileDir
+    call far SetTileDir ; 1891 3:486
     add sp,byte +0x6
     ; set it
     mov bx,[local_1c]
@@ -2879,7 +2883,7 @@ func MoveChip
     push word [bx+ChipY]
     push word [bx+ChipX]
     push word [hDC]
-    call 0x1436:0x1ca ; 18ad 2:1ca UpdateTile
+    call far UpdateTile ; 18ad 2:1ca
     add sp,byte +0x6
 
     cmp word [canenter],byte +0x0
@@ -2888,7 +2892,7 @@ func MoveChip
     jz .label72
     push byte +0x1
     push byte BlockedMoveSound
-    call 0x155b:0x56c ; 18c5 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 18c5 8:56c
     add sp,byte +0x4
 .label72: ; 18cd
     mov ax,[canenter]
@@ -2985,7 +2989,7 @@ func MoveMonster
     ; It's a trap!
     push si ; ysrc
     push di ; xsrc
-    call 0x19a3:0x22be ; 1953 FindTrap
+    call far FindTrap ; 1953 3:22be
     add sp,byte +0x4
     mov [trap],ax
     or ax,ax
@@ -3023,7 +3027,7 @@ func MoveMonster
     push word [xdir]
     mov al,[tile]
     push ax
-    call 0x19d2:0x1934 ; 19a0 3:1934 CanEnterOrExitPanelWalls
+    call far CheckPanelWalls ; 19a0 3:1934 CanEnterOrExitPanelWalls
     add sp,byte +0x8
     or ax,ax
     jnz .label9
@@ -3043,7 +3047,7 @@ func MoveMonster
     push word [xdest]
     mov al,[tile]
     push ax
-    call 0x12c7:0x1d4a ; 19cf 3:1d4a MonsterCanEnterTile
+    call far MonsterCanEnterTile ; 19cf 3:1d4a
     add sp,byte +0xc
     or ax,ax
     jnz .label10
@@ -3077,7 +3081,7 @@ func MoveMonster
     push word [xdest]
     push si ; ysrc
     push di ; xsrc
-    call 0x1ac4:SlideMovement ; 1a12 7:636
+    call far SlideMovement ; 1a12 7:636
     add sp,byte +0x10
     jmp short .label13
 
@@ -3086,7 +3090,7 @@ func MoveMonster
     ; play bomb sound
     push byte +0x1
     push byte BombSound
-    call 0x1830:0x56c ; 1a20 8:56c PlaySoundEffect
+    call far PlaySoundEffect ; 1a20 8:56c
     add sp,byte +0x4
     mov byte [facing],Floor
 ; 1a2c
@@ -3108,7 +3112,7 @@ func MoveMonster
     add bx,[GameStatePtr]
     mov al,[bx+Upper]
     push ax
-    call 0x1a77:0x12be ; 1a50 3:12be DeleteSlipperAt
+    call far DeleteSlipperAt ; 1a50 3:12be
     add sp,byte +0x8
 .label14: ; 1a58
     cmp word [action],byte +0x2
@@ -3126,7 +3130,7 @@ func MoveMonster
     push di ; xsrc
     push word [ydest]
     push word [xdest]
-    call 0x1aa8:0x21aa ; 1a74 3:21aa EnterTrap
+    call far EnterTrap ; 1a74 3:21aa
     add sp,byte +0x8
 
 ; 1a7c
@@ -3153,7 +3157,7 @@ func MoveMonster
     lea cx,[xdest]
     push cx
     push word [hDC]
-    call 0x1b76:0x276a ; 1aa5 3:276a EnterTeleport
+    call far EnterTeleport ; 1aa5 3:276a
     add sp,byte +0xc
     lea ax,[facing]
     push ax
@@ -3164,7 +3168,7 @@ func MoveMonster
     push word [xdest]
     push si ; ysrc
     push di ; xsrc
-    call 0x1655:SlideMovement ; 1ac1 7:636
+    call far SlideMovement ; 1ac1 7:636
     add sp,byte +0x10
     mov bx,[ydest]
     shl bx,byte 0x5
@@ -3187,7 +3191,7 @@ func MoveMonster
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x1b36:0x1ca ; 1aff 2:1ca UpdateTile
+    call far UpdateTile ; 1aff 2:1ca
     add sp,byte +0x6
 
 ; end of the jump table cases???
@@ -3210,7 +3214,7 @@ func MoveMonster
     push si ; ysrc
     push di ; xsrc
     push word [hDC]
-    call 0x16ce:0x1ca ; 1b33 2:1ca UpdateTile
+    call far UpdateTile ; 1b33 2:1ca
     add sp,byte +0x6
     cmp word [action],byte +0x1
     jz .label20
@@ -3236,7 +3240,7 @@ func MoveMonster
     jmp word .autopsy
 .toggleButton: ; 1b70
     push word [hDC]
-    call 0x1b8c:0x1fac ; 1b73 3:1fac PressToggleButton
+    call far PressToggleButton ; 1b73 3:1fac
     add sp,byte +0x2
     jmp word .autopsy
 .cloneButton: ; 1b7e
@@ -3244,14 +3248,14 @@ func MoveMonster
     push word [ydest]
     push word [xdest]
     push word [hDC]
-    call 0x1b9f:0x2442 ; 1b89 3:2442 PressCloneButton
+    call far PressCloneButton ; 1b89 3:2442
     add sp,byte +0x8
     jmp word .autopsy
 .trapButton: ; 1b94
     push byte +0x0
     push word [ydest]
     push word [xdest]
-    call 0x1bb4:0x211a ; 1b9c 3:211a PressTrapButton
+    call far PressTrapButton ; 1b9c 3:211a
     add sp,byte +0x6
     jmp word .autopsy
     nop
@@ -3259,7 +3263,7 @@ func MoveMonster
     mov di,[xdirptr]
     push word [ysrc]
     push word [xsrc]
-    call 0x1c1b:0x0 ; 1bb1 FindMonster
+    call far FindMonster ; 1bb1 3:0
     add sp,byte +0x4
     mov si,ax
     cmp si,byte -0x1
@@ -3294,7 +3298,7 @@ func MoveMonster
 .notFound: ; 1c13
     push byte +0x0
     push word [hDC]
-    call 0x1cc4:0x1e6a ; 1c18 3:1e6a PressTankButton
+    call far PressTankButton ; 1c18 3:1e6a
     add sp,byte +0x4
     cmp si,byte -0x1
     jz .autopsy
@@ -3368,7 +3372,7 @@ func MoveMonster
     mov si,[GameStatePtr]
     mov al,[bx+si+Upper]
     push ax         ; facing
-    call 0x162e:0x12be ; 1cc1 3:12be DeleteSlipperAt
+    call far DeleteSlipperAt ; 1cc1 3:12be
     add sp,byte +0x8
 
 .returnZero: ; 1cc9

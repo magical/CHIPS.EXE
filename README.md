@@ -41,10 +41,12 @@ To build, you'll need the following programs installed:
 * make
 * nasm
 * awk
-* golang (optional, for building tools)
+* golang
 
 You'll also need an existing copy of `CHIPS.EXE` with the sha256sum given above,
 to fill in the incomplete portions of the disassembly.
+
+Go is required for building the linker and (optionally) some other tools.
 
 Some tools require python3, but they aren't used in the build.
 
@@ -56,4 +58,3 @@ Building
 2. Run `make`
 
 3. (optional) Run `make check` to compare the output with the base image.
-   This step requires golang.

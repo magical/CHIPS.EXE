@@ -17,6 +17,10 @@ SEGMENT CODE ; 5
 %include "variables.asm"
 %include "func.mac"
 
+%define SEGMENT_NUMBER 5
+%include "extern.inc"
+%include "windows.inc"
+
 func InitGraphics
     sub sp,byte +0x4
     push si
@@ -25,17 +29,17 @@ func InitGraphics
 
     mov si,[bp+6] ; ???
     push byte +0x0 ; NULL
-    call 0x0:0xffff ; 13 USER.GetDC
+    call far USER.GetDC ; 13
     mov [hDC],ax
 
     push ax
     push byte +0x8 ; HORZRES
-    call 0x0:0x2c ; 1e GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 1e
     mov [HorizontalResolution],ax
 
     push word [hDC]
     push byte +0xa ; VERTRES
-    call 0x0:0x71 ; 2b GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 2b
     mov [VerticalResolution],ax
 
     mov word [HorizontalPadding],0x20
@@ -52,7 +56,7 @@ func InitGraphics
     or si,si
     jz .label2
     push byte ID_COLOR
-    call 0xffff:0x198e ; 50 2:198e GetIniInt
+    call far GetIniInt ; 50 2:198e
     add sp,byte +0x2
     or ax,ax
     jnz .label2
@@ -67,18 +71,18 @@ func InitGraphics
     jz .checkRastercaps
     push word [hDC]
     push byte +0x18 ; NUMCOLORS
-    call 0x0:0x80 ; 70 GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 70
     cmp ax,0x2
     jng .useMonochrome
 .checkRastercaps: ; 7a
     push word [hDC]
     push byte +0x26 ; RASTERCAPS
-    call 0x0:0x8f ; 7f GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 7f
     test ah,0x1 ; RC_BITBLT
     jz .checkVertRes
     push word [hDC]
     push byte +0x68 ; SIZEPALETTE
-    call 0x0:0xffff ; 8e GDI.GetDeviceCaps
+    call far GDI.GetDeviceCaps ; 8e
     cmp ax,0x100
     jl .checkVertRes
     mov word [ColorMode],0x4
@@ -99,10 +103,10 @@ func InitGraphics
 .releaseDC: ; bc
     push byte +0x0
     push word [hDC]
-    call 0x0:0xffff ; c1 USER.ReleaseDC
+    call far USER.ReleaseDC ; c1
 
     ; ax = (GetVersion() >= 3.10)
-    call 0x0:0xffff ; c6 KERNEL.GetVersion
+    call far KERNEL.GetVersion ; c6
     ; swap low byte and high byte
     mov si,ax
     mov al,ah
@@ -130,10 +134,10 @@ func InitGraphics
     xor ax,ax   ; MF_UNCHECKED
 .label13: ; fa
     push ax                 ; uCheck
-    call 0x0:0xffff ; fb USER.CheckMenuItem
+    call far USER.CheckMenuItem ; fb
 
     push word [hwndMain]
-    call 0x0:0xffff ; 104 USER.DrawMenuBar
+    call far USER.DrawMenuBar ; 104
     pop si
 endfunc
 
@@ -172,13 +176,13 @@ func LoadTiles
     push word LocolorTiles ; "obj32_4E"
 
 .loadBitmap: ; 152
-    call 0x0:0xffff ; 152 USER.LoadBitmap
+    call far USER.LoadBitmap ; 152
     mov [si],ax
     or ax,ax
     jz .failure
     cmp word [loadDigits],byte +0x0
     jnz .label18
-    call 0xffff:0x4e ; 163 9:0x4e LoadDigits
+    call far LoadDigits ; 163 9:4e 9:0x4e
     or ax,ax
     jz .failure
 .label18: ; 16c
@@ -192,7 +196,7 @@ func LoadTiles
     pop si
 endfunc
 
-; 17e
+; 17c
 
 ; delete tile bitmap
 func FreeTiles
@@ -201,14 +205,14 @@ func FreeTiles
     cmp word [0xa14],byte +0x0
     jz .hObjectIsNull
     push word [0xa14]
-    call 0x0:0xffff ; 194 GDI.DeleteObject
+    call far GDI.DeleteObject ; 194
     mov word [0xa14],0x0
 .hObjectIsNull: ; 19f
 
     cmp word [0xa16],byte +0x0
     jz .pointerIsNull
     push word [0xa16]
-    call 0x0:0xffff ; 1aa KERNEL.LocalFree
+    call far KERNEL.LocalFree ; 1aa
     mov word [0xa16],0x0
 .pointerIsNull: ; 1b5
 endfunc

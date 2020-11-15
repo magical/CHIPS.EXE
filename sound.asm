@@ -7,6 +7,10 @@ SEGMENT CODE ; 8
 %include "variables.asm"
 %include "func.mac"
 
+%define SEGMENT_NUMBER 8
+%include "extern.inc"
+%include "windows.inc"
+
 ; 0
 
 %define SEM_NOOPENFILEERRORBOX 0x8000
@@ -16,12 +20,12 @@ func InitSound
     push si
     ; Tell OpenFile not to display an error message on file not found
     push word SEM_NOOPENFILEERRORBOX
-    call 0x0:0xd1 ; 11 KERNEL.SetErrorMode
+    call far KERNEL.SetErrorMode ; 11
     mov si,ax
     ; Load MMSYSTEM.DLL
     push ds
     push word s_MMSYSTEM_DLL
-    call 0x0:0xffff ; 1c KERNEL.LoadLibrary
+    call far KERNEL.LoadLibrary ; 1c
     mov [hmoduleMMSystem],ax
     cmp ax,0x20
     ja .loadedMMSystem ; ↓
@@ -31,31 +35,31 @@ func InitSound
     push ax
     push ds
     push word s_sndPlaySound
-    call 0x0:0x46 ; 31 KERNEL.GetProcAddress
+    call far KERNEL.GetProcAddress ; 31
     mov [fpSndPlaySound],ax
     mov [fpSndPlaySound+2],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_mciSendCommand
-    call 0x0:0x5a ; 45 KERNEL.GetProcAddress
+    call far KERNEL.GetProcAddress ; 45
     mov [fpMciSendCommand],ax
     mov [fpMciSendCommand+2],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_mciGetErrorString
-    call 0x0:0x6e ; 59 KERNEL.GetProcAddress
+    call far KERNEL.GetProcAddress ; 59
     mov [fpMciGetErrorString],ax
     mov [fpMciGetErrorString+2],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_midiOutGetNumDevs
-    call 0x0:0x82 ; 6d KERNEL.GetProcAddress
+    call far KERNEL.GetProcAddress ; 6d
     mov [fpMidiOutGetNumDevs],ax
     mov [fpMidiOutGetNumDevs+2],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_waveOutGetNumDevs
-    call 0x0:0xffff ; 81 KERNEL.GetProcAddress
+    call far KERNEL.GetProcAddress ; 81
     mov [fpWaveOutGetNumDevs],ax
     mov [fpWaveOutGetNumDevs+2],dx
     ; Enable (or disable) Background Music menu item if midiOutGetNumDevs() != 0
@@ -91,7 +95,7 @@ func InitSound
 .done: ; cf
     ; change error mode back
     push si
-    call 0x0:0xffff ; d0 KERNEL.SetErrorMode
+    call far KERNEL.SetErrorMode ; d0
     ; Return 1 if we loaded the module sucessfully, 0 otherwise
     cmp word [hmoduleMMSystem],byte +0x1
     sbb ax,ax
@@ -106,7 +110,7 @@ func TeardownSound
     cmp word [hmoduleMMSystem],byte +0x0
     jz .label0 ; ↓
     push word [hmoduleMMSystem]
-    call 0x0:0xffff ; fe KERNEL.FreeLibrary
+    call far KERNEL.FreeLibrary ; fe
 .label0: ; 103
     mov word [hmoduleMMSystem],0x0
 endfunc
@@ -184,7 +188,7 @@ func FUN_8_0110
     push ds
     push word s_The_MIDI_Mapper_is_not_available_Continue?
     push word [hwndMain]
-    call 0x2c7:0x0 ; 1c0 2:0 ShowMessageBox
+    call far ShowMessageBox ; 1c0 2:0
     add sp,byte +0x8
     cmp ax,0x7
     jnz .label5 ; ↓
@@ -232,7 +236,7 @@ func FUN_8_022a
     push byte +0x0
     push byte +0x0
     push word [hwndMain]
-    call 0x33a:FUN_8_0110 ; 241 8:110
+    call far FUN_8_0110 ; 241 8:110
     add sp,byte +0x8
     or dx,ax
     jnz .returnZero ; ↓
@@ -255,7 +259,7 @@ func ShowMIDIError
     lea ax,[bp-0x11a]
     push ss
     push ax
-    call 0x0:0xffff ; 27b USER._wsprintf
+    call far USER._wsprintf ; 27b
     add sp,byte +0xc
     mov ax,[fpMciGetErrorString+2]
     or ax,[fpMciGetErrorString]
@@ -265,7 +269,7 @@ func ShowMIDIError
     lea ax,[bp-0x11a]
     push ss
     push ax
-    call 0x0:0xffff ; 298 KERNEL.lstrlen
+    call far KERNEL.lstrlen ; 298
     mov si,ax
     lea ax,[bp+si-0x11b]
     push ss
@@ -285,7 +289,7 @@ func ShowMIDIError
     push word s_Unknown_Error
 .label1: ; 2c0
     push word [hwndMain]
-    call 0xffff:0x0 ; 2c4 2:0 ShowMessageBox
+    call far ShowMessageBox ; 2c4 2:0
     add sp,byte +0x8
     pop si
 endfunc
@@ -329,7 +333,7 @@ func FUN_8_0308
     jnz .haveSomeMIDIFiles ; ↓
     jmp .returnZero ; ↓
 .haveSomeMIDIFiles: ; 337
-    call 0x3a9:FUN_8_02d4 ; 337 8:2d4
+    call far FUN_8_02d4 ; 337 8:2d4
     mov ax,[bp+0x6] ; level number
     cwd
     idiv word [NumMIDIFiles]
@@ -374,23 +378,23 @@ func FUN_8_0308
 .label8: ; 39f
     cmp word [NumMIDIFiles],byte +0x0
     jnz .label4 ; ↑
-    call 0xffff:FUN_8_02d4 ; 3a6 8:2d4
+    call far FUN_8_02d4 ; 3a6 8:2d4
     push word [hwndMain]
     push word 0x111
     push byte +0x75
     push byte +0x0
     push byte +0x0
-    call 0x0:0x482 ; 3b8 USER.SendMessage
+    call far USER.SendMessage ; 3b8
     push byte +0x30
     push ds
     push word s_None_of_the_MIDI_files_specified___
     push word [hwndMain]
-    call 0x4c5:0x0 ; 3c7 2:0 ShowMessageBox
+    call far ShowMessageBox ; 3c7 2:0
     add sp,byte +0x8
     push word [hMenu]
     push byte ID_BGM
     push byte +0x1
-    call 0x0:0xffff ; 3d7 USER.EnableMenuItem
+    call far USER.EnableMenuItem ; 3d7
     jmp .returnZero ; ↓
     nop
 .label9: ; 3e0
@@ -403,24 +407,24 @@ func FUN_8_0308
     push byte +0x0
     push byte +0x0
     push word 0x7f02 ; hourglass
-    call 0x0:0xffff ; 3f7 USER.LoadCursor
+    call far USER.LoadCursor ; 3f7
     mov [bp-0x8],ax
     push word [hwndMain]
-    call 0x0:0xffff ; 403 USER.SetCapture
+    call far USER.SetCapture ; 403
     push word [bp-0x8]
-    call 0x0:0x42f ; 40b USER.SetCursor
+    call far USER.SetCursor ; 40b
     mov [bp-0xa],ax
     push byte +0x0
     push word [bp-0xe]
     push di
     push word [hwndMain]
-    call 0x46f:FUN_8_0110 ; 41d 8:110
+    call far FUN_8_0110 ; 41d 8:110
     add sp,byte +0x8
     mov [bp-0x6],ax
     mov [bp-0x4],dx
     push word [bp-0xa]
-    call 0x0:0xffff ; 42e USER.SetCursor
-    call 0x0:0xffff ; 433 USER.ReleaseCapture
+    call far USER.SetCursor ; 42e
+    call far USER.ReleaseCapture ; 433
     mov ax,[bp-0x4]
     or ax,[bp-0x6]
     jz .label11 ; ↓
@@ -430,7 +434,7 @@ func FUN_8_0308
     jnz .break ; ↓
     mov bx,[bp-0x12]
     push word [bx]
-    call 0x0:0x5e8 ; 452 KERNEL.LocalFree
+    call far KERNEL.LocalFree ; 452
     mov bx,[bp-0x12]
     mov word [bx],0x0
     jmp .loop ; ↑
@@ -441,14 +445,14 @@ func FUN_8_0308
     push di
     push word [bp-0x4]
     push word [bp-0x6]
-    call 0x244:ShowMIDIError ; 46c 8:25c
+    call far ShowMIDIError ; 46c 8:25c
     add sp,byte +0x8
     push word [hwndMain]
     push word 0x111
     push byte +0x75
     push byte +0x0
     push byte +0x0
-    call 0x0:0xffff ; 481 USER.SendMessage
+    call far USER.SendMessage ; 481
 .label11: ; 486
     mov ax,[bp-0x4]
     or ax,[bp-0x6]
@@ -479,11 +483,11 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ax
     push di
-    call 0x4f4:0x1ca0 ; 4c2 2:1ca0
+    call far FUN_2_1ca0 ; 4c2 2:1ca0
     add sp,byte +0x8
     inc ax
     push ax
-    call 0x0:0x541 ; 4cc KERNEL.LocalAlloc
+    call far KERNEL.LocalAlloc ; 4cc
     mov [si],ax
     or ax,ax
     jz .nextSound ; ↓
@@ -492,7 +496,7 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ss
     push ax
-    call 0x0:0x554 ; 4df KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 4df
 .nextSound: ; 4e4
     inc di
     add si,byte +0x2
@@ -500,7 +504,7 @@ func FUN_8_04a0
     jc .soundLoop ; ↑
     ;; MIDI
     push word ID_NumMidiFiles
-    call 0x50a:0x198e ; 4f1 2:198e
+    call far GetIniInt ; 4f1 2:198e
     add sp,byte +0x2
     cmp ax,NumMidiFilesMax
     jl .label2 ; ↓
@@ -509,13 +513,13 @@ func FUN_8_04a0
     nop
 .label2: ; 504
     push word ID_NumMidiFiles
-    call 0x519:0x198e ; 507 2:198e
+    call far GetIniInt ; 507 2:198e
     add sp,byte +0x2
 .label3: ; 50f
     mov [NumMIDIFiles],ax
     push ax
     push word ID_NumMidiFiles
-    call 0x539:0x19ca ; 516 2:19ca
+    call far StoreIniInt ; 516 2:19ca
     add sp,byte +0x4
     xor di,di
     cmp [NumMIDIFiles],di
@@ -528,11 +532,11 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ax
     push di
-    call 0x1c3:0x1ca0 ; 536 2:1ca0
+    call far FUN_2_1ca0 ; 536 2:1ca0
     add sp,byte +0x8
     inc ax
     push ax
-    call 0x0:0xffff ; 540 KERNEL.LocalAlloc
+    call far KERNEL.LocalAlloc ; 540
     mov [si],ax
     or ax,ax
     jz .nextMidiFile ; ↓
@@ -541,7 +545,7 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ss
     push ax
-    call 0x0:0xffff ; 553 KERNEL.lstrcpy
+    call far KERNEL.lstrcpy ; 553
 .nextMidiFile: ; 558
     add si,byte +0x2
     inc di
@@ -600,7 +604,7 @@ func FUN_8_05b8
     cmp word [si],byte +0x0
     jz .label2 ; ↓
     push word [si]
-    call 0x0:0x608 ; 5e7 KERNEL.LocalFree
+    call far KERNEL.LocalFree ; 5e7
 .label2: ; 5ec
     add si,byte +0x2
     cmp si,SoundArray.end
@@ -613,7 +617,7 @@ func FUN_8_05b8
     cmp word [si],byte +0x0
     jz .label4 ; ↓
     push word [si]
-    call 0x0:0xffff ; 607 KERNEL.LocalFree
+    call far KERNEL.LocalFree ; 607
 .label4: ; 60c
     add si,byte +0x2
     inc di
