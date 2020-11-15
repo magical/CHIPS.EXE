@@ -124,7 +124,7 @@ EXTERN FUN_4_115c                    ; 4:115c
 %if SEGMENT_NUMBER != 5
 EXTERN InitGraphics                  ; 5:
 EXTERN LoadTiles                     ; 5:112
-EXTERN FreeTiles                     ; 5:17e
+EXTERN FreeTiles                     ; 5:17c
 %endif
 
 ; seg6.asm

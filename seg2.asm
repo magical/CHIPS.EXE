@@ -14,7 +14,6 @@ SEGMENT CODE ; 2
 EXTERN srand
 EXTERN atoi
 EXTERN atol
-EXTERN FUN_5_017c
 
 EXTERN WEP4UTIL.2
 EXTERN WEP4UTIL.4
@@ -4047,7 +4046,7 @@ func MAINWNDPROC
     call far FreeDigits ; 242c 9:bc
     push word [TileDC]
     call far GDI.DeleteDC ; 2435
-    call far FUN_5_017c ; 243a 5:17c
+    call far FreeTiles ; 243a 5:17c
     call far FUN_8_05b8 ; 243f 8:5b8
     call far TeardownSound ; 2444 8:e6
     cmp word [IsWin31],byte +0x0

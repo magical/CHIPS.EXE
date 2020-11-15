@@ -196,7 +196,7 @@ func LoadTiles
     pop si
 endfunc
 
-; 17e
+; 17c
 
 ; delete tile bitmap
 func FreeTiles
