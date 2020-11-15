@@ -316,8 +316,6 @@ func GrowArray
     pop si
 endfunc
 
-SEGMENT CODE
-
 ; 228
 func NewMonster
     %arg tile:byte
