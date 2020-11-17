@@ -8,8 +8,8 @@ SEGMENT CODE ; 6
 %include "extern.inc"
 %include "windows.inc"
 
-EXTERN WEP4UTIL.103
-EXTERN WEP4UTIL.1202
+EXTERN WEP4UTIL.CENTERHWND
+EXTERN WEP4UTIL.GRAYDLGPROC
 
 EXTERN div32_probably
 GLOBAL GOTOLEVELMSGPROC
@@ -48,7 +48,7 @@ GOTOLEVELMSGPROC:
     push word [bp+0xa]
     push word [bp+0x8]
     push word [bp+0x6]
-    call far WEP4UTIL.1202 ; 3b
+    call far WEP4UTIL.GRAYDLGPROC ; 3b
     jmp .label20 ; ↓
     nop
 .label1: ; 44
@@ -61,7 +61,7 @@ GOTOLEVELMSGPROC:
     jmp .label19 ; ↓
 .label2: ; 58
     push word [bp+0xe]
-    call far WEP4UTIL.103 ; 5b
+    call far WEP4UTIL.CENTERHWND ; 5b
     jmp .label19 ; ↓
     nop
 .label3: ; 64
@@ -236,7 +236,7 @@ BESTTIMESMSGPROC:
     push word [bp+0xa]
     push word [bp+0x8]
     push word [bp+0x6]
-    call far WEP4UTIL.1202 ; 1cd
+    call far WEP4UTIL.GRAYDLGPROC ; 1cd
     jmp .label26 ; ↓
     nop
 .label2: ; 1d6
@@ -252,7 +252,7 @@ BESTTIMESMSGPROC:
     mov di,[bp+0xe]
     mov word [bp-0x6],0x0
     push di
-    call far WEP4UTIL.103 ; 1f3
+    call far WEP4UTIL.CENTERHWND ; 1f3
     push di
     push byte +0x64
     call far USER.GetDlgItem ; 1fb
@@ -503,7 +503,7 @@ COMPLETEMSGPROC:
     push word [bp+0xa]
     push word [bp+0x8]
     push word [bp+0x6]
-    call far WEP4UTIL.1202 ; 405
+    call far WEP4UTIL.GRAYDLGPROC ; 405
     jmp .label35 ; ↓
     nop
 .label2: ; 40e
@@ -517,7 +517,7 @@ COMPLETEMSGPROC:
 .label3: ; 422
     mov di,[bp+0xe]
     push di
-    call far WEP4UTIL.103 ; 426
+    call far WEP4UTIL.CENTERHWND ; 426
     mov ax,[TimeRemaining]
     mov cx,ax
     shl ax,byte 0x2

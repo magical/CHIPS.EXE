@@ -1,7 +1,7 @@
 MODULE 1 KERNEL info/KERNEL.sym
 MODULE 2 GDI info/GDI.sym
 MODULE 3 USER info/USER.sym
-MODULE 4 WEP4UTIL
+MODULE 4 WEP4UTIL info/WEP4UTIL.sym
 
 ;;; SEGMENT 1 ;;;
 RELOC 1 SEGMENT 1                        = 0+ 809-
@@ -59,12 +59,12 @@ RELOC 2 USER    GetWindowWord            = 0- 1b4c-
 RELOC 2 USER    SetWindowWord            = 0-
 RELOC 2 USER    PostQuitMessage
 RELOC 2 SEGMENT 8                        = 0- 1c8e- 2208- 25b8-
-RELOC 2 WEP4UTIL @2
+RELOC 2 WEP4UTIL FCHKWEPVERS
 RELOC 2 USER    SetTimer
 RELOC 2 USER    KillTimer
-RELOC 2 WEP4UTIL @4
+RELOC 2 WEP4UTIL WEPABOUT2
 RELOC 2 SEGMENT 9                        = 0- 273b-
-RELOC 2 WEP4UTIL @5                      = 0- 2173-
+RELOC 2 WEP4UTIL WEPHELP                 = 0- 2173-
 RELOC 2 USER    GetCurrentTime
 RELOC 2 USER    SetCapture
 RELOC 2 USER    ReleaseCapture
@@ -130,7 +130,7 @@ RELOC 3 SEGMENT 8                        = 0- 149d- 19e1- 1d5b- 22c5- 269b-
 
 ;;; SEGMENT 4 ;;;
 RELOC 4 USER    PostMessage              = 0- 8c4-
-RELOC 4 WEP4UTIL @103
+RELOC 4 WEP4UTIL CENTERHWND
 RELOC 4 SEGMENT 2                        = 0- 3bd- a27- ea8-
 RELOC 4 SEGMENT 3                        = 0- 401- 604-
 RELOC 4 SEGMENT 4                        = 0- 3a7- 71e- b21- edb-
@@ -149,7 +149,7 @@ RELOC 4 KERNEL  FreeProcInstance
 RELOC 4 USER    SetWindowText
 RELOC 4 USER    LoadCursor
 RELOC 4 KERNEL  OpenFile                 = 0- bf6- e4d-
-RELOC 4 WEP4UTIL @1202
+RELOC 4 WEP4UTIL GRAYDLGPROC
 RELOC 4 KERNEL  _lclose                  = 0- b32- f16-
 RELOC 4 KERNEL  _lread                   = 0- b0d-
 RELOC 4 KERNEL  _llseek                  = 0- b6d-
@@ -180,13 +180,13 @@ RELOC 5 GDI     GetDeviceCaps            = 0-
 RELOC 6 SEGMENT 1
 RELOC 6 USER    PostMessage              = 0- 300-
 RELOC 6 USER    SendMessage              = 0-
-RELOC 6 WEP4UTIL @103                    = 0- 30e-
+RELOC 6 WEP4UTIL CENTERHWND              = 0- 30e-
 RELOC 6 SEGMENT 2                        = 0- 3e1-
 RELOC 6 SEGMENT 4                        = 0-
 RELOC 6 USER    SetFocus                 = 0-
 RELOC 6 USER    EnableWindow
 RELOC 6 USER    _wsprintf                = 0- 3ea-
-RELOC 6 WEP4UTIL @1202                   = 0- 2eb-
+RELOC 6 WEP4UTIL GRAYDLGPROC             = 0- 2eb-
 RELOC 6 USER    EndDialog                = 0- 298-
 RELOC 6 USER    GetDlgItem               = 0-
 RELOC 6 USER    SetDlgItemText           = 0- 3fc-

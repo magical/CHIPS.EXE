@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+# Dumps exported symbols and their ordinal numbers from NE DLLs.
+#
+# Usage: dllsym FILE.DLL
+
+import sys
+
+def main():
+    f = open(sys.argv[1], 'rb')
+    f.seek(0x3c)
+    neoff = u16(f.read(2))
+    f.seek(neoff+0x2c)
+    nonresname_off = u16(f.read(2))
+    f.seek(nonresname_off)
+
+    names = sorted((ordinal, name) for name, ordinal in readnames(f))
+    for ordinal, name in names:
+        if ordinal == 0:
+            continue
+        print(ordinal, name)
+
+def readnames(f):
+    while True:
+        n = ord(f.read(1))
+        if n == 0:
+            break
+        name = f.read(n).decode("ascii", "ignore")
+        ordinal = u16(f.read(2))
+        yield name, ordinal
+
+def u16(b):
+    return int.from_bytes(b, signed=False, byteorder='little')
+
+if __name__ == '__main__':
+    main()

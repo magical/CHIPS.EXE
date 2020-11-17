@@ -11,8 +11,8 @@ SEGMENT CODE ; 4
 %include "extern.inc"
 %include "windows.inc"
 
-EXTERN WEP4UTIL.103
-EXTERN WEP4UTIL.1202
+EXTERN WEP4UTIL.CENTERHWND
+EXTERN WEP4UTIL.GRAYDLGPROC
 
 GLOBAL UpdateWindowTitle
 GLOBAL FreeGameLists
@@ -1883,7 +1883,7 @@ PASSWORDMSGPROC:
     push word [bp+0xa]
     push word [bp+0x8]
     push word [bp+0x6]
-    call far WEP4UTIL.1202 ; 1051
+    call far WEP4UTIL.GRAYDLGPROC ; 1051
     jmp .label12 ; ↓
     nop
 .label1: ; 105a
@@ -1897,7 +1897,7 @@ PASSWORDMSGPROC:
 .label2: ; 106e
     mov si,[bp+0xe]
     push si
-    call far WEP4UTIL.103 ; 1072
+    call far WEP4UTIL.CENTERHWND ; 1072
     push word [PasswordPromptLevel]
     push ds
     push word PasswordPromptMessage

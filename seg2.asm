@@ -15,9 +15,9 @@ EXTERN srand
 EXTERN atoi
 EXTERN atol
 
-EXTERN WEP4UTIL.2
-EXTERN WEP4UTIL.4
-EXTERN WEP4UTIL.5
+EXTERN WEP4UTIL.FCHKWEPVERS
+EXTERN WEP4UTIL.WEPABOUT2
+EXTERN WEP4UTIL.WEPHELP
 
 GLOBAL UpdateTile
 GLOBAL InvalidateTile
@@ -781,7 +781,7 @@ func WinMain
     %arg hInstance:word ; +e
     sub sp,byte +0x14
     push word 0x218
-    call far WEP4UTIL.2 ; 638
+    call far WEP4UTIL.FCHKWEPVERS ; 638
     or ax,ax
     jnz .label1 ; ↓
 .returnZero: ; 641
@@ -3471,7 +3471,7 @@ MenuItemCallback:
     call far PauseGame ; 1e90 2:17da
     push word [OurHInstance]
     push word [bp+0x6]
-    call far WEP4UTIL.4 ; 1e9c
+    call far WEP4UTIL.WEPABOUT2
 .label2: ; 1ea1
     call far UnpauseGame ; 1ea1 2:1834
     jmp .label42 ; ↓
@@ -3494,7 +3494,7 @@ MenuItemCallback:
     push ds
     push word s_Contents
 .label5: ; 1ed2
-    call far WEP4UTIL.5 ; 1ed2
+    call far WEP4UTIL.WEPHELP ; 1ed2
     jmp .label42 ; ↓
 
 .label6: ; 1eda
@@ -4036,7 +4036,7 @@ func MAINWNDPROC
     push byte +0x2
     push byte +0x0
     push byte +0x0
-    call far WEP4UTIL.5 ; 2411
+    call far WEP4UTIL.WEPHELP ; 2411
 .label19: ; 2416
     push word [TileDC]
     push word [SavedObj]
