@@ -5,7 +5,12 @@ RESOURCES=chips.ico res/*
 
 chips.exe: chips.asm base.exe data.bin $(OBJ) $(RESOURCES) bin/link chips.link Makefile
 	bin/link -script chips.link -map chips.map $(OBJ)
+	@echo "; Generated from chips.map; do not edit" >segment_sizes.inc
+	@echo "; v""im: syntax=nasm" >>segment_sizes.inc
+	awk <chips.map >>segment_sizes.inc -e '/_segment_.*_size/ { print $$2, "equ", "0x"$$1; }'
 	nasm -o $@ $<
+
+chips.exe: constants.asm exports.inc segment_sizes.inc
 
 BASE=basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
@@ -53,7 +58,7 @@ digits.obj: variables.asm func.mac
 $(OBJ): extern.inc windows.inc
 
 variables.asm: data.bin genvars.sh Makefile
-	sh genvars.sh >variables.asm
+	$(SHELL) genvars.sh >variables.asm
 
 movement.svg: tools/graph movement.asm
 	tools/graph <movement.asm | dot -Tsvg >movement.svg
