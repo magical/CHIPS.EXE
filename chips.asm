@@ -85,20 +85,31 @@ NEHeader:
     dw 0                    ; 3c
     dw 0x300                ; 3e
 
+
 ; 440
 NESegmentLen equ 10
 NESegmentTab:
     ; sector, length, flags, alloc
-    dw (Segment1-$$)>>SectorShift, 0x952,  0x1d50, 0x952 ; Segment 1
-    dw (Segment2-$$)>>SectorShift, 0x2dca, 0x1d50, 0x2dca ; Segment 2
-    dw (Logic-$$)>>SectorShift,    0x2a70, 0x1d10, 0x2a70 ; Segment 3
-    dw (Segment4-$$)>>SectorShift, 0x1208, 0x1d10, 0x1208 ; Segment 4
-    dw (Segment5-$$)>>SectorShift, 0x1bc,  0x1d10, 0x1bc ; Segment 5
-    dw (Segment6-$$)>>SectorShift, 0x75b,  0x1d10, 0x75c ; Segment 6
-    dw (Segment7-$$)>>SectorShift, 0x1cd4, 0x1d10, 0x1cd4 ; Segment 7
-    dw (Segment8-$$)>>SectorShift, 0x620,  0x1d10, 0x620 ; Segment 8
-    dw (Digits-$$)>>SectorShift,   0x150,  0x1d10, 0x150 ; Segment 9
-    dw (Data-$$)>>SectorShift,     0x1738, 0x0c51, 0x1738 ; Segment 10
+    dw (Segment1-$$)>>SectorShift, _segment_1_size, 0x1d50, _segment_1_size ; Segment 1
+    dw (Segment2-$$)>>SectorShift, _segment_2_size, 0x1d50, _segment_2_size ; Segment 2
+    dw (Logic-$$)>>SectorShift,    _segment_3_size, 0x1d10, _segment_3_size ; Segment 3
+    dw (Segment4-$$)>>SectorShift, _segment_4_size, 0x1d10, _segment_4_size ; Segment 4
+    dw (Segment5-$$)>>SectorShift, _segment_5_size, 0x1d10, _segment_5_size ; Segment 5
+    dw (Segment6-$$)>>SectorShift, _segment_6_size, 0x1d10, _segment_6_size+1 ; Segment 6
+    dw (Segment7-$$)>>SectorShift, _segment_7_size, 0x1d10, _segment_7_size ; Segment 7
+    dw (Segment8-$$)>>SectorShift, _segment_8_size, 0x1d10, _segment_8_size ; Segment 8
+    dw (Digits-$$)>>SectorShift,   _segment_9_size, 0x1d10, _segment_9_size ; Segment 9
+    dw (Data-$$)>>SectorShift,     _data_size,      0x0c51, _data_size ; Segment 10
+
+    _segment_1_size equ 0x952
+    _segment_2_size equ 0x2dca
+    _segment_3_size equ 0x2a70
+    _segment_4_size equ 0x1208
+    _segment_5_size equ 0x1bc
+    _segment_6_size equ 0x75b
+    _segment_7_size equ 0x1cd4
+    _segment_8_size equ 0x620
+    _segment_9_size equ 0x150
 
 ; 490
 NEResourceTab:
@@ -272,6 +283,7 @@ Segment2:
 ; Segment 10
 Data:
     INCBIN "data.bin"
+    _data_size equ $-Data
     ALIGN SectorSize, db 0
     TIMES SectorSize  db 0
 
