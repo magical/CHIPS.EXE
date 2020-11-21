@@ -92,13 +92,6 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 		}
 	}
 
-	// write exported symbols to .map file
-	if mapfile != "" {
-		if err := ld.writeMapFile(mapfile); err != nil {
-			log.Print(err)
-		}
-	}
-
 	errors := 0
 	// Phase 2: apply patches and write output
 	for i, filename := range inputs {
@@ -106,6 +99,25 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 			log.Print(filename, ": ", err)
 			errors++
 			continue
+		}
+	}
+
+	// hack: compute segment start addresses for chips.exe
+	// segment 2 starts at 0x1600
+	off := 0x1600
+	for i := range ld.segments {
+		if i == 1 {
+			// for the data segment
+			off += 0x6200 - 0x4800
+		}
+		ld.segments[i].start = off
+		off = align(off+ld.segments[i].size, 1<<9)
+	}
+
+	// write exported symbols to .map file
+	if mapfile != "" {
+		if err := ld.writeMapFile(mapfile); err != nil {
+			log.Print(err)
 		}
 	}
 
@@ -187,6 +199,8 @@ type SegmentInfo struct {
 	// needed during linking a segment
 	reloclist []*RelocInfo
 	reloctab  map[RelocTarget]*RelocInfo
+	start     int
+	size      int
 }
 
 func (ld *Linker) addModule(n int, name string) (*Module, error) {
@@ -503,6 +517,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 			if err != nil {
 				return err
 			}
+			seg.size += len(data)
 		}
 	}
 	// phase two: sort the fixup addresses according to the user relocation info and
@@ -540,6 +555,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	if _, err := out.Seek(0, io.SeekEnd); err != nil {
 		return err
 	}
+	seg.size += 2 + len(seg.reloclist)*8
 	out.Write([]byte{uint8(len(seg.reloclist)), 0})
 	for _, ri := range seg.reloclist {
 		if len(ri.patches) == 0 {
@@ -822,9 +838,19 @@ func (ld *Linker) writeMapFile(filename string) error {
 		fmt.Fprintln(bw, "---- Section CODE -------------------------------------------------------------")
 		fmt.Fprintln(bw)
 		fmt.Fprintln(bw, "Real              Virtual           Name")
+		base := ld.segments[i].start
 		for _, symb := range ld.segments[i].symbols {
-			fmt.Fprintf(bw, "%16x  %16x  %s\n", symb.offset, symb.offset, symb.name)
+			fmt.Fprintf(bw, "%16x  %16x  %s\n", base+symb.offset, symb.offset, symb.name)
 		}
+		fmt.Fprintf(bw, "Size    %x\n", ld.segments[i].size)
 	}
 	return bw.Flush()
+}
+
+// round v up to next multiple of size
+func align(v, size int) int {
+	if v%size != 0 {
+		v += size - v%size
+	}
+	return v
 }
