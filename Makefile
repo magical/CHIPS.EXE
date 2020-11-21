@@ -5,13 +5,20 @@ RESOURCES=chips.ico res/*.bmp
 
 chips.exe: chips.asm base.exe data.bin $(OBJ) $(RESOURCES) bin/link chips.link Makefile
 	bin/link -script chips.link -map chips.map $(OBJ)
+	$(generate-extern.inc)
+	$(generate-segment_sizes.inc)
+	nasm -o $@ $<
+
+define generate-extern.inc =
 	@echo "; Generated from chips.map; do not edit" >exports.inc
 	@echo "; v""im: syntax=nasm" >>exports.inc
 	awk <chips.map >>exports.inc -e '/WNDPROC|MSGPROC/ { printf("%-16s equ 0x%s\n", $$3, $$2); }'
+endef
+define generate-segment_sizes.inc =
 	@echo "; Generated from chips.map; do not edit" >segment_sizes.inc
 	@echo "; v""im: syntax=nasm" >>segment_sizes.inc
 	awk <chips.map >>segment_sizes.inc -e '/_segment_.*_size/ { print $$2, "equ", "0x"$$1; }'
-	nasm -o $@ $<
+endef
 
 chips.exe: constants.asm exports.inc segment_sizes.inc
 
