@@ -217,4 +217,9 @@ func FreeTiles
 .pointerIsNull: ; 1b5
 endfunc
 
+; 1bc
+
+GLOBAL _segment_5_size
+_segment_5_size equ $ - $$
+
 ; vim: syntax=nasm

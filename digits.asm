@@ -162,4 +162,10 @@ func DrawDigit
     call far GDI.SetDIBitsToDevice ; 143
 endfunc
 
+; 150
+
+GLOBAL _segment_9_size
+_segment_9_size equ $ - $$
+
+
 ; vim: syntax=nasm

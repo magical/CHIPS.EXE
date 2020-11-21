@@ -4953,4 +4953,7 @@ endfunc
 
 ; 2a70
 
+GLOBAL _segment_3_size
+_segment_3_size equ $ - $$
+
 ; vim: syntax=nasm

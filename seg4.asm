@@ -2087,4 +2087,7 @@ FUN_4_115c:
 
 ; 1208
 
+GLOBAL _segment_4_size
+_segment_4_size equ $ - $$
+
 ; vim: syntax=nasm

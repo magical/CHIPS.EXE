@@ -869,4 +869,7 @@ COMPLETEMSGPROC:
 
 ; 75b
 
+GLOBAL _segment_6_size
+_segment_6_size equ $ - $$
+
 ; vim: syntax=nasm

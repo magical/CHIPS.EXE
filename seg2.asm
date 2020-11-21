@@ -5100,4 +5100,7 @@ endfunc
 
 ; 2dc7
 
+GLOBAL _segment_2_size
+_segment_2_size equ $ - $$
+
 ; vim: syntax=nasm

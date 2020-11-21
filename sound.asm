@@ -630,4 +630,7 @@ endfunc
 
 ; 620
 
+GLOBAL _segment_8_size
+_segment_8_size equ $ - $$
+
 ; vim: syntax=nasm
