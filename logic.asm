@@ -2406,7 +2406,7 @@ func SlipLoop
     cmp al,Ice
     jz .label6
     cmp al,IceWallNW
-    jnc .label7
+    jnb .label7
     jmp word .label8
 .label7: ; 14d5
     cmp al,IceWallSW

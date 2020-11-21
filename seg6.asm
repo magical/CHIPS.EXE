@@ -691,7 +691,7 @@ COMPLETEMSGPROC:
     jg .label17 ; ↓
     jl .label16 ; ↓
     cmp ax,[bp-0x18]
-    jnc .label17 ; ↓
+    jnb .label17 ; ↓
 .label16: ; 5d8
     mov dx,[bp-0x16]
     mov ax,[bp-0x18]

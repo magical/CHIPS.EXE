@@ -1163,7 +1163,7 @@ func DrawStretchedTile
     jmp word .label1
 .label0: ; 97c
     cmp byte [uppertile],FirstTransparent
-    jnc .label2
+    jnb .label2
     jmp word .label1
 .label2: ; 985
     cmp byte [uppertile],LastTransparent

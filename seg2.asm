@@ -128,7 +128,7 @@ DrawTile:
     jmp .label3 ; ↓
 .label0: ; da
     cmp byte [bp+0xc],FirstTransparent
-    jnc .label1 ; ↓
+    jnb .label1 ; ↓
     jmp .label3 ; ↓
 .label1: ; e3
     cmp byte [bp+0xc],LastTransparent
@@ -3117,7 +3117,7 @@ func GetLevelProgressFromIni
 .label10: ; 1bc4
     inc si
     cmp si,[bp-0x6]
-    jnc .label14 ; ↓
+    jnb .label14 ; ↓
     mov [bp-0x4],si
     mov di,[bp+0xc]
     cmp byte [si],0x0

@@ -987,7 +987,7 @@ DecodeLevelFields:
     sub ah,ah
     add si,ax
     cmp si,[bp-0xc]
-    jnc .label26 ; ↓
+    jnb .label26 ; ↓
     jmp .label0 ; ↑
 .label26: ; 947
     pop si
@@ -1020,7 +1020,7 @@ FUN_4_0950:
     push byte +0x2
     call far KERNEL._lread ; 969
     cmp ax,0x2
-    jnc .label1 ; ↓
+    jnb .label1 ; ↓
 .label0: ; 973
     xor ax,ax
     jmp short .label2 ; ↓
@@ -1190,7 +1190,7 @@ ReadLevelData:
 .label1: ; a9e
     mov di,[bp+0x6]
     cmp si,di
-    jnc .label2 ; ↓
+    jnb .label2 ; ↓
     jmp .label13 ; ↓
 .label2: ; aa8
     push di
@@ -1208,7 +1208,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; ac5
     cmp ax,0x2
-    jnc .label4 ; ↓
+    jnb .label4 ; ↓
     jmp .label13 ; ↓
 .label4: ; ad2
     push word [bp-0x4]
@@ -1218,7 +1218,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; adc
     cmp ax,0x2
-    jnc .label5 ; ↓
+    jnb .label5 ; ↓
     jmp .label13 ; ↓
 .label5: ; ae9
     cmp di,[bp-0x6]
@@ -1233,7 +1233,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; afe
     cmp ax,0x2
-    jnc .label7 ; ↓
+    jnb .label7 ; ↓
     jmp .label13 ; ↓
 .label7: ; b0b
     push word [bp-0x4]
@@ -1244,7 +1244,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; b18
     cmp ax,0x2
-    jnc .label8 ; ↓
+    jnb .label8 ; ↓
     jmp .label13 ; ↓
 .label8: ; b25
     push word [bp-0x4]
@@ -1254,7 +1254,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; b2f
     cmp ax,0x2
-    jnc .label9 ; ↓
+    jnb .label9 ; ↓
     jmp .label13 ; ↓
 .label9: ; b3c
     cmp word [bp-0x8],byte +0x0
@@ -1270,7 +1270,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; b55
     cmp ax,0x2
-    jnc .label11 ; ↓
+    jnb .label11 ; ↓
     jmp .label13 ; ↓
 .label11: ; b62
     push word [bp-0x4]
@@ -1280,7 +1280,7 @@ ReadLevelData:
     push word [bp-0x6]
     call far KERNEL._lread ; b6e
     cmp ax,[bp-0x6]
-    jnc .label12 ; ↓
+    jnb .label12 ; ↓
     jmp .label13 ; ↓
 .label12: ; b7b
     push byte +0x20
@@ -1380,7 +1380,7 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; c51
     cmp ax,0x2
-    jnc .label0 ; ↓
+    jnb .label0 ; ↓
     jmp .error ; ↓
 .label0: ; c5e
     ; read another word
@@ -1391,7 +1391,7 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; c68
     cmp ax,0x2
-    jnc .label1 ; ↓
+    jnb .label1 ; ↓
     jmp .error ; ↓
 .label1: ; c75
     ; check that it equals the 2nd argument
@@ -1408,7 +1408,7 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; c8a
     cmp ax,0x2
-    jnc .label3 ; ↓
+    jnb .label3 ; ↓
     jmp .error ; ↓
 .label3: ; c97
     push word [bp+0x6]
@@ -1418,7 +1418,7 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; ca1
     cmp ax,0x2
-    jnc .label4 ; ↓
+    jnb .label4 ; ↓
     jmp .error ; ↓
 .label4: ; cae
     ; read a 3rd word
@@ -1429,7 +1429,7 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; cb8
     cmp ax,0x2
-    jnc .label5 ; ↓
+    jnb .label5 ; ↓
     jmp .error ; ↓
 .label5: ; cc5
     ; check that it equals 0 or 1
@@ -1538,7 +1538,7 @@ FUN_4_0d58:
 .label1: ; d95
     ; check that our level number isn't too large
     cmp si,[bp+0x6]
-    jnc .label2 ; ↓
+    jnb .label2 ; ↓
     jmp .cleanup ; ↓
 .label2: ; d9d
     ; find level
