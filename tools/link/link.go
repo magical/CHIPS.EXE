@@ -111,7 +111,8 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 			off += 0x6200 - 0x4800
 		}
 		ld.segments[i].start = off
-		off = align(off+ld.segments[i].size, 1<<9)
+		size := ld.segments[i].size + ld.segments[i].relocsize
+		off = align(off+size, 1<<9)
 	}
 
 	// write exported symbols to .map file
@@ -199,8 +200,10 @@ type SegmentInfo struct {
 	// needed during linking a segment
 	reloclist []*RelocInfo
 	reloctab  map[RelocTarget]*RelocInfo
-	start     int
-	size      int
+
+	start     int // segment start address in exe
+	size      int // number of bytes in segment data
+	relocsize int // number of bytes in reloc data
 }
 
 func (ld *Linker) addModule(n int, name string) (*Module, error) {
@@ -556,7 +559,7 @@ func (ld *Linker) patch(filename string, seg *SegmentInfo) error {
 	if _, err := out.Seek(0, io.SeekEnd); err != nil {
 		return err
 	}
-	seg.size += 2 + len(seg.reloclist)*8
+	seg.relocsize = 2 + len(seg.reloclist)*8
 	out.Write([]byte{uint8(len(seg.reloclist)), 0})
 	for _, ri := range seg.reloclist {
 		if len(ri.patches) == 0 {
