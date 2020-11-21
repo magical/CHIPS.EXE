@@ -12,7 +12,7 @@ chips.exe: chips.asm base.exe data.bin $(OBJ) $(RESOURCES) bin/link chips.link M
 define generate-extern.inc =
 	@echo "; Generated from chips.map; do not edit" >exports.inc
 	@echo "; v""im: syntax=nasm" >>exports.inc
-	awk <chips.map >>exports.inc -e '/WNDPROC|MSGPROC/ { printf("%-16s equ 0x%s\n", $$3, $$2); }'
+	awk <chips.map >>exports.inc -e '/WinMain|WNDPROC|MSGPROC/ { printf("%-16s equ 0x%s\n", $$3, $$2); }'
 endef
 define generate-segment_sizes.inc =
 	@echo "; Generated from chips.map; do not edit" >segment_sizes.inc

@@ -1,5 +1,6 @@
 ; Generated from chips.map; do not edit
 ; vim: syntax=nasm
+WinMain          equ 0x628
 MAINWNDPROC      equ 0x225c
 BOARDWNDPROC     equ 0x274e
 INFOWNDPROC      equ 0x2866

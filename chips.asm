@@ -273,7 +273,12 @@ TIMES 512  db 0
 
 ; a00
 Segment1:
-    INCBIN "base.exe", 0xa00, 0x952
+    ; There's only one reference to a local function from another segment,
+    ; so it's not too much trouble to fly in a bespoke fixup in the middle here.
+    INCBIN "base.exe", 0xa00, 0x1c9
+    dw WinMain
+    INCBIN "base.exe", 0xa00+0x1cb, 0x952-0x1cb
+    ; Relocation records
     INCBIN "base.exe", 0xa00+0x952, 162
     ALIGN SectorSize, db 0
     TIMES SectorSize  db 0
