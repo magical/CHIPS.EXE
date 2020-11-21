@@ -7,7 +7,6 @@ SEGMENT CODE ; 2
 %include "variables.asm"
 %include "func.mac"
 
-%define SEGMENT_NUMBER 2
 %include "extern.inc"
 %include "windows.inc"
 
