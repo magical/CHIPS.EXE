@@ -129,7 +129,11 @@ func fixup(r *Record) {
 
 func pubdef(r *Record) {
 	data := r.Contents
+	bsi := data[1]
 	data = data[2:] // base group index and base seg index
+	if bsi == 0 {
+		data = data[2:] // base frame
+	}
 	for len(data) > 0 {
 		n := data[0]
 		name := string(data[1 : n+1])
@@ -195,11 +199,16 @@ func ReadExternalNames(r io.Reader) ([]string, error) {
 type ObjSymbol struct {
 	Offset int
 	Name   string
+	Const  bool
 }
 
 func parsePubdef(r *Record) []ObjSymbol {
 	data := r.Contents
+	bsi := data[1]
 	data = data[2:] // base group index and base seg index
+	if bsi == 0 {
+		data = data[2:] // base frame
+	}
 	// we ignore the segment index because the files we're
 	// concerned with only contain one segment per file
 	// FIXME: support code&data segments in a single file
@@ -208,7 +217,7 @@ func parsePubdef(r *Record) []ObjSymbol {
 		n := data[0]
 		name := string(data[1 : n+1])
 		offset := int(data[n+1]) + int(data[n+2])<<8
-		syms = append(syms, ObjSymbol{Offset: offset, Name: name})
+		syms = append(syms, ObjSymbol{Offset: offset, Name: name, Const: bsi == 0})
 		data = data[1+n+2+1:]
 	}
 	return syms

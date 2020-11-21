@@ -323,10 +323,11 @@ func (ld *Linker) loadSymbols(filename string, seg *SegmentInfo) error {
 			continue
 		}
 		symb := &Symbol{
-			name:    s.Name,
-			input:   inp,
-			segment: seg.num,
-			offset:  s.Offset,
+			name:     s.Name,
+			input:    inp,
+			segment:  seg.num,
+			offset:   s.Offset,
+			constant: s.Const,
 		}
 		ld.symtab[s.Name] = symb
 		seg.symbols = append(seg.symbols, symb)
