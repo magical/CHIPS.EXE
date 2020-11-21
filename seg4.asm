@@ -18,6 +18,8 @@ GLOBAL UpdateWindowTitle
 GLOBAL FreeGameLists
 GLOBAL GetTileRect
 
+EXPORT PASSWORDMSGPROC PASSWORDMSGPROC 11
+
 ; 0
 
 GetTileRect:
