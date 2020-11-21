@@ -28,6 +28,7 @@ MZRelocTable:
 
 ALIGN 512, db 0
 
+; 200
 MZEntry:
     call MZStub
 
@@ -211,7 +212,6 @@ NEImportedNameTab:
     .WEP4UTIL   db 8, "WEP4UTIL"
 
 ; 694
-NEEntryTabSize          equ 0x31
 NEEntryTab:
     %macro BUNDLE 2
         db %1 ; number of entries
@@ -221,27 +221,40 @@ NEEntryTab:
         db 1  ; EXPORTED flag
         dw %1 ; offset
     %endmacro
-    ; TODO: get these addresses from the linker
     BUNDLE 2, 2
-        ENTRY 0x225c    ; 1 MAINWNDPROC
-        ENTRY 0x296a    ; 2 COUNTERWNDPROC
-    BUNDLE 1, 0         ; 3 (unused)
+        ENTRY MAINWNDPROC       ; 1
+        ENTRY COUNTERWNDPROC    ; 2
+    BUNDLE 1, 0                 ; 3 (unused)
     BUNDLE 1, 6
-        ENTRY 0x0       ; 4 GOTOLEVELMSGPROC
-    BUNDLE 4, 0         ; 5-8 (unused)
+        ENTRY GOTOLEVELMSGPROC  ; 4
+    BUNDLE 4, 0                 ; 5-8 (unused)
     BUNDLE 1, 2
-        ENTRY 0x274e    ; 9 BOARDWNDPROC
-    BUNDLE 1, 0         ; 10 (unused)
+        ENTRY BOARDWNDPROC      ; 9
+    BUNDLE 1, 0                 ; 10 (unused)
     BUNDLE 1, 4
-        ENTRY 0x1016    ; 11 PASSWORDMSGPROC
+        ENTRY PASSWORDMSGPROC   ; 11
     BUNDLE 2, 6
-        ENTRY 0x18e     ; 12 BESTTIMEMSGPROC
-        ENTRY 0x3c6     ; 13 COMPLETEMSGPROC
+        ENTRY BESTTIMESMSGPROC  ; 12
+        ENTRY COMPLETEMSGPROC   ; 13
     BUNDLE 3, 2
-        ENTRY 0x2a9a    ; 14 INVENTORYWNDPROC
-        ENTRY 0x2bbe    ; 15 HINTWNDPROC
-        ENTRY 0x2866    ; 16 INFOWNDPROC
+        ENTRY INVENTORYWNDPROC  ; 14
+        ENTRY HINTWNDPROC       ; 15
+        ENTRY INFOWNDPROC       ; 16
     db 0
+
+    ; TODO: get these addresses from the linker
+    MAINWNDPROC equ 0x225c
+    COUNTERWNDPROC equ 0x296a
+    GOTOLEVELMSGPROC equ 0x0
+    BOARDWNDPROC equ 0x274e
+    PASSWORDMSGPROC equ 0x1016
+    BESTTIMESMSGPROC equ 0x18e
+    COMPLETEMSGPROC equ 0x3c6
+    INVENTORYWNDPROC equ 0x2a9a
+    HINTWNDPROC equ 0x2bbe
+    INFOWNDPROC equ 0x2866
+
+NEEntryTabSize          equ $-NEEntryTab
 
 ; 6c5
 NENonResidentNameTab:
