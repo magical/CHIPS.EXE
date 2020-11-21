@@ -1,0 +1,12 @@
+; TODO: get these addresses from the linker
+
+    MAINWNDPROC equ 0x225c
+    COUNTERWNDPROC equ 0x296a
+    GOTOLEVELMSGPROC equ 0x0
+    BOARDWNDPROC equ 0x274e
+    PASSWORDMSGPROC equ 0x1016
+    BESTTIMESMSGPROC equ 0x18e
+    COMPLETEMSGPROC equ 0x3c6
+    INVENTORYWNDPROC equ 0x2a9a
+    HINTWNDPROC equ 0x2bbe
+    INFOWNDPROC equ 0x2866
