@@ -5,4 +5,3 @@ base.exe
 *.dis
 chips.map
 data.map
-link.stamp
