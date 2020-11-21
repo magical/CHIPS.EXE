@@ -527,7 +527,7 @@ COMPLETEMSGPROC:
     cwd
     mov [bp-0xc],ax
     mov [bp-0xa],dx
-    mov ax,0x1f4
+    mov ax,500 ; level bonus = 500 * level number
     mov bx,[GameStatePtr]
     imul word [bx+LevelNumber]
     mov [bp-0x8],ax
@@ -555,8 +555,9 @@ COMPLETEMSGPROC:
     or dx,dx
     jl .label6 ; ↓
     jg .label5 ; ↓
-    cmp ax,0x1f4
-    jc .label6 ; ↓
+    ; round up
+    cmp ax,500
+    jb .label6 ; ↓
 .label5: ; 490
     inc si
     cmp [bp-0x9a],si
