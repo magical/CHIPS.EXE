@@ -124,44 +124,50 @@ NEResourceTab:
 
     dw SectorShift    ; Shift amount
 
+    %define RESOFF(s) ((s-$$)>>SectorShift)
+    %define RESLEN(n) (n>>SectorShift)
+
     dw RT_VERSIONINFO, 1, 0, 0
         ; Offset, Length, Flags, ID, Reserved
-        dw (VERSION-$$)>>SectorShift, 1, 0x1c30, 0x8100, 0, 0
+        dw RESOFF(VERSION), 1, 0x1c30, 0x8100, 0, 0
 
     dw RT_BITMAP, 7, 0, 0
-        dw (OBJ32_4-$$)>>SectorShift, 0x90, 0xc30, .OBJ32_4-NEResourceTab, 0, 0
-        dw (OBJ32_4E-$$)>>SectorShift, 0x84, 0xc30, .OBJ32_4E-NEResourceTab, 0, 0
-        dw (OBJ32_1-$$)>>SectorShift, 0x35, 0xc30, .OBJ32_1-NEResourceTab, 0, 0
-        dw (BACKGROUND-$$)>>SectorShift, 0xd, 0xc30, .BACKGROUND-NEResourceTab, 0, 0
-        dw (DigitsBitmap-$$)>>SectorShift, 0xe, 0xc30, 0x8000+200, 0, 0
-        dw (INFOWND-$$)>>SectorShift, 0xc, 0xc30, .INFOWND-NEResourceTab, 0, 0
-        dw (CHIPEND-$$)>>SectorShift, 0x22, 0xc30, .CHIPEND-NEResourceTab, 0, 0
+        dw RESOFF(OBJ32_4), RESLEN(OBJ32_4E-OBJ32_4),   0xc30, .OBJ32_4-NEResourceTab, 0, 0
+        dw RESOFF(OBJ32_4E), RESLEN(OBJ32_1-OBJ32_4E),  0xc30, .OBJ32_4E-NEResourceTab, 0, 0
+        dw RESOFF(OBJ32_1), RESLEN(BACKGROUND-OBJ32_1), 0xc30, .OBJ32_1-NEResourceTab, 0, 0
+        dw RESOFF(BACKGROUND), RESLEN(DigitsBitmap-BACKGROUND), 0xc30, .BACKGROUND-NEResourceTab, 0, 0
+        dw RESOFF(DigitsBitmap), RESLEN(INFOWND-DigitsBitmap),  0xc30, 0x8000+200, 0, 0
+        dw RESOFF(INFOWND), RESLEN(CHIPEND-INFOWND),    0xc30, .INFOWND-NEResourceTab, 0, 0
+        dw RESOFF(CHIPEND), RESLEN(CHIPSMENU-CHIPEND),  0xc30, .CHIPEND-NEResourceTab, 0, 0
 
     dw RT_MENU, 1, 0, 0
-        dw (CHIPSMENU-$$)>>SectorShift, 0x1, 0x1c30, .CHIPSMENU-NEResourceTab, 0, 0
+        dw RESOFF(CHIPSMENU), 0x1, 0x1c30, .CHIPSMENU-NEResourceTab, 0, 0
 
     dw RT_DIALOG, 4, 0, 0
-        dw (DLGGOTO-$$)>>SectorShift, 0x1, 0x1c30, .DLG_GOTO-NEResourceTab, 0, 0
-        dw (DLGPASSWORD-$$)>>SectorShift, 0x1, 0x1c30, .DLG_PASSWORD-NEResourceTab, 0, 0
-        dw (DLGBESTTIME-$$)>>SectorShift, 0x1, 0x1c30, .DLG_BESTTIMES-NEResourceTab, 0, 0
-        dw (DLGCOMPLETE-$$)>>SectorShift, 0x1, 0x1c30, .DLG_COMPLETE-NEResourceTab, 0, 0
+        dw RESOFF(DLGGOTO), 0x1, 0x1c30, .DLG_GOTO-NEResourceTab, 0, 0
+        dw RESOFF(DLGPASSWORD), 0x1, 0x1c30, .DLG_PASSWORD-NEResourceTab, 0, 0
+        dw RESOFF(DLGBESTTIME), 0x1, 0x1c30, .DLG_BESTTIMES-NEResourceTab, 0, 0
+        dw RESOFF(DLGCOMPLETE), 0x1, 0x1c30, .DLG_COMPLETE-NEResourceTab, 0, 0
 
     dw RT_STRING, 1, 0, 0
-        dw (StringResource-$$)>>SectorShift, 0x1, 0x1c30, 0x8011, 0, 0
+        dw RESOFF(StringResource), 0x1, 0x1c30, 0x8011, 0, 0
 
     dw RT_ACCELERATOR, 1, 0, 0
-        dw (CHIPSMENUACCEL-$$)>>SectorShift, 1, 0xc30, .CHIPSMENU2-NEResourceTab, 0, 0
+        dw RESOFF(CHIPSMENUACCEL), 1, 0xc30, .CHIPSMENU2-NEResourceTab, 0, 0
 
     dw RT_RCDATA, 4, 0, 0
-        dw (DlgIncludeGoto-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE1-NEResourceTab, 0, 0
-        dw (DlgIncludePassword-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE2-NEResourceTab, 0, 0
-        dw (DlgIncludeBesttime-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE3-NEResourceTab, 0, 0
-        dw (DlgIncludeComplete-$$)>>SectorShift, 1, 0x1c30, .DLGINCLUDE4-NEResourceTab, 0, 0
+        dw RESOFF(DlgIncludeGoto), 1, 0x1c30, .DLGINCLUDE1-NEResourceTab, 0, 0
+        dw RESOFF(DlgIncludePassword), 1, 0x1c30, .DLGINCLUDE2-NEResourceTab, 0, 0
+        dw RESOFF(DlgIncludeBesttime), 1, 0x1c30, .DLGINCLUDE3-NEResourceTab, 0, 0
+        dw RESOFF(DlgIncludeComplete), 1, 0x1c30, .DLGINCLUDE4-NEResourceTab, 0, 0
 
     dw RT_ICON, 1, 0, 0
-        dw (ICON-$$)>>SectorShift, 2, 0x1c10, 0x8001, 0, 0
+        dw RESOFF(ICON), 2, 0x1c10, 0x8001, 0, 0
 
     dw 0
+
+    %undef RESOFF
+    %undef RESLEN
 
 .OBJ32_4: db 7, "OBJ32_4"
 .OBJ32_4E: db 8, "OBJ32_4E"
