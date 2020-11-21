@@ -99,7 +99,7 @@ func LoadDigits
     add di,dx
     add bx,byte +0x2
     cmp bx,DigitPtrArray.end
-    jc .loop
+    jb .loop
     mov ax,0x1
 .end: ; b3
     pop si

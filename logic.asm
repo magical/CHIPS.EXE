@@ -479,12 +479,12 @@ func NewMonster
 
 .notOnATrap: ; 38a
     cmp byte [lowerTile],ChipN
-    jc .notChip
+    jb .notChip
     cmp byte [lowerTile],ChipE
     jna .deathByMonster
 .notChip: ; 396
     cmp byte [lowerTile],SwimN
-    jc .end
+    jb .end
     cmp byte [lowerTile],SwimE
     ja .end
 .deathByMonster: ; 3a2
@@ -633,7 +633,7 @@ func GetMonsterDir
     sub sp,byte +0x2
     %arg tile:byte, xOut:word, yOut:word
     cmp byte [tile],FirstMonster
-    jc .notAMonster
+    jb .notAMonster
     cmp byte [tile],LastMonster
     ja .notAMonster
     mov al,[tile]
@@ -720,7 +720,7 @@ func InitBoard
     mov [tile],al
     ; If not a monster, continue
     cmp al,FirstMonster
-    jc .next
+    jb .next
     cmp al,LastMonster
     ja .next
     ; Switch on monster direction
@@ -785,7 +785,7 @@ func InitBoard
 
     ; If tile is a monster, get lower tile
     cmp al,FirstMonster
-    jc .notAMonster
+    jb .notAMonster
     cmp al,LastMonster
     ja .notAMonster
     mov bx,[GameStatePtr]

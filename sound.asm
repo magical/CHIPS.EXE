@@ -501,7 +501,7 @@ func FUN_8_04a0
     inc di
     add si,byte +0x2
     cmp si,SoundArray.end
-    jc .soundLoop ; ↑
+    jb .soundLoop ; ↑
     ;; MIDI
     push word ID_NumMidiFiles
     call far GetIniInt ; 4f1 2:198e
@@ -608,7 +608,7 @@ func FUN_8_05b8
 .label2: ; 5ec
     add si,byte +0x2
     cmp si,SoundArray.end
-    jc .label1 ; ↑
+    jb .label1 ; ↑
     xor di,di
     cmp [NumMIDIFiles],di
     jng .label5 ; ↓

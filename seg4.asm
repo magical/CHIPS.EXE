@@ -373,7 +373,7 @@ func ClearGameState
     mov word [bx],0x0
     add bx,byte +0x2
     cmp bx,dx
-    jc .zeroLoop ; ↑
+    jb .zeroLoop ; ↑
 .end: ; 34f
 endfunc
 
@@ -1035,7 +1035,7 @@ FUN_4_0950:
     push byte +0x2
     call far KERNEL._lread ; 987
     cmp ax,0x2
-    jc .label0 ; ↑
+    jb .label0 ; ↑
     cmp word [bp-0x4],byte +0x2
     jnz .label0 ; ↑
     push si
@@ -1045,7 +1045,7 @@ FUN_4_0950:
     push byte +0x2
     call far KERNEL._lread ; 99f
     cmp ax,0x2
-    jc .label0 ; ↑
+    jb .label0 ; ↑
     mov ax,[bp-0x4]
 .label2: ; 9ac
     pop si
@@ -1080,7 +1080,7 @@ FUN_4_09b4:
     push byte +0x2
     call far KERNEL._lread ; 9d6
     cmp ax,0x2
-    jc .label2 ; ↓
+    jb .label2 ; ↓
     push si
     push byte +0x0
     push word [bp-0x4]
@@ -1299,7 +1299,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; ba0
     cmp ax,0x2
-    jc .label13 ; ↓
+    jb .label13 ; ↓
     push word [bp-0x4]
     lea ax,[bp-0x490]
     push ss
@@ -1307,7 +1307,7 @@ ReadLevelData:
     push word [bp-0x6]
     call far KERNEL._lread ; bb6
     cmp ax,[bp-0x6]
-    jc .label13 ; ↓
+    jb .label13 ; ↓
     push byte +0x20
     push byte +0x20
     mov ax,[GameStatePtr]
@@ -1326,7 +1326,7 @@ ReadLevelData:
     push byte +0x2
     call far KERNEL._lread ; be8
     cmp ax,0x2
-    jc .label13 ; ↓
+    jb .label13 ; ↓
     push word [bp-0x4]
     lea ax,[bp-0x490]
     push ss
@@ -1334,7 +1334,7 @@ ReadLevelData:
     push word [bp-0x6]
     call far KERNEL._lread ; bfe
     cmp ax,[bp-0x6]
-    jc .label13 ; ↓
+    jb .label13 ; ↓
     push word [bp-0x6]
     lea ax,[bp-0x490]
     push ax
@@ -1446,7 +1446,7 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; cdb
     cmp ax,0x2
-    jc .error ; ↓
+    jb .error ; ↓
     push word [bp+0x6]
     push byte +0x0
     push word [bp-0x4]
@@ -1460,7 +1460,7 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; cfe
     cmp ax,0x2
-    jc .error ; ↓
+    jb .error ; ↓
     push word [bp+0x6]
     push byte +0x0
     push word [bp-0x4]
@@ -1474,14 +1474,14 @@ FUN_4_0c3a:
     push byte +0x2
     call far KERNEL._lread ; d21
     cmp ax,0x2
-    jc .error ; ↓
+    jb .error ; ↓
     push word [bp+0x6]
     push ds
     push word [bp+0xa]
     push word [bp-0x4]
     call far KERNEL._lread ; d35
     cmp ax,[bp-0x4]
-    jc .error ; ↓
+    jb .error ; ↓
     ; store number of bytes in arg 4
     mov ax,[bp-0x4]
     mov bx,[bp+0xc]
@@ -1582,7 +1582,7 @@ FUN_4_0d58:
     sub ah,ah
     add si,ax
     cmp si,dx
-    jc .loop ; ↑
+    jb .loop ; ↑
     jmp short .cleanup ; ↓
     nop
 .label5: ; e02
@@ -1819,7 +1819,7 @@ FUN_4_0eaa:
     sub ah,ah
     add si,ax
     cmp si,di
-    jc .label8 ; ↑
+    jb .label8 ; ↑
 .label13: ; fde
     mov ax,[bp-0xe]
     inc word [bp-0x8]

@@ -3084,7 +3084,7 @@ func GetLevelProgressFromIni
 .label5: ; 1b77
     inc si
     cmp si,[bp-0x6]
-    jc .label6 ; ↓
+    jb .label6 ; ↓
     jmp .label14 ; ↓
 .label6: ; 1b80
     mov [bp-0x4],si

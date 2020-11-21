@@ -3015,7 +3015,7 @@ func MoveMonster
     ; Panel walls!
     ; Check if we can exit the tile we're standing on
     cmp byte [tile],PanelN
-    jc .label7
+    jb .label7
     cmp byte [tile],PanelE
     jna .label8
 .label7: ; 198e
@@ -3334,12 +3334,12 @@ func MoveMonster
     mov al,[bx+si+Lower]
     mov [tmp],al
     cmp al,ChipN
-    jc .label28
+    jb .label28
     cmp al,ChipE
     jna .label29
 .label28: ; 1c77
     cmp byte [tmp],SwimN
-    jc .label27
+    jb .label27
     cmp byte [tmp],SwimE
     ja .label27
 .label29: ; 1c83
