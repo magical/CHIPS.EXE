@@ -1,7 +1,7 @@
 # *Don't* reorder the list of asm files. The linker assigns segment numbers based on the order of the input files.
 CODE=seg2.asm logic.asm seg4.asm seg5.asm seg6.asm movement.asm sound.asm digits.asm
 OBJ=$(CODE:.asm=.obj)
-RESOURCES=chips.ico res/*
+RESOURCES=chips.ico res/*.bmp
 
 chips.exe: chips.asm base.exe data.bin $(OBJ) $(RESOURCES) bin/link chips.link Makefile
 	bin/link -script chips.link -map chips.map $(OBJ)
