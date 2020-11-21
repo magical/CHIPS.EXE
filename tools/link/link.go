@@ -834,6 +834,26 @@ func (ld *Linker) writeMapFile(filename string) error {
 	// TODO: replace with something better
 	fmt.Fprintln(bw, "-- Symbols --------------------------------------------------------------------")
 	fmt.Fprintln(bw)
+	// first print const symbols
+	printedHeader := false
+	for i := range ld.segments {
+		for _, symb := range ld.segments[i].symbols {
+			if symb.constant {
+				if !printedHeader {
+					fmt.Fprintln(bw, "---- No Section ---------------------------------------------------------------")
+					fmt.Fprintln(bw)
+					fmt.Fprintln(bw, "Value     Name")
+					printedHeader = true
+				}
+				fmt.Fprintf(bw, "%08x  %s\n", symb.offset, symb.name)
+			}
+		}
+		//fmt.Fprintf(bw, "%08x  %s\n", ld.segments[i].size, fmt.Sprint("_segment_", ld.segments[i].num.Index, "_size"))
+	}
+	if printedHeader {
+		fmt.Fprintln(bw)
+	}
+	// then actual symbols
 	for i := range ld.segments {
 		if i > 0 {
 			fmt.Fprintln(bw)
@@ -844,9 +864,11 @@ func (ld *Linker) writeMapFile(filename string) error {
 		fmt.Fprintln(bw, "Real              Virtual           Name")
 		base := ld.segments[i].start
 		for _, symb := range ld.segments[i].symbols {
-			fmt.Fprintf(bw, "%16x  %16x  %s\n", base+symb.offset, symb.offset, symb.name)
+			if !symb.constant {
+				fmt.Fprintf(bw, "%16x  %16x  %s\n", base+symb.offset, symb.offset, symb.name)
+			}
 		}
-		fmt.Fprintf(bw, "Size    %x\n", ld.segments[i].size)
+		//fmt.Fprintf(bw, "Size    %x\n", ld.segments[i].size)
 	}
 	return bw.Flush()
 }
