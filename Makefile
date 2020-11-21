@@ -3,7 +3,8 @@ CODE=seg2.asm logic.asm seg4.asm seg5.asm seg6.asm movement.asm sound.asm digits
 OBJ=$(CODE:.asm=.obj)
 RESOURCES=chips.ico res/*
 
-chips.exe: chips.asm base.exe data.bin link.stamp $(RESOURCES) Makefile
+chips.exe: chips.asm base.exe data.bin $(OBJ) $(RESOURCES) bin/link chips.link Makefile
+	bin/link -script chips.link -map chips.map $(OBJ)
 	nasm -o $@ $<
 
 BASE=basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
@@ -24,7 +25,6 @@ clean:
 	rm *.bin *.obj
 	rm chips.exe
 	rm data.map
-	rm link.stamp
 
 %.bin: %.asm fixmov.awk Makefile
 	awk -f fixmov.awk $< >$<.tmp
@@ -35,11 +35,6 @@ clean:
 	awk -f fixmov.awk $< >$<.tmp
 	nasm -O0 -f obj -o $@ $<.tmp
 	rm $<.tmp
-
-link.stamp: bin/link chips.link $(OBJ) Makefile
-	bin/link -script chips.link $(OBJ)
-	@# touch a file to tell make we did the thing
-	@touch $@
 
 headers:
 	$(SHELL) extern.sh >extern.inc
