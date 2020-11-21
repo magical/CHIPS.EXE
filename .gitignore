@@ -3,5 +3,6 @@ base.exe
 *.bin
 *.obj
 *.dis
+chips.map
 data.map
 link.stamp
