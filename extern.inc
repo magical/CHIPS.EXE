@@ -1,6 +1,5 @@
 ; seg2.asm
-%if SEGMENT_NUMBER != 2
-EXTERN ShowMessageBox                ; 2:
+EXTERN ShowMessageBox                ; 2:0
 EXTERN IsCoordOnscreen               ; 2:7a
 EXTERN DrawTile                      ; 2:c4
 EXTERN UpdateTile                    ; 2:1ca
@@ -44,10 +43,8 @@ EXTERN INFOWNDPROC                   ; 2:2866
 EXTERN COUNTERWNDPROC                ; 2:296a
 EXTERN INVENTORYWNDPROC              ; 2:2a9a
 EXTERN HINTWNDPROC                   ; 2:2bbe
-%endif
 
 ; logic.asm
-%if SEGMENT_NUMBER != 3
 EXTERN FindMonster                   ; 3:0
 EXTERN FindSlipper                   ; 3:58
 EXTERN TurnLeft                      ; 3:b0
@@ -92,10 +89,8 @@ EXTERN FindTeleport                  ; 3:2910
 EXTERN AddTeleport                   ; 3:295e
 EXTERN DeleteTeleport_Unused         ; 3:29dc
 EXTERN GetTileImagePos               ; 3:2a3e
-%endif
 
 ; seg4.asm
-%if SEGMENT_NUMBER != 4
 EXTERN GetTileRect                   ; 4:0
 EXTERN ResetLevelData                ; 4:5e
 EXTERN ReadLevelDataOrDie            ; 4:d8
@@ -118,24 +113,18 @@ EXTERN FUN_4_0e48                    ; 4:e48
 EXTERN FUN_4_0eaa                    ; 4:eaa
 EXTERN PASSWORDMSGPROC               ; 4:1016
 EXTERN FUN_4_115c                    ; 4:115c
-%endif
 
 ; seg5.asm
-%if SEGMENT_NUMBER != 5
 EXTERN InitGraphics                  ; 5:
 EXTERN LoadTiles                     ; 5:112
 EXTERN FreeTiles                     ; 5:17c
-%endif
 
 ; seg6.asm
-%if SEGMENT_NUMBER != 6
 EXTERN GOTOLEVELMSGPROC              ; 6:0
 EXTERN BESTTIMESMSGPROC              ; 6:18e
 EXTERN COMPLETEMSGPROC               ; 6:3c6
-%endif
 
 ; movement.asm
-%if SEGMENT_NUMBER != 7
 EXTERN DoTick                        ; 7:0
 EXTERN SlideMovement                 ; 7:636
 EXTERN DrawStretchedTile             ; 7:966
@@ -144,10 +133,8 @@ EXTERN EndLevel                      ; 7:cca
 EXTERN MoveBlock                     ; 7:dae
 EXTERN MoveChip                      ; 7:1184
 EXTERN MoveMonster                   ; 7:18da
-%endif
 
 ; sound.asm
-%if SEGMENT_NUMBER != 8
 EXTERN InitSound                     ; 8:0
 EXTERN TeardownSound                 ; 8:e6
 EXTERN FUN_8_0110                    ; 8:110
@@ -158,14 +145,11 @@ EXTERN FUN_8_0308                    ; 8:308
 EXTERN FUN_8_04a0                    ; 8:4a0
 EXTERN PlaySoundEffect               ; 8:56c
 EXTERN FUN_8_05b8                    ; 8:5b8
-%endif
 
 ; digits.asm
-%if SEGMENT_NUMBER != 9
 EXTERN FindBitmap                    ; 9:
 EXTERN BitmapSize                    ; 9:28
 EXTERN LoadDigits                    ; 9:4e
 EXTERN FreeDigits                    ; 9:bc
 EXTERN DrawDigit                     ; 9:ea
-%endif
 

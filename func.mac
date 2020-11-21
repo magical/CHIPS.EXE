@@ -1,5 +1,5 @@
 %macro  func 1
-    global %1
+    extern %1
 %1:
     %push func
     %stacksize small
