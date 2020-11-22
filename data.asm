@@ -498,12 +498,12 @@ dw 0, 0, 0, 0, 0, 0, 0, 0  ; 14ae
 Var14BE dw 0
 WindowsVersion dw 0
 DOSVersion dw 0
-db 02
+        db 2
 Var14C5 db 1
-db 00, 00 ; 14c6
+        dw 0 ; 14c6
 Var14C8 dw 20
-dw 20
-dw 40
+        dw 20
+        dw 40
 
 ; 14ce
 
@@ -517,17 +517,15 @@ Var14FC dd 0x1500
 
 ; 1500
 
-db 00, 00, 00 ; 1500
-
-Var1503 db 00
-
-db 00, 00, 00, 00 ; 1504
-
+        dw 0 ; 1500
+Var1502 dw 0
+        dw 0 ; 1504
+        dw 0 ; 1506
 Var1508 dd 0
 Var150C dw 0
 Var150E dw 0x1000
 Var1510 dd 0
-dw 0 ; 1514
+        dw 0 ; 1514
 Var1516 dw 0
 Var1518 dw 0
 Var151A dw 0

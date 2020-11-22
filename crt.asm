@@ -356,7 +356,7 @@ endstub
 
 stub exit_common
     %arg arg_0:word ; +6
-    mov [Var1503], ch
+    mov [Var1502+1], ch
     push cx
     or cl,cl
     jnz short .label0 ; ↓

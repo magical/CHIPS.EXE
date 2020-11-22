@@ -236,7 +236,7 @@ Var14F6                             equ 0x14F6
 Var14F8                             equ 0x14F8
 Var14FA                             equ 0x14FA
 Var14FC                             equ 0x14FC
-Var1503                             equ 0x1503
+Var1502                             equ 0x1502
 Var1508                             equ 0x1508
 Var150C                             equ 0x150C
 Var150E                             equ 0x150E
