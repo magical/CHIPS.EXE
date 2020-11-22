@@ -467,25 +467,77 @@ EmptyStringForMciSendCommand db 0, 0
 s_The_MIDI_Mapper_is_not_available_Continue? db "The MIDI Mapper is not available. Continue?", 0
 s_Unknown_Error db "Unknown Error", 0
 
-times 13 db 0 ; 1482
-dw 1, -1, 0, 0, 1, 0
-db "_C_FILE_INFO=", 0
+db 0
 
-; 14aa
+Var1484 dw 0
+crt_hPrevInstance dw 0
+crt_hInstance dw 0
+crt_lpCmdLine dd 0
+crt_nCmdShow dw 0
 
-dw 0, 0, 0 ; 14aa
-dw 0, 0, 0, 0, 0, 0, 0, 0  ; 14b0
-db 00, 00, 00, 00, 02, 01, 00, 00,  20, 00, 20, 00, 40, 00, 00, 00 ; 14c0
+dw 1, -1, 0, 0
+RandomSeed dd 1
+
+s_cFileInfo db "_C_FILE_INFO=", 0
+
+Int0_Save dd 0
+
+; 14ae
+
+dw 0 ; 14ae
+dw 0, 0, 0, 0, 0, 0, 0  ; 14b0
+Var14BE dw 0
+WindowsVersion dw 0
+DOSVersion dw 0
+db 02
+Var14C5 db 1
+
+; 14c6
+
+db 00, 00 ; 14c6
+Var14C8 dw 20
+dw 20
+dw 40
+
+; 14ce
+
+Var14CE db 00, 00
 db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 14d0
 db 00, 00,0xC1,00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 14e0
-db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 21, 00, 00 ; 14f0
-db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 16 ; 1500
-db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 1510
+db 00, 00, 00, 00, 00, 00 ; 14f0
+
+Var14F6 dw 0
+Var14F8 dw 0
+Var14FA dw 0
+Var14FC dd 1500h
+
+; 1500
+
+db 00, 00, 00 ; 1500
+
+Var1503 db 00
+
+db 00, 00, 00, 00 ; 1504
+
+Var1508 dd 0
+Var150C dw 0
+Var150E dw 0x1000
+Var1510 dd 0
+
+db 00, 00 ; 1514
+
+Var1516 dw 0
+Var1518 dw 0
+Var151A dw 0
+Var151C dw 0
+Var151E dw 0
 
 ; 1520
 
-db 0, 0,
-db "<<NMSG>>", 0, 0
+Var1520 dw 0
+
+NMSG db "<<NMSG>>"
+NMSG_Table dw 0
 db "R6000", 13, 10, "- stack overflow", 13, 10, 0
 dw 3
 db "R6003", 13, 10, "- integer divide by 0", 13, 10, 0
@@ -507,7 +559,9 @@ dw 2
 db "R6002", 13, 10, "- floating-point support not loaded", 13, 10, 0
 dw 0xffff
 db 0xff
-times 13 db 0
+times 9 db 0
+
+Var167C dd 0
 
 ; 1680
 

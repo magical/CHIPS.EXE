@@ -1,3 +1,36 @@
+; crt.asm
+EXTERN winflags                      ; 1:10
+EXTERN loc_12                        ; 1:12
+EXTERN start                         ; 1:1a
+EXTERN __nomain                      ; 1:b6
+EXTERN atoi                          ; 1:bc
+EXTERN atol                          ; 1:c0
+EXTERN __aFldiv                      ; 1:110
+EXTERN __stubmain                    ; 1:1aa
+EXTERN __cinit                       ; 1:1d6
+EXTERN exit                          ; 1:2b5
+EXTERN __exit                        ; 1:2c3
+EXTERN __cexit                       ; 1:2d2
+EXTERN __c_exit                      ; 1:2e3
+EXTERN __ctermsub                    ; 1:353
+EXTERN FUN_1_037C                    ; 1:37c
+EXTERN __FF_MSGBANNER                ; 1:390
+EXTERN __setargv                     ; 1:3b4
+EXTERN __setenvp                     ; 1:536
+EXTERN __cintDIV                     ; 1:536
+EXTERN __amsg_exit                   ; 1:5cb
+EXTERN __catox                       ; 1:60e
+EXTERN __aFlmul                      ; 1:662
+EXTERN __wcinit                      ; 1:694
+EXTERN __wopen                       ; 1:699
+EXTERN __fptrap                      ; 1:6a0
+EXTERN __NMSG_TEXT                   ; 1:6a6
+EXTERN __NMSG_WRITE                  ; 1:6dd
+EXTERN __myalloc                     ; 1:71a
+EXTERN __growseg                     ; 1:748
+EXTERN __incseg                      ; 1:7d4
+EXTERN __findlast                    ; 1:83a
+
 ; seg2.asm
 EXTERN ShowMessageBox                ; 2:0
 EXTERN IsCoordOnscreen               ; 2:7a

@@ -1,9 +1,9 @@
 # *Don't* reorder the list of asm files. The linker assigns segment numbers based on the order of the input files.
-CODE=seg2.asm logic.asm seg4.asm seg5.asm seg6.asm movement.asm sound.asm digits.asm
+CODE=crt.asm seg2.asm logic.asm seg4.asm seg5.asm seg6.asm movement.asm sound.asm digits.asm
 OBJ=$(CODE:.asm=.obj)
 RESOURCES=chips.ico res/*.bmp
 
-chips.exe: chips.asm base.exe data.bin $(OBJ) $(RESOURCES) bin/link chips.link Makefile
+chips.exe: chips.asm data.bin $(OBJ) $(RESOURCES) bin/link chips.link Makefile
 	bin/link -script chips.link -map chips.map $(OBJ)
 	$(generate-extern.inc)
 	$(generate-segment_sizes.inc)
@@ -22,9 +22,10 @@ endef
 
 chips.exe: constants.asm exports.inc segment_sizes.inc
 
-BASE=basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
+BASE=basecrt.bin basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
 check: $(BASE) chips.exe Makefile
+	-cmp basecrt.bin crt.bin
 	-cmp basedata.bin data.bin
 	-cmp baseseg2.bin seg2.bin
 	-cmp baselogic.bin logic.bin
@@ -58,6 +59,7 @@ headers:
 # additional dependencies
 logic.obj: constants.asm structs.asm variables.asm func.mac
 movement.obj: constants.asm structs.asm variables.asm func.mac
+crt.obj: variables.asm func.mac
 seg2.obj: constants.asm structs.asm variables.asm func.mac
 seg4.obj: constants.asm structs.asm variables.asm
 seg5.obj: constants.asm variables.asm func.mac
@@ -84,8 +86,8 @@ bin/link: tools/link/*.go
 bin/res: tools/res/res.go
 	go build -o bin/res ./tools/res
 
-baseseg1.bin: bin/dd base.exe
-	bin/dd <base.exe >$@ -skip 0xa00 -count 0x952
+basecrt.bin: bin/dd base.exe
+	bin/dd <base.exe >$@ -skip 0xa00 -count 0x9f4
 baseseg2.bin: bin/dd base.exe
 	bin/dd <base.exe >$@ -skip 0x1600 -count 0x3084
 basedata.bin: bin/dd base.exe

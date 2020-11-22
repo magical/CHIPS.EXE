@@ -20,6 +20,31 @@
     mov ds,ax
 %endmacro
 
+; Same as above, but with no save of ds to ax
+%macro func_nods 1
+    extern %1
+%1:
+    %push func
+    %stacksize small
+    %assign %$argsize 0
+    %assign %$localsize 0 ; for %local
+    %local saved_ds:word
+    inc bp
+    push bp
+    db 0x8b,0xec ; mov bp,sp
+    push ds
+%endmacro
+
+; Start of stub function without any prologue (usually because we jump
+; here from other function prologues).
+%macro stub 1
+%1:
+    %push func
+    %stacksize small
+    %assign %$argsize 0
+    %assign %$localsize 0 ; for %local
+%endmacro
+
 %macro endfunc 0
     lea sp,[bp-0x2]
     pop ds
@@ -31,6 +56,27 @@
     retf
     %endif
     align 2
+    %pop func
+%endmacro
+
+; Some CRT functions have a slightly different epilogue...
+%macro endfunc_crt 0
+    sub bp, byte 0x2
+    db 0x8b,0xe5 ; mov sp,bp
+    pop ds
+    pop bp
+    dec bp
+    %if %$argsize
+    retf %$argsize
+    %else
+    retf
+    %endif
+    %pop func
+%endmacro
+
+; End a stub function without any epilogue (usually because we jump
+; to the rest of the shared implementation)
+%macro endstub 0
     %pop func
 %endmacro
 
