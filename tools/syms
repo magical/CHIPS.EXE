@@ -26,8 +26,8 @@ def printsyms(file):
         if words[0] == "SEGMENT":
             if len(words) > 3:
                 lastsegment = words[3]
-        if words[0] == "func" or words[0].endswith(":") and "%" not in words[0]:
-            if words[0] == "func":
+        if words[0] in ("func", "func_nods") or words[0].endswith(":") and "%" not in words[0]:
+            if words[0] in ("func", "func_nods"):
                 label = words[1]
             else:
                 label = words[0].strip(":")

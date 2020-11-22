@@ -4,7 +4,7 @@
 1:00c4    srand
 1:00dc    rand
 1:0110    __aFldiv
-1:05cb    QWinError
+1:02b5    exit
 1:0662    __aFlmul
 
 2:0000    ShowMessageBox
@@ -22,6 +22,7 @@
 2:0b9a    ShowDeathMessage
 2:0c1a    ShowHint
 2:0c7e    HideHint
+2:0f06    Draw3DBorder
 2:1006    DrawSolidBorder
 2:17a2    PauseTimer
 2:17ba    UnpauseTimer
@@ -104,7 +105,7 @@
 
 5:0000    InitGraphics
 5:0112    LoadTiles
-5:017e    FreeTiles
+5:017c    FreeTiles
 
 6:0000    GOTOLEVELMSGPROC
 6:018e    BESTTIMEMSGPROC
