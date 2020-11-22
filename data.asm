@@ -30,7 +30,7 @@ Var22        dw 0 ; 0x22 *
 GamePaused   dw 0 ; 0x24
 hMenu        dw 0 ; 0x26 HMENU
 hAccel       dw 0 ; 0x28 HACCEL
-Var2a        dw 0 ; 0x2a whether we've called WEP4UTIL.5
+Var2a        dw 0 ; 0x2a whether we've called WEP4UTIL.WEPHELP
 Var2c        dw 0 ; 0x2c whether to pause the game and music when minimized
 
 IgnorePasswords dw 0 ; 0x2e passwords disabled
@@ -55,9 +55,10 @@ LOGFONT:
                 db 0x02 ; 0x46 lfQuality PROOF_QUALITY
                 db 0x22 ; 0x47 lfPitchAndFamily FF_SWISS | VARIABLE_PITCH
 .lfFaceName:    db "Arial" ; 0x48 char[32] lfFaceName
-                times 32-5 db 0
+                times 32-($-.lfFaceName) db 0
 
 ; 0x68
+; segment 2 strings
 MessageBoxCaption db "Chip's Challenge", 0, 0
 SystemTimerErrorMsg db "Not enough system timers are available.", 0
 NewGamePrompt db "Starting a new game will begin you back at level 1, reset your score to zero, and forget the passwords to any levels you have visited.", 10, "Is this what you want?", 0
@@ -76,12 +77,12 @@ s_Commands      db "Commands", 0, 0
 
 IniFileName     db "entpack.ini", 0
 IniSectionName  db "Chip's Challenge", 0, 0
-MIDIKey db "MIDI", 0, 0
-SoundsKey db "Sounds", 0, 0
+MIDIKey         db "MIDI", 0, 0
+SoundsKey       db "Sounds", 0, 0
 HighestLevelKey db "Highest Level", 0
 CurrentLevelKey db "Current Level", 0
 CurrentScoreKey db "Current Score", 0
-ColorKey db "Color", 0
+ColorKey        db "Color", 0
 s_2c4           db 0, 0
 s_KeyboardDelay db "KeyboardDelay", 0
 DataFileName    db "CHIPS.DAT", 0
@@ -354,8 +355,8 @@ s_DLG_PASSWORD db "DLG_PASSWORD", 0, 0
 
 ; a14
 
-VarA14 dw 0 ; a14 HGDIOBJ tile bitmap handle
-VarA16 dw 0 ; a16 BYTE*   tile bitmap data?
+VarA14          dw 0 ; a14 HGDIOBJ tile bitmap handle
+VarA16          dw 0 ; a16 BYTE*   tile bitmap data?
 ColorMode       dw 0 ; a18 which bitmap to load: 1, 2, 3, or 4(?)
 HicolorTiles    db "obj32_4", 0
 LocolorTiles    db "obj32_4E", 0
@@ -394,7 +395,10 @@ s_plural_3 db "s", 0
 s_singular_3 db 0
 s_You_increased_your_score db "You increased your score on this level by %li point%s!", 0
 s_Total_Score_li db "Total Score:  %li", 0
-db 0
+align 2, db 0
+
+; c6c
+; movement.asm strings & data
 
 ; Used as a pointer argument to SlideMovement when we don't care about its value
 DummyVarForSlideMovement dw 0xFF ; c6c
@@ -408,8 +412,8 @@ YouCompletedNLevelsMsg:
     db "You completed %d levels, and your total score for the challenge is %li points.", 10, 10
     db "You can still improve your score, by completing levels that you skipped, and getting better times on each level.  When you replay a level, if your new score is better than your old, your score will be adjusted by the difference.  Select Best Times from the Game menu to see your scores for each level.", 0
 
-; Decade messages
-; 0xEC2
+; ec2
+
 DecadeMessages:
     dw .level50
     dw .level60
@@ -436,7 +440,11 @@ DecadeMessages:
 Chipend db "chipend", 0
 Chipend2 db "chipend", 0
 s_DLG_COMPLETE db "DLG_COMPLETE", 0
-db 0
+align 2, db 0
+
+; 1370
+; sound.asm strings & data
+
 s_MIDI_Error_on_file_s db "MIDI Error on file %s: ", 0
 s_None_of_the_MIDI_files_specified___ db "None of the MIDI files specified in entpack.ini were found.", 0
 
@@ -445,9 +453,9 @@ MusicEnabled            dw 1 ; 13c6
 SoundEnabled            dw 1 ; 13c8
 MusicMenuItemEnabled    dw 0 ; 13ca
 SoundMenuItemEnabled    dw 0 ; 13cc
-fpSndPlaySound          dw 0, 0 ; 13ce
-fpMciSendCommand        dw 0, 0 ; 13d2
-fpMciGetErrorString     dw 0, 0 ; 13d6
+fpSndPlaySound          dd 0 ; 13ce
+fpMciSendCommand        dd 0 ; 13d2
+fpMciGetErrorString     dd 0 ; 13d6
 
 hmoduleMMSystem dw 0 ; 13da
 NumMIDIFiles dw 0 ; 13dc
@@ -466,8 +474,10 @@ EmptyStringForMciSendCommand db 0, 0
 
 s_The_MIDI_Mapper_is_not_available_Continue? db "The MIDI Mapper is not available. Continue?", 0
 s_Unknown_Error db "Unknown Error", 0
+align 2, db 0
 
-db 0
+; 1484
+; crt.asm data
 
 Var1484 dw 0
 crt_hPrevInstance dw 0
@@ -484,16 +494,12 @@ Int0_Save dd 0
 
 ; 14ae
 
-dw 0 ; 14ae
-dw 0, 0, 0, 0, 0, 0, 0  ; 14b0
+dw 0, 0, 0, 0, 0, 0, 0, 0  ; 14ae
 Var14BE dw 0
 WindowsVersion dw 0
 DOSVersion dw 0
 db 02
 Var14C5 db 1
-
-; 14c6
-
 db 00, 00 ; 14c6
 Var14C8 dw 20
 dw 20
@@ -501,15 +507,13 @@ dw 40
 
 ; 14ce
 
-Var14CE db 00, 00
-db 00, 00, 00, 00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 14d0
-db 00, 00,0xC1,00, 00, 00, 00, 00,  00, 00, 00, 00, 00, 00, 00, 00 ; 14e0
-db 00, 00, 00, 00, 00, 00 ; 14f0
+Var14CE db   00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00 ; 14ce
+        db 0xC1, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00 ; 14e2
 
 Var14F6 dw 0
 Var14F8 dw 0
 Var14FA dw 0
-Var14FC dd 1500h
+Var14FC dd 0x1500
 
 ; 1500
 
@@ -523,45 +527,38 @@ Var1508 dd 0
 Var150C dw 0
 Var150E dw 0x1000
 Var1510 dd 0
-
-db 00, 00 ; 1514
-
+dw 0 ; 1514
 Var1516 dw 0
 Var1518 dw 0
 Var151A dw 0
 Var151C dw 0
 Var151E dw 0
+Var1520 dw 0 ; 1520
 
-; 1520
-
-Var1520 dw 0
+%macro dwb 2+
+    dw %1
+    db %2
+%endmacro
 
 NMSG db "<<NMSG>>"
-NMSG_Table dw 0
-db "R6000", 13, 10, "- stack overflow", 13, 10, 0
-dw 3
-db "R6003", 13, 10, "- integer divide by 0", 13, 10, 0
-dw 9
-db "R6009", 13, 10, "- not enough space for environment", 13, 10, 0
-dw 18
-db "R6018", 13, 10, "- unexpected heap error", 13, 10, 0
-dw 20
-db "R6020", 13, 10, "- unexpected QuickWin error", 13, 10, 0
-dw 8
-db "R6008", 13, 10, "- not enough space for arguments", 13, 10, 0
-dw 21
-db "R6021", 13, 10, "- no main procedure", 13, 10, 0
-dw 252
-db 13, 10, 0
-dw 255
-db "run-time error ", 0
-dw 2
-db "R6002", 13, 10, "- floating-point support not loaded", 13, 10, 0
-dw 0xffff
-db 0xff
-times 9 db 0
+NMSG_Table:
+    ;  code  text
+    dwb   0, "R6000", 13, 10, "- stack overflow", 13, 10, 0
+    dwb   3, "R6003", 13, 10, "- integer divide by 0", 13, 10, 0
+    dwb   9, "R6009", 13, 10, "- not enough space for environment", 13, 10, 0
+    dwb  18, "R6018", 13, 10, "- unexpected heap error", 13, 10, 0
+    dwb  20, "R6020", 13, 10, "- unexpected QuickWin error", 13, 10, 0
+    dwb   8, "R6008", 13, 10, "- not enough space for arguments", 13, 10, 0
+    dwb  21, "R6021", 13, 10, "- no main procedure", 13, 10, 0
+    dwb 252, 13, 10, 0
+    dwb 255, "run-time error ", 0
+    dwb   2, "R6002", 13, 10, "- floating-point support not loaded", 13, 10, 0
+    dwb  -1, 0xff, 0
 
+dw 0, 0, 0, 0 ; 1674
 Var167C dd 0
+
+; end crt.asm data
 
 ; 1680
 
@@ -591,8 +588,9 @@ PasswordPromptLevel    dw 0 ; 169c level for password prompt
 HorizontalPadding       dw 0 ; 169e main window horizontal padding (always 0x20)
 VerticalPadding         dw 0 ; 16a0 main window vertical padding (0x20 or 8, depending on vertical resolution)
 
+; sound.asm
 SoundArray:
-    ; XXX what type are these?
+    ; what type are these?
     times 15 dw 0 ; 16a2
 .end:
 
@@ -620,15 +618,17 @@ DigitPtrArray:
 DigitResourceHandle dw 0 ; 1720 HGLOBAL
 GameStatePtrCopy    dw 0 ; 1722 copy of GameStatePtr used for deallocation
 SavedObj            dw 0 ; 1724 HGDIOBJ previously selected object; restored on exit
-fpWaveOutGetNumDevs dw 0, 0 ; 1726
+fpWaveOutGetNumDevs dd 0 ; 1726
 OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
 TileBitmapObj       dw 0 ; 172c HGDIOBJ current tile bitmap object
 ; If the game is running on Windows 3.1 or higher,
 ; it uses Arial instead of Helv[etica] as its font
 ; and fiddles with the KeyboardDelay setting.
 IsWin31             dw 0 ; 172e BOOL
-fpMidiOutGetNumDevs dw 0, 0 ; 1730
+fpMidiOutGetNumDevs dd 0 ; 1730
 TileDC              dw 0 ; 1734 HDC memory dc for tile graphics
 MCIDeviceID         dw 0 ; 1736 MCIDEVICEID
+
+; 1738
 
 ; vim: syntax=nasm
