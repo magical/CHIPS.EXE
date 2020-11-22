@@ -10,7 +10,7 @@ SEGMENT CODE ; 6
 EXTERN WEP4UTIL.CENTERHWND
 EXTERN WEP4UTIL.GRAYDLGPROC
 
-EXTERN div32_probably
+EXTERN __aFldiv
 
 EXPORT GOTOLEVELMSGPROC GOTOLEVELMSGPROC  4
 EXPORT BESTTIMESMSGPROC BESTTIMESMSGPROC  12
@@ -549,7 +549,7 @@ COMPLETEMSGPROC:
     rcl dx,1
     push dx
     push ax
-    call far div32_probably ; 47a 1:110
+    call far __aFldiv ; 47a 1:110
     mov [bp-0x8],ax
     mov [bp-0x6],dx
     or dx,dx

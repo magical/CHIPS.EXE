@@ -75,7 +75,7 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 
 	// TODO: init elsewhere
 	ld.segments = make([]SegmentInfo, len(inputs))
-	base := 2 // XXX don't hardcode this
+	base := 1 // XXX don't hardcode this
 	for i := range ld.segments {
 		ld.segments[i].num = ld.addSegment(base + i)
 		ld.segments[i].reloctab = make(map[RelocTarget]*RelocInfo)
@@ -134,7 +134,6 @@ func (ld *Linker) preset() {
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalUnlock", 19)
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalAlloc", 15)
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalReAlloc", 16)
-	//ld.addLocalSymbol("rand", 1, 0xdc)
 	//ld.addLocalSymbol("MoveMonster", 7, 0x18da)
 	//ld.addLocalSymbol("UpdateTile", 2, 0x1ca)
 	//ld.addLocalSymbol("PlaySoundEffect", 8, 0x056c)
@@ -142,14 +141,6 @@ func (ld *Linker) preset() {
 	//ld.addLocalSymbol("SlideMovement", 7, 0x0636)
 	//ld.addLocalSymbol("MoveBlock", 7, 0x0dae)
 	//ld.addLocalSymbol("MoveChip", 7, 0x1183)
-
-	ld.addLocalSymbol("entry", 1, 0x1a)
-	ld.addLocalSymbol("atoi", 1, 0xbc)
-	ld.addLocalSymbol("atol", 1, 0xc0)
-	ld.addLocalSymbol("srand", 1, 0xc4)
-	ld.addLocalSymbol("rand", 1, 0xdc)
-	ld.addLocalSymbol("div32_probably", 1, 0x110)
-	ld.addLocalSymbol("mul32", 1, 0x662)
 
 	wep4, _ := ld.addModule(4, "WEP4UTIL")
 	ld.addImportedSymbol(wep4, "WEP4UTIL.2", 2)
