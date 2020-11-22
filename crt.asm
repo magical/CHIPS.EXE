@@ -79,7 +79,7 @@ start:
 
 __nomain:
     ; Never used
-    mov ax, 0x15
+    mov ax, 0x15 ; no main procedure
     jmp __amsg_exit
 
 ; bc
@@ -437,7 +437,7 @@ func __FF_MSGBANNER
     push ax
     push cs
     call __NMSG_WRITE
-    mov ax, 0xff
+    mov ax, 0xff ; run-time error
     push ax
     push cs
     call __NMSG_WRITE
@@ -755,7 +755,7 @@ endfunc_crt
 __cintDIV:
     push ss
     pop ds
-    mov ax, 3
+    mov ax, 3 ; integer divide by 0
     ; Continue to __amsg_exit
 
 ; 5cb
@@ -902,7 +902,7 @@ __wcinit:
 ; 699
 
 __wopen:
-    mov ax, 20
+    mov ax, 0x14 ; unexpected quickwin error
     jmp __amsg_exit
 
     db 0
@@ -910,7 +910,7 @@ __wopen:
 ; 6a0
 
 __fptrap:
-    mov ax, 2
+    mov ax, 2 ; floating point support not loaded
     jmp __amsg_exit
 
 ; 6a6
@@ -1134,7 +1134,7 @@ __incseg:
     clc
     jmp short .end
 .label4:
-    mov ax, 0x12
+    mov ax, 0x12 ; unexpected heap error
     jmp __amsg_exit
 .label5:
     pop bx
