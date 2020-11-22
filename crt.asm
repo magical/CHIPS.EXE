@@ -295,12 +295,12 @@ func __cinit
     mov cl, 4
 .label8:
     lodsb
-    sub al, 0x41
+    sub al, 'A'
     jb short .label9; ↓
     shl al, cl
     xchg ax, dx
     lodsb
-    sub al, 0x41
+    sub al, 'A'
     jb short .label9 ; ↓
     or al,dl
     stosb
@@ -473,7 +473,7 @@ __setargv:
     mov ds, [Var14BE]
 .label0:
     lodsb
-    cmp al, 0x20        ; ' '
+    cmp al, ' '
     jz short .label0 ; ↑
     cmp al, 9           ; '\t'
     jz short .label0 ; ↑
@@ -486,7 +486,7 @@ __setargv:
     dec si
 .label2:
     lodsb
-    cmp al, 0x20        ; ' '
+    cmp al, ' '
     jz short .label0 ; ↑
     cmp al, 9           ; '\t'
     jz short .label0 ; ↑
@@ -494,9 +494,9 @@ __setargv:
     jz short .label11 ; ↓
     or al,al
     jz short .label11 ; ↓
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label7 ; ↓
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label3 ; ↓
     inc dx
     jmp short .label2 ; ↑
@@ -505,9 +505,9 @@ __setargv:
 .label4:
     inc cx
     lodsb
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label4 ; ↑
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label5 ; ↓
     add dx,cx
     jmp short .label1 ; ↑
@@ -526,9 +526,9 @@ __setargv:
     jz short .label11 ; ↓
     or al,al
     jz short .label11 ; ↓
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label2 ; ↑
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label8 ; ↓
     inc dx
     jmp short .label7 ; ↑
@@ -537,9 +537,9 @@ __setargv:
 .label9:
     inc cx
     lodsb
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label9 ; ↑
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label10 ; ↓
     add dx,cx
     jmp short .label6 ; ↑
@@ -579,7 +579,7 @@ __setargv:
     stosb
 .label13:
     lodsb
-    cmp al, 0x20        ; ' '
+    cmp al, ' '
     jz short .label13 ; ↓
     cmp al, 9           ; '\t'
     jz short .label13 ; ↓
@@ -594,7 +594,7 @@ __setargv:
     dec si
 .label15:
     lodsb
-    cmp al, 0x20        ; ' '
+    cmp al, ' '
     jz short .label12 ; ↑
     cmp al, 9           ; '\t'
     jz short .label12 ; ↑
@@ -602,9 +602,9 @@ __setargv:
     jz short .label24 ; ↓
     or al,al
     jz short .label24 ; ↓
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label20 ; ↓
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label16 ; ↓
     stosb
     jmp short .label15 ; ↑
@@ -613,19 +613,19 @@ __setargv:
 .label17:
     inc cx
     lodsb
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label17 ; ↑
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label18 ; ↓
-    mov al, 0x5C        ; '\\'
+    mov al, '\'
     rep stosb
     jmp short .label14 ; ↑
 .label18:
-    mov al, 0x5C        ; '\\'
+    mov al, '\'
     shr cx, 1
     rep stosb
     jnb short .label20 ; ↓
-    mov al, 0x22        ; '"'
+    mov al, '"'
     stosb
     jmp short .label15 ; ↑
 .label19:
@@ -636,9 +636,9 @@ __setargv:
     jz short .label24 ; ↓
     or al,al
     jz short .label24 ; ↓
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label15 ; ↑
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label21 ; ↓
     stosb
     jmp short .label20 ; ↑
@@ -647,19 +647,19 @@ __setargv:
 .label22:
     inc cx
     lodsb
-    cmp al, 0x5C        ; '\\'
+    cmp al, '\'
     jz short .label22 ; ↑
-    cmp al, 0x22        ; '"'
+    cmp al, '"'
     jz short .label23 ; ↓
-    mov al, 0x5C        ; '\'
+    mov al, '\'
     rep stosb
     jmp short .label19 ; ↑
 .label23:
-    mov al, 0x5C        ; '\\'
+    mov al, '\'
     shr cx, 1
     rep stosb
     jnb .label15 ; ↑
-    mov al, 0x22        ; '"'
+    mov al, '"'
     stosb
     jmp short .label20 ; ↑
 .label24:
@@ -774,7 +774,7 @@ __amsg_exit:
     jz short .label1 ; ↓
     mov di,ax
     mov ax, 9
-    cmp byte [di], 0x4d
+    cmp byte [di], 'M'
     jnz short .label0 ; ↓
     mov ax, 0xf
 .label0:
@@ -782,8 +782,8 @@ __amsg_exit:
     push di
     push ds
     pop es
-    mov al, 0xd
-    mov cx, 0x22
+    mov al, 0xd ; '\r'
+    mov cx, '"'
     repne scasb
     mov [di-1], bl
     pop ax
@@ -814,21 +814,21 @@ __catox:
     xor bx,bx
 .label0:
     lodsb
-    cmp al, 0x20    ; ' '
+    cmp al, ' '
     jz short .label0 ; ↑
     cmp al, 9       ; '\t'
     jz short .label0 ; ↑
     push ax
-    cmp al, 0x2D    ; '-'
+    cmp al, '-'
     jz short .label1 ; ↓
-    cmp al, 0x2B    ; '+'
+    cmp al, '+'
     jnz short .label2 ; ↓
 .label1:
     lodsb
 .label2:
-    cmp al, 0x39    ; '9'
+    cmp al, '9'
     ja short .label3 ; ↓
-    sub al, 0x30    ; '0'
+    sub al, '0'
     jb short .label3 ; ↓
     shl bx, 1
     rcl dx, 1
@@ -845,7 +845,7 @@ __catox:
     jmp short .label1 ; ↑
 .label3:
     pop ax
-    cmp al, 0x2D    ; '-'
+    cmp al, '-'
     xchg ax, bx
     jnz short .label4 ; ↓
     neg ax
