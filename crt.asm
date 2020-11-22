@@ -43,7 +43,7 @@ start:
     call far KERNEL.GetVersion
     mov [WindowsVersion], ax
     mov ah, 0x30                    ; DOS3Call: Get DOS version
-    test word [cs:winflags], 1
+    test word [cs:winflags], 1  ; WF_PMODE
     jz .label0 ; ↓
     call far KERNEL.DOS3Call
     jmp short .label1 ; ↓
@@ -51,7 +51,7 @@ start:
     int 21h
 .label1:
     mov [DOSVersion], ax
-    test word [cs:winflags], 1
+    test word [cs:winflags], 1  ; WF_PMODE
     jnz short .label2 ; ↓
     mov al, 0
     mov [Var14C5], al
@@ -230,7 +230,7 @@ endfunc_crt
 
 func __cinit
     mov ax, 0x3500              ; DOS3Call: Get interrupt vector (int 0)
-    test word [cs:winflags], 1
+    test word [cs:winflags], 1  ; WF_PMODE
     jz short .label0 ; ↓
     call far KERNEL.DOS3Call
     jmp short .label1 ; ↓
@@ -243,7 +243,7 @@ func __cinit
     pop ds
     mov ax, 0x2500              ; DOS3Call: Set Interrupt vector (int 0)
     mov dx, __cintDIV
-    test word [cs:winflags], 1
+    test word [cs:winflags], 1  ; WF_PMODE
     jz short .label2 ; ↓
     call far KERNEL.DOS3Call
     jmp short .label3 ; ↓
@@ -383,7 +383,7 @@ stub exit_common
     jnz short .label2 ; ↓
     mov ax, [arg_0]
     mov ah, 0x4C                ; DOS3Call: Terminate program with return code
-    test word [cs:winflags], 1
+    test word [cs:winflags], 1  ; WF_PMODE
     jz short .label1 ; ↓
     call far KERNEL.DOS3Call
     jmp short .label2 ; ↓
@@ -405,7 +405,7 @@ __ctermsub:
     push ds
     lds dx, [Int0_Save]
     mov ax, 0x2500              ; DOS3Call: Set Interrupt vector (int 0)
-    test word [cs:winflags], 1
+    test word [cs:winflags], 1  ; WF_PMODE
     jz short .label1 ; ↓
     call far KERNEL.DOS3Call
     jmp short .label2 ; ↓
