@@ -103,10 +103,14 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 	}
 
 	// hack: compute segment start addresses for chips.exe
-	// segment 2 starts at 0x1600
-	off := 0x1600
+	// segment 1 starts at 0xa00
+	off := 0xa00
 	for i := range ld.segments {
 		if i == 1 {
+			// extra padding after segment 1
+			off += 0x200
+		}
+		if i == 2 {
 			// for the data segment
 			off += 0x6200 - 0x4800
 		}
