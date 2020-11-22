@@ -752,7 +752,7 @@ func __setenvp
     jcxz .label6 ; ↓
 .label3:
     mov ax, [si]
-    cmp ax, ss:s_cFileInfo
+    cmp ax, [ss:s_cFileInfo]
     jnz short .label4 ; ↓
     push cx
     push si
