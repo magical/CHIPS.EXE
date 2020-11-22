@@ -2272,7 +2272,7 @@ func MoveChip
     push word [xdir]
     mov al,[tile1]
     push ax
-    call far CheckPanelWalls ; 130e 3:1934 CanEnterOrExitPanelWalls
+    call far CheckPanelWalls ; 130e 3:1934
     add sp,byte +0x8
     or ax,ax
     jnz .checkBlock
@@ -2357,7 +2357,7 @@ func MoveChip
     push word [xdir]
     push word [ydest]
     push word [xdest]
-    call far ChipCanEnterTile ; 13dc 3:1a56 probably
+    call far ChipCanEnterTile ; 13dc 3:1a56
     add sp,byte +0xe
     mov [canenter],ax
     or ax,ax
@@ -3026,7 +3026,7 @@ func MoveMonster
     push word [xdir]
     mov al,[tile]
     push ax
-    call far CheckPanelWalls ; 19a0 3:1934 CanEnterOrExitPanelWalls
+    call far CheckPanelWalls ; 19a0 3:1934
     add sp,byte +0x8
     or ax,ax
     jnz .label9
