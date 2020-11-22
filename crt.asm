@@ -8,36 +8,6 @@ SEGMENT CODE ; 1
 %include "extern.inc"
 %include "windows.inc"
 
-; The assembler used to create the C Runtime uses several alternate instruction
-; encodings from what nasm produces by default...
-%define     _AL     0
-%define     _CL     1
-%define     _DL     2
-%define     _BL     3
-%define     _AH     4
-%define     _CH     5
-%define     _DH     6
-%define     _BH     7
-
-%define     _AX     0
-%define     _CX     1
-%define     _DX     2
-%define     _BX     3
-%define     _SP     4
-%define     _BP     5
-%define     _SI     6
-%define     _DI     7
-
-%define     _ADDw(r1,r2)    db 0x03, 0xc0 + (r1 * 8) + r2
-%define     _ORb(r1,r2)     db 0x0a, 0xc0 + (r1 * 8) + r2
-%define     _ORw(r1,r2)     db 0x0b, 0xc0 + (r1 * 8) + r2
-%define     _ADCw(r1,r2)    db 0x13, 0xc0 + (r1 * 8) + r2
-%define     _ANDw(r1,r2)    db 0x23, 0xc0 + (r1 * 8) + r2
-%define     _SUBw(r1,r2)    db 0x2b, 0xc0 + (r1 * 8) + r2
-%define     _XORw(r1,r2)    db 0x33, 0xc0 + (r1 * 8) + r2
-%define     _CMPw(r1,r2)    db 0x3b, 0xc0 + (r1 * 8) + r2
-%define     _MOVw(r1,r2)    db 0x8b, 0xc0 + (r1 * 8) + r2
-
     times 16 db 0
 
 ; 10
@@ -56,10 +26,10 @@ loc_12:
 
 extern start
 start:
-    _XORw(_BP, _BP)
+    xor bp,bp
     push bp
     call far KERNEL.InitTask
-    _ORw(_AX, _AX)
+    or ax,ax
     jz short loc_12
     mov [Var14BE], es
     add cx, 0x100
@@ -86,12 +56,12 @@ start:
     mov al, 0
     mov [Var14C5], al
 .label2:
-    _XORw(_AX, _AX)
+    xor ax,ax
     push ax
     call far KERNEL.WaitEvent
     push word [crt_hInstance]
     call far USER.InitApp
-    _ORw(_AX, _AX)
+    or ax,ax
     jz short loc_12
     call far __cinit
     call far __setargv
@@ -151,7 +121,7 @@ func_nods rand
     adc dx, byte 0x26
     mov [RandomSeed], ax
     mov [RandomSeed+2], dx
-    _MOVw(_AX, _DX)
+    mov ax,dx
     and ah, 0x7f
 endfunc
 
@@ -163,13 +133,13 @@ __aFldiv:
     %arg arg_0:dword ; 6
     %arg arg_4:dword ; A
     push bp
-    _MOVw(_BP, _SP)
+    mov bp,sp
     push di
     push si
     push bx
-    _XORw(_DI, _DI)
+    xor di,di
     mov ax, [arg_0+2]
-    _ORw(_AX, _AX)
+    or ax,ax
     jge short .label0 ; ↓
     inc di
     mov dx, [arg_0]
@@ -180,7 +150,7 @@ __aFldiv:
     mov [arg_0], dx
 .label0:
     mov ax, [arg_4+2]
-    _ORw(_AX, _AX)
+    or ax,ax
     jge short .label1 ; ↓
     inc di
     mov dx, [arg_4]
@@ -190,19 +160,19 @@ __aFldiv:
     mov [arg_4+2], ax
     mov [arg_4], dx
 .label1:
-    _ORw(_AX, _AX)
+    or ax,ax
     jnz short .label2 ; ↓
     mov cx, [arg_4]
     mov ax, [arg_0+2]
-    _XORw(_DX, _DX)
+    xor dx,dx
     div cx
-    _MOVw(_BX, _AX)
+    mov bx,ax
     mov ax, [arg_0]
     div cx
-    _MOVw(_DX, _BX)
+    mov dx,bx
     jmp short .label6 ; ↓
 .label2:
-    _MOVw(_BX, _AX)
+    mov bx,ax
     mov cx, [arg_4]
     mov dx, [arg_0+2]
     mov ax, [arg_0]
@@ -211,15 +181,15 @@ __aFldiv:
     rcr cx, 1
     shr dx, 1
     rcr ax, 1
-    _ORw(_BX, _BX)
+    or bx,bx
     jnz short .label3 ; ↑
     div cx
-    _MOVw(_SI, _AX)
+    mov si,ax
     mul word [arg_4+2]
     xchg ax, cx
     mov ax, [arg_4]
     mul si
-    _ADDw(_DX, _CX)
+    add dx,cx
     jb short .label4 ; ↓
     cmp dx, [arg_0+2]
     ja short .label4 ; ↓
@@ -229,7 +199,7 @@ __aFldiv:
 .label4:
     dec si
 .label5:
-    _XORw(_DX, _DX)
+    xor dx,dx
     xchg ax, si
 .label6:
     dec di
@@ -288,7 +258,7 @@ func __cinit
     mov si, [es:0x2c]
     mov ax, [Var151A]
     mov dx, [Var151C]
-    _XORw(_BX, _BX)
+    xor bx,bx
     call far [Var1516]
     jnb short .label4 ; ↓
     jmp __fptrap
@@ -302,7 +272,7 @@ func __cinit
     mov cx, [es:0x2c]
     jcxz .label10 ; ↓
     mov es, cx
-    _XORw(_DI, _DI)
+    xor di,di
 .label6:
     cmp byte [es:di], 0
     jz short .label10 ; ↓
@@ -311,7 +281,7 @@ func __cinit
     repe cmpsb
     jz short .label7 ; ↓
     mov cx, 0x7fff
-    _XORw(_AX, _AX)
+    xor ax,ax
     repne scasb
     jnz short .label10 ; ↓
     jmp short .label6 ; ↑
@@ -320,7 +290,7 @@ func __cinit
     push ds
     pop es
     pop ds
-    _MOVw(_SI, _DI)
+    mov si,di
     mov di, Var14CE
     mov cl, 4
 .label8:
@@ -332,7 +302,7 @@ func __cinit
     lodsb
     sub al, 0x41
     jb short .label9 ; ↓
-    _ORb(_AL, _DL)
+    or al,dl
     stosb
     jmp short .label8 ; ↑
 .label9:
@@ -353,7 +323,7 @@ endfunc_crt
 ; 2b5
 
 func exit
-    _XORw(_CX, _CX)
+    xor cx,cx
     jmp short exit_common
 endstub
 
@@ -388,7 +358,7 @@ stub exit_common
     %arg arg_0:word ; +6
     mov [Var1503], ch
     push cx
-    _ORb(_CL, _CL)
+    or cl,cl
     jnz short .label0 ; ↓
     mov si, Var167C
     mov di, Var167C
@@ -409,7 +379,7 @@ stub exit_common
     call FUN_1_037C
     call __ctermsub
     pop ax
-    _ORb(_AH, _AH)
+    or ah,ah
     jnz short .label2 ; ↓
     mov ax, [arg_0]
     mov ah, 0x4C                ; DOS3Call: Terminate program with return code
@@ -448,7 +418,7 @@ __ctermsub:
 ; 37c
 
 FUN_1_037C:
-    _CMPw(_SI, _DI)
+    cmp si,di
     jnb short .end
     sub di, byte 4
     mov ax, [di]
@@ -495,7 +465,7 @@ __setargv:
     call far KERNEL.GetModuleFileName
     pop bx
     pop es
-    _ADDw(_BX, _AX)
+    add bx,ax
     mov byte [es:bx], 0
     mov dx, 1
     mov di, 1
@@ -509,7 +479,7 @@ __setargv:
     jz short .label0 ; ↑
     cmp al, 13          ; '\r'
     jz short .label11 ; ↓
-    _ORb(_AL, _AL)
+    or al,al
     jz short .label11 ; ↓
     inc di
 .label1:
@@ -522,7 +492,7 @@ __setargv:
     jz short .label0 ; ↑
     cmp al, 13          ; '\r'
     jz short .label11 ; ↓
-    _ORb(_AL, _AL)
+    or al,al
     jz short .label11 ; ↓
     cmp al, 0x22        ; '"'
     jz short .label7 ; ↓
@@ -531,7 +501,7 @@ __setargv:
     inc dx
     jmp short .label2 ; ↑
 .label3:
-    _XORw(_CX, _CX)
+    xor cx,cx
 .label4:
     inc cx
     lodsb
@@ -539,12 +509,12 @@ __setargv:
     jz short .label4 ; ↑
     cmp al, 0x22        ; '"'
     jz short .label5 ; ↓
-    _ADDw(_DX, _CX)
+    add dx,cx
     jmp short .label1 ; ↑
 .label5:
-    _MOVw(_AX, _CX)
+    mov ax,cx
     shr cx, 1
-    _ADCw(_DX, _CX)
+    adc dx,cx
     test al, 1
     jnz short .label2 ; ↑
     jmp short .label7 ; ↓
@@ -554,7 +524,7 @@ __setargv:
     lodsb
     cmp al, 13          ; '\r'
     jz short .label11 ; ↓
-    _ORb(_AL, _AL)
+    or al,al
     jz short .label11 ; ↓
     cmp al, 0x22        ; '"'
     jz short .label2 ; ↑
@@ -563,7 +533,7 @@ __setargv:
     inc dx
     jmp short .label7 ; ↑
 .label8:
-    _XORw(_CX, _CX)
+    xor cx,cx
 .label9:
     inc cx
     lodsb
@@ -571,12 +541,12 @@ __setargv:
     jz short .label9 ; ↑
     cmp al, 0x22        ; '"'
     jz short .label10 ; ↓
-    _ADDw(_DX, _CX)
+    add dx,cx
     jmp short .label6 ; ↑
 .label10:
-    _MOVw(_AX, _CX)
+    mov ax,cx
     shr cx, 1
-    _ADCw(_DX, _CX)
+    adc dx,cx
     test al, 1
     jnz short .label7 ; ↑
     jmp short .label2 ; ↑
@@ -584,17 +554,17 @@ __setargv:
     push ss
     pop ds
     mov [Var14F6], di
-    _ADDw(_DX, _DI)
+    add dx,di
     inc di
     shl di, 1
-    _ADDw(_DX, _DI)
+    add dx,di
     inc dx
     and dl, 0xfe
-    _SUBw(_SP, _DX)
-    _MOVw(_AX, _SP)
+    sub sp,dx
+    mov ax,sp
     mov [Var14F8], ax
-    _MOVw(_BX, _AX)
-    _ADDw(_DI, _BX)
+    mov bx,ax
+    add di,bx
     push ss
     pop es
     lds si, [Var14FC]
@@ -605,7 +575,7 @@ __setargv:
     mov si, 0x81
     jmp short .label13 ; ↓
 .label12:
-    _XORw(_AX, _AX)
+    xor ax,ax
     stosb
 .label13:
     lodsb
@@ -615,7 +585,7 @@ __setargv:
     jz short .label13 ; ↓
     cmp al, 13          ; '\r'
     jz short .label25 ; ↓
-    _ORb(_AL, _AL)
+    or al,al
     jz short .label25 ; ↓
     mov [ss:bx], di
     inc bx
@@ -630,7 +600,7 @@ __setargv:
     jz short .label12 ; ↑
     cmp al, 13          ; '\r'
     jz short .label24 ; ↓
-    _ORb(_AL, _AL)
+    or al,al
     jz short .label24 ; ↓
     cmp al, 0x22        ; '"'
     jz short .label20 ; ↓
@@ -639,7 +609,7 @@ __setargv:
     stosb
     jmp short .label15 ; ↑
 .label16:
-    _XORw(_CX, _CX)
+    xor cx,cx
 .label17:
     inc cx
     lodsb
@@ -664,7 +634,7 @@ __setargv:
     lodsb
     cmp al, 13          ; '\r'
     jz short .label24 ; ↓
-    _ORb(_AL, _AL)
+    or al,al
     jz short .label24 ; ↓
     cmp al, 0x22        ; '"'
     jz short .label15 ; ↑
@@ -673,7 +643,7 @@ __setargv:
     stosb
     jmp short .label20 ; ↑
 .label21:
-    _XORw(_CX, _CX)
+    xor cx,cx
 .label22:
     inc cx
     lodsb
@@ -693,7 +663,7 @@ __setargv:
     stosb
     jmp short .label20 ; ↑
 .label24:
-    _XORw(_AX, _AX)
+    xor ax,ax
     stosb
 .label25:
     push ss
@@ -708,17 +678,17 @@ __setargv:
 func __setenvp
     push ds
     call far KERNEL.GetDOSEnvironment
-    _ORw(_AX, _AX)
+    or ax,ax
     jz short .label0 ; ↓
-    _MOVw(_DX, _AX)
+    mov dx,ax
 .label0:
-    _MOVw(_BX, _DX)
+    mov bx,dx
     mov es, dx
-    _XORw(_AX, _AX)
-    _XORw(_SI, _SI)
-    _XORw(_DI, _DI)
+    xor ax,ax
+    xor si,si
+    xor di,di
     mov cx, -1
-    _ORw(_BX, _BX)
+    or bx,bx
     jz short .label2 ; ↓
     cmp byte [es:0], 0
     jz short .label2 ; ↓
@@ -728,25 +698,25 @@ func __setenvp
     scasb
     jnz short .label1 ; ↑
 .label2:
-    _MOVw(_AX, _DI)
+    mov ax,di
     inc ax
     and al, 0xfe
     inc si
-    _MOVw(_DI, _SI)
+    mov di,si
     shl si, 1
     mov cx, 9
     call __myalloc
     push ax
-    _MOVw(_AX, _SI)
+    mov ax,si
     call __myalloc
     mov [Var14FA], ax
     push es
     push ds
     pop es
     pop ds
-    _MOVw(_CX, _DI)
-    _MOVw(_BX, _AX)
-    _XORw(_SI, _SI)
+    mov cx,di
+    mov bx,ax
+    xor si,si
     pop di
     dec cx
     jcxz .label6 ; ↓
@@ -771,7 +741,7 @@ func __setenvp
 .label5:
     lodsb
     stosb
-    _ORb(_AL, _AL)
+    or al,al
     jnz short .label5 ; ↑
     loop .label3 ; ↑
 .label6:
@@ -799,16 +769,16 @@ __amsg_exit:
     call __NMSG_WRITE
     push cs
     call __NMSG_TEXT
-    _XORw(_BX, _BX)
-    _ORw(_AX, _AX)
+    xor bx,bx
+    or ax,ax
     jz short .label1 ; ↓
-    _MOVw(_DI, _AX)
+    mov di,ax
     mov ax, 9
     cmp byte [di], 0x4d
     jnz short .label0 ; ↓
     mov ax, 0xf
 .label0:
-    _ADDw(_DI, _AX)
+    add di,ax
     push di
     push ds
     pop es
@@ -835,13 +805,13 @@ __catox:
     %stacksize small
     %arg arg_0:word ; +6
     push bp
-    _MOVw(_BP, _SP)
+    mov bp,sp
     push di
     push si
     mov si, [arg_0]
-    _XORw(_AX, _AX)
+    xor ax,ax
     cwd
-    _XORw(_BX, _BX)
+    xor bx,bx
 .label0:
     lodsb
     cmp al, 0x20    ; ' '
@@ -862,15 +832,15 @@ __catox:
     jb short .label3 ; ↓
     shl bx, 1
     rcl dx, 1
-    _MOVw(_CX, _BX)
-    _MOVw(_DI, _DX)
+    mov cx,bx
+    mov di,dx
     shl bx, 1
     rcl dx, 1
     shl bx, 1
     rcl dx, 1
-    _ADDw(_BX, _CX)
-    _ADCw(_DX, _DI)
-    _ADDw(_BX, _AX)
+    add bx,cx
+    adc dx,di
+    add bx,ax
     adc dx, byte 0
     jmp short .label1 ; ↑
 .label3:
@@ -896,10 +866,10 @@ __aFlmul:
     %arg arg_0:dword ; +6
     %arg arg_4:dword ; +A
     push bp
-    _MOVw(_BP, _SP)
+    mov bp,sp
     mov ax, [arg_0+2]
     mov cx, [arg_4+2]
-    _ORw(_CX, _AX)
+    or cx,ax
     mov cx, [arg_4]
     jnz short .label0 ; ↓
     mov ax, [arg_0]
@@ -909,13 +879,13 @@ __aFlmul:
 .label0:
     push bx
     mul cx
-    _MOVw(_BX, _AX)
+    mov bx,ax
     mov ax, [arg_0]
     mul word [arg_4+2]
-    _ADDw(_BX, _AX)
+    add bx,ax
     mov ax, [arg_0]
     mul cx
-    _ADDw(_DX, _BX)
+    add dx,bx
     pop bx
     pop bp
     retf 8
@@ -925,7 +895,7 @@ __aFlmul:
 
 __wcinit:
     push bp
-    _MOVw(_BP, _SP)
+    mov bp,sp
     pop bp
     retn
 
@@ -956,16 +926,16 @@ func __NMSG_TEXT
     mov si, NMSG_Table
 .label0:
     lodsw
-    _CMPw(_AX, _DX)
+    cmp ax,dx
     jz short .label1 ; ↓
     inc ax
     xchg ax, si
     jz short .label1 ; ↓
     xchg ax, di
-    _XORw(_AX, _AX)
+    xor ax,ax
     mov cx, -1
     repne scasb
-    _MOVw(_SI, _DI)
+    mov si,di
     jmp short .label0 ; ↑
 .label1:
     xchg ax, si
@@ -984,11 +954,11 @@ func __NMSG_WRITE
     push word [arg_0]
     push cs
     call __NMSG_TEXT
-    _ORw(_AX, _AX)
+    or ax,ax
     jz short .end
     xchg ax, dx
-    _MOVw(_DI, _DX)
-    _XORw(_AX, _AX)
+    mov di,dx
+    xor ax,ax
     mov cx, -1
     repne scasb
     not cx
@@ -1003,7 +973,7 @@ endfunc_crt
 
 __myalloc:
     push bp
-    _MOVw(_BP, _SP)
+    mov bp,sp
     push bx
     push es
     push cx
@@ -1016,16 +986,16 @@ __myalloc:
     pop word [Var150E]
     pop cx
     mov dx, ds
-    _ORw(_AX, _AX)
+    or ax,ax
     jz short .label0 ; ↓
     pop es
     pop bx
     jmp short .label1 ; ↓
 .label0:
-    _MOVw(_AX, _CX)
+    mov ax,cx
     jmp __amsg_exit
 .label1:
-    _MOVw(_SP, _BP)
+    mov sp,bp
     pop bp
     retn
 
@@ -1039,21 +1009,21 @@ __growseg:
     test byte [bx+2], 1
     jz short .label8 ; ↓
     call __findlast
-    _MOVw(_DI, _SI)
+    mov di,si
     mov ax, [si]
     test al, 1
     jz short .label0 ; ↓
-    _SUBw(_CX, _AX)
+    sub cx,ax
     dec cx
 .label0:
     inc cx
     inc cx
     mov si, [bx+4]
-    _ORw(_SI, _SI)
+    or si,si
     jz short .label8 ; ↓
-    _ADDw(_CX, _SI)
+    add cx,si
     jnb short .label1 ; ↓
-    _XORw(_AX, _AX)
+    xor ax,ax
     mov dx, -16
     jcxz .label6 ; ↓
     jmp short .label8 ; ↓
@@ -1065,7 +1035,7 @@ __growseg:
     jz .label4 ; ↓
     mov dx, 0x8000
 .label2:
-    _CMPw(_DX, _AX)
+    cmp dx,ax
     jb .label3 ; ↓
     shr dx, 1
     jnz short .label2 ; ↑
@@ -1074,16 +1044,16 @@ __growseg:
     cmp dx, byte 8
     jb .label7 ; ↓
     shl dx, 1
-    _MOVw(_AX, _DX)
+    mov ax,dx
 .label4:
     dec ax
-    _MOVw(_DX, _AX)
-    _ADDw(_AX, _CX)
+    mov dx,ax
+    add ax,cx
     jnb short .label5 ; ↓
-    _XORw(_AX, _AX)
+    xor ax,ax
 .label5:
     not dx
-    _ANDw(_AX, _DX)
+    and ax,dx
 .label6:
     push dx
     call __incseg
@@ -1098,7 +1068,7 @@ __growseg:
     stc
     jmp short .end
 .label9:
-    _MOVw(_DX, _AX)
+    mov dx,ax
     sub dx, [bx+4]
     mov [bx+4], ax
     mov [bx+10], di
@@ -1106,7 +1076,7 @@ __growseg:
     dec dx
     mov [si], dx
     inc dx
-    _ADDw(_SI, _DX)
+    add si,dx
     mov word [si], -2
     mov [bx+12], si
 .end:
@@ -1117,7 +1087,7 @@ __growseg:
 ; 7d4
 
 __incseg:
-    _MOVw(_DX, _AX)
+    mov dx,ax
     test byte [bx+2], 4
     jz short .label0 ; ↓
     jmp short .label4 ; ↓
@@ -1127,8 +1097,8 @@ __incseg:
     push bx
     mov si, [bx+6]
     mov bx, [cs:winflags]
-    _XORw(_CX, _CX)
-    _ORw(_DX, _DX)
+    xor cx,cx
+    or dx,dx
     jnz short .label1 ; ↓
     test bx, 0x10
     jnz short .label5 ; ↓
@@ -1144,18 +1114,18 @@ __incseg:
     push dx
     push ax
     call far KERNEL.GlobalReAlloc
-    _ORw(_AX, _AX)
+    or ax,ax
     jz short .label5 ; ↓
-    _CMPw(_AX, _SI)
+    cmp ax,si
     jnz short .label4 ; ↓
     push si
     call far KERNEL.GlobalSize
-    _ORw(_DX, _AX)
+    or dx,ax
     jz short .label4 ; ↓
     pop bx
     pop cx
     pop dx
-    _MOVw(_AX, _DX)
+    mov ax,dx
     test byte [bx+2], 4
     jz short .label3 ; ↓
     dec dx
@@ -1186,14 +1156,14 @@ __findlast:
     lodsw
     cmp ax, byte -2
     jz short .label1 ; ↓
-    _MOVw(_DI, _SI)
+    mov di,si
     and al, 0xfe
-    _ADDw(_SI, _AX)
+    add si,ax
     jmp short .label0 ; ↑
 .label1:
     dec di
     dec di
-    _MOVw(_SI, _DI)
+    mov si,di
     pop di
     retn
 
@@ -1226,7 +1196,7 @@ func_nods __nmalloc
     push word [arg_0]
     call far [Var1510]
     add sp, byte 2
-    _ORw(_AX, _AX)
+    or ax,ax
     jnz short .label0 ; ↑
 .label1:
     mov ax, [local_4]
@@ -1263,7 +1233,7 @@ func_nods __nrealloc
     push word [arg_0]
     call far __nfree
     add sp, byte 2
-    _XORw(_AX, _AX)
+    xor ax,ax
     jmp short .end
     align 2
 .label1:
