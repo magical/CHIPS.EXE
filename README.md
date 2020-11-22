@@ -9,15 +9,17 @@ It builds the following executable:
 
 Progress
 ----
-The core game logic has been disassembled and extensively commented; see `logic.asm` and `movement.asm`.
+All of the code has been disassembled.
+
+The core game logic has been extensively commented; see `logic.asm` and `movement.asm`.
 Almost all of the game's memory has been mapped out; see `data.asm` and `structs.asm`.
 If you are interested in the address of a particular variable, check out `variables.asm`.
 
-Most of the rest of the code has been disassembled but may lack useful function/data labels and comments.
+The rest of the code has been disassembled but may lack useful function/data labels and comments.
 
 | Segment | Disassembled | Labels | Comments | Filename / purpose |
 | --- | --- | --- | --- | --- |
-| 1 | no | | | C runtime |
+| 1 | yes | func | few  | `crt.asm` - C runtime |
 | 2 | yes | some | some | `seg2.asm` - UI / WinMain |
 | 3 | yes | yes  | some | `logic.asm` - tile logic |
 | 4 | yes | some | no   | `seg4.asm` - levelset I/O |
@@ -43,9 +45,6 @@ To build, you'll need the following programs installed:
 * awk
 * golang
 
-You'll also need an existing copy of `CHIPS.EXE` with the sha256sum given above,
-to fill in the incomplete portions of the disassembly.
-
 Go is required for building the linker and (optionally) some other tools.
 
 Some tools require python3, but they aren't used in the build.
@@ -53,7 +52,7 @@ Some tools require python3, but they aren't used in the build.
 Building
 ----
 
-1. Copy the game executable to `base.exe` in this directory
+1. (optional) Copy the game executable to `base.exe` in this directory
 
 2. Run `make`
 
