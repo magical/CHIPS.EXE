@@ -130,7 +130,7 @@ GOTOLEVELMSGPROC:
     jnz .label13 ; ↓
     push byte +0x30
     push ds
-    push word 0xa36
+    push word s_You_must_enter_a_level_andor_password ; "You must enter a level and/or password."
 .label11: ; fe
     push si
     call far ShowMessageBox ; ff 2:0
@@ -168,7 +168,7 @@ GOTOLEVELMSGPROC:
 .label15: ; 14c
     push byte +0x30
     push ds
-    push word 0xa5e
+    push word s_You_must_enter_a_valid_password ; "You must enter a valid password."
     push si
     call far ShowMessageBox ; 153 2:0
     add sp,byte +0x8
@@ -183,7 +183,7 @@ GOTOLEVELMSGPROC:
 .label16: ; 16e
     push byte +0x30
     push ds
-    push word 0xa80
+    push word s_That_is_not_a_valid_level_number ; "That is not a valid level number."
     jmp short .label11 ; ↑
 .label17: ; 176
     push word [bp+0xe]
@@ -267,7 +267,7 @@ BESTTIMESMSGPROC:
     push word 0x402
     push byte +0x0
     push ds
-    push word 0xaa2
+    push word s_No_levels_completed ; "No levels completed."
     call far USER.SendMessage ; 21e
 .label5: ; 223
     mov di,[bp-0x6]
@@ -303,7 +303,7 @@ BESTTIMESMSGPROC:
     push word [bp-0xc]
     push si
     push ds
-    push word 0xab7
+    push word LevelTimeAndScoreMsg ; "Level %d:  %d seconds, %li points"
     lea ax,[bp-0x50]
     push ss
     push ax
@@ -315,7 +315,7 @@ BESTTIMESMSGPROC:
 .label8: ; 280
     push si
     push ds
-    push word 0xad9
+    push word LevelNotCompletedMsg ; "Level %d:  not completed", 0
     lea ax,[bp-0x50]
     push ss
     push ax
@@ -335,10 +335,10 @@ BESTTIMESMSGPROC:
 .label10: ; 2aa
     cmp di,byte +0x1
     jz .label11 ; ↓
-    mov ax,0xaf2
+    mov ax,s_plural_1 ; "s"
     jmp short .label12 ; ↓
 .label11: ; 2b4
-    mov ax,0xaf4
+    mov ax,s_singular_1 ; ""
 .label12: ; 2b7
     mov si,ax
     mov [bp-0x8],ds
@@ -346,7 +346,7 @@ BESTTIMESMSGPROC:
     push si
     push di
     push ds
-    push word 0xaf5
+    push word s_You_have_completed_d_levels ; "You have completed %d level%s."
     lea ax,[bp-0x50]
     push ss
     push ax
@@ -361,7 +361,7 @@ BESTTIMESMSGPROC:
     push word [TotalScore+2]
     push word [TotalScore]
     push ds
-    push word 0xb14
+    push word s_Your_total_score_is_li_points ; "Your total score is %li points."
     lea ax,[bp-0x50]
     push ss
     push ax
@@ -571,29 +571,29 @@ COMPLETEMSGPROC:
     adc [bp-0xa],dx
     cmp word [bp-0x9a],byte +0x0
     jnz .label8 ; ↓
-    mov ax,0xb34
+    mov ax,s_Yowser_First_Try ; "Yowser! First Try!"
     jmp short .label11 ; ↓
 .label8: ; 4b2
     cmp word [bp-0x9a],byte +0x3
     jl .label10 ; ↓
     cmp word [bp-0x9a],byte +0x5
     jl .label9 ; ↓
-    mov ax,0xb6b
+    mov ax,s_At_last_You_did_it ; "At last! You did it!"
     jmp short .label11 ; ↓
     nop
 .label9: ; 4c6
-    mov ax,0xb56
+    mov ax,s_Finished_Good_Work ; "Finished! Good Work!", 0
     jmp short .label11 ; ↓
     nop
 .label10: ; 4cc
-    mov ax,0xb47
+    mov ax,s_Go_Bit_Buster ; "Go Bit Buster!"
 .label11: ; 4cf
     mov [bp-0x10],ax
     mov [bp-0xe],ds
     push ds
     push ax
     push ds
-    push word 0xb80
+    push word s_b80 ; "%s"
     lea ax,[bp-0x98]
     push ss
     push ax
@@ -607,7 +607,7 @@ COMPLETEMSGPROC:
     call far USER.SetDlgItemText ; 4f2
     push word [bp-0x12]
     push ds
-    push word 0xb83
+    push word s_Time_Bonus_d ; "Time Bonus:  %d"
     lea ax,[bp-0x98]
     push ss
     push ax
@@ -622,7 +622,7 @@ COMPLETEMSGPROC:
     push word [bp-0x6]
     push word [bp-0x8]
     push ds
-    push word 0xb93
+    push word s_Level_Bonus_li ; "Level Bonus:  %li"
     lea ax,[bp-0x98]
     push ss
     push ax
@@ -637,7 +637,7 @@ COMPLETEMSGPROC:
     push word [bp-0xa]
     push word [bp-0xc]
     push ds
-    push word 0xba5
+    push word s_Level_Score_li ; "Level Score:  %li", 0
     lea ax,[bp-0x98]
     push ss
     push ax
@@ -722,10 +722,10 @@ COMPLETEMSGPROC:
     sub ax,[bp-0x14]
     cmp ax,0x1
     jng .label19 ; ↓
-    mov ax,0xbea
+    mov ax,s_plural_2 ; "s"
     jmp short .label20 ; ↓
 .label19: ; 62c
-    mov ax,0xbec
+    mov ax,s_singular_2 ; ""
 .label20: ; 62f
     mov si,ax
     mov [bp-0x4],ds
@@ -735,7 +735,7 @@ COMPLETEMSGPROC:
     sub ax,[bp-0x14]
     push ax
     push ds
-    push word 0xbed
+    push word s_You_beat_the_previous_time_record ; "You beat the previous time record by %d second%s!"
     lea ax,[bp-0x98]
     push ss
     push ax
@@ -762,10 +762,10 @@ COMPLETEMSGPROC:
     cmp ax,0x1
     jna .label24 ; ↓
 .label23: ; 67b
-    mov ax,0xc1f
+    mov ax,s_plural_3 ; "s"
     jmp short .label25 ; ↓
 .label24: ; 680
-    mov ax,0xc21
+    mov ax,s_singular_3 ; ""
 .label25: ; 683
     mov si,ax
     mov [bp-0x4],ds
@@ -778,7 +778,7 @@ COMPLETEMSGPROC:
     push dx
     push ax
     push ds
-    push word 0xc22
+    push word s_You_increased_your_score ; "You increased your score on this level by %li point%s!"
     lea ax,[bp-0x98]
     push ss
     push ax
@@ -809,7 +809,7 @@ COMPLETEMSGPROC:
     push di
     push byte +0x69
     push ds
-    push word 0xbb7
+    push word s_You_have_established_a_time_record ; "You have established a time record for this level!"
 .label29: ; 6eb
     call far USER.SetDlgItemText ; 6eb
     push word [TotalScore+2]
@@ -820,7 +820,7 @@ COMPLETEMSGPROC:
     push word [TotalScore+2]
     push word [TotalScore]
     push ds
-    push word 0xc59
+    push word s_Total_Score_li ; "Total Score:  %li", 0
     lea ax,[bp-0x98]
     push ss
     push ax

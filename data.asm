@@ -368,32 +368,32 @@ DebugModeEnabled dw 0 ; a34
 ; a36
 ; segment 6 strings
 
-db "You must enter a level and/or password.", 0
-db "You must enter a valid password.", 0, 0
-db "That is not a valid level number.", 0
-db "No levels completed.", 0
-db "Level %d:  %d seconds, %li points", 0
-db "Level %d:  not completed", 0
-db "s", 0
-db 0
-db "You have completed %d level%s.", 0
-db "Your total score is %li points.", 0
-db "Yowser! First Try!", 0
-db "Go Bit Buster!", 0
-db "Finished! Good Work!", 0
-db "At last! You did it!", 0
-db "%s", 0
-db "Time Bonus:  %d", 0
-db "Level Bonus:  %li", 0
-db "Level Score:  %li", 0
-db "You have established a time record for this level!", 0
-db "s", 0
-db 0
-db "You beat the previous time record by %d second%s!", 0
-db "s", 0
-db 0
-db "You increased your score on this level by %li point%s!", 0
-db "Total Score:  %li", 0
+s_You_must_enter_a_level_andor_password db "You must enter a level and/or password.", 0
+s_You_must_enter_a_valid_password db "You must enter a valid password.", 0, 0
+s_That_is_not_a_valid_level_number db "That is not a valid level number.", 0
+s_No_levels_completed db "No levels completed.", 0
+LevelTimeAndScoreMsg db "Level %d:  %d seconds, %li points", 0
+LevelNotCompletedMsg db "Level %d:  not completed", 0
+s_plural_1 db "s", 0
+s_singular_1 db 0
+s_You_have_completed_d_levels db "You have completed %d level%s.", 0
+s_Your_total_score_is_li_points db "Your total score is %li points.", 0
+s_Yowser_First_Try db "Yowser! First Try!", 0
+s_Go_Bit_Buster db "Go Bit Buster!", 0
+s_Finished_Good_Work db "Finished! Good Work!", 0
+s_At_last_You_did_it db "At last! You did it!", 0
+s_b80 db "%s", 0
+s_Time_Bonus_d db "Time Bonus:  %d", 0
+s_Level_Bonus_li db "Level Bonus:  %li", 0
+s_Level_Score_li db "Level Score:  %li", 0
+s_You_have_established_a_time_record db "You have established a time record for this level!", 0
+s_plural_2 db "s", 0
+s_singular_2 db 0
+s_You_beat_the_previous_time_record db "You beat the previous time record by %d second%s!", 0
+s_plural_3 db "s", 0
+s_singular_3 db 0
+s_You_increased_your_score db "You increased your score on this level by %li point%s!", 0
+s_Total_Score_li db "Total Score:  %li", 0
 db 0
 
 ; Used as a pointer argument to SlideMovement when we don't care about its value
