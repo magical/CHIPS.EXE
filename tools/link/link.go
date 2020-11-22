@@ -132,7 +132,6 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 }
 
 func (ld *Linker) preset() {
-	ld.symtab = make(map[string]*Symbol)
 	//kernel, _ := ld.addModule(1, "KERNEL")
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalLock", 18)
 	//ld.addImportedSymbol(kernel, "KERNEL.GlobalUnlock", 19)
@@ -145,13 +144,6 @@ func (ld *Linker) preset() {
 	//ld.addLocalSymbol("SlideMovement", 7, 0x0636)
 	//ld.addLocalSymbol("MoveBlock", 7, 0x0dae)
 	//ld.addLocalSymbol("MoveChip", 7, 0x1183)
-
-	wep4, _ := ld.addModule(4, "WEP4UTIL")
-	ld.addImportedSymbol(wep4, "WEP4UTIL.2", 2)
-	ld.addImportedSymbol(wep4, "WEP4UTIL.4", 4)
-	ld.addImportedSymbol(wep4, "WEP4UTIL.5", 5)
-	ld.addImportedSymbol(wep4, "WEP4UTIL.103", 103)
-	ld.addImportedSymbol(wep4, "WEP4UTIL.1202", 1202)
 }
 
 func (ld *Linker) loadScript(filename string) error {
