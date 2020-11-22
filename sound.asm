@@ -177,7 +177,7 @@ func FUN_8_0110
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 1a3
-    mov word [0x13c4],0x0
+    mov word [Var13c4],0x0
     jmp short .returnSomething ; ↑
     nop
 .label4: ; 1b0
@@ -198,10 +198,10 @@ func FUN_8_0110
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 1dc
-    mov word [0x13c4],0x0
+    mov word [Var13c4],0x0
     jmp short .returnZero ; ↓
 .label5: ; 1e8
-    mov word [0x13c4],0x1
+    mov word [Var13c4],0x1
     mov ax,[hWnd]
     mov [bp-0x3a],ax
     mov [bp-0x38],ds
@@ -298,7 +298,7 @@ endfunc
 ; stop music?
 func FUN_8_02d4
     sub sp,byte +0x2
-    cmp word [0x13c4],byte +0x0
+    cmp word [Var13c4],byte +0x0
     jz .label0 ; ↓
     push word [MCIDeviceID]
     push word 0x804
@@ -308,7 +308,7 @@ func FUN_8_02d4
     push byte +0x0
     call far [fpMciSendCommand] ; 2f7
 .label0: ; 2fb
-    mov word [0x13c4],0x0
+    mov word [Var13c4],0x0
 endfunc
 
 ; 308
