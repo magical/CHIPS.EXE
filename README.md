@@ -30,6 +30,17 @@ The rest of the code has been disassembled but may lack useful function/data lab
 | 9 | yes | yes  | yes  | `digits.asm` - counter graphics |
 | 10 | yes | yes | some | `data.asm` |
 
+News
+----
+- **2020-11-21** Every segment has been disassembled!
+  You can now build `chips.exe` from scratch, without a copy of the original game.
+  Thanks to @zrax for supplying the last segment (`crt.asm`).
+
+- **2020-11-21** Code segments are now completely shiftable, meaning that you can
+  add/remove instructions without worring about changing code offsets.
+
+- **2020-11-14** We have a linker! Building now requires Go (to build the linker).
+
 Community
 ----
 Join the [Bit Busters Discord][bbc].
