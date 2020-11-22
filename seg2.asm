@@ -1058,7 +1058,7 @@ func CreateWindows
     push byte +0x40
     push word GameStateSize
     call far KERNEL.LocalAlloc ; 91a
-    mov [0x1722],ax
+    mov [GameStatePtrCopy],ax
     mov [GameStatePtr],ax
     or ax,ax
     jnz .label1 ; ↓
@@ -3036,7 +3036,7 @@ func GetLevelProgressFromIni
     push ss
     push ax
     push ds
-    push word 0x2c4 ; ""
+    push word s_2c4 ; ""
     lea ax,[bp-0x24]
     push ss
     push ax
@@ -4059,9 +4059,9 @@ func MAINWNDPROC
     push byte +0x0
     call far USER.SystemParametersInfo ; 245c
 .label20: ; 2461
-    cmp word [0x1722],byte +0x0
+    cmp word [GameStatePtrCopy],byte +0x0
     jz .label21 ; ↓
-    push word [0x1722]
+    push word [GameStatePtrCopy]
     call far KERNEL.LocalFree ; 246c
 .label21: ; 2471
     push byte +0x0

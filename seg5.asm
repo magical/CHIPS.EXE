@@ -149,7 +149,7 @@ func LoadTiles
     sub sp,byte +0x2
     push si
 
-    mov word [0xa14],0x0
+    mov word [VarA14],0x0
     mov ax,[ColorMode]
     dec ax
     jz .monochrome
@@ -201,18 +201,18 @@ endfunc
 func FreeTiles
     sub sp,byte +0x2
 
-    cmp word [0xa14],byte +0x0
+    cmp word [VarA14],byte +0x0
     jz .hObjectIsNull
-    push word [0xa14]
+    push word [VarA14]
     call far GDI.DeleteObject ; 194
-    mov word [0xa14],0x0
+    mov word [VarA14],0x0
 .hObjectIsNull: ; 19f
 
-    cmp word [0xa16],byte +0x0
+    cmp word [VarA16],byte +0x0
     jz .pointerIsNull
-    push word [0xa16]
+    push word [VarA16]
     call far KERNEL.LocalFree ; 1aa
-    mov word [0xa16],0x0
+    mov word [VarA16],0x0
 .pointerIsNull: ; 1b5
 endfunc
 

@@ -2112,8 +2112,8 @@ func MoveChip
     mov word [canenter],0x0
     mov byte [tile2],0xff
 
-    ; if [0x22] != 0, return 0
-    cmp word [0x22],byte +0x0
+    ; if Var22 != 0, return 0
+    cmp word [Var22],byte +0x0
     jz .label0
 .returnZero: ; 11bb
     xor ax,ax

@@ -48,6 +48,7 @@ HighestLevelKey                     equ 0x294
 CurrentLevelKey                     equ 0x2A2
 CurrentScoreKey                     equ 0x2B0
 ColorKey                            equ 0x2BE
+s_2c4                               equ 0x2C4
 s_KeyboardDelay                     equ 0x2C6
 DataFileName                        equ 0x2D4
 NumMidiFilesKey                     equ 0x2DE
@@ -144,6 +145,8 @@ PasswordPromptMessage               equ 0x99A
 WrongPasswordMessage                equ 0x9C2
 EmptyPasswordMessage                equ 0x9EB
 s_DLG_PASSWORD                      equ 0xA06
+VarA14                              equ 0xA14
+VarA16                              equ 0xA16
 ColorMode                           equ 0xA18
 HicolorTiles                        equ 0xA1A
 LocolorTiles                        equ 0xA22
@@ -272,6 +275,7 @@ MIDIArray                           equ 0x16C8
 DigitPtrArray                       equ 0x16F0
 DigitPtrArray.end                   equ 0x1720
 DigitResourceHandle                 equ 0x1720
+GameStatePtrCopy                    equ 0x1722
 SavedObj                            equ 0x1724
 fpWaveOutGetNumDevs                 equ 0x1726
 OurHInstance                        equ 0x172A
