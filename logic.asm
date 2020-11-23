@@ -3095,12 +3095,9 @@ func ChipCanEnterTile
     mov [tile],al
 
     ; fetch the appropriate row from the tile table
-    mov bl,al
-    sub bh,bh
-    mov ax,bx
-    shl bx,1
-    add bx,ax
-    shl bx,1
+    mov bl,6
+    mul bl
+    mov bx, ax
     lea di,[tileTableRow]
     lea si,[TileTable+bx]
     mov ax,ss
@@ -3111,17 +3108,18 @@ func ChipCanEnterTile
 
     ; set *ptr to action from the table
     mov al,[tileTableRow+1]
-    sub ah,ah
+    sub ah, ah
     mov bx,[ptr]
     mov [bx],ax
 
     ; if table says we can enter (1), return 1
     cmp byte [tileTableRow+0],0x1
     jnz .tableIsnt1 ; ↓
-.return1: ; 1abd
+.ccpatch0:
     mov ax,0x1
     jmp word .end ; ↓
-    nop
+.return1: ; 1abd
+    jmp short .ccpatch0
 .tableIsnt1: ; 1ac4
     ; if table says it's more complicated (2), keep going
     cmp byte [tileTableRow+0],0x2
@@ -3135,12 +3133,15 @@ func ChipCanEnterTile
     jb .notTransparent ; ↓
     cmp byte [tile],LastTransparent
     ja .notTransparent ; ↓
+.ccpatch1:
+    cmp word [upperOrLower],byte +0x0
+    jz .ccpatch0
     jmp word .checkLowerTile ; ↓
 .notTransparent: ; 1adc
-    ; if the tile is a block, check the lower tile insteadk
+    ; if the tile is a block, check the lower tile instead
     cmp byte [tile],Block
     jnz .doJumpTable ; ↓
-    jmp word .checkLowerTile ; ↓
+    jmp short .ccpatch1 ; ↓
 
 .doJumpTable: ; 1ae5
     mov di,[x]
