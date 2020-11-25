@@ -543,19 +543,22 @@ COMPLETEMSGPROC:
     push byte +0x5
     mov ax,[bp-0x8]
     mov dx,[bp-0x6]
+    ; multiply by  4
     shl ax,1
     rcl dx,1
     shl ax,1
     rcl dx,1
+    ; divide by 5
     push dx
     push ax
     call far ldiv ; 47a 1:110
+    ; store the result
     mov [bp-0x8],ax
     mov [bp-0x6],dx
     or dx,dx
     jl .label6 ; ↓
     jg .label5 ; ↓
-    ; round up
+    ; if we dip below 500, stop
     cmp ax,500
     jb .label6 ; ↓
 .label5: ; 490
