@@ -3599,7 +3599,7 @@ MenuItemCallback:
     push word [hwndMain]
     call far ShowMessageBox ; 1fb6 2:0
     add sp,byte +0x8
-    cmp ax,0x6
+    cmp ax,ID_YES
     jz .label20 ; ↓
     jmp .label42 ; ↓
 .label20: ; 1fc6

@@ -157,6 +157,12 @@ FirstLevel    equ 1
 FakeLastLevel equ 144
 LastLevel     equ 149
 
+; Dialog box controls (standard)
+ID_OK           equ 0x01
+ID_CANCEL       equ 0x02
+ID_YES          equ 0x06
+ID_NO           equ 0x07
+
 ; Menu actions
 ID_ABOUT        equ 0x64
 ID_QUIT         equ 0x6A
