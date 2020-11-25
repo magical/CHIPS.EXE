@@ -2074,8 +2074,15 @@ func MoveChip
     %arg hDC:word ; +6
     %arg xdir:word ; +8
     %arg ydir:word ; +a
-    %arg flag1:word ; +c ; 0 if sliding (forced move), 1 if not
-    %arg flag2:word ; +e
+    ; voluntary flag:
+    ;   0 if sliding (forced move), 1 if not
+    ; mouse moves and buffered moves count as voluntary
+    ; slide movement does not
+    %arg voluntary:word ; +c
+    ; sound flag:
+    ; set to 1 to play a sound effect if the move is blocked
+    ; set to 0 for silence
+    %arg sound:word ; +e
 
     %define tile1 (bp-0x3)
     %local blocktmp:word ; -4
@@ -2112,18 +2119,19 @@ func MoveChip
     mov word [canenter],0x0
     mov byte [tile2],0xff
 
-    ; if Var22 != 0, return 0
+    ; if the game timer is paused, return without doing anything
     cmp word [Var22],byte +0x0
-    jz .label0
+    jz .maybeBufferAMove
 .returnZero: ; 11bb
     xor ax,ax
     jmp word .end
 
-.label0: ; 11c0
-    ; If <something> and <something about the mouse>
+.maybeBufferAMove: ; 11c0
+    ; If this isn't a forced move
+    ; and chip has already moved
     ; and no buffered move is stored,
     ; buffer the current move and return.
-    mov dx,[flag1]
+    mov dx,[voluntary]
     or dx,dx
     jz .label2
     cmp word [bx+ChipHasMoved],byte +0x0
@@ -2140,11 +2148,14 @@ func MoveChip
     jmp short .returnZero
     nop
 
-.label3: ; 11f4 [flag1] != 0 && [bx+ChipHasMoved] == 0
+    ; otherwise clear the buffered move and set hasmoved
+    ; if this is a voluntary move,
+    ; and reset the idle counter regardless
+.label3: ; 11f4 [voluntary] != 0 && [bx+ChipHasMoved] == 0
     mov word [bx+IsBuffered],0x0
     mov bx,[GameStatePtr]
     mov word [bx+ChipHasMoved],0x1
-.label2: ; 1204 [flag1] == 0
+.label2: ; 1204 [voluntary] == 0
     mov bx,[GameStatePtr]
     mov word [bx+IdleTickCount],0x0
 
@@ -2178,7 +2189,7 @@ func MoveChip
     add si,[bx+ChipX]
     mov al,[bx+si+Lower]
     mov [tile2],al
-    or dx,dx ; flag1
+    or dx,dx ; voluntary
     jz .notSliding
     cmp al,Ice
     jnz .notOnIce
@@ -2490,7 +2501,7 @@ func MoveChip
     jz .label47
     push word [ydir]
     push word [xdir]
-    push byte +0x6c
+    push byte ChipN
     call far SetTileDir ; 1519 3:486
     add sp,byte +0x6
     mov bx,[ydest]
@@ -2832,11 +2843,11 @@ func MoveChip
     nop
 
 .label68: ; 1848
-    ; if couldn't enter the tile and not flag2
+    ; if couldn't enter the tile and sound flag is set
     mov si,[canenter]
     or si,si
     jnz .label69
-    cmp [flag2],si
+    cmp [sound],si
     jz .label69
     ; play oof sound
     push byte +0x1
@@ -2887,7 +2898,7 @@ func MoveChip
 
     cmp word [canenter],byte +0x0
     jnz .label72
-    cmp word [flag2],byte +0x0
+    cmp word [sound],byte +0x0
     jz .label72
     push byte +0x1
     push byte BlockedMoveSound
