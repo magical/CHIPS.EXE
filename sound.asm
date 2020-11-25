@@ -380,7 +380,7 @@ func FUN_8_0308
     call far FUN_8_02d4 ; 3a6 8:2d4
     push word [hwndMain]
     push word 0x111
-    push byte +0x75
+    push byte ID_BGM
     push byte +0x0
     push byte +0x0
     call far USER.SendMessage ; 3b8
@@ -448,7 +448,7 @@ func FUN_8_0308
     add sp,byte +0x8
     push word [hwndMain]
     push word 0x111
-    push byte +0x75
+    push byte ID_BGM
     push byte +0x0
     push byte +0x0
     call far USER.SendMessage ; 481

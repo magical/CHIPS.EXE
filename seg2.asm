@@ -2586,7 +2586,7 @@ FUN_2_16fa:
     add sp,byte +0x8
     push word [hwndMain]
     push word 0x111
-    push byte +0x6a
+    push byte ID_QUIT
     push byte +0x0
     push byte +0x0
     call far USER.PostMessage ; 1758

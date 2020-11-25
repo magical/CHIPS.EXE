@@ -509,7 +509,7 @@ COMPLETEMSGPROC:
 .label2: ; 40e
     push word [bp+0xe]
     push word 0x111
-    push byte +0x6a
+    push byte +0x6a ; "Onward!" button id
     push byte +0x0
     push byte +0x0
     call far USER.PostMessage ; 41a
