@@ -22,7 +22,7 @@ endef
 
 chips.exe: constants.asm exports.inc segment_sizes.inc
 
-BASE=basecrt.bin basedata.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
+BASE=basedata.bin basecrt.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
 check: $(BASE) chips.exe Makefile
 	-cmp basedata.bin data.bin
