@@ -412,9 +412,9 @@ FUN_4_0356:
     mov bx,[GameStatePtr]
     cmp word [bx+StepCount],byte +0x1e
     jng .label1 ; ↓
-    cmp word [bp+0x6],0x90
+    cmp word [bp+0x6],FakeLastLevel
     jz .label1 ; ↓
-    cmp word [bp+0x6],0x95
+    cmp word [bp+0x6],LastLevel
     jz .label1 ; ↓
     inc word [bx+MelindaCount]
     mov bx,[GameStatePtr]
@@ -2024,7 +2024,7 @@ FUN_4_115c:
     jz .label2 ; ↓
     cmp word [IgnorePasswords],byte +0x0
     jz .label0 ; ↓
-    cmp ax,145 ; Thanks to...
+    cmp ax,FakeLastLevel+1 ; Thanks to...
     jnz .label2 ; ↓
 .label0: ; 1189
     push si

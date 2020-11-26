@@ -114,7 +114,7 @@ GOTOLEVELMSGPROC:
 .label9: ; cf
     cmp word [IgnorePasswords],byte +0x0
     jz .label10 ; ↓
-    cmp word [bp-0x4],0x91
+    cmp word [bp-0x4],FakeLastLevel+1
     jnz .label14 ; ↓
 .label10: ; dd
     push si
