@@ -451,7 +451,7 @@ __setargv:
     pop word [Var1508]
     pop word [Var1508+2]
     mov ax, 0x104
-    mov cx, 8
+    mov cx, 8 ; "not enough space for arguments"
     call __myalloc
     mov [Var14FC+2], dx
     mov [Var14FC], ax
@@ -704,7 +704,7 @@ func __setenvp
     inc si
     mov di,si
     shl si, 1
-    mov cx, 9
+    mov cx, 9 ; "not enough space for environment"
     call __myalloc
     push ax
     mov ax,si
