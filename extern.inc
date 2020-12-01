@@ -170,7 +170,7 @@ EXTERN MoveMonster                   ; 7:18da
 ; sound.asm
 EXTERN InitSound                     ; 8:0
 EXTERN TeardownSound                 ; 8:e6
-EXTERN FUN_8_0110                    ; 8:110
+EXTERN StartMIDI                     ; 8:110
 EXTERN FUN_8_022a                    ; 8:22a
 EXTERN ShowMIDIError                 ; 8:25c
 EXTERN StopMIDI                      ; 8:2d4

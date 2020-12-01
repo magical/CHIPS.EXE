@@ -117,10 +117,9 @@ endfunc
 ; 110
 
 ; start midi
-func FUN_8_0110
+func StartMIDI
     %arg hWnd:word
-    %arg param_8:word
-    %arg param_a:word
+    %arg filename:dword
     %arg param_c:word
     ; return value in dx:ax
     sub sp,byte +0x5e
@@ -130,8 +129,8 @@ func FUN_8_0110
 .label0: ; 126
     mov word [bp-0x56], s_sequencer
     mov [bp-0x54],ds
-    mov ax,[param_8]
-    mov dx,[param_a]
+    mov ax,[filename]
+    mov dx,[filename+2]
     mov [bp-0x52],ax
     mov [bp-0x50],dx
     mov word [bp-0x4e],EmptyStringForMciSendCommand
@@ -235,7 +234,7 @@ func FUN_8_022a
     push byte +0x0
     push byte +0x0
     push word [hwndMain]
-    call far FUN_8_0110 ; 241 8:110
+    call far StartMIDI ; 241 8:110
     add sp,byte +0x8
     or dx,ax
     jnz .returnZero ; ↓
@@ -417,7 +416,7 @@ func FUN_8_0308
     push word [bp-0xe]
     push di
     push word [hwndMain]
-    call far FUN_8_0110 ; 41d 8:110
+    call far StartMIDI ; 41d 8:110
     add sp,byte +0x8
     mov [bp-0x6],ax
     mov [bp-0x4],dx
