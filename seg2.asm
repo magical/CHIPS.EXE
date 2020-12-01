@@ -2718,7 +2718,7 @@ endfunc
 
 func PauseMusic
     sub sp,byte +0x2
-    call far FUN_8_02d4 ; 18a9 8:2d4
+    call far StopMIDI ; 18a9 8:2d4
 endfunc
 
 ; 18b6
@@ -3604,7 +3604,7 @@ MenuItemCallback:
     mov [MusicEnabled],ax
     or ax,ax
     jnz .label25 ; ↓
-    call far FUN_8_02d4 ; 2042 8:2d4
+    call far StopMIDI ; 2042 8:2d4
     jmp short .label26 ; ↓
     nop
 .label25: ; 204a
@@ -3974,7 +3974,7 @@ func MAINWNDPROC
     push byte +0x1
     call far FUN_2_176e ; 23d8 2:176e
     add sp,byte +0x2
-    call far FUN_8_02d4 ; 23e0 8:2d4
+    call far StopMIDI ; 23e0 8:2d4
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     push word ID_CurrentLevel

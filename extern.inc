@@ -173,7 +173,7 @@ EXTERN TeardownSound                 ; 8:e6
 EXTERN FUN_8_0110                    ; 8:110
 EXTERN FUN_8_022a                    ; 8:22a
 EXTERN ShowMIDIError                 ; 8:25c
-EXTERN FUN_8_02d4                    ; 8:2d4
+EXTERN StopMIDI                      ; 8:2d4
 EXTERN FUN_8_0308                    ; 8:308
 EXTERN InitAudioFiles                ; 8:4a0
 EXTERN PlaySoundEffect               ; 8:56c

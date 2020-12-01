@@ -137,7 +137,7 @@ func FUN_8_0110
     mov word [bp-0x4e],EmptyStringForMciSendCommand
     mov [bp-0x4c],ds
     push byte +0x0
-    push word 0x803
+    push word 0x803     ; MCI_OPEN
     push byte +0x0
     push word 0x2200
     lea ax,[bp-0x5e]
@@ -158,7 +158,7 @@ func FUN_8_0110
     mov ax,[bp-0x5a]
     mov [MCIDeviceID],ax
     push ax
-    push word 0x814
+    push word 0x814     ; MCI_STATUS
     push byte +0x0
     push word 0x100
     lea ax,[bp-0x4a]
@@ -171,13 +171,13 @@ func FUN_8_0110
     jz .label4 ; ↓
 .label3: ; 194
     push word [MCIDeviceID]
-    push word 0x804
+    push word 0x804     ; MCI_CLOSE
     push byte +0x0
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 1a3
-    mov word [Var13c4],0x0
+    mov word [MIDIPlaying],0x0
     jmp short .returnSomething ; ↑
     nop
 .label4: ; 1b0
@@ -192,16 +192,16 @@ func FUN_8_0110
     cmp ax,0x7
     jnz .label5 ; ↓
     push word [MCIDeviceID]
-    push word 0x804
+    push word 0x804     ; MCI_CLOSE
     push byte +0x0
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 1dc
-    mov word [Var13c4],0x0
+    mov word [MIDIPlaying],0x0
     jmp short .returnZero ; ↓
 .label5: ; 1e8
-    mov word [Var13c4],0x1
+    mov word [MIDIPlaying],0x1
     mov ax,[hWnd]
     mov [bp-0x3a],ax
     mov [bp-0x38],ds
@@ -209,7 +209,7 @@ func FUN_8_0110
     mov [bp-0x34],ax
     mov [bp-0x36],ax
     push word [MCIDeviceID]
-    push word 0x806
+    push word 0x806     ; MCI_PLAY
     push ax
     push byte +0x5
     lea ax,[bp-0x3a]
@@ -295,20 +295,20 @@ endfunc
 
 ; 2d4
 
-; stop music?
-func FUN_8_02d4
+; stop music
+func StopMIDI
     sub sp,byte +0x2
-    cmp word [Var13c4],byte +0x0
+    cmp word [MIDIPlaying],byte +0x0
     jz .label0 ; ↓
     push word [MCIDeviceID]
-    push word 0x804
+    push word 0x804     ; MCI_CLOSE
     push byte +0x0
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 2f7
 .label0: ; 2fb
-    mov word [Var13c4],0x0
+    mov word [MIDIPlaying],0x0
 endfunc
 
 ; 308
@@ -332,7 +332,7 @@ func FUN_8_0308
     jnz .haveSomeMIDIFiles ; ↓
     jmp .returnZero ; ↓
 .haveSomeMIDIFiles: ; 337
-    call far FUN_8_02d4 ; 337 8:2d4
+    call far StopMIDI ; 337 8:2d4
     mov ax,[bp+0x6] ; level number
     cwd
     idiv word [NumMIDIFiles]
@@ -377,7 +377,7 @@ func FUN_8_0308
 .label8: ; 39f
     cmp word [NumMIDIFiles],byte +0x0
     jnz .label4 ; ↑
-    call far FUN_8_02d4 ; 3a6 8:2d4
+    call far StopMIDI ; 3a6 8:2d4
     push word [hwndMain]
     push word 0x111
     push byte ID_BGM
