@@ -3182,25 +3182,22 @@ endfunc
 ; 1ca0
 
 ; get midi or sound effect path
-FUN_2_1ca0:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func GetAudioPath
+    %arg index:word     ; +0x6  Index of the MIDI or Sound entry
+    %arg buffer:word    ; +0x8  Buffer to store the file name
+    %arg bufSize:word   ; +0xA  Size of the file name buffer
+    %arg isSound:word   ; +0xC  Looking for a sound (non-zero) or MIDI file (zero)
     sub sp,byte +0x16
     push di
     push si
-    cmp word [bp+0xc],byte +0x0
+    cmp word [isSound],byte +0x0
     jz .label0 ; ↓
-    mov si,[bp+0x6]
+    mov si,[index]
     mov bx,si
     mov di,[SoundKeyArray+(bx+si)]
     jmp short .label1 ; ↓
 .label0: ; 1cc0
-    mov si,[bp+0x6]
+    mov si,[index]
     push si
     push ds
     push word s_605 ; "MidiFile%d"
@@ -3218,12 +3215,12 @@ FUN_2_1ca0:
     push ds
     push word s_610 ; "$"
     push ds
-    push word [bp+0x8]
-    push word [bp+0xa]
+    push word [buffer]
+    push word [bufSize]
     push ds
     push word IniFileName
     call far KERNEL.GetPrivateProfileString ; 1ced
-    mov bx,[bp+0x8]
+    mov bx,[buffer]
     cmp byte [bx],'$'
     jz .label2 ; ↓
     jmp .label9 ; ↓
@@ -3233,18 +3230,18 @@ FUN_2_1ca0:
     jz .label3 ; ↓
     jmp .label9 ; ↓
 .label3: ; 1d09
-    cmp word [bp+0xc],byte +0x0
+    cmp word [isSound],byte +0x0
     jnz .label4 ; ↓
     cmp si,byte +0x3
     jl .label4 ; ↓
     mov byte [bx],0x0
     jmp .label9 ; ↓
 .label4: ; 1d1a
-    cmp word [bp+0xc],byte +0x0
+    cmp word [isSound],byte +0x0
     jz .label5 ; ↓
     push ds
     push bx
-    mov bx,[bp+0x6]
+    mov bx,[index]
     shl bx,1
     push ds
     push word [SoundDefaultArray+bx]
@@ -3252,16 +3249,16 @@ FUN_2_1ca0:
 .label5: ; 1d2e
     mov ax,bx
     mov [bp-0x4],ax
-    cmp word [bp+0x6],byte +0x2
+    cmp word [index],byte +0x2
     jnz .label7 ; ↓
     push ds
     push ax
-    mov bx,[bp+0x6]
+    mov bx,[index]
     shl bx,1
     push ds
     push word [MidiFileDefaultArray+bx]
     call far KERNEL.lstrlen ; 1d45
-    sub ax,[bp+0xa]
+    sub ax,[bufSize]
     neg ax
     dec ax
     push ax
@@ -3281,7 +3278,7 @@ FUN_2_1ca0:
 .label7: ; 1d73
     push ds
     push word [bp-0x4]
-    mov bx,[bp+0x6]
+    mov bx,[index]
     shl bx,1
     push ds
     push word [bx+MidiFileDefaultArray]
@@ -3292,22 +3289,17 @@ FUN_2_1ca0:
     push ds
     push word [bp-0x6]
     push ds
-    push word [bp+0x8]
+    push word [buffer]
     push ds
     push word IniFileName
     call far KERNEL.WritePrivateProfileString ; 1d96
 .label9: ; 1d9b
     push ds
-    push word [bp+0x8]
+    push word [buffer]
     call far KERNEL.lstrlen ; 1d9f
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 1dae
 

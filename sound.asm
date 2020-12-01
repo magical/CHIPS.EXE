@@ -482,7 +482,7 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ax
     push di
-    call far FUN_2_1ca0 ; 4c2 2:1ca0
+    call far GetAudioPath ; 4c2 2:1ca0
     add sp,byte +0x8
     inc ax
     push ax
@@ -531,7 +531,7 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ax
     push di
-    call far FUN_2_1ca0 ; 536 2:1ca0
+    call far GetAudioPath ; 536 2:1ca0
     add sp,byte +0x8
     inc ax
     push ax

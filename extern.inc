@@ -67,7 +67,7 @@ EXTERN GetIniLong                    ; 2:1a1c
 EXTERN StoreIniLong                  ; 2:1a86
 EXTERN GetLevelProgressFromIni       ; 2:1adc
 EXTERN SaveLevelProgressToIni        ; 2:1c1c
-EXTERN FUN_2_1ca0                    ; 2:1ca0
+EXTERN GetAudioPath                  ; 2:1ca0
 EXTERN FUN_2_1dae                    ; 2:1dae
 EXTERN MenuItemCallback              ; 2:1e28
 EXTERN MAINWNDPROC                   ; 2:225c
