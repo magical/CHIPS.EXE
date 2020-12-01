@@ -80,11 +80,12 @@ NEHeader:
     dw SectorShift          ; 32 Sector alignment shift
     dw 0                    ; 34 Number of resource entries
     db 0x2                  ; 36 Executable type. 2 = Windows
-    db 0x8                  ; 37-3F Reserved
-    dw 0x4                  ; 38
-    dw 0x2d                 ; 3a
-    dw 0                    ; 3c
-    dw 0x300                ; 3e
+    ; 37-3F Reserved
+    db 0x8                  ; 37 Extra flags
+    dw 0x4                  ; 38 DLL reference segment
+    dw 0x2d                 ; 3a Non-resident name segment
+    dw 0                    ; 3c Min swap size
+    dw 0x300                ; 3e Expected windows version
 
 
 ; 440
