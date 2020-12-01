@@ -267,14 +267,7 @@ endfunc
 ; 240
 
 ; frees the monster list and other lists
-FreeGameLists:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FreeGameLists
     sub sp,byte +0xe
     mov bx,[GameStatePtr]
     mov ax,[bx+SlipListHandle]
@@ -335,18 +328,14 @@ FreeGameLists:
     mov ax,[bx+TeleportListHandle]
     mov [bp-0xe],ax
     or ax,ax
-    jz .label5 ; ↓
+    jz .end ; ↓
     push ax
     call far KERNEL.GlobalUnlock ; 307
     mov bx,[GameStatePtr]
     push word [bx+TeleportListHandle]
     call far KERNEL.GlobalFree ; 314
-.label5: ; 319
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+.end: ; 319
+endfunc
 
 ; 320
 
@@ -1850,14 +1839,8 @@ FUN_4_0eaa:
 
 ; 1016
 
-PASSWORDMSGPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func PASSWORDMSGPROC
+    %assign %$argsize 0xa
     sub sp,byte +0x4c
     push si
     mov ax,[bp+0xc]
@@ -1996,15 +1979,11 @@ PASSWORDMSGPROC:
     mov ax,0x1
 .label12: ; 1151
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
-    nop
+endfunc
 
 ; 115c
 
+; Go to next level, possibly asking for a password
 FUN_4_115c:
     mov ax,ds
     nop

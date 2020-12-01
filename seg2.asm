@@ -272,14 +272,7 @@ UpdateTile:
 
 ; 232
 
-DrawInventoryTile:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func DrawInventoryTile
     sub sp,byte +0x2
     push byte +0x0
     mov al,[bp+0xc]
@@ -288,11 +281,7 @@ DrawInventoryTile:
     push word [bp+0x8]
     push word [bp+0x6]
     call far DrawTile ; 24e 2:c4
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 25a
 
@@ -330,15 +319,8 @@ endfunc
 
 ; 2b2
 
-; Invalidate a tile.
-InvalidateTile:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; Invalidate a tile, forcing it to be redrawn.
+func InvalidateTile
     sub sp,byte +0xa
     push di
     push si
@@ -369,12 +351,7 @@ InvalidateTile:
 .label0: ; 2fc
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 306
 
@@ -800,7 +777,7 @@ func WinMain
 .label2: ; 65b
     push word [nCmdShow]
     push word [hInstance]
-    call far CreateWindows ; 661 2:8e8
+    call far CreateWindowsAndInitGame ; 661 2:8e8
     add sp,byte +0x4
     or ax,ax
     jz .returnZero
@@ -1040,7 +1017,7 @@ CreateClasses:
 
 ; 8e8
 
-func CreateWindows
+func CreateWindowsAndInitGame
     sub sp,byte +0x16
     push di
     push si
@@ -2669,14 +2646,9 @@ endfunc
 
 ; 17da
 
-PauseGame:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; Pause the game and show the pause screen.
+; Also updates the check state of the Pause menu item.
+func PauseGame
     sub sp,byte +0x2
     call far PauseTimer ; 17e7 2:17a2
     push word [hMenu]
@@ -2701,22 +2673,13 @@ PauseGame:
     push byte +0x0
     push byte +0x0
     call far USER.InvalidateRect ; 1828
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1834
 
-UnpauseGame:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; Pause the game and hide the pause screen.
+; Also updates the check state of the Pause menu item.
+func UnpauseGame
     sub sp,byte +0x2
     push word [hMenu]
     push byte ID_PAUSE
@@ -2749,11 +2712,7 @@ UnpauseGame:
     push byte +0x0
     call far USER.InvalidateRect ; 188b
     call far UnpauseTimer ; 1890 2:17ba
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 189c
 
