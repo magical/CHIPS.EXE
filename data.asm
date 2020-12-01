@@ -510,20 +510,17 @@ Var14C8 dw 20
 Var14CE db   00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00 ; 14ce
         db 0xC1, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00 ; 14e2
 
-Var14F6 dw 0
-Var14F8 dw 0
-Var14FA dw 0
-Var14FC dd 0x1500
-
-; 1500
-
-        dw 0 ; 1500
+Var14F6 dw 0 ; argc
+Var14F8 dw 0 ; argv
+Var14FA dw 0 ; envp
+Var14FC dd Var1500
+Var1500 dw 0 ; 1500
 Var1502 dw 0
         dw 0 ; 1504
         dw 0 ; 1506
 Var1508 dd 0
 Var150C dw 0
-Var150E dw 0x1000
+Var150E dw 0x1000 ; lock for __mymalloc
 Var1510 dd 0
         dw 0 ; 1514
 Var1516 dw 0
