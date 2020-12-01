@@ -585,7 +585,8 @@ VerticalPadding         dw 0 ; 16a0 main window vertical padding (0x20 or 8, dep
 
 ; sound.asm
 SoundArray:
-    ; what type are these?
+    ; Pointers to sound effect filenames
+    ; Sound indices defined in constants.asm
     times 15 dw 0 ; 16a2
 .end:
 
@@ -596,6 +597,7 @@ VerticalResolution      dw 0 ; 16c2 vertical screen resolution in px
 DigitBitmapData         dd 0 ; 16c4 far pointer
 
 MIDIArray:
+    ; Pointers to MIDI filenames
     times 20 dw 0 ; 16c8
 
 ; sounds.asm
