@@ -672,7 +672,7 @@ func DoTick
 
     ; countdown timer?
     cmp word [TimeRemaining],byte +0x0
-    jng .end
+    jle .end
     cmp word [tick],byte +0x0
     jz .end
     mov ax,[tick]
@@ -2177,9 +2177,7 @@ func MoveChip
     jmp word .blocked
 .yNotGreaterThan32: ; 1232
 
-; if chip is sliding or this is a forced move
-; and we're standing on ice or a teleport,
-; then exit
+; if chip is sliding and this isn't a forced move then...
     mov bx,[GameStatePtr]
     cmp word [bx+IsSliding],byte +0x0
     jz .notSliding
@@ -2191,6 +2189,7 @@ func MoveChip
     mov [tile2],al
     or dx,dx ; voluntary
     jz .notSliding
+; ... are we standing on ice? if so, just return and don't do anything
     cmp al,Ice
     jnz .notOnIce
     jmp word .returnZero
@@ -2216,7 +2215,7 @@ func MoveChip
     jmp word .returnZero
 .notOnTeleport: ; 127d
 
-; are we on a force floor?
+; ... are we on a force floor?
     cmp al,ForceS
     jz .onForceFloor
     cmp al,ForceN
@@ -2228,7 +2227,7 @@ func MoveChip
     cmp al,ForceRandom
     jnz .notSliding
 
-; if chip is on a force floor, set the slide dir and return
+; if so, just set the slide dir and return
 .onForceFloor: ; 1291
     mov ax,[xdir]
     cmp [bx+SlideX],ax
