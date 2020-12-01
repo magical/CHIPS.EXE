@@ -587,7 +587,8 @@ endfunc
 
 ; 5b8
 
-func FUN_8_05b8
+; Free the paths stored in SoundArray and MIDIArray
+func FreeAudioFiles
     sub sp,byte +0x4
     push di
     push si

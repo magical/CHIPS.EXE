@@ -3999,7 +3999,7 @@ func MAINWNDPROC
     push word [TileDC]
     call far GDI.DeleteDC ; 2435
     call far FreeTiles ; 243a 5:17c
-    call far FUN_8_05b8 ; 243f 8:5b8
+    call far FreeAudioFiles ; 243f 8:5b8
     call far TeardownSound ; 2444 8:e6
     cmp word [IsWin31],byte +0x0
     jz .label20 ; ↓
