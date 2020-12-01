@@ -102,7 +102,6 @@ NESegmentTab:
     dw (Digits-$$)>>SectorShift,   _segment_9_size, 0x1d10, _segment_9_size ; Segment 9
     dw (Data-$$)>>SectorShift,     _data_size,      0x0c51, _data_size ; Segment 10
 
-    _segment_1_size equ 0x952
     %include "segment_sizes.inc"
 
 ; 490
