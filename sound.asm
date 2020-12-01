@@ -468,7 +468,9 @@ endfunc
 
 ; 4a0
 
-func FUN_8_04a0
+; Get the path to all sound and MIDI files and store them in the
+; global sound/midi arrays.
+func InitAudioFiles
     sub sp,0x102
     push di
     push si

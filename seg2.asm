@@ -3919,7 +3919,7 @@ func MAINWNDPROC
     add sp,byte +0x2
     mov [SoundEnabled],ax
     call far InitSound ; 234e 8:0
-    call far FUN_8_04a0 ; 2353 8:4a0
+    call far InitAudioFiles ; 2353 8:4a0
     push word [hMenu]
     push byte ID_BGM
     cmp word [MusicEnabled],byte +0x1

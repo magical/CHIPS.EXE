@@ -175,7 +175,7 @@ EXTERN FUN_8_022a                    ; 8:22a
 EXTERN ShowMIDIError                 ; 8:25c
 EXTERN FUN_8_02d4                    ; 8:2d4
 EXTERN FUN_8_0308                    ; 8:308
-EXTERN FUN_8_04a0                    ; 8:4a0
+EXTERN InitAudioFiles                ; 8:4a0
 EXTERN PlaySoundEffect               ; 8:56c
 EXTERN FUN_8_05b8                    ; 8:5b8
 
