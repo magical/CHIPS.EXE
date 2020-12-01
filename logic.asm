@@ -33,8 +33,8 @@ func FindMonster
     ; Initialize es:bx to point to the first monster
     ; on the monster list
     mov si,bx
-    mov ax,[si+MonsterListPtr]
-    mov dx,[si+MonsterListSeg]
+    mov ax,[si+MonsterListPtr+FarPtr.Off]
+    mov dx,[si+MonsterListPtr+FarPtr.Seg]
     inc ax
     mov bx,ax
     mov es,dx
@@ -79,8 +79,8 @@ func FindSlipper
     cmp [bx+SlipListLen],cx
     jng .notfound
     mov si,bx
-    mov ax,[si+SlipListPtr]
-    mov dx,[si+SlipListSeg]
+    mov ax,[si+SlipListPtr+FarPtr.Off]
+    mov dx,[si+SlipListPtr+FarPtr.Seg]
     inc ax
     mov bx,ax
     mov es,dx
@@ -541,8 +541,8 @@ func DeleteMonster
     mov [offset],ax
 .loop: ; 419
     ; Move next monster to current index.
-    mov ax,[bx+MonsterListPtr]
-    mov dx,[bx+MonsterListSeg]
+    mov ax,[bx+MonsterListPtr+FarPtr.Off]
+    mov dx,[bx+MonsterListPtr+FarPtr.Seg]
     add ax,[offset]
     mov cx,ax
     mov bx,dx
@@ -850,8 +850,8 @@ func InitBoard
     mov bx,[bx+ToggleListLen]
     mov ax,bx
     mov bx,[GameStatePtr]
-    mov cx,[bx+ToggleListPtr]
-    mov dx,[bx+ToggleListSeg]
+    mov cx,[bx+ToggleListPtr+FarPtr.Off]
+    mov dx,[bx+ToggleListPtr+FarPtr.Seg]
     mov bx,ax
     shl bx,byte 0x2
     mov es,dx
@@ -861,8 +861,8 @@ func InitBoard
     mov bx,[bx+ToggleListLen]
     mov ax,bx
     mov bx,[GameStatePtr]
-    mov cx,[bx+ToggleListPtr]
-    mov dx,[bx+ToggleListSeg]
+    mov cx,[bx+ToggleListPtr+FarPtr.Off]
+    mov dx,[bx+ToggleListPtr+FarPtr.Seg]
     mov bx,ax
     shl bx,byte 0x2
     mov es,dx
@@ -2186,8 +2186,8 @@ func NewSlipper
     add ax,cx
     shl ax,1
     add ax,cx
-    add ax,[bx+SlipListPtr]
-    mov dx,[bx+SlipListSeg]
+    add ax,[bx+SlipListPtr+FarPtr.Off]
+    mov dx,[bx+SlipListPtr+FarPtr.Seg]
     sub ax,0xb
 .end: ; 12b6
 endfunc
@@ -2298,8 +2298,8 @@ func FindSlipperAt
     shl ax,1
     add ax,cx
     mov bx,[GameStatePtr]
-    add ax,[bx+SlipListPtr]
-    mov dx,[bx+SlipListSeg]
+    add ax,[bx+SlipListPtr+FarPtr.Off]
+    mov dx,[bx+SlipListPtr+FarPtr.Seg]
     jmp short .end
     nop
 .returnZero: ; 13d4
@@ -3852,8 +3852,8 @@ func FindTrapSpan
     jmp word .returnZero ; ↓
 .label0: ; 208a
     mov si,bx
-    mov ax,[si+TrapListPtr]
-    mov dx,[si+TrapListSeg]
+    mov ax,[si+TrapListPtr+FarPtr.Off]
+    mov dx,[si+TrapListPtr+FarPtr.Seg]
     add ax,0x4
     mov bx,ax
     mov es,dx
@@ -3884,8 +3884,8 @@ func FindTrapSpan
     cmp [bx+TrapListLen],cx
     jng .break ; ↓
     mov si,bx
-    mov ax,[si+TrapListPtr]
-    mov dx,[si+TrapListSeg]
+    mov ax,[si+TrapListPtr+FarPtr.Off]
+    mov dx,[si+TrapListPtr+FarPtr.Seg]
     ; si = cx*10
     mov si,cx
     shl si,byte 0x2
@@ -4011,8 +4011,8 @@ func EnterTrap
     mov [index],di
     ;
     mov si,[GameStatePtr]
-    mov ax,[si+TrapListPtr]
-    mov dx,[si+TrapListSeg]
+    mov ax,[si+TrapListPtr+FarPtr.Off]
+    mov dx,[si+TrapListPtr+FarPtr.Seg]
     ; si = cx*10
     mov si,cx
     shl si,byte 0x2
@@ -4127,8 +4127,8 @@ func FindTrap
     cmp [bx+TrapListLen],cx
     jng .notFound
     mov si,bx
-    mov ax,[si+TrapListPtr]
-    mov dx,[si+TrapListSeg]
+    mov ax,[si+TrapListPtr+FarPtr.Off]
+    mov dx,[si+TrapListPtr+FarPtr.Seg]
     add ax,0x4
     mov bx,ax
     mov es,dx
@@ -4238,8 +4238,8 @@ func DeleteTrap_Unused
     mov [bp-0x4],ax
 .label0: ; 2400
     mov bx,[GameStatePtr]
-    mov ax,[bx+TrapListPtr]
-    mov dx,[bx+TrapListSeg]
+    mov ax,[bx+TrapListPtr+FarPtr.Off]
+    mov dx,[bx+TrapListPtr+FarPtr.Seg]
     add ax,[bp-0x4]
     mov cx,ax
     mov bx,dx
@@ -4592,8 +4592,8 @@ func DeleteCloneMachine_Unused
     shl ax,byte 0x3
     mov [bp-0x4],ax
 .label0: ; 272c
-    mov ax,[bx+CloneListPtr]
-    mov dx,[bx+CloneListSeg]
+    mov ax,[bx+CloneListPtr+FarPtr.Off]
+    mov dx,[bx+CloneListPtr+FarPtr.Seg]
     add ax,[bp-0x4]
     mov cx,ax
     mov bx,dx
