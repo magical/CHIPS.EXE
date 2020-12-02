@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Go environment
+      uses: actions/setup-go@v2.1.3
+
+    - name: install nasm and awk
+      run: sudo apt-get update && sudo apt-get install nasm gawk
+
+    - name: make
+      run: make
+
+    - name: make checksum
+      run: make checksum
