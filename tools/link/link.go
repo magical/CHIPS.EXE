@@ -66,7 +66,6 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 	inputs := flag.Args()
 
 	ld := NewLinker()
-	ld.preset()
 
 	if err := ld.loadScript(script); err != nil {
 		// TODO; add filename lower in the call stack?
@@ -129,21 +128,6 @@ func cmdLink(script, mapfile string, singleObjectSegmentNumber int) {
 	if errors > 0 {
 		log.Fatal("there were errors")
 	}
-}
-
-func (ld *Linker) preset() {
-	//kernel, _ := ld.addModule(1, "KERNEL")
-	//ld.addImportedSymbol(kernel, "KERNEL.GlobalLock", 18)
-	//ld.addImportedSymbol(kernel, "KERNEL.GlobalUnlock", 19)
-	//ld.addImportedSymbol(kernel, "KERNEL.GlobalAlloc", 15)
-	//ld.addImportedSymbol(kernel, "KERNEL.GlobalReAlloc", 16)
-	//ld.addLocalSymbol("MoveMonster", 7, 0x18da)
-	//ld.addLocalSymbol("UpdateTile", 2, 0x1ca)
-	//ld.addLocalSymbol("PlaySoundEffect", 8, 0x056c)
-	//ld.addLocalSymbol("GoToLevelN", 4, 0x356)
-	//ld.addLocalSymbol("SlideMovement", 7, 0x0636)
-	//ld.addLocalSymbol("MoveBlock", 7, 0x0dae)
-	//ld.addLocalSymbol("MoveChip", 7, 0x1183)
 }
 
 func (ld *Linker) loadScript(filename string) error {
