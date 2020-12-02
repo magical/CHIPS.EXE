@@ -24,7 +24,9 @@ chips.exe: constants.asm exports.inc segment_sizes.inc
 
 BASE=basedata.bin basecrt.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
-check: $(BASE) chips.exe Makefile
+check: compare checksum
+
+compare: $(BASE) chips.exe Makefile
 	-cmp basedata.bin data.bin
 	-cmp basecrt.bin crt.bin
 	-cmp baseseg2.bin seg2.bin
@@ -36,6 +38,9 @@ check: $(BASE) chips.exe Makefile
 	-cmp baseseg8.bin sound.bin
 	-cmp basedigits.bin digits.bin
 	cmp base.exe chips.exe
+
+checksum:
+	sha256sum -c chips.sum
 
 clean:
 	rm *.bin *.obj
