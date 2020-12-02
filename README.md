@@ -52,7 +52,7 @@ Dependencies
 To build, you'll need the following programs installed:
 
 * make
-* nasm
+* nasm >= 2.14
 * awk
 * golang
 
