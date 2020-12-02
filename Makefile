@@ -43,6 +43,7 @@ checksum:
 	sha256sum -c chips.sum
 
 clean:
+	rm bin/*
 	rm *.bin *.obj
 	rm chips.exe
 	rm data.map
