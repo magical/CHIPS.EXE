@@ -67,7 +67,7 @@ EXTERN GetIniLong                    ; 2:1a1c
 EXTERN StoreIniLong                  ; 2:1a86
 EXTERN GetLevelProgressFromIni       ; 2:1adc
 EXTERN SaveLevelProgressToIni        ; 2:1c1c
-EXTERN FUN_2_1ca0                    ; 2:1ca0
+EXTERN GetAudioPath                  ; 2:1ca0
 EXTERN FUN_2_1dae                    ; 2:1dae
 EXTERN MenuItemCallback              ; 2:1e28
 EXTERN MAINWNDPROC                   ; 2:225c
@@ -170,14 +170,14 @@ EXTERN MoveMonster                   ; 7:18da
 ; sound.asm
 EXTERN InitSound                     ; 8:0
 EXTERN TeardownSound                 ; 8:e6
-EXTERN FUN_8_0110                    ; 8:110
+EXTERN StartMIDI                     ; 8:110
 EXTERN FUN_8_022a                    ; 8:22a
 EXTERN ShowMIDIError                 ; 8:25c
-EXTERN FUN_8_02d4                    ; 8:2d4
+EXTERN StopMIDI                      ; 8:2d4
 EXTERN FUN_8_0308                    ; 8:308
-EXTERN FUN_8_04a0                    ; 8:4a0
+EXTERN InitAudioFiles                ; 8:4a0
 EXTERN PlaySoundEffect               ; 8:56c
-EXTERN FUN_8_05b8                    ; 8:5b8
+EXTERN FreeAudioFiles                ; 8:5b8
 
 ; digits.asm
 EXTERN FindBitmap                    ; 9:

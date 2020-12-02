@@ -448,7 +448,7 @@ align 2, db 0
 s_MIDI_Error_on_file_s db "MIDI Error on file %s: ", 0
 s_None_of_the_MIDI_files_specified___ db "None of the MIDI files specified in entpack.ini were found.", 0
 
-Var13c4                 dw 0 ; 13c4
+MIDIPlaying             dw 0 ; 13c4
 MusicEnabled            dw 1 ; 13c6
 SoundEnabled            dw 1 ; 13c8
 MusicMenuItemEnabled    dw 0 ; 13ca
@@ -585,7 +585,8 @@ VerticalPadding         dw 0 ; 16a0 main window vertical padding (0x20 or 8, dep
 
 ; sound.asm
 SoundArray:
-    ; what type are these?
+    ; Pointers to sound effect filenames
+    ; Sound indices defined in constants.asm
     times 15 dw 0 ; 16a2
 .end:
 
@@ -596,6 +597,7 @@ VerticalResolution      dw 0 ; 16c2 vertical screen resolution in px
 DigitBitmapData         dd 0 ; 16c4 far pointer
 
 MIDIArray:
+    ; Pointers to MIDI filenames
     times 20 dw 0 ; 16c8
 
 ; sounds.asm

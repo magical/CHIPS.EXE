@@ -117,10 +117,9 @@ endfunc
 ; 110
 
 ; start midi
-func FUN_8_0110
+func StartMIDI
     %arg hWnd:word
-    %arg param_8:word
-    %arg param_a:word
+    %arg filename:dword
     %arg param_c:word
     ; return value in dx:ax
     sub sp,byte +0x5e
@@ -130,14 +129,14 @@ func FUN_8_0110
 .label0: ; 126
     mov word [bp-0x56], s_sequencer
     mov [bp-0x54],ds
-    mov ax,[param_8]
-    mov dx,[param_a]
+    mov ax,[filename]
+    mov dx,[filename+2]
     mov [bp-0x52],ax
     mov [bp-0x50],dx
     mov word [bp-0x4e],EmptyStringForMciSendCommand
     mov [bp-0x4c],ds
     push byte +0x0
-    push word 0x803
+    push word 0x803     ; MCI_OPEN
     push byte +0x0
     push word 0x2200
     lea ax,[bp-0x5e]
@@ -158,7 +157,7 @@ func FUN_8_0110
     mov ax,[bp-0x5a]
     mov [MCIDeviceID],ax
     push ax
-    push word 0x814
+    push word 0x814     ; MCI_STATUS
     push byte +0x0
     push word 0x100
     lea ax,[bp-0x4a]
@@ -171,13 +170,13 @@ func FUN_8_0110
     jz .label4 ; ↓
 .label3: ; 194
     push word [MCIDeviceID]
-    push word 0x804
+    push word 0x804     ; MCI_CLOSE
     push byte +0x0
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 1a3
-    mov word [Var13c4],0x0
+    mov word [MIDIPlaying],0x0
     jmp short .returnSomething ; ↑
     nop
 .label4: ; 1b0
@@ -192,16 +191,16 @@ func FUN_8_0110
     cmp ax,0x7
     jnz .label5 ; ↓
     push word [MCIDeviceID]
-    push word 0x804
+    push word 0x804     ; MCI_CLOSE
     push byte +0x0
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 1dc
-    mov word [Var13c4],0x0
+    mov word [MIDIPlaying],0x0
     jmp short .returnZero ; ↓
 .label5: ; 1e8
-    mov word [Var13c4],0x1
+    mov word [MIDIPlaying],0x1
     mov ax,[hWnd]
     mov [bp-0x3a],ax
     mov [bp-0x38],ds
@@ -209,7 +208,7 @@ func FUN_8_0110
     mov [bp-0x34],ax
     mov [bp-0x36],ax
     push word [MCIDeviceID]
-    push word 0x806
+    push word 0x806     ; MCI_PLAY
     push ax
     push byte +0x5
     lea ax,[bp-0x3a]
@@ -235,7 +234,7 @@ func FUN_8_022a
     push byte +0x0
     push byte +0x0
     push word [hwndMain]
-    call far FUN_8_0110 ; 241 8:110
+    call far StartMIDI ; 241 8:110
     add sp,byte +0x8
     or dx,ax
     jnz .returnZero ; ↓
@@ -295,20 +294,20 @@ endfunc
 
 ; 2d4
 
-; stop music?
-func FUN_8_02d4
+; stop music
+func StopMIDI
     sub sp,byte +0x2
-    cmp word [Var13c4],byte +0x0
+    cmp word [MIDIPlaying],byte +0x0
     jz .label0 ; ↓
     push word [MCIDeviceID]
-    push word 0x804
+    push word 0x804     ; MCI_CLOSE
     push byte +0x0
     push byte +0x0
     push byte +0x0
     push byte +0x0
     call far [fpMciSendCommand] ; 2f7
 .label0: ; 2fb
-    mov word [Var13c4],0x0
+    mov word [MIDIPlaying],0x0
 endfunc
 
 ; 308
@@ -332,7 +331,7 @@ func FUN_8_0308
     jnz .haveSomeMIDIFiles ; ↓
     jmp .returnZero ; ↓
 .haveSomeMIDIFiles: ; 337
-    call far FUN_8_02d4 ; 337 8:2d4
+    call far StopMIDI ; 337 8:2d4
     mov ax,[bp+0x6] ; level number
     cwd
     idiv word [NumMIDIFiles]
@@ -377,7 +376,7 @@ func FUN_8_0308
 .label8: ; 39f
     cmp word [NumMIDIFiles],byte +0x0
     jnz .label4 ; ↑
-    call far FUN_8_02d4 ; 3a6 8:2d4
+    call far StopMIDI ; 3a6 8:2d4
     push word [hwndMain]
     push word 0x111
     push byte ID_BGM
@@ -417,7 +416,7 @@ func FUN_8_0308
     push word [bp-0xe]
     push di
     push word [hwndMain]
-    call far FUN_8_0110 ; 41d 8:110
+    call far StartMIDI ; 41d 8:110
     add sp,byte +0x8
     mov [bp-0x6],ax
     mov [bp-0x4],dx
@@ -468,7 +467,9 @@ endfunc
 
 ; 4a0
 
-func FUN_8_04a0
+; Get the path to all sound and MIDI files and store them in the
+; global sound/midi arrays.
+func InitAudioFiles
     sub sp,0x102
     push di
     push si
@@ -482,7 +483,7 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ax
     push di
-    call far FUN_2_1ca0 ; 4c2 2:1ca0
+    call far GetAudioPath ; 4c2 2:1ca0
     add sp,byte +0x8
     inc ax
     push ax
@@ -531,7 +532,7 @@ func FUN_8_04a0
     lea ax,[bp-0x102]
     push ax
     push di
-    call far FUN_2_1ca0 ; 536 2:1ca0
+    call far GetAudioPath ; 536 2:1ca0
     add sp,byte +0x8
     inc ax
     push ax
@@ -585,7 +586,8 @@ endfunc
 
 ; 5b8
 
-func FUN_8_05b8
+; Free the paths stored in SoundArray and MIDIArray
+func FreeAudioFiles
     sub sp,byte +0x4
     push di
     push si
