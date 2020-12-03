@@ -1,6 +1,7 @@
 ; NASM is our linker for now...
 
 %include "constants.asm"
+%include "rcmacros.asm"
 
 ; DOS header
 
@@ -107,15 +108,6 @@ NESegmentTab:
 
 ; 490
 NEResourceTab:
-    %define RT_BITMAP 0x8002
-    %define RT_ICON 0x8003
-    %define RT_MENU 0x8004
-    %define RT_DIALOG 0x8005
-    %define RT_STRING 0x8006
-    %define RT_ACCELERATOR 0x8009
-    %define RT_RCDATA 0x800a
-    %define RT_VERSIONINFO 0x800e
-
     dw SectorShift    ; Shift amount
 
     %define RESOFF(s) ((s-$$)>>SectorShift)
@@ -383,19 +375,6 @@ CHIPEND:
 
 ; 3fc00
 ; RT_MENU
-%define MF_CHECKED  0x08
-%define MF_POPUP    0x10
-%define MF_END      0x80
-
-%macro POPUP 1-2 0
-    dw MF_POPUP|%2
-    db %1, 0
-%endmacro
-%macro MENUITEM 2-3 0
-    dw %3 ; flags
-    dw %2 ; action
-    db %1, 0 ; text
-%endmacro
 
 CHIPSMENU:
     dd 0
@@ -430,131 +409,67 @@ ALIGN SectorSize, db 0
 ; 3fe00
 ; RT_DIALOGs
 
-; DIALOG x, y, width, height, num items, caption, font size, font face, [style]
-; NOTE: Does not match RC DIALOG declaration, since that behaves more like
-;       a block with other declarations inside it to describe the extra
-;       properties of the dialog.
-%macro DIALOG 8-9 0
-    dd 0x90c80000|%9    ; style (WS_POPUP|WS_VISIBLE|WS_CAPTION|WS_SYSMENU)
-    db %5               ; number of items
-    dw %1, %2, %3, %4   ; position and size
-    db 0                ; menu
-    db 0                ; window class
-    db %6               ; caption
-    dw %7               ; font size
-    db %8               ; font face
-%endmacro
-
-; PUSHBUTTON text, id, x, y, width, height, [style]
-%macro PUSHBUTTON 6-7 0
-    dw %3, %4, %5, %6   ; position and size
-    dw %2               ; id
-    dd 0x50010000|%7    ; style (WS_CHILD|WS_VISIBLE|WS_TABSTOP)
-    db 0x80             ; class
-    db %1               ; text
-    db 0
-%endmacro
-
-; EDITTEXT id, x, y, width, height, [style]
-%macro EDITTEXT 5-6 0
-    dw %2, %3, %4, %5   ; position and size
-    dw %1               ; id
-    dd 0x50810000|%6    ; style (WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP)
-    db 0x81             ; class
-    db 0                ; text
-    db 0
-%endmacro
-
-; STATICTEXT text, id, x, y, width, height, [style]
-%macro STATICTEXT 6-7 0
-    dw %3, %4, %5, %6   ; position and size
-    dw %2               ; id
-    dd 0x50020000|%7    ; style (WS_CHILD|WS_VISIBLE|WS_GROUP)
-    db 0x82             ; class
-    db %1               ; text
-    db 0
-%endmacro
-
-; LISTBOX id, x, y, width, height, [style]
-%macro LISTBOX 5-6 0
-    dw %2, %3, %4, %5   ; position and size
-    dw %1               ; id
-    dd 0x50a10000|%6    ; style (WS_CHILD|WS_VISIBLE|WS_BORDER|WS_VSCROLL|WS_TABSTOP)
-    db 0x83             ; class
-    db 0                ; text
-    db 0
-%endmacro
-
-; Common styles
-%define WS_DISABLED         0x08000000
-
-; Styles for DIALOG
-%define DS_SETFONT          0x40
-%define DS_MODALFRAME       0x80
-
-; Styles for PUSHBUTTON
-%define BS_PUSHBUTTON       0
-%define BS_DEFPUSHBUTTON    1
-
-; Styles for EDITTEXT
-%define ES_UPPERCASE        0x08
-%define ES_AUTOHSCROLL      0x80
-
-; Styles for STATICTEXT
-%define SS_LEFT             0
-%define SS_CENTER           1
-%define SS_RIGHT            2
-
-; Styles for LISTBOX
-%define LBS_NOTIFY          0x01
-%define LBS_USETABSTOPS     0x80
-
 ; 3fe00
 DLGGOTO:
-    DIALOG 6, 18, 151, 94, 7, {"Go To Level",0}, 8, {"MS Sans Serif",0}, DS_MODALFRAME|DS_SETFONT
+    DIALOG 7, {6, 18, 151, 94}, DS_MODALFRAME|DS_SETFONT
+    CAPTION "Go To Level"
+    FONT 8, "MS Sans Serif"
 
-    STATICTEXT  {"Enter a level number and password, or just a password.",0}, -1, 9, 7, 132, 19
-    EDITTEXT    100, 69, 30, 32, 12, ES_AUTOHSCROLL
-    EDITTEXT    101, 69, 46, 32, 12, ES_AUTOHSCROLL|ES_UPPERCASE
-    STATICTEXT  {"Level number:",0}, -1, 16, 32, 51, 8, SS_RIGHT
-    STATICTEXT  {"Password:",0}, -1, 16, 47, 51, 8, SS_RIGHT
-    PUSHBUTTON  {"OK",0}, ID_OK, 27, 74, 40, 14, BS_DEFPUSHBUTTON
-    PUSHBUTTON  {"Cancel",0}, ID_CANCEL, 83, 74, 40, 14
+    ; Items         Text        ID      RECT                Style
+    LTEXT           "Enter a level number and password, or just a password.", \
+                                -1,     {9, 7, 132, 19}
+    EDITTEXT                    100,    {69, 30, 32, 12},   ES_AUTOHSCROLL
+    EDITTEXT                    101,    {69, 46, 32, 12},   ES_AUTOHSCROLL|ES_UPPERCASE
+    RTEXT           "Level number:", \
+                                -1,     {16, 32, 51, 8}
+    RTEXT           "Password:", -1,    {16, 47, 51, 8}
+    DEFPUSHBUTTON   "OK",       ID_OK,  {27, 74, 40, 14}
+    PUSHBUTTON      "Cancel",   ID_CANCEL, {83, 74, 40, 14}
 ALIGN SectorSize, db 0
 
 ; 40000
 DLGPASSWORD:
-    DIALOG 6, 18, 181, 56, 4, {"Password Entry",0}, 8, {"MS Sans Serif",0}, DS_MODALFRAME|DS_SETFONT
+    DIALOG 4, {6, 18, 181, 56}, DS_MODALFRAME|DS_SETFONT
+    CAPTION "Password Entry"
+    FONT 8, "MS Sans Serif"
 
-    EDITTEXT    101, 142, 9, 27, 12, ES_AUTOHSCROLL|ES_UPPERCASE
-    STATICTEXT  0, 100, 9, 11, 132, 8
-    PUSHBUTTON  {"OK",0}, ID_OK, 42, 36, 40, 14, BS_DEFPUSHBUTTON
-    PUSHBUTTON  {"Cancel",0}, ID_CANCEL, 98, 36, 40, 14
+    ; Items         Text        ID      RECT                Style
+    EDITTEXT                    101,    {142, 9, 27, 12},   ES_AUTOHSCROLL|ES_UPPERCASE
+    LTEXT           "",         100,    {9, 11, 132, 8}
+    DEFPUSHBUTTON   "OK",       ID_OK,  {42, 36, 40, 14}
+    PUSHBUTTON      "Cancel",   ID_CANCEL, {98, 36, 40, 14}
 ALIGN SectorSize, db 0
 
 ; 40200
 DLGBESTTIME:
-    DIALOG 6, 18, 159, 159, 6, {"Best Times",0}, 8, {"MS Sans Serif",0}, DS_MODALFRAME|DS_SETFONT
+    DIALOG 6, {6, 18, 159, 159}, DS_MODALFRAME|DS_SETFONT
+    CAPTION "Best Times"
+    FONT 8, "MS Sans Serif"
 
-    LISTBOX     100, 7, 49, 144, 81, LBS_NOTIFY|LBS_USETABSTOPS
-    STATICTEXT  {"Level number, seconds left, level score:",0}, -1, 7, 36, 144, 8
-    PUSHBUTTON  {"OK",0}, ID_OK, 31, 138, 40, 14, BS_DEFPUSHBUTTON
-    PUSHBUTTON  {"Go To",0}, 101, 87, 138, 40, 14, WS_DISABLED
-    STATICTEXT  0, 102, 7, 10, 142, 8
-    STATICTEXT  0, 103, 7, 23, 142, 8
+    ; Items         Text        ID      RECT                Style
+    LISTBOX                     100,    {7, 49, 144, 81},   LBS_NOTIFY|LBS_USETABSTOPS
+    LTEXT           "Level number, seconds left, level score:", \
+                                -1,     {7, 36, 144, 8}
+    DEFPUSHBUTTON   "OK",       ID_OK,  {31, 138, 40, 14}
+    PUSHBUTTON      "Go To",    101,    {87, 138, 40, 14},  WS_DISABLED
+    LTEXT           "",         102,    {7, 10, 142, 8}
+    LTEXT           "",         103,    {7, 23, 142, 8}
 ALIGN SectorSize, db 0
 
 ; 40400
 DLGCOMPLETE:
-    DIALOG 6, 18, 136, 119, 7, {"Level Complete!",0}, 8, {"MS Sans Serif",0}, DS_MODALFRAME|DS_SETFONT
+    DIALOG 7, {6, 18, 136, 119}, DS_MODALFRAME|DS_SETFONT
+    CAPTION "Level Complete!"
+    FONT 8, "MS Sans Serif"
 
-    STATICTEXT  0, 101, 9, 7, 117, 8, SS_CENTER
-    STATICTEXT  0, 102, 9, 21, 117, 8, SS_CENTER
-    STATICTEXT  0, 103, 9, 35, 117, 8, SS_CENTER
-    STATICTEXT  0, 108, 9, 49, 117, 8, SS_CENTER
-    STATICTEXT  0, 104, 9, 63, 117, 8, SS_CENTER
-    STATICTEXT  0, 105, 9, 77, 117, 19, SS_CENTER
-    PUSHBUTTON  {"Onward!",0}, 106, 48, 99, 40, 14, BS_DEFPUSHBUTTON
+    ; Items         Text        ID      RECT
+    CTEXT           "",         101,    {9, 7, 117, 8}
+    CTEXT           "",         102,    {9, 21, 117, 8}
+    CTEXT           "",         103,    {9, 35, 117, 8}
+    CTEXT           "",         108,    {9, 49, 117, 8}
+    CTEXT           "",         104,    {9, 63, 117, 8}
+    CTEXT           "",         105,    {9, 77, 117, 19}
+    DEFPUSHBUTTON   "Onward!",  106,    {48, 99, 40, 14}
 ALIGN SectorSize, db 0
 
 ; 40600
