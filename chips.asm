@@ -122,6 +122,7 @@ NEResourceTab:
     %define RESOFF(s) ((s-$$)>>SectorShift)
     %define RESLEN(n) (n>>SectorShift)
 
+    ; Type, Count, 0, 0
     dw RT_VERSIONINFO, 1, 0, 0
         ; Offset, Length, Flags, ID, Reserved
         dw RESOFF(VERSION), 1, 0x1c30, 0x8100, 0, 0
