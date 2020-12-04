@@ -1,7 +1,7 @@
 ; NASM is our linker for now...
 
 %include "constants.asm"
-%include "rcmacros.asm"
+%include "resources.mac"
 
 ; DOS header
 
