@@ -108,6 +108,15 @@ NESegmentTab:
 
 ; 490
 NEResourceTab:
+    %define RT_BITMAP       0x8002
+    %define RT_ICON         0x8003
+    %define RT_MENU         0x8004
+    %define RT_DIALOG       0x8005
+    %define RT_STRING       0x8006
+    %define RT_ACCELERATOR  0x8009
+    %define RT_RCDATA       0x800a
+    %define RT_VERSIONINFO  0x800e
+
     dw SectorShift    ; Shift amount
 
     %define RESOFF(s) ((s-$$)>>SectorShift)
@@ -411,6 +420,7 @@ ALIGN SectorSize, db 0
 
 ; 3fe00
 DLGGOTO:
+    ; DIALOG num_items, {rect}, [style]
     DIALOG 7, {6, 18, 151, 94}, DS_MODALFRAME|DS_SETFONT
     CAPTION "Go To Level"
     FONT 8, "MS Sans Serif"

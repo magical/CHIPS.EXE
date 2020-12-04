@@ -1,12 +1,4 @@
-; Resource types
-%define RT_BITMAP       0x8002
-%define RT_ICON         0x8003
-%define RT_MENU         0x8004
-%define RT_DIALOG       0x8005
-%define RT_STRING       0x8006
-%define RT_ACCELERATOR  0x8009
-%define RT_RCDATA       0x800a
-%define RT_VERSIONINFO  0x800e
+; resources.mac - macros for defining windows resources
 
 
 ; MENU Resources
@@ -122,3 +114,5 @@
     ; style 0x50a10000 (WS_CHILD|WS_VISIBLE|WS_BORDER|WS_VSCROLL|WS_TABSTOP)
     DLGITEM 0x83, "", %1, %2, 0x50a10000|%3
 %endmacro
+
+; vim: syntax=nasm
