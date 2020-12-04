@@ -501,12 +501,6 @@ ALIGN SectorSize, db 0
 %define VK_F2   0x71
 %define VK_F3   0x72
 
-%macro ACCEL 2-3 0
-    db %3
-    dw %1
-    dw %2
-%endmacro
-
 CHIPSMENUACCEL:
     ACCEL CTRL('R'), ID_RESTART
     ACCEL CTRL('N'), ID_NEXT

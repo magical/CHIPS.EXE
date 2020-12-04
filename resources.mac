@@ -1,7 +1,7 @@
 ; resources.mac - macros for defining windows resources
 
 
-; MENU Resources
+; MENU Resource
 %define MF_CHECKED  0x08
 %define MF_POPUP    0x10
 %define MF_END      0x80
@@ -18,7 +18,15 @@
 %endmacro
 
 
-; DIALOG Resources
+; ACCELERATOR Resource
+%macro ACCEL 2-3 0
+    db %3 ; flags
+    dw %1 ; virtual key
+    dw %2 ; id
+%endmacro
+
+
+; DIALOG Resource
 ; NOTE: These are not intended to exactly match the declarations in RC scripts
 ;       in order to make them more convenient for use in nasm.  However, they
 ;       are designed to look at least somewhat familiar...
