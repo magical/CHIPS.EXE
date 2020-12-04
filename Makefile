@@ -20,7 +20,7 @@ define generate-segment_sizes.inc =
 	awk <chips.map >>segment_sizes.inc -e '/_segment_.*_size/ { print $$2, "equ", "0x"$$1; }'
 endef
 
-chips.exe: constants.asm exports.inc segment_sizes.inc
+chips.exe: constants.asm rcmacros.asm exports.inc segment_sizes.inc
 
 BASE=basedata.bin basecrt.bin baseseg2.bin baselogic.bin baseseg4.bin baseseg5.bin baseseg6.bin basemovement.bin baseseg8.bin basedigits.bin
 
@@ -43,6 +43,7 @@ checksum:
 	sha256sum -c chips.sum
 
 clean:
+	rm bin/*
 	rm *.bin *.obj
 	rm chips.exe
 	rm data.map

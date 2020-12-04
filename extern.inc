@@ -43,7 +43,7 @@ EXTERN ScrollViewport                ; 2:306
 EXTERN UpdateChip                    ; 2:56e
 EXTERN WinMain                       ; 2:628
 EXTERN CreateClasses                 ; 2:6c8
-EXTERN CreateWindows                 ; 2:8e8
+EXTERN CreateWindowsAndInitGame      ; 2:8e8
 EXTERN ShowDeathMessage              ; 2:b9a
 EXTERN ShowHint                      ; 2:c1a
 EXTERN HideHint                      ; 2:c7e
