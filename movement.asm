@@ -2,6 +2,7 @@ SEGMENT CODE ; 7
 
 ; Movement code and tick function
 
+%include "base.inc"
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
@@ -1445,9 +1446,9 @@ func EndGame
     add sp,byte +0x8
     or ax,ax
     jz .label15
-    cmp word [local_c],byte -0x1
+    cmp word [local_c+_LoWord],byte -0x1
     jnz .label16
-    cmp word [local_c+2],byte -0x1
+    cmp word [local_c+_HiWord],byte -0x1
     jz .label15
 .label16: ; c10
     inc di
@@ -1456,8 +1457,8 @@ func EndGame
     cmp si,LastLevel
     jng .levelLoop
 
-    push word [TotalScore+2]
-    push word [TotalScore]
+    push word [TotalScore+_HiWord]
+    push word [TotalScore+_LoWord]
     push di
     push ds
     push word YouCompletedNLevelsMsg

@@ -10,6 +10,7 @@ SEGMENT CODE ; 9
 ;
 ;   a18     Color mode
 
+%include "base.inc"
 %include "variables.asm"
 %include "func.mac"
 
@@ -79,8 +80,8 @@ func LoadDigits
     jz .end
     push ax             ; hResInfo
     call far KERNEL.LockResource ; 7c
-    mov [DigitBitmapData],ax
-    mov [DigitBitmapData+2],dx
+    mov [DigitBitmapData+FarPtr.Off],ax
+    mov [DigitBitmapData+FarPtr.Seg],dx
 
     push byte DigitHeight ; y dimension of digits
     push byte DigitWidth ; x dimension of digits
@@ -151,8 +152,8 @@ func DrawDigit
     add bx,[colorOffset]
     shl bx,1
     mov ax,[DigitPtrArray+bx]
-    add ax,[DigitBitmapData]
-    mov dx,[DigitBitmapData+2]
+    add ax,[DigitBitmapData+FarPtr.Off]
+    mov dx,[DigitBitmapData+FarPtr.Seg]
     push dx             ; lpvBits
     push ax
     push dx             ; lpbmi
