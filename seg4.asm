@@ -17,14 +17,7 @@ EXPORT PASSWORDMSGPROC PASSWORDMSGPROC 11
 
 ; 0
 
-GetTileRect:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func GetTileRect
     sub sp,byte +0xa
     push di
     push si
@@ -56,11 +49,7 @@ GetTileRect:
     movsw
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 5e
 
@@ -139,14 +128,7 @@ endfunc
 
 ; 134
 
-UpdateWindowTitle:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func UpdateWindowTitle
     sub sp,0x8c
     mov bx,[GameStatePtr]
     add bx,LevelTitle
@@ -187,23 +169,11 @@ UpdateWindowTitle:
     push ss
     push ax
     call far USER.SetWindowText ; 193
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 1a0
 
-UpdateNextPrevMenuItems:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func UpdateNextPrevMenuItems
     sub sp,byte +0x4
     push si
     mov si,[bp+0x6]
@@ -236,11 +206,7 @@ UpdateNextPrevMenuItems:
     push cx
     call far USER.EnableMenuItem ; 1ef
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1fc
 
@@ -365,14 +331,7 @@ endfunc
 
 ; 356
 
-FUN_4_0356:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_0356
     sub sp,byte +0xa
     push di
     push si
@@ -591,23 +550,12 @@ FUN_4_0356:
     call far USER.ReleaseCapture ; 5ee
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 5fc
 
 ; expand rle
-FUN_4_05fc:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_05fc
     sub sp,byte +0x14
     push di
     push si
@@ -683,22 +631,11 @@ FUN_4_05fc:
 .label5: ; 6a7
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 6b0
 
-DecodePassword:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func DecodePassword
     sub sp,byte +0x2
     push si
     mov si,[bp+0x6]
@@ -711,23 +648,11 @@ DecodePassword:
     jnz .label0 ; ↑
 .label1: ; 6cf
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 6d8
 
-DecodeLevelFields:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func DecodeLevelFields
     sub sp,byte +0xc
     push di
     push si
@@ -978,24 +903,13 @@ DecodeLevelFields:
 .label26: ; 947
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 950
 
 ; checks the signature of a file
 ; and returns the next word (number of levels)
-FUN_4_0950:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_0950
     sub sp,byte +0x4
     push si
     mov si,[bp+0x6]
@@ -1035,22 +949,11 @@ FUN_4_0950:
     mov ax,[bp-0x4]
 .label2: ; 9ac
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 9b4
 
-FUN_4_09b4:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_09b4
     sub sp,byte +0x4
     push di
     push si
@@ -1089,24 +992,13 @@ FUN_4_09b4:
 .label4: ; a05
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; a0e
 
 ; opens chips.dat and checks the signature
 ; and returns the number of levels
-FUN_4_0a0e:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_0a0e
     sub sp,0x8a
     push di
     push si
@@ -1133,22 +1025,11 @@ FUN_4_0a0e:
 .label1: ; a4d
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; a56
 
-ReadLevelData:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func ReadLevelData
     sub sp,0x490
     push di
     push si
@@ -1339,24 +1220,12 @@ ReadLevelData:
 .label15: ; c30
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; c3a
 
 ; find a level and read its fields
-FUN_4_0c3a:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_0c3a
     sub sp,byte +0x4
     ; read a word
     push word [bp+0x6]
@@ -1479,24 +1348,12 @@ FUN_4_0c3a:
 .error: ; d4e
     xor ax,ax
 .return: ; d50
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; d58
 
 ; get level password
-FUN_4_0d58:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_0d58
     sub sp,0x222
     push di
     push si
@@ -1600,24 +1457,12 @@ FUN_4_0d58:
 .label10: ; e3e
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; e48
 
 ; check password in INI file
-FUN_4_0e48:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_0e48
     sub sp,0x82
     push si
     mov si,[bp+0x6]
@@ -1655,26 +1500,14 @@ FUN_4_0e48:
     mov ax,0x1
 .label2: ; ea1
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; eaa
 
 ; check password for a level
 ; level number may be 0 in which case we search
 ; for a level with a matching password
-FUN_4_0eaa:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_0eaa
     sub sp,0x23e
     push di
     push si
@@ -1830,12 +1663,7 @@ FUN_4_0eaa:
 .label18: ; 100c
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 1016
 
@@ -1984,14 +1812,7 @@ endfunc
 ; 115c
 
 ; Go to next level, possibly asking for a password
-FUN_4_115c:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_4_115c
     sub sp,byte +0x12
     push di
     push si
@@ -2052,12 +1873,7 @@ FUN_4_115c:
 .label3: ; 11fe
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 1208
 
