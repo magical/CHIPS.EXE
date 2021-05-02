@@ -73,7 +73,7 @@ seg6.obj: constants.asm structs.asm variables.asm
 sound.obj: constants.asm variables.asm func.mac
 digits.obj: variables.asm func.mac
 
-$(OBJ): extern.inc windows.inc
+$(OBJ): base.inc extern.inc windows.inc
 
 variables.asm: data.bin genvars.sh Makefile
 	$(SHELL) genvars.sh >variables.asm

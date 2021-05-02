@@ -2,6 +2,7 @@ SEGMENT CODE ; 3
 
 ; Game logic
 
+%include "base.inc"
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"

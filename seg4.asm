@@ -2,6 +2,7 @@ SEGMENT CODE ; 4
 
 ; Functions for loading levels
 
+%include "base.inc"
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
