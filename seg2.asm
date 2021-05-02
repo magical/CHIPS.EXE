@@ -115,14 +115,7 @@ endfunc
 
 ; c4
 
-DrawTile:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func DrawTile
     sub sp,byte +0xa
     cmp byte [bp+0xe],0x0
     jnz .label0 ; ↓
@@ -215,22 +208,11 @@ DrawTile:
     push word 0xcc
     push byte +0x20
     call far GDI.BitBlt ; 1be
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 1ca
 
-UpdateTile:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func UpdateTile
     sub sp,byte +0x2
     push si
     mov si,[bp+0xa]
@@ -239,7 +221,7 @@ UpdateTile:
     call far IsCoordOnscreen ; 1df 2:7a
     add sp,byte +0x4
     or ax,ax
-    jz .label0 ; ↓
+    jz .end ; ↓
     mov ax,si
     shl si,byte 0x5
     add si,[bp+0x8]
@@ -261,14 +243,9 @@ UpdateTile:
     push word [bp+0x6]
     call far DrawTile ; 221 2:c4
     add sp,byte +0xa
-.label0: ; 229
+.end: ; 229
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 232
 
@@ -733,7 +710,7 @@ func UpdateChip
     push si
     call far UpdateTile ; 5fa 2:1ca
     add sp,byte +0x6
-    jmp short .label5 ; ↓
+    jmp short .end ; ↓
     ; if viewport has moved, scroll the board
 .label4: ; 604
     push word [oldY] ; old chipy
@@ -745,7 +722,7 @@ func UpdateChip
     push word [hdc]    ; hdc probably
     call far ScrollViewport ; 617 2:306
     add sp,byte +0xe
-.label5: ; 61f
+.end: ; 61f
     pop si
 endfunc
 
@@ -821,14 +798,7 @@ endfunc
 
 ; 6c8
 
-CreateClasses:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func CreateClasses
     sub sp,byte +0x6a
     push si
     mov si,[bp+0x6]
@@ -865,7 +835,7 @@ CreateClasses:
     jnz .label1 ; ↓
 .label0: ; 737
     xor ax,ax
-    jmp .label5 ; ↓
+    jmp .end ; ↓
 .label1: ; 73c
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],BOARDWNDPROC
@@ -1006,14 +976,9 @@ CreateClasses:
     push ss
     push ax
     call far USER.RegisterClass ; 8da
-.label5: ; 8df
+.end: ; 8df
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 8e8
 
@@ -1359,17 +1324,10 @@ endfunc
 
 ; c1a
 
-ShowHint:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func ShowHint
     sub sp,byte +0x2
     cmp word [hwndHint],byte +0x0
-    jnz .label0 ; ↓
+    jnz .end ; ↓
     push ds
     push word s_HintClass
     push byte +0x0
@@ -1388,20 +1346,15 @@ ShowHint:
     call far USER.CreateWindow ; c54
     mov [hwndHint],ax
     or ax,ax
-    jz .label0 ; ↓
+    jz .end ; ↓
     push word [hwndCounter3]
     push byte +0x0
     call far USER.ShowWindow ; c66
     push word [hwndInventory]
     push byte +0x0
     call far USER.ShowWindow ; c71
-.label0: ; c76
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+.end: ; c76
+endfunc
 
 ; c7e
 
@@ -3366,14 +3319,7 @@ FUN_2_1dae:
 
 ; 1e28
 
-MenuItemCallback:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func MenuItemCallback
     sub sp,byte +0xc
     push di
     push si
@@ -3802,11 +3748,7 @@ MenuItemCallback:
 .label43: ; 2253
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; 225c
 
