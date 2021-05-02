@@ -250,6 +250,7 @@ Var151E                             equ 0x151E
 Var1520                             equ 0x1520
 NMSG                                equ 0x1522
 NMSG_Table                          equ 0x152A
+TempRect                            equ 0x1674
 Var167C                             equ 0x167C
 GameStatePtr                        equ 0x1680
 BlueKeyCount                        equ 0x1682

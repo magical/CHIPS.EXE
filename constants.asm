@@ -157,6 +157,11 @@ FirstLevel    equ 1
 FakeLastLevel equ 144
 LastLevel     equ 149
 
+; Number of restarts after which to offer to skip the level
+MelindaThreshold equ 10
+; Minimum number of steps to count a restart towards the melinda count
+MelindaStepRequirement equ 30
+
 ; Dialog box controls (standard)
 ID_OK           equ 0x01
 ID_CANCEL       equ 0x02
@@ -213,5 +218,8 @@ WS_TILEDWINDOW  equ 0x0cf<<16
 
 ; Virtual key codes
 VK_CONTROL      equ 0x11
+
+; Cursors
+IDC_WAIT        equ 32514
 
 ; vim: syntax=nasm

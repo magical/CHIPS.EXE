@@ -550,8 +550,8 @@ NMSG_Table:
     dwb   2, "R6002", 13, 10, "- floating-point support not loaded", 13, 10, 0
     dwb  -1, 0xff, 0
 
-dw 0, 0, 0, 0 ; 1674
-Var167C dd 0
+TempRect dw 0, 0, 0, 0 ; 1674 Temporary space for returning a RECT by value, used by GetTileRect
+Var167C dd 0 ; atexit function pointers
 
 ; end crt.asm data
 

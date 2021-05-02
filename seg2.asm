@@ -1281,7 +1281,7 @@ func CreateWindowsAndInitGame
     cmp si,byte +0x1
     jng .label15 ; ↓
     push si
-    call far FUN_4_0e48 ; b74 4:e48
+    call far TryIniPassword ; b74 4:e48
     add sp,byte +0x2
     or ax,ax
     jnz .label15 ; ↓
