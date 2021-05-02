@@ -77,9 +77,9 @@ STRUC GameState
     TeleportListHandle  resw 1      ; 0x954
     TeleportListPtr     resd 1      ; 0x956
 
-    LevelTitle          resb 64     ; 0x95a
-    LevelHint           resb 128    ; 0x99a
-    LevelPassword       resb 10     ; 0xa1a
+    LevelTitle          resb MaxTitleLength    ; 0x95a
+    LevelHint           resb MaxHintLength     ; 0x99a
+    LevelPassword       resb MaxPasswordLength ; 0xa1a
 
     ; top left corner of the viewport
     ViewportX           resw 1      ; 0xa24

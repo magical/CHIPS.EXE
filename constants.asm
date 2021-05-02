@@ -162,6 +162,10 @@ MelindaThreshold equ 10
 ; Minimum number of steps to count a restart towards the melinda count
 MelindaStepRequirement equ 30
 
+MaxTitleLength  equ 64
+MaxHintLength   equ 128
+MaxPasswordLength equ 10
+
 ; Dialog box controls (standard)
 ID_OK           equ 0x01
 ID_CANCEL       equ 0x02

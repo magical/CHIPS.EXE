@@ -740,9 +740,9 @@ func DecodeLevelFields
     jmp .nextField ; ↓
     nop
 .field.title: ; 74c
-    cmp byte [bp-0x9],0x40
+    cmp byte [bp-0x9],MaxTitleLength
     jna .label4 ; ↓
-    mov byte [si+0x3f],0x0
+    mov byte [si+MaxTitleLength-1],0x0
 .label4: ; 756
     mov ax,[GameStatePtr]
     add ax,LevelTitle
@@ -869,9 +869,9 @@ func DecodeLevelFields
     jmp .nextField ; ↓
     nop
 .field.password: ; 8a6
-    cmp byte [bp-0x9],0xa
+    cmp byte [bp-0x9],MaxPasswordLength
     jna .label18 ; ↓
-    mov byte [si+0x9],0x0
+    mov byte [si+MaxPasswordLength-1],0x0
 .label18: ; 8b0
     mov ax,[GameStatePtr]
     add ax,LevelPassword
@@ -887,18 +887,18 @@ func DecodeLevelFields
     add sp,byte +0x2
     jmp short .nextField ; ↓
 .field.hint: ; 8d0
-    cmp byte [bp-0x9],0x80
+    cmp byte [bp-0x9],MaxHintLength
     jna .label20 ; ↓
-    mov byte [si+0x7f],0x0
+    mov byte [si+MaxHintLength-1],0x0
 .label20: ; 8da
     mov ax,[GameStatePtr]
     add ax,LevelHint
     jmp .label5 ; ↑
     nop
 .field.plaintextPassword: ; 8e4
-    cmp byte [bp-0x9],0xa
+    cmp byte [bp-0x9],MaxPasswordLength
     jna .label22 ; ↓
-    mov byte [si+0x9],0x0
+    mov byte [si+MaxPasswordLength-1],0x0
 .label22: ; 8ee
     mov ax,[GameStatePtr]
     add ax,LevelPassword
@@ -1660,9 +1660,9 @@ func FUN_4_0eaa
     cmp byte [bp-0x3],0x8 ; plaintext password field
     jnz .label12 ; ↓
 .label9: ; f99
-    cmp byte [bp-0x4],0xa ; length
+    cmp byte [bp-0x4],MaxPasswordLength ; length
     jna .label10 ; ↓
-    mov byte [si+0x9],0x0
+    mov byte [si+MaxPasswordLength-1],0x0
 .label10: ; fa3
     lea ax,[bp-0x26]
     push ss
