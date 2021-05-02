@@ -101,11 +101,13 @@ STRUC GameState
 
     ; Counts the number of times the level has been retried,
     ; and progress towards the "You seem to be having trouble"
-    ; dialog box appearing.
+    ; dialog box appearing. StepCount is incremented every time
+    ; chip moves. Only restarts with enough steps are counted
+    ; towards MelindaCount.
     RestartCount        resw 1      ; 0xa30
     MelindaCount        resw 1      ; 0xa32
+    StepCount           resw 1      ; 0xa34
 
-    StepCount           resw 1      ; 0xa34 ; Incremented every time chip moves
     EndingTick          resw 1      ; 0xa36 ; Controls the ending animation
     HaveMouseTarget     resw 1      ; 0xa38
     MouseTargetX        resw 1      ; 0xa3a
@@ -122,33 +124,33 @@ STRUC Point
 ENDSTRUC
 
 STRUC Connection
-    .fromX resw 1       ; 0x0
-    .fromY resw 1       ; 0x2
-    .toX   resw 1       ; 0x4
-    .toY   resw 1       ; 0x6
-    .flag resw 1        ; 0x8
+    .fromX      resw 1  ; 0x0
+    .fromY      resw 1  ; 0x2
+    .toX        resw 1  ; 0x4
+    .toY        resw 1  ; 0x6
+    .flag       resw 1  ; 0x8
 ENDSTRUC
 
 ; An entry on the monster list
 ; slipping records whether the monster is also on the slip list
 STRUC Monster
-    .tile resb 1        ; 0x0
-    .x resw 1           ; 0x1
-    .y resw 1           ; 0x3
-    .xdir resw 1        ; 0x5
-    .ydir resw 1        ; 0x7
-    .slipping resw 1    ; 0x9
+    .tile       resb 1  ; 0x0
+    .x          resw 1  ; 0x1
+    .y          resw 1  ; 0x3
+    .xdir       resw 1  ; 0x5
+    .ydir       resw 1  ; 0x7
+    .slipping   resw 1  ; 0x9
 ENDSTRUC
 
 ; An entry on the slip list
 ; isblock records whether the moving object is a block (not a monster)
 STRUC Slipper
-    .tile resb 1        ; 0x0
-    .x resw 1           ; 0x1
-    .y resw 1           ; 0x3
-    .xdir resw 1        ; 0x5
-    .ydir resw 1        ; 0x7
-    .isblock resw 1     ; 0x9
+    .tile       resb 1  ; 0x0
+    .x          resw 1  ; 0x1
+    .y          resw 1  ; 0x3
+    .xdir       resw 1  ; 0x5
+    .ydir       resw 1  ; 0x7
+    .isblock    resw 1  ; 0x9
 ENDSTRUC
 
 ; vim: syntax=nasm
