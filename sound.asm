@@ -2,6 +2,7 @@ SEGMENT CODE ; 8
 
 ; Sound & music
 
+%include "base.inc"
 %include "constants.asm"
 ;%include "structs.asm"
 %include "variables.asm"
@@ -35,32 +36,32 @@ func InitSound
     push ds
     push word s_sndPlaySound
     call far KERNEL.GetProcAddress ; 31
-    mov [fpSndPlaySound],ax
-    mov [fpSndPlaySound+2],dx
+    mov [fpSndPlaySound+FarPtr.Off],ax
+    mov [fpSndPlaySound+FarPtr.Seg],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_mciSendCommand
     call far KERNEL.GetProcAddress ; 45
-    mov [fpMciSendCommand],ax
-    mov [fpMciSendCommand+2],dx
+    mov [fpMciSendCommand+FarPtr.Off],ax
+    mov [fpMciSendCommand+FarPtr.Seg],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_mciGetErrorString
     call far KERNEL.GetProcAddress ; 59
-    mov [fpMciGetErrorString],ax
-    mov [fpMciGetErrorString+2],dx
+    mov [fpMciGetErrorString+FarPtr.Off],ax
+    mov [fpMciGetErrorString+FarPtr.Seg],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_midiOutGetNumDevs
     call far KERNEL.GetProcAddress ; 6d
-    mov [fpMidiOutGetNumDevs],ax
-    mov [fpMidiOutGetNumDevs+2],dx
+    mov [fpMidiOutGetNumDevs+FarPtr.Off],ax
+    mov [fpMidiOutGetNumDevs+FarPtr.Seg],dx
     push word [hmoduleMMSystem]
     push ds
     push word s_waveOutGetNumDevs
     call far KERNEL.GetProcAddress ; 81
-    mov [fpWaveOutGetNumDevs],ax
-    mov [fpWaveOutGetNumDevs+2],dx
+    mov [fpWaveOutGetNumDevs+FarPtr.Off],ax
+    mov [fpWaveOutGetNumDevs+FarPtr.Seg],dx
     ; Enable (or disable) Background Music menu item if midiOutGetNumDevs() != 0
     call far [fpMidiOutGetNumDevs] ; 8d
     cmp ax,0x1
@@ -129,8 +130,8 @@ func StartMIDI
 .label0: ; 126
     mov word [bp-0x56], s_sequencer
     mov [bp-0x54],ds
-    mov ax,[filename]
-    mov dx,[filename+2]
+    mov ax,[filename+FarPtr.Off]
+    mov dx,[filename+FarPtr.Seg]
     mov [bp-0x52],ax
     mov [bp-0x50],dx
     mov word [bp-0x4e],EmptyStringForMciSendCommand
@@ -259,8 +260,8 @@ func ShowMIDIError
     push ax
     call far USER._wsprintf ; 27b
     add sp,byte +0xc
-    mov ax,[fpMciGetErrorString+2]
-    or ax,[fpMciGetErrorString]
+    mov ax,[fpMciGetErrorString+FarPtr.Seg]
+    or ax,[fpMciGetErrorString+FarPtr.Off]
     jz .label0 ; ↓
     push word [bp+0x8]
     push word [bp+0x6]
@@ -322,8 +323,8 @@ func FUN_8_0308
     jnz .musicEnabled ; ↓
     jmp .returnZero ; ↓
 .musicEnabled: ; 321
-    mov ax,[fpMciSendCommand+2]
-    or ax,[fpMciSendCommand]
+    mov ax,[fpMciSendCommand+FarPtr.Seg]
+    or ax,[fpMciSendCommand+FarPtr.Off]
     jnz .mciSendCommandExists ; ↓
     jmp .returnZero ; ↓
 .mciSendCommandExists: ; 32d
@@ -562,8 +563,8 @@ func PlaySoundEffect
     sub sp,byte +0x6
     cmp word [SoundEnabled],byte +0x0
     jz .label0 ; ↓
-    mov ax,[fpSndPlaySound+2]
-    or ax,[fpSndPlaySound]
+    mov ax,[fpSndPlaySound+FarPtr.Seg]
+    or ax,[fpSndPlaySound+FarPtr.Off]
     jz .label0 ; ↓
     mov bx,[bp+0x6]
     shl bx,1
@@ -591,8 +592,8 @@ func FreeAudioFiles
     sub sp,byte +0x4
     push di
     push si
-    mov ax,[fpSndPlaySound+2]
-    or ax,[fpSndPlaySound]
+    mov ax,[fpSndPlaySound+FarPtr.Seg]
+    or ax,[fpSndPlaySound+FarPtr.Off]
     jz .label0 ; ↓
     push byte +0x0
     push byte +0x0

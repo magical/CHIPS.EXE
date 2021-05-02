@@ -984,8 +984,8 @@ func MonsterLoop
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,ax
-    mov [p],bx
-    mov [p+2],es
+    mov [p+FarPtr.Off],bx
+    mov [p+FarPtr.Seg],es
 
     ; If monster is slipping, skip it.
     cmp word [es:bx+Monster.slipping],byte +0x0
@@ -1004,8 +1004,8 @@ func MonsterLoop
     mov bx,[GameStatePtr]
     les bx,[bx+MonsterListPtr]
     add bx,si
-    mov [p],bx
-    mov [p+2],es
+    mov [p+FarPtr.Off],bx
+    mov [p+FarPtr.Seg],es
     mov ax,[es:bx+Monster.xdir]
     mov [xdir],ax
     mov ax,[es:bx+Monster.ydir]

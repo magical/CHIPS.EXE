@@ -2,6 +2,7 @@ SEGMENT CODE ; 2
 
 ; UI Code
 
+%include "base.inc"
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
@@ -65,8 +66,8 @@ func ShowMessageBox
     call far USER.MessageBeep ; 4e
 .showMessage: ; 53
     push word [hWnd]
-    push word [message+2] ; segment
-    push word [message]
+    push word [message+FarPtr.Seg] ; segment
+    push word [message+FarPtr.Off]
     push ds
     push word MessageBoxCaption
     push word [flags]
@@ -3987,13 +3988,13 @@ func MAINWNDPROC
 .label24: ; 24b0
     push ds
     push word s_KeyboardDelay
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+FarPtr.Seg]
+    push word [lParam+FarPtr.Off]
     call far USER.lstrcmpi ; 24ba
     or ax,ax
     jz .label25 ; ↓
-    mov ax,[lParam+2]
-    or ax,[lParam]
+    mov ax,[lParam+FarPtr.Seg]
+    or ax,[lParam+FarPtr.Off]
     jz .label25 ; ↓
     jmp .label67 ; ↓
 .label25: ; 24ce
