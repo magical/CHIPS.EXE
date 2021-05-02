@@ -1,5 +1,6 @@
 SEGMENT CODE ; 6
 
+%include "base.inc"
 %include "constants.asm"
 %include "structs.asm"
 %include "variables.asm"
@@ -358,8 +359,8 @@ BESTTIMESMSGPROC:
     push ss
     push ax
     call far USER.SetDlgItemText ; 2da
-    push word [TotalScore+2]
-    push word [TotalScore]
+    push word [TotalScore+_HiWord]
+    push word [TotalScore+_LoWord]
     push ds
     push word s_Your_total_score_is_li_points ; "Your total score is %li points."
     lea ax,[bp-0x50]
@@ -717,8 +718,8 @@ COMPLETEMSGPROC:
     mov dx,[bp-0xe]
     sub ax,[bp-0x18]
     sbb dx,[bp-0x16]
-    add [TotalScore],ax
-    adc [TotalScore+2],dx
+    add [TotalScore+_LoWord],ax
+    adc [TotalScore+_HiWord],dx
     mov ax,[TimeRemaining]
     cmp [bp-0x14],ax
     jnl .label21 ; ↓
@@ -807,21 +808,21 @@ COMPLETEMSGPROC:
     add sp,byte +0x8
     mov ax,[bp-0xc]
     mov dx,[bp-0xa]
-    add [TotalScore],ax
-    adc [TotalScore+2],dx
+    add [TotalScore+_LoWord],ax
+    adc [TotalScore+_HiWord],dx
     push di
     push byte +0x69
     push ds
     push word s_You_have_established_a_time_record ; "You have established a time record for this level!"
 .label29: ; 6eb
     call far USER.SetDlgItemText ; 6eb
-    push word [TotalScore+2]
-    push word [TotalScore]
+    push word [TotalScore+_HiWord]
+    push word [TotalScore+_LoWord]
     push word ID_CurrentScore
     call far StoreIniLong ; 6fb 2:1a86
     add sp,byte +0x6
-    push word [TotalScore+2]
-    push word [TotalScore]
+    push word [TotalScore+_HiWord]
+    push word [TotalScore+_LoWord]
     push ds
     push word s_Total_Score_li ; "Total Score:  %li", 0
     lea ax,[bp-0x98]

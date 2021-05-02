@@ -1242,8 +1242,8 @@ func CreateWindowsAndInitGame
     call far GetIniLong ; b5f 2:1a1c
     add sp,byte +0x2
 .label14: ; b67
-    mov [TotalScore],ax
-    mov [TotalScore+2],dx
+    mov [TotalScore+_LoWord],ax
+    mov [TotalScore+_HiWord],dx
     cmp si,byte +0x1
     jng .label15 ; ↓
     push si
@@ -3503,8 +3503,8 @@ func MenuItemCallback
 .label20: ; 1fc6
     call far FUN_2_1dae ; 1fc6 2:1dae
     sub ax,ax
-    mov [TotalScore+2],ax
-    mov [TotalScore],ax
+    mov [TotalScore+_HiWord],ax
+    mov [TotalScore+_LoWord],ax
     push ax
     push byte FirstLevel
     jmp .label12 ; ↑
@@ -4218,8 +4218,8 @@ func MAINWNDPROC
     nop
 
 .label62: ; 26ca
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+_HiWord]
+    push word [lParam+_LoWord]
     push word [wParam]
     push word [uMsg]
     push word [hwnd]
@@ -4263,8 +4263,8 @@ func MAINWNDPROC
     push word [hwnd]
     push word [uMsg]
     push word [wParam]
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+_HiWord]
+    push word [lParam+_LoWord]
     call far USER.DefWindowProc ; 273d
 .label69: ; 2742
     pop si
@@ -4291,8 +4291,8 @@ func BOARDWNDPROC
     push word [hwnd]
     push word [uMsg]
     push word [wParam]
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+_HiWord]
+    push word [lParam+_LoWord]
     call far USER.DefWindowProc ; 277d
     jmp .label9 ; ↓
     nop
@@ -4355,13 +4355,13 @@ func BOARDWNDPROC
 .label7: ; 2818
     mov bx,[GameStatePtr]
     mov word [bx+HaveMouseTarget],0x1
-    mov ax,[lParam]
+    mov ax,[lParam+_LoWord]
     shr ax,byte TileShift
     mov bx,[GameStatePtr]
     add ax,[bx+ViewportX]
     add ax,[bx+UnusedOffsetX]
     mov [bx+MouseTargetX],ax
-    mov ax,[lParam+2]
+    mov ax,[lParam+_HiWord]
     shr ax,byte TileShift
     mov bx,[GameStatePtr]
     add ax,[bx+ViewportY]
@@ -4393,8 +4393,8 @@ func INFOWNDPROC
     push word [hwnd]
     push word [uMsg]
     push word [wParam]
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+_HiWord]
+    push word [lParam+_LoWord]
     call far USER.DefWindowProc ; 288c
     jmp .label6 ; ↓
 .label0: ; 2894
@@ -4501,8 +4501,8 @@ func COUNTERWNDPROC
     push word [hwnd]
     push word [uMsg]
     push word [wParam]
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+_HiWord]
+    push word [lParam+_LoWord]
     call far USER.DefWindowProc ; 2990
     jmp .label5 ; ↓
 .label0: ; 2998
@@ -4632,8 +4632,8 @@ func INVENTORYWNDPROC
     push word [hwnd]
     push word [uMsg]
     push word [wParam]
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+_HiWord]
+    push word [lParam+_LoWord]
     call far USER.DefWindowProc ; 2abf
     jmp .label1 ; ↓
     nop
@@ -4777,8 +4777,8 @@ func HINTWNDPROC
     push word [hwnd]
     push word [uMsg]
     push word [wParam]
-    push word [lParam+2]
-    push word [lParam]
+    push word [lParam+_HiWord]
+    push word [lParam+_LoWord]
     call far USER.DefWindowProc ; 2be5
     jmp .end ; ↓
     nop
