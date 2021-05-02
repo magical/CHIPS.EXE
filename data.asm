@@ -558,26 +558,26 @@ Var167C dd 0 ; atexit function pointers
 ; 1680
 
 ; Near pointer to game state structure
-GameStatePtr dw 0   ; 1680
+GameStatePtr dw 0 ; 1680
 
 ; Inventory
-BlueKeyCount dw 0 ; 1682
-RedKeyCount dw 0 ; 1684
-GreenKeyCount dw 0 ; 1686
-YellowKeyCount dw 0 ; 1688
+BlueKeyCount    dw 0 ; 1682
+RedKeyCount     dw 0 ; 1684
+GreenKeyCount   dw 0 ; 1686
+YellowKeyCount  dw 0 ; 1688
 
-FlipperCount dw 0 ; 168a
-FireBootCount dw 0 ; 168c
-IceSkateCount dw 0 ; 168e
+FlipperCount    dw 0 ; 168a
+FireBootCount   dw 0 ; 168c
+IceSkateCount   dw 0 ; 168e
 SuctionBootCount dw 0 ; 1690
 
 ChipsRemainingCount dw 0 ; 1692
-TimeRemaining dw 0 ; 1694
+TimeRemaining   dw 0 ; 1694
 
 TotalScore dd 0 ; 1696
 
-PasswordPromptPassword dw 0 ; 169a pointer to decoded password (for password prompt)
-PasswordPromptLevel    dw 0 ; 169c level for password prompt
+PasswordPromptPassword  dw 0 ; 169a pointer to decoded password (for password prompt)
+PasswordPromptLevel     dw 0 ; 169c level for password prompt
 
 ; seg5.asm
 HorizontalPadding       dw 0 ; 169e main window horizontal padding (always 0x20)
