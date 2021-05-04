@@ -353,13 +353,13 @@ func FUN_4_0356
     sub sp,byte +0xa
     push di
     push si
-    mov si,[bp+0x8]
+    mov si,[restarting]
     mov bx,[GameStatePtr]
     mov ax,[bx+IsLevelPlacardVisible]
     mov [wasPaused],ax
     push byte +0x0
     push byte +0x0
-    push word IDC_WAIT
+    push word IDC_WAIT ; i don't care ...wait
     call far USER.LoadCursor ; 37a
     mov di,ax
     push word [hwndBoard]
@@ -392,7 +392,7 @@ func FUN_4_0356
     push word [hwndMain]
     call far ShowMessageBox ; 3dd 2:0
     add sp,byte +0x8
-    cmp ax,0x6
+    cmp ax,ID_YES
     jnz .resetMelindaCount ; ↓
     inc word [levelNum]
     xor si,si
@@ -946,9 +946,10 @@ endfunc
 ; checks the signature of a file
 ; and returns the next word (number of levels)
 func FUN_4_0950
+    %arg hFile:word
     sub sp,byte +0x4
     push si
-    mov si,[bp+0x6]
+    mov si,[hFile]
     push si
     lea ax,[bp-0x4]
     push ss
