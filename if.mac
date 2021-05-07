@@ -1,0 +1,53 @@
+; if.mac - if/else/endif conditional block macros
+
+; 'if' takes one argument, a condition code.
+; if the condition is true, the block is executed
+; otherwise the else block is executed (if there is one)
+;
+; these macros are meant for short blocks only.
+; they use short jump instructions, which have a range
+; of +/- 127 bytes or about 50 instructions max.
+;
+; example:
+;
+;     cmp ax,0
+;     if l
+;         mov ax,0
+;     endif
+;
+; translates to
+;
+;     cmp ax,0
+;     jnl .label
+;     mov ax,0
+;   .label:
+
+; adapted from https://www.nasm.us/doc/nasmdoc4.html#section-4.7.6
+
+%macro if 1
+    %push if
+    j%-1 %$ifnot
+%endmacro
+
+%macro else 0
+    %ifctx if
+        %repl else
+        jmp short %$ifend
+        align 2
+        %$ifnot:
+    %else
+        %error "expected 'if' before 'else'"
+    %endif
+%endmacro
+
+%macro endif 0
+    %ifctx else
+        %$ifend:
+        %pop else
+    %else
+        %$ifnot:
+        %pop if
+    %endif
+%endmacro
+
+; vim: syntax=nasm
