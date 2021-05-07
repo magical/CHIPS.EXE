@@ -363,7 +363,7 @@ LocolorTiles    db "obj32_4E", 0
 MonochromeTiles db "obj32_1", 0, 0
 
 ; if this is set to nonzero, the viewport will be fixed in place
-; at the top left of the map; maybe some other effects?
+; at the top left of the map. it also disables the pause screen.
 DebugModeEnabled dw 0 ; a34
 
 ; a36
