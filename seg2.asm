@@ -990,8 +990,8 @@ func CreateWindowsAndInitGame
     %arg hInstance:word ; +6
     %arg nCmdShow:word ; +8
     mov si,[hInstance]
-    mov word [bp-0x6],0x0
-    mov word [bp-0x4],0x2cf
+    mov word [bp-0x6],(WS_CLIPCHILDREN | WS_TILEDWINDOW)&0xffff
+    mov word [bp-0x4],(WS_CLIPCHILDREN | WS_TILEDWINDOW)>>16
     mov [OurHInstance],si
     push si
     push ds
