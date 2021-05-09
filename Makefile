@@ -50,12 +50,12 @@ clean:
 
 %.bin: %.asm fixmov.awk Makefile
 	awk -f fixmov.awk $< >$<.tmp
-	nasm -O0 -o $@ $<.tmp
+	nasm -O0 -o $@ $<.tmp -w+error=label-redef -w-label-redef-late
 	rm $<.tmp
 
 %.obj: %.asm fixmov.awk Makefile
 	awk -f fixmov.awk $< >$<.tmp
-	nasm -O0 -f obj -o $@ $<.tmp
+	nasm -O0 -f obj -o $@ $<.tmp -w+error=label-redef -w-label-redef-late
 	rm $<.tmp
 
 headers:
