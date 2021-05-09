@@ -48,12 +48,12 @@ EXTERN ShowDeathMessage              ; 2:b9a
 EXTERN ShowHint                      ; 2:c1a
 EXTERN HideHint                      ; 2:c7e
 EXTERN FUN_2_0cbe                    ; 2:cbe
-EXTERN FUN_2_0dc6                    ; 2:dc6
+EXTERN PaintBackground               ; 2:dc6
 EXTERN Draw3DBorder                  ; 2:f06
 EXTERN DrawSolidBorder               ; 2:1006
-EXTERN FUN_2_10ce                    ; 2:10ce
-EXTERN FUN_2_16fa                    ; 2:16fa
-EXTERN FUN_2_176e                    ; 2:176e
+EXTERN PaintBoardWindow              ; 2:10ce
+EXTERN StartTimer                    ; 2:16fa
+EXTERN StopTimer                     ; 2:176e
 EXTERN PauseTimer                    ; 2:17a2
 EXTERN UnpauseTimer                  ; 2:17ba
 EXTERN PauseGame                     ; 2:17da
@@ -140,7 +140,7 @@ EXTERN FUN_4_0950                    ; 4:950
 EXTERN SkipNFields                   ; 4:9b4
 EXTERN FUN_4_0a0e                    ; 4:a0e
 EXTERN ReadLevelData                 ; 4:a56
-EXTERN FUN_4_0c3a                    ; 4:c3a
+EXTERN ReadLevelFields               ; 4:c3a
 EXTERN GetLevelPassword              ; 4:d58
 EXTERN TryIniPassword                ; 4:e48
 EXTERN FUN_4_0eaa                    ; 4:eaa

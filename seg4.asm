@@ -238,7 +238,7 @@ func ResetTimerAndChipCount
     push ax
     call far USER.SetWindowWord ; 22c
     push byte +0x1
-    call far FUN_2_16fa ; 233 2:16fa
+    call far StartTimer ; 233 2:16fa
 endfunc
 
 ; 240
@@ -367,7 +367,7 @@ func FUN_4_0356
     call far USER.SetCursor ; 38b
     mov [oldCursor],ax
     push byte +0x1
-    call far FUN_2_176e ; 395 2:176e
+    call far StopTimer ; 395 2:176e
     add sp,byte +0x2
     push byte +0x0
     call far ResetInventory ; 39f 3:1734
@@ -466,7 +466,7 @@ func FUN_4_0356
         mov word [bx+ViewportHeight],0x20
         jmp .doneWithViewportStuff ; ↓
         nop
-    endif
+    endif ; 4ac
     ; normal mode: 9x9 viewport
     mov bx,[GameStatePtr]
     mov word [bx+ViewportHeight],0x9
@@ -1038,7 +1038,7 @@ func SkipNFields
     if e
         cmp dx,ax
         jz .return0 ; ↓
-    endif
+    endif ; 9f6
     inc di
     cmp di,[num]
     jl .loop ; ↑

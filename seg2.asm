@@ -1477,14 +1477,9 @@ endfunc
 ; dc6
 
 ; draw main window background
-FUN_2_0dc6:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func PaintBackground
+    %arg hwnd:word ; +6
+    %arg rect:word ; +8
     sub sp,byte +0x20
     push di
     push si
@@ -1494,10 +1489,10 @@ FUN_2_0dc6:
     call far USER.LoadBitmap ; ddd
     mov si,ax
     or si,si
-    jnz .label0 ; ↓
-    jmp .label5 ; ↓
-.label0: ; deb
-    mov di,[bp+0x8]
+    if z
+        jmp .fallback ; ↓
+    endif ; deb
+    mov di,[rect]
     push word [TileDC]
     push si
     call far GDI.SelectObject ; df3
@@ -1521,11 +1516,11 @@ FUN_2_0dc6:
     cmp ax,[di+0x8]
     jnl .label4 ; ↓
     mov [bp-0xa],si
-.label1: ; e2a
+.loop: ; e2a
     mov si,[bp-0x6]
     cmp si,[di+0xa]
     jnl .label3 ; ↓
-.label2: ; e32
+.loop2: ; e32
     push word [di]
     push word [bp-0x4]
     push si
@@ -1539,13 +1534,13 @@ FUN_2_0dc6:
     call far GDI.BitBlt ; e4b
     add si,[bp-0x1c]
     cmp si,[di+0xa]
-    jl .label2 ; ↑
+    jl .loop2 ; ↑
 .label3: ; e58
     mov ax,[di+0x8]
     mov cx,[bp-0x1e]
     add [bp-0x4],cx
     cmp [bp-0x4],ax
-    jl .label1 ; ↑
+    jl .loop ; ↑
     mov si,[bp-0xa]
 .label4: ; e69
     push word [TileDC]
@@ -1553,10 +1548,12 @@ FUN_2_0dc6:
     call far GDI.SelectObject ; e70
     push si
     call far GDI.DeleteObject ; e76
-    jmp short .label6 ; ↓
+    jmp short .drawBorders ; ↓
     nop
-.label5: ; e7e
-    mov bx,[bp+0x8]
+.fallback: ; e7e
+    ; If we couldn't load the background bitmap,
+    ; draw something else instead
+    mov bx,[rect]
     push word [bx]
     push word [bx+0x4]
     push word [bx+0x6]
@@ -1569,7 +1566,7 @@ FUN_2_0dc6:
     push byte +0x0
     push byte +0x42
     call far GDI.PatBlt ; e9b
-.label6: ; ea0
+.drawBorders: ; ea0
     mov ax,[HorizontalPadding]
     mov [bp-0x12],ax
     mov cx,[VerticalPadding]
@@ -1583,7 +1580,7 @@ FUN_2_0dc6:
     push ax
     push word [bp-0x10]
     push word [bp-0x12]
-    mov bx,[bp+0x8]
+    mov bx,[rect]
     push word [bx]
     call far DrawSolidBorder ; ec9 2:1006
     add sp,byte +0xc
@@ -1599,18 +1596,13 @@ FUN_2_0dc6:
     push word [bp-0xe]
     push word [bp-0x10]
     push word [bp-0x12]
-    mov bx,[bp+0x8]
+    mov bx,[rect]
     push word [bx]
     call far Draw3DBorder ; ef4 2:f06
     add sp,byte +0xe
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; f06
 
@@ -1834,17 +1826,10 @@ endfunc
 
 ; 10ce
 
-; draw board?
+; Draw board
 ; and level placard
 ; and/or pause screen
-FUN_2_10ce:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func PaintBoardWindow
     sub sp,0xcc
     push di
     push si
@@ -2206,11 +2191,13 @@ FUN_2_10ce:
     mov cx,[bx+ViewportWidth]
     shl cx,byte TileShift
     mov [bp-0x8],cx
+    ; this is a convoluted way of checking if LevelTitle starts with a NUL
+    ; we cache the result in di for later reference
     cmp byte [bx+LevelTitle],0x1
     sbb cx,cx
     inc cx
     mov di,cx
-    cmp cx,ax
+    cmp cx,ax ; note ax=0
     if nz
         mov [bp-0x26],ax
         mov [bp-0x24],ax
@@ -2251,6 +2238,8 @@ FUN_2_10ce:
         sub ax,[bp-0x24]
         mov [bp-0xa],ax
     endif ; 14e9
+    ; same deal, but the password instead of the title
+    ; we cache the result in si
     mov bx,[GameStatePtr]
     cmp byte [bx+LevelPassword],0x1
     sbb ax,ax
@@ -2308,9 +2297,9 @@ FUN_2_10ce:
     jmp .label40 ; ↓
 .label35: ; 1574
     mov word [bp-0x1e],0x1
-    or di,di
+    or di,di ; level title is nonempty
     jz .label36 ; ↓
-    or si,si
+    or si,si ; password is nonempt
     jz .label36 ; ↓
     mov word [bp-0xc],0x3
     jmp short .label37 ; ↓
@@ -2346,7 +2335,7 @@ FUN_2_10ce:
     mov [bp-0x20],ax
     mov ax,[bp-0x8]
     mov [bp-0x22],ax
-    or di,di
+    or di,di ; level title is nonempty
     if nz
         mov ax,[GameStatePtr]
         add ax,LevelTitle
@@ -2375,7 +2364,7 @@ FUN_2_10ce:
         add [bp-0x24],ax
         add [bp-0x20],ax
     endif ; 1621
-    or si,si
+    or si,si ; password is nonempty
     if nz
         mov ax,[GameStatePtr]
         add ax,LevelPassword
@@ -2457,24 +2446,13 @@ FUN_2_10ce:
 .end: ; 16f0
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 16fa
 
 ; create timer
-FUN_2_16fa:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+; if the timer already exists, it is reset
+func StartTimer
     sub sp,byte +0x6
     push si
     mov ax,[bp+0x6]
@@ -2522,24 +2500,12 @@ FUN_2_16fa:
     mov ax,0x1
 .label5: ; 1765
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 176e
 
 ; destroy timer
-FUN_2_176e:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func StopTimer
     sub sp,byte +0x4
     push si
     mov si,[bp+0x6]
@@ -2559,12 +2525,7 @@ FUN_2_176e:
     push si
     call far USER.KillTimer ; 1794
     pop si
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
-    nop
+endfunc
 
 ; 17a2
 
@@ -3904,7 +3865,7 @@ func MAINWNDPROC
 .label18: ; 23d6
     ; WM_DESTROY
     push byte +0x1
-    call far FUN_2_176e ; 23d8 2:176e
+    call far StopTimer ; 23d8 2:176e
     add sp,byte +0x2
     call far StopMIDI ; 23e0 8:2d4
     mov bx,[GameStatePtr]
@@ -3961,7 +3922,7 @@ func MAINWNDPROC
     lea ax,[bp-0x26]
     push ax
     push si
-    call far FUN_2_0dc6 ; 248f 2:dc6
+    call far PaintBackground ; 248f 2:dc6
     add sp,byte +0x4
     push si
     lea ax,[bp-0x26]
@@ -4295,7 +4256,7 @@ func BOARDWNDPROC
     lea ax,[bp-0x22]
     push ax
     push si
-    call far FUN_2_10ce ; 2799 2:10ce
+    call far PaintBoardWindow ; 2799 2:10ce
     add sp,byte +0x4
     push si
     lea ax,[bp-0x22]
