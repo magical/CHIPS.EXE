@@ -68,7 +68,7 @@ func ResetLevelData
     sub sp,byte +0x2
     push si
     xor si,si
-.label0: ; 6e
+.loop: ; 6e
     mov bx,[GameStatePtr]
     mov byte [bx+si+Lower],0x0
     mov bx,[GameStatePtr]
@@ -77,7 +77,7 @@ func ResetLevelData
     mov [bx+Upper],al
     inc si
     cmp si,0x400 ; BoardWidth * BoardHeight?
-    jl .label0 ; ↑
+    jl .loop ; ↑
     mov bx,[GameStatePtr]
     mov word [bx+SlipListLen],0x0
     mov bx,[GameStatePtr]
@@ -185,6 +185,7 @@ func UpdateNextPrevMenuItems
     %arg levelNum:word
     %local levelNumTmp:word
     sub sp,byte +0x4
+    ; Previous
     push si
     mov si,[levelNum]
     push word [hMenu]
@@ -198,17 +199,19 @@ func UpdateNextPrevMenuItems
     endif ; 1c7
     push ax
     call far USER.EnableMenuItem ; 1c8
+    ; Next
     mov ax,[levelNumTmp]
     mov bx,[GameStatePtr]
     cmp [bx+NumLevelsInSet],ax
-    jg .label2 ; ↓
+    jg .next.disabled ; ↓
     cmp word [DebugModeEnabled],byte +0x0
-    jnz .label2 ; ↓
+    jnz .next.disabled ; ↓
+.next.enabled:
     mov cx,0x1
-    jmp short .label3 ; ↓
-.label2: ; 1e6
+    jmp short .makeTheCall ; ↓
+.next.disabled: ; 1e6
     xor cx,cx
-.label3: ; 1e8
+.makeTheCall: ; 1e8
     push word [hMenu]
     push byte ID_NEXT
     push cx
@@ -369,19 +372,21 @@ func FUN_4_0356
     push byte +0x0
     call far ResetInventory ; 39f 3:1734
     add sp,byte +0x2
-    or si,si
-    jz .label1 ; ↓
+    ; If this is a restart and certain thresholds are met,
+    ; ask the player if they want to skip the level
+    or si,si ; restarting?
+    jz .noMelinda ; ↓
     mov bx,[GameStatePtr]
     cmp word [bx+StepCount],byte MelindaStepRequirement
-    jng .label1 ; ↓
+    jng .noMelinda ; ↓
     cmp word [levelNum],FakeLastLevel
-    jz .label1 ; ↓
+    jz .noMelinda ; ↓
     cmp word [levelNum],LastLevel
-    jz .label1 ; ↓
+    jz .noMelinda ; ↓
     inc word [bx+MelindaCount]
     mov bx,[GameStatePtr]
     cmp word [bx+MelindaCount],byte MelindaThreshold
-    jl .label1 ; ↓
+    jl .noMelinda ; ↓
     push byte +0x24
     push ds
     push word MelindaMessage
@@ -390,16 +395,18 @@ func FUN_4_0356
     add sp,byte +0x8
     cmp ax,ID_YES
     if z
+        ; yes: increment levelNum
         inc word [levelNum]
         xor si,si
     else ; 3f2
-        ; reset melinda count:
+        ; no: reset melinda count
         mov bx,[GameStatePtr]
         mov word [bx+MelindaCount],0x0
     endif
-.label1: ; 3fc
+.noMelinda: ; 3fc
+    ; save RestartCount and MelindaCount for later if we're restarting
     mov di,[bp-0xa] ; uninitialized
-    or si,si
+    or si,si ; restarting
     if nz
         mov bx,[GameStatePtr]
         mov di,[bx+RestartCount]
@@ -410,7 +417,7 @@ func FUN_4_0356
     push byte +0x0 ; don't free lists
     call far ClearGameState ; 414 4:320
     add sp,byte +0x2
-    or si,si
+    or si,si ; restarting
     if nz
         lea ax,[di+0x1] ; increment restart count
         ; preserve RestartCount and MelindaCount across restart
@@ -420,20 +427,25 @@ func FUN_4_0356
         mov bx,[GameStatePtr]
         mov [bx+MelindaCount],ax
     endif ; 436
+    ;
+    ; Read the level and load it into GameState
+    ;
     push word [levelNum]
     call far ReadLevelDataOrDie ; 439 4:d8
+    ; Start the music
+    ; but not if we're paused or restarting the same level
     add sp,byte +0x2
     cmp word [GamePaused],byte +0x0
-    jnz .label4 ; ↓
+    jnz .noMusic ; ↓
     or si,si
-    jnz .label4 ; ↓
-    ; start the music
-    ; but not if we're paused or restarting the same level
+    jnz .noMusic ; ↓
+    ; ok actually start it
     mov bx,[GameStatePtr]
     push word [bx+LevelNumber]
     call far FUN_8_0308 ; 454 8:308
     add sp,byte +0x2
-.label4: ; 45c
+.noMusic: ; 45c
+    ; Set up the board and viewport
     call far InitBoard ; 45c 3:54c
     cmp word [DebugModeEnabled],byte +0x0
     if nz
@@ -452,8 +464,8 @@ func FUN_4_0356
         mov word [bx+ViewportWidth],0x20
         mov bx,[GameStatePtr]
         mov word [bx+ViewportHeight],0x20
-        jmp .label10 ; ↓
-        align 2
+        jmp .doneWithViewportStuff ; ↓
+        nop
     endif
     ; normal mode: 9x9 viewport
     mov bx,[GameStatePtr]
@@ -516,7 +528,7 @@ func FUN_4_0356
         mov ax,di
     endif ; 534
     mov [bx+ViewportY],ax
-.label10: ; 538
+.doneWithViewportStuff: ; 538
     call far ResetTimerAndChipCount ; 538 4:1fc
     mov bx,[GameStatePtr]
     mov word [bx+IsLevelPlacardVisible],0x1
@@ -547,7 +559,9 @@ func FUN_4_0356
     call far FUN_2_0cbe ; 59b 2:cbe
     add sp,byte +0x2
     or si,si
-    jnz .label12 ; ↓
+    jnz .cleanup ; ↓
+    ; if we haven't played this level yet,
+    ; save its password in the ini file
     push si
     push si
     push si
@@ -555,23 +569,27 @@ func FUN_4_0356
     call far GetLevelProgressFromIni ; 5ad 2:1adc
     add sp,byte +0x8
     or ax,ax
-    jnz .label12 ; ↓
-    push ax
-    push ax
-    push byte -1
-    push word [levelNum]
-    call far SaveLevelProgressToIni ; 5c0 2:1c1c
-    add sp,byte +0x8
-    push word ID_HighestLevel
-    call far GetIniInt ; 5cb 2:198e
-    add sp,byte +0x2
-    cmp ax,[levelNum]
-    jnl .label12 ; ↓
-    push word [levelNum]
-    push word ID_HighestLevel
-    call far StoreIniInt ; 5de 2:19ca
-    add sp,byte +0x4
-.label12: ; 5e6
+    if z
+        ; save password, no best time, no score
+        push ax
+        push ax
+        push byte -1
+        push word [levelNum]
+        call far SaveLevelProgressToIni ; 5c0 2:1c1c
+        ; save the highest level too
+        add sp,byte +0x8
+        push word ID_HighestLevel
+        call far GetIniInt ; 5cb 2:198e
+        add sp,byte +0x2
+        cmp ax,[levelNum]
+        if l
+            push word [levelNum]
+            push word ID_HighestLevel
+            call far StoreIniInt ; 5de 2:19ca
+            add sp,byte +0x4
+        endif
+    endif
+.cleanup: ; 5e6
     push word [oldCursor]
     call far USER.SetCursor ; 5e9
     call far USER.ReleaseCapture ; 5ee
@@ -584,17 +602,20 @@ endfunc
 ; Expand rle
 func ExpandTilesRLE
     %arg src:word, _:dword
-    %arg dest:word, _:dword
+    %arg dest:word, cxDest:word, cyDest:word
     sub sp,byte +0x14
     push di
     push si
-    mov si,[bp+0x10]
+    ; si = cyDest
+    mov si,[cyDest]
+    ; ax = (32 - cxDest)/2
     mov ax,0x20
-    sub ax,[bp+0xe]
+    sub ax,[cxDest]
     cwd
     sub ax,dx
     sar ax,1
     mov [bp-0xa],ax
+    ; (32 - cyDest)/2
     mov ax,0x20
     sub ax,si
     cwd
@@ -607,23 +628,23 @@ func ExpandTilesRLE
     mov ax,di
     add ax,si
     cmp ax,di
-    jng .label5 ; ↓
+    jle .end ; ↓
     mov cx,di
     shl cx,byte 0x5
     mov ax,[bp-0xa]
-    add ax,[bp+0xe]
+    add ax,[cxDest]
     mov [bp-0x14],ax
     sub ax,ax
     add ax,si
     mov [bp-0xe],ax
     mov si,[dest]
-.label0: ; 652
+.loopY: ; 652
     mov di,[bp-0xa]
     cmp [bp-0x14],di
-    jng .label4 ; ↓
+    jng .nextY ; ↓
     mov si,[bp-0xc]
     mov dx,[dest]
-.label1: ; 660
+.loopX: ; 660
     cmp byte [bp-0x4],0x0
     if ne
         mov al,[bp-0x5]
@@ -649,14 +670,14 @@ func ExpandTilesRLE
     mov [bx],al
     inc di
     cmp [bp-0x14],di
-    jg .label1 ; ↑
+    jg .loopX ; ↑
     mov [bp-0xc],si
     mov si,[dest]
-.label4: ; 69f
+.nextY: ; 69f
     add cx,byte +0x20
     dec word [bp-0xe]
-    jnz .label0 ; ↑
-.label5: ; 6a7
+    jnz .loopY ; ↑
+.end: ; 6a7
     pop si
     pop di
 endfunc
@@ -670,11 +691,11 @@ func DecodePassword
     mov si,[password]
     cmp byte [si],0x0
     if ne
-    .label0: ; 6c6
+    .loop: ; 6c6
         xor byte [si],0x99
         inc si
         cmp byte [si],0x0
-        jnz .label0 ; ↑
+        jnz .loop ; ↑
     endif ; 6cf
     pop si
 endfunc
@@ -693,9 +714,10 @@ func DecodeLevelFields
     add ax,si
     mov [bp-0xc],ax
     cmp ax,si
-    ja .label0 ; ↓
-    jmp .label26 ; ↓
-.label0: ; 6f9
+    if na
+        jmp .end ; ↓
+    endif ; 6f9
+.loop.fields:
     mov al,[si]
     mov [bp-0x3],al
     inc si
@@ -706,9 +728,9 @@ func DecodeLevelFields
     sub ah,ah
     dec ax
     cmp ax,0x9
-    jna .label1 ; ↓
-    jmp .nextField ; ↓
-.label1: ; 713
+    if a
+        jmp .nextField ; ↓
+    endif ; 713
     shl ax,1
     xchg ax,bx
     jmp [cs:bx+.jumpTable]
@@ -743,7 +765,7 @@ func DecodeLevelFields
     endif ; 756
     mov ax,[GameStatePtr]
     add ax,LevelTitle
-.label5: ; 75c
+.lstrcpy: ; 75c
     push ds
     push ax
     push ds
@@ -776,34 +798,34 @@ func DecodeLevelFields
     call far GrowArray ; 7a4 3:1a4
     add sp,byte +0xa
     or ax,ax
-    jz .label11 ; ↓
-    mov word [bp-0x8],0x0
-    mov bx,[GameStatePtr]
-    cmp word [bx+TrapListLen],byte +0x0
-    if le
+    if nz
+        mov word [bp-0x8],0x0
+        mov bx,[GameStatePtr]
+        cmp word [bx+TrapListLen],byte +0x0
+        if le
+            jmp .nextField ; ↓
+        endif ; 7c3
+        mov [data],si
+        mov word [bp-0x4],0x0
+    .loop.trapList: ; 7cb
+        les bx,[bx+TrapListPtr]
+        mov si,[bp-0x4]
+        mov ax,[bp-0x6]
+        lea di,[bx+si]
+        mov si,ax
+        mov cx,0x5
+        rep movsw
+        add word [bp-0x4],byte +0xa
+        add word [bp-0x6],byte +0xa
+        inc word [bp-0x8]
+        mov ax,[bp-0x8]
+        mov bx,[GameStatePtr]
+        cmp [bx+TrapListLen],ax
+        jg .loop.trapList ; ↑
+    .mov_si_data_and_jmp_nextField: ; 7f6
+        mov si,[data]
         jmp .nextField ; ↓
-    endif ; 7c3
-    mov [data],si
-    mov word [bp-0x4],0x0
-.label9: ; 7cb
-    les bx,[bx+TrapListPtr]
-    mov si,[bp-0x4]
-    mov ax,[bp-0x6]
-    lea di,[bx+si]
-    mov si,ax
-    mov cx,0x5
-    rep movsw
-    add word [bp-0x4],byte +0xa
-    add word [bp-0x6],byte +0xa
-    inc word [bp-0x8]
-    mov ax,[bp-0x8]
-    mov bx,[GameStatePtr]
-    cmp [bx+TrapListLen],ax
-    jg .label9 ; ↑
-.label10: ; 7f6
-    mov si,[data]
-    jmp .nextField ; ↓
-.label11: ; 7fc
+    endif ; 7fc
     mov bx,[GameStatePtr]
     mov word [bx+TrapListLen],0x0
     jmp .nextField ; ↓
@@ -818,9 +840,9 @@ func DecodeLevelFields
     mov bx,[GameStatePtr]
     mov ax,[bx+CloneListCap]
     cmp [bx+CloneListLen],ax
-    jg .label13 ; ↓
-    jmp .nextField ; ↓
-.label13: ; 82e
+    if le
+        jmp .nextField ; ↓
+    endif ; 82e
     push byte +0x8
     push word [bx+CloneListLen]
     lea ax,[bx+CloneListCap]
@@ -832,35 +854,35 @@ func DecodeLevelFields
     call far GrowArray ; 843 3:1a4
     add sp,byte +0xa
     or ax,ax
-    jz .label16 ; ↓
-    mov word [bp-0x8],0x0
-    mov bx,[GameStatePtr]
-    cmp word [bx+CloneListLen],byte +0x0
-    jg .label14 ; ↓
-    jmp .nextField ; ↓
-.label14: ; 862
-    mov [data],si
-    mov word [bp-0x4],0x0
-.label15: ; 86a
-    les bx,[bx+CloneListPtr]
-    mov si,[bp-0x4]
-    mov ax,[bp-0x6]
-    lea di,[bx+si]
-    mov si,ax
-    movsw
-    movsw
-    movsw
-    movsw
-    add word [bp-0x4],byte +0x8
-    add word [bp-0x6],byte +0x8
-    inc word [bp-0x8]
-    mov ax,[bp-0x8]
-    mov bx,[GameStatePtr]
-    cmp [bx+CloneListLen],ax
-    jg .label15 ; ↑
-    jmp .label10 ; ↑
-    nop
-.label16: ; 898
+    if nz
+        mov word [bp-0x8],0x0
+        mov bx,[GameStatePtr]
+        cmp word [bx+CloneListLen],byte +0x0
+        if le
+            jmp .nextField ; ↓
+        endif ; 862
+        mov [data],si
+        mov word [bp-0x4],0x0
+    .loop.clonelist: ; 86a
+        les bx,[bx+CloneListPtr]
+        mov si,[bp-0x4]
+        mov ax,[bp-0x6]
+        lea di,[bx+si]
+        mov si,ax
+        movsw
+        movsw
+        movsw
+        movsw
+        add word [bp-0x4],byte +0x8
+        add word [bp-0x6],byte +0x8
+        inc word [bp-0x8]
+        mov ax,[bp-0x8]
+        mov bx,[GameStatePtr]
+        cmp [bx+CloneListLen],ax
+        jg .loop.clonelist ; ↑
+        jmp .mov_si_data_and_jmp_nextField ; ↑
+        nop
+    endif ; 898
     mov bx,[GameStatePtr]
     mov word [bx+CloneListLen],0x0
     jmp .nextField ; ↓
@@ -890,16 +912,16 @@ func DecodeLevelFields
     endif ; 8da
     mov ax,[GameStatePtr]
     add ax,LevelHint
-    jmp .label5 ; ↑
+    jmp .lstrcpy ; ↑
     nop
 .field.plaintextPassword: ; 8e4
     cmp byte [bp-0x9],MaxPasswordLength
-    jna .label22 ; ↓
-    mov byte [si+MaxPasswordLength-1],0x0
-.label22: ; 8ee
+    if a
+        mov byte [si+MaxPasswordLength-1],0x0
+    endif ; 8ee
     mov ax,[GameStatePtr]
     add ax,LevelPassword
-    jmp .label5 ; ↑
+    jmp .lstrcpy ; ↑
     nop
 .field.monsters: ; 8f8
     mov di,si
@@ -914,7 +936,7 @@ func DecodeLevelFields
     jng .nextField ; ↓
     mov [data],si
     xor bx,bx
-.label24: ; 91a
+.loop.monsterList: ; 91a
     mov ax,[di]
     mov si,[GameStatePtr]
     mov [bx+si+InitialMonsterList],ax
@@ -923,16 +945,16 @@ func DecodeLevelFields
     inc dx
     mov si,[GameStatePtr]
     cmp [si+InitialMonsterListLen],dx
-    jg .label24 ; ↑
-    jmp .label10 ; ↑
+    jg .loop.monsterList ; ↑
+    jmp .mov_si_data_and_jmp_nextField ; ↑
 .nextField: ; 938
     mov al,[bp-0x9]
     sub ah,ah
     add si,ax
     cmp si,[bp-0xc]
-    jnb .label26 ; ↓
-    jmp .label0 ; ↑
-.label26: ; 947
+    jnb .end ; ↓
+    jmp .loop.fields ; ↑
+.end: ; 947
     pop si
     pop di
 endfunc
@@ -953,14 +975,14 @@ func FUN_4_0950
     push byte +0x2
     call far KERNEL._lread ; 969
     cmp ax,0x2
-    jnb .label1 ; ↓
-.label0: ; 973
-    xor ax,ax
-    jmp short .label2 ; ↓
-    nop
-.label1: ; 978
+    if b
+    .error: ; 973
+        xor ax,ax
+        jmp short .end ; ↓
+        nop
+    endif ; 978
     cmp word [bp-0x4],0xaaac
-    jnz .label0 ; ↑
+    jnz .error ; ↑
     push si
     lea ax,[bp-0x4]
     push ss
@@ -968,9 +990,9 @@ func FUN_4_0950
     push byte +0x2
     call far KERNEL._lread ; 987
     cmp ax,0x2
-    jb .label0 ; ↑
+    jb .error ; ↑
     cmp word [bp-0x4],byte +0x2
-    jnz .label0 ; ↑
+    jnz .error ; ↑
     push si
     lea ax,[bp-0x4]
     push ss
@@ -978,9 +1000,9 @@ func FUN_4_0950
     push byte +0x2
     call far KERNEL._lread ; 99f
     cmp ax,0x2
-    jb .label0 ; ↑
+    jb .error ; ↑
     mov ax,[bp-0x4]
-.label2: ; 9ac
+.end: ; 9ac
     pop si
 endfunc
 
@@ -1068,6 +1090,7 @@ endfunc
 func ReadLevelData
     %arg levelNum:word, farFileName:dword
     sub sp,0x490
+    ; Open file
     push di
     push si
     push word [farFileName+FarPtr.Seg]
@@ -1079,32 +1102,36 @@ func ReadLevelData
     call far KERNEL.OpenFile ; a74
     mov [bp-0x4],ax
     inc ax
-    jnz .label0 ; ↓
-    jmp .label14 ; ↓
-.label0: ; a82
+    if z
+        jmp .error ; ↓
+    endif ; a82
+    ; Check signature
     push word [bp-0x4]
     call far FUN_4_0950 ; a85 4:950
     add sp,byte +0x2
     mov si,ax
+    ; Store number of levels
     mov bx,[GameStatePtr]
     mov [bx+NumLevelsInSet],si
     or si,si
-    jnz .label1 ; ↓
-    jmp .label13 ; ↓
-.label1: ; a9e
+    if z
+        jmp .cleanup ; ↓
+    endif ; a9e
     mov di,[levelNum]
     cmp si,di
-    jnb .label2 ; ↓
-    jmp .label13 ; ↓
-.label2: ; aa8
+    if b
+        jmp .cleanup ; ↓
+    endif ; aa8
+    ; Skip to the requested level
     push di
     push word [bp-0x4]
     call far SkipNFields ; aac 4:9b4
     add sp,byte +0x4
     or ax,ax
-    jnz .label3 ; ↓
-    jmp .label13 ; ↓
-.label3: ; abb
+    if z
+        jmp .cleanup ; ↓
+    endif ; abb
+    ; Read and discard level size
     push word [bp-0x4]
     lea ax,[bp-0x6]
     push ss
@@ -1112,9 +1139,10 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; ac5
     cmp ax,0x2
-    jnb .label4 ; ↓
-    jmp .label13 ; ↓
-.label4: ; ad2
+    if b
+        jmp .cleanup ; ↓
+    endif ; ad2
+    ; Read level number and check it
     push word [bp-0x4]
     lea ax,[bp-0x6]
     push ss
@@ -1122,13 +1150,14 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; adc
     cmp ax,0x2
-    jnb .label5 ; ↓
-    jmp .label13 ; ↓
-.label5: ; ae9
+    if b
+        jmp .cleanup ; ↓
+    endif ; ae9
     cmp di,[bp-0x6]
-    jz .label6 ; ↓
-    jmp .label13 ; ↓
-.label6: ; af1
+    if nz
+        jmp .cleanup ; ↓
+    endif ; af1
+    ; Read initial time limit
     push word [bp-0x4]
     mov ax,[GameStatePtr]
     add ax,InitialTimeLimit
@@ -1137,9 +1166,10 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; afe
     cmp ax,0x2
-    jnb .label7 ; ↓
-    jmp .label13 ; ↓
-.label7: ; b0b
+    if b
+        jmp .cleanup ; ↓
+    endif ; b0b
+    ; Read chips remaining
     push word [bp-0x4]
     mov ax,[GameStatePtr]
     add ax,InitialChipsRemainingCount
@@ -1148,9 +1178,10 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; b18
     cmp ax,0x2
-    jnb .label8 ; ↓
-    jmp .label13 ; ↓
-.label8: ; b25
+    if b
+        jmp .cleanup ; ↓
+    endif ; b25
+    ; Read map word: 0 or 1
     push word [bp-0x4]
     lea ax,[bp-0x8]
     push ss
@@ -1158,15 +1189,17 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; b2f
     cmp ax,0x2
-    jnb .label9 ; ↓
-    jmp .label13 ; ↓
-.label9: ; b3c
+    if b
+        jmp .cleanup ; ↓
+    endif ; b3c
     cmp word [bp-0x8],byte +0x0
-    jz .label10 ; ↓
-    cmp word [bp-0x8],byte +0x1
-    jz .label10 ; ↓
-    jmp .label13 ; ↓
-.label10: ; b4b
+    if nz
+        cmp word [bp-0x8],byte +0x1
+        if nz
+            jmp .cleanup ; ↓
+        endif
+    endif ; b4b
+    ; Read layer 1 size
     push word [bp-0x4]
     lea ax,[bp-0x6]
     push ss
@@ -1174,9 +1207,10 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; b55
     cmp ax,0x2
-    jnb .label11 ; ↓
-    jmp .label13 ; ↓
-.label11: ; b62
+    if b
+        jmp .cleanup ; ↓
+    endif ; b62
+    ; Read layer 1 data onto the stack
     push word [bp-0x4]
     lea ax,[bp-0x490]
     push ss
@@ -1184,18 +1218,20 @@ func ReadLevelData
     push word [bp-0x6]
     call far KERNEL._lread ; b6e
     cmp ax,[bp-0x6]
-    jnb .label12 ; ↓
-    jmp .label13 ; ↓
-.label12: ; b7b
+    if b
+        jmp .cleanup ; ↓
+    endif ; b7b
+    ; Expand layer 1
     push byte +0x20
     push byte +0x20
     push word [GameStatePtr]
-    push word [bp-0x8]
-    push word [bp-0x6]
+    push word [bp-0x8] ; map word
+    push word [bp-0x6] ; map size
     lea ax,[bp-0x490]
     push ax
     call far ExpandTilesRLE ; b8e 4:5fc
     add sp,byte +0xc
+    ; Read layer 2 size
     push word [bp-0x4]
     lea ax,[bp-0x6]
     push ss
@@ -1203,7 +1239,8 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; ba0
     cmp ax,0x2
-    jb .label13 ; ↓
+    jb .cleanup ; ↓
+    ; Read layer 2 data onto the stack
     push word [bp-0x4]
     lea ax,[bp-0x490]
     push ss
@@ -1211,18 +1248,20 @@ func ReadLevelData
     push word [bp-0x6]
     call far KERNEL._lread ; bb6
     cmp ax,[bp-0x6]
-    jb .label13 ; ↓
+    jb .cleanup ; ↓
+    ; Expand layer 2
     push byte +0x20
     push byte +0x20
     mov ax,[GameStatePtr]
     add ah,Lower>>8
     push ax
-    push word [bp-0x8]
-    push word [bp-0x6]
+    push word [bp-0x8] ; map word
+    push word [bp-0x6] ; map data
     lea ax,[bp-0x490]
     push ax
     call far ExpandTilesRLE ; bd6 4:5fc
     add sp,byte +0xc
+    ; Read optional fields size
     push word [bp-0x4]
     lea ax,[bp-0x6]
     push ss
@@ -1230,7 +1269,8 @@ func ReadLevelData
     push byte +0x2
     call far KERNEL._lread ; be8
     cmp ax,0x2
-    jb .label13 ; ↓
+    jb .cleanup ; ↓
+    ; Read optional field data onto the stack
     push word [bp-0x4]
     lea ax,[bp-0x490]
     push ss
@@ -1238,7 +1278,8 @@ func ReadLevelData
     push word [bp-0x6]
     call far KERNEL._lread ; bfe
     cmp ax,[bp-0x6]
-    jb .label13 ; ↓
+    jb .cleanup ; ↓
+    ; Decode fields
     push word [bp-0x6]
     lea ax,[bp-0x490]
     push ax
@@ -1247,14 +1288,14 @@ func ReadLevelData
     push word [bp-0x4]
     call far KERNEL._lclose ; c1b
     mov ax,0x1
-    jmp short .label15 ; ↓
+    jmp short .end ; ↓
     nop
-.label13: ; c26
+.cleanup: ; c26
     push word [bp-0x4]
     call far KERNEL._lclose ; c29
-.label14: ; c2e
+.error: ; c2e
     xor ax,ax
-.label15: ; c30
+.end: ; c30
     pop si
     pop di
 endfunc
@@ -1463,16 +1504,16 @@ func GetLevelPassword
     lodsb
     mov [bp-0x4],al
     cmp byte [bp-0x3],0x6
-    jz .label5 ; ↓
+    jz .foundPasswordField ; ↓
     cmp byte [bp-0x3],0x8
-    jz .label5 ; ↓
+    jz .foundPasswordField ; ↓
     sub ah,ah
     add si,ax
     cmp si,dx
     jb .loop ; ↑
     jmp short .cleanup ; ↓
     nop
-.label5: ; e02
+.foundPasswordField: ; e02
     cmp byte [bp-0x4],0xa
     if a
         mov byte [si+0x9],0x0
@@ -1491,14 +1532,14 @@ func GetLevelPassword
     push word [bp-0x8]
     call far KERNEL._lclose ; e2b
     mov ax,0x1
-    jmp short .label10 ; ↓
+    jmp short .end ; ↓
     nop
 .cleanup: ; e36
     push di
     call far KERNEL._lclose ; e37
 .error: ; e3c
     xor ax,ax
-.label10: ; e3e
+.end: ; e3e
     pop si
     pop di
 endfunc
@@ -1542,16 +1583,16 @@ func TryIniPassword
     jz .return1 ; ↓
 .return0: ; e9a
     xor ax,ax
-    jmp short .label2 ; ↓
+    jmp short .end ; ↓
 .return1: ; e9e
     mov ax,0x1
-.label2: ; ea1
+.end: ; ea1
     pop si
 endfunc
 
 ; eaa
 
-; check password for a level
+; Check password for a level
 ; level number may be 0 in which case we search
 ; for a level with a matching password
 ; Called by GOTOLEVELMSGPROC
@@ -1564,15 +1605,19 @@ func FUN_4_0eaa
     ; get number of levels
     call far FUN_4_0a0e ; ebd 4:a0e
     mov [bp-0xe],ax
+    ; were we given a level number?
     cmp word [di],byte +0x0
-    if ne
+    if nz
+        ; fast path: we know the level number up front
+        ; jumping to level 1 is always okay
         cmp word [di],byte +0x1
         if e
-        .label0: ; ecf
+        .okay: ; ecf
             mov ax,0x1
-            jmp .label18 ; ↓
+            jmp .end ; ↓
             nop
         endif ; ed6
+        ; get the password from the ini
         push byte +0x0
         push byte +0x0
         lea ax,[bp-0x1a]
@@ -1581,7 +1626,7 @@ func FUN_4_0eaa
         call far GetLevelProgressFromIni ; ee0 2:1adc
         add sp,byte +0x8
         or ax,ax
-        jnz .label0 ; ↑
+        jnz .okay ; ↑
         ; get level password
         lea ax,[bp-0x26]
         push ax
@@ -1590,7 +1635,7 @@ func FUN_4_0eaa
         add sp,byte +0x4
         or ax,ax
         if z
-            jmp .label17 ; ↓
+            jmp .notOkay ; ↓
         endif ; f01
         ; check password
         push ds
@@ -1600,10 +1645,12 @@ func FUN_4_0eaa
         push ax
         call far USER.lstrcmpi ; f0a
         or ax,ax
-        jz .label0 ; ↑
-        jmp .label17 ; ↓
+        jz .okay ; ↑
+        jmp .notOkay ; ↓
     endif ; f16
-    ; same, but this time we don't know the level number
+    ;
+    ; Slow path: we don't know the level number
+    ;
     push ds
     push word DataFileName ; "CHIPS.DAT"
     lea ax,[bp-0xae]
@@ -1614,21 +1661,21 @@ func FUN_4_0eaa
     mov [bp-0xa],ax
     inc ax
     if z
-        jmp .label17 ; ↓
+        jmp .notOkay ; ↓
     endif ; f30
     push word [bp-0xa]
     call far FUN_4_0950 ; f33 4:950
     add sp,byte +0x2
     or ax,ax
     if z
-        jmp .label16 ; ↓
+        jmp .closeFile.notOkay ; ↓
     endif ; f42
     mov word [bp-0x8],0x1
     cmp word [bp-0xe],byte +0x1
     if l
-        jmp .label16 ; ↓
+        jmp .closeFile.notOkay ; ↓
     endif
-.label6: ; f50
+.loop.level: ; f50
     mov word [bp-0xc],0x190
     lea ax,[bp-0xc]
     push ax
@@ -1640,77 +1687,77 @@ func FUN_4_0eaa
     add sp,byte +0x8
     or ax,ax
     if z
-        jmp .label16 ; ↓
+        jmp .closeFile.notOkay ; ↓
     endif ; f73
     mov si,[bp-0xc]
     lea di,[bp-0x23e+si]
     lea si,[bp-0x23e]
     cmp di,si
-    jna .label13 ; ↓
-    mov [bp-0x6],di
-.label8: ; f85
-    lodsb
-    mov [bp-0x3],al
-    lodsb
-    mov [bp-0x4],al
-    cmp byte [bp-0x3],0x6 ; password field
-    jz .label9 ; ↓
-    cmp byte [bp-0x3],0x8 ; plaintext password field
-    jnz .label12 ; ↓
-.label9: ; f99
-    cmp byte [bp-0x4],MaxPasswordLength ; length
     if a
-        mov byte [si+MaxPasswordLength-1],0x0
-    endif ; fa3
-    lea ax,[bp-0x26]
-    push ss
-    push ax
-    push ds
-    push si
-    call far KERNEL.lstrcpy ; faa
-    cmp byte [bp-0x3],0x8
-    if ne
-        lea ax,[bp-0x26]
-        push ax
-        call far DecodePassword ; fb9 4:6b0
-        add sp,byte +0x2
-    endif ; fc1
-    push ds
-    push word [password]
-    lea ax,[bp-0x26]
-    push ss
-    push ax
-    call far USER.lstrcmpi ; fca
-    or ax,ax
-    jz .label15 ; ↓
-.label12: ; fd3
-    mov al,[bp-0x4]
-    sub ah,ah
-    add si,ax
-    cmp si,di
-    jb .label8 ; ↑
-.label13: ; fde
+        mov [bp-0x6],di
+    .loop.field: ; f85
+        lodsb
+        mov [bp-0x3],al
+        lodsb
+        mov [bp-0x4],al
+        cmp byte [bp-0x3],0x6 ; password field
+        jz .foundPasswordField ; ↓
+        cmp byte [bp-0x3],0x8 ; plaintext password field
+        if z
+        .foundPasswordField: ; f99
+            cmp byte [bp-0x4],MaxPasswordLength ; length
+            if a
+                mov byte [si+MaxPasswordLength-1],0x0
+            endif ; fa3
+            lea ax,[bp-0x26]
+            push ss
+            push ax
+            push ds
+            push si
+            call far KERNEL.lstrcpy ; faa
+            cmp byte [bp-0x3],0x8
+            if ne
+                lea ax,[bp-0x26]
+                push ax
+                call far DecodePassword ; fb9 4:6b0
+                add sp,byte +0x2
+            endif ; fc1
+            push ds
+            push word [password]
+            lea ax,[bp-0x26]
+            push ss
+            push ax
+            call far USER.lstrcmpi ; fca
+            or ax,ax
+            jz .closeFile.validPassword ; ↓
+        endif ; fd3
+        mov al,[bp-0x4]
+        sub ah,ah
+        add si,ax
+        cmp si,di
+        jb .loop.field ; ↑
+    endif ; fde
     mov ax,[bp-0xe]
     inc word [bp-0x8]
     cmp [bp-0x8],ax
-    jg .label14 ; ↓
-    jmp .label6 ; ↑
-.label14: ; fec
-    jmp short .label16 ; ↓
-.label15: ; fee
+    if le
+        jmp .loop.level ; ↑
+    endif ; fec
+    jmp short .closeFile.notOkay ; ↓
+.closeFile.validPassword: ; fee
     push word [bp-0xa]
     call far KERNEL._lclose ; ff1
     mov ax,[bp-0x8]
     mov bx,[levelNumPtr]
     mov [bx],ax
-    jmp .label0 ; ↑
+    jmp .okay ; ↑
     nop
-.label16: ; 1002
+.closeFile.notOkay: ; 1002
     push word [bp-0xa]
     call far KERNEL._lclose ; 1005
-.label17: ; 100a
+.notOkay: ; 100a
     xor ax,ax
-.label18: ; 100c
+.end: ; 100c
     pop si
     pop di
 endfunc
@@ -1861,7 +1908,7 @@ endfunc
 
 ; 115c
 
-; Go to next level, possibly asking for a password
+; Go to level by number, possibly asking for a password
 ; Called by GOTOLEVELMSGPROC
 func FUN_4_115c
     %arg hWnd:word, levelNum:word
@@ -1869,33 +1916,41 @@ func FUN_4_115c
     push di
     push si
     mov si,[levelNum]
+    ; is it the current level?
     mov bx,[GameStatePtr]
     mov ax,[bx+LevelNumber]
     mov [bp-0x12],ax
     cmp ax,si
-    jz .label2 ; ↓
+    jz .okay ; ↓
+    ; are we ignoring passwords?
     cmp word [IgnorePasswords],byte +0x0
-    jz .label0 ; ↓
-    cmp ax,FakeLastLevel+1 ; Thanks to...
-    jnz .label2 ; ↓
-.label0: ; 1189
+    if ne
+        ; exception: always need a password for level 145
+        cmp ax,FakeLastLevel+1 ; Thanks to...
+        jnz .okay ; ↓
+    endif ; 1189
+    ; is the level password in the ini file?
     push si
     call far TryIniPassword ; 118a 4:e48
     add sp,byte +0x2
     or ax,ax
-    jnz .label2 ; ↓
+    jnz .okay ; ↓
+    ; none of that worked, so prompt the user for the password
     call far PauseGame ; 1196 2:17da
+    ; . first get the password
     lea ax,[bp-0x10]
     push ax
-    push word [bp+0x8]
+    push word [levelNum]
     call far GetLevelPassword ; 11a2 4:d58
+    ; . set up the prompt
     add sp,byte +0x4
     or ax,ax
-    jz .label1 ; ↓
-    mov ax,[bp+0x8]
+    jz .unpauseAndOkay ; ↓
+    mov ax,[levelNum]
     mov [PasswordPromptLevel],ax
     lea ax,[bp-0x10]
     mov [PasswordPromptPassword],ax
+    ; . show the prompt
     push word SEG PASSWORDMSGPROC
     push word PASSWORDMSGPROC
     push word [OurHInstance]
@@ -1915,14 +1970,16 @@ func FUN_4_115c
     push di
     call far KERNEL.FreeProcInstance ; 11e6
     call far UnpauseGame ; 11eb 2:1834
-    mov ax,[PasswordPromptLevel]
-    jmp short .label3 ; ↓
-    nop
-.label1: ; 11f6
+    ; was it right?
+    mov ax,[PasswordPromptLevel] ; this var is set to 0/1 if the password was wrong/right
+    jmp short .end ; ↓
+    align 2
+.unpauseAndOkay: ; 11f6
     call far UnpauseGame ; 11f6 2:1834
-.label2: ; 11fb
+.okay: ; 11fb
+    ; we're allowed to go to the level, return 1
     mov ax,0x1
-.label3: ; 11fe
+.end: ; 11fe
     pop si
     pop di
 endfunc
