@@ -5,17 +5,25 @@ print("digraph code {")
 currentfunc = "top"
 currentlabel = "top"
 lastjump = ""
+ifstack = []
 for line in sys.stdin:
     words = line.strip().split()
     if not words:
         continue
-    if words[0] == "func" or words[0].endswith(":") and "%" not in words[0]:
+    if words[0] in {"func", "if", "endif"} or words[0].endswith(":") and "%" not in words[0]:
+        if words[0] == "if":
+            ifstack.append(currentlabel)
+            continue
+        if words[0] == "endif":
+            currentlabel = ifstack.pop()
+            continue
         if words[0] == "func":
             label = words[1]
         else:
             label = words[0].strip(":")
         if label.startswith('.'):
-            if lastjump != "jmp":
+            # implicit edge from fallthough
+            if lastjump != "jmp" and not ifstack:
                 print("  \"{}\" -> \"{}\" [color=blue];".format(currentlabel, currentfunc+label))
             currentlabel = currentfunc+label
         else:
@@ -27,10 +35,15 @@ for line in sys.stdin:
     if words[0].startswith("j") or words[0] == "dw":
         for word in words:
             if word.startswith("."):
-                lastjump = words[0]
+                if not ifstack:
+                    lastjump = words[0]
                 target = currentfunc+word
                 if words[0] == "jmp" or words[0] == "dw":
-                    print("  \"{}\" -> \"{}\" [color=purple];".format(currentlabel, target))
+                    if ifstack:
+                        # jumps from inside ifs are psuedo-conditional
+                        print("  \"{}\" -> \"{}\" [color=green];".format(currentlabel, target))
+                    else:
+                        print("  \"{}\" -> \"{}\" [color=purple];".format(currentlabel, target))
                 else:
                     print("  \"{}\" -> \"{}\";".format(currentlabel, target))
 print("}")
