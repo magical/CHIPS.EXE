@@ -340,12 +340,11 @@ BESTTIMESMSGPROC:
     jng .label7 ; ↑
 .label10: ; 2aa
     cmp di,byte +0x1
-    jz .label11 ; ↓
-    mov ax,s_plural_1 ; "s"
-    jmp short .label12 ; ↓
-.label11: ; 2b4
-    mov ax,s_singular_1 ; ""
-.label12: ; 2b7
+    if nz
+        mov ax,s_plural_1 ; "s"
+    else ; 2b4
+        mov ax,s_singular_1 ; ""
+    endif ; 2b7
     mov si,ax
     mov [bp-0x8],ds
     push ds
