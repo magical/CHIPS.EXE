@@ -5,6 +5,9 @@ SEGMENT CODE ; 6
 %include "structs.asm"
 %include "variables.asm"
 
+%include "func.mac"
+%include "if.mac"
+
 %include "extern.inc"
 %include "windows.inc"
 
@@ -19,120 +22,126 @@ EXPORT COMPLETEMSGPROC  COMPLETEMSGPROC   13
 
 ; 0
 
-GOTOLEVELMSGPROC:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func GOTOLEVELMSGPROC
+    %assign %$argsize 0xa
+    %arg lParam:dword ; +6
+    %arg wParam:word ; +a
+    %arg uMsg:word ; +c
+    %arg hwnd:word ; +e
+    %local levelNum:word ; -4
+    %local gotInt:word ; -6
+    %define levelText (bp-0xa) ; length 4
+    %define passwordText (bp-0x16) ; length 0xc
     sub sp,byte +0x16
     push di
     push si
-    mov ax,[bp+0xc]
-    sub ax,0xf
-    jz .label0 ; ↓
-    dec ax
-    jz .label1 ; ↓
-    sub ax,0x9
-    jz .label0 ; ↓
-    sub ax,0xf7
-    jz .label2 ; ↓
-    dec ax
-    jz .label3 ; ↓
+    mov ax,[uMsg]
+    sub ax,0xf ; WM_PAINT
+    jz .wm_paint ; ↓
+    dec ax ; 0x10 = WM_CLOSE
+    jz .wm_close ; ↓
+    sub ax,0x9 ; 0x19 = WM_CTLCOLOR
+    jz .wm_ctlcolor ; ↓
+    sub ax,0xf7 ; 0x110 = WM_INITDIALOG
+    jz .wm_initdialog ; ↓
+    dec ax ; 0x111 = WM_COMMAND
+    jz .wm_command ; ↓
     xor ax,ax
-    jmp .label20 ; ↓
-.label0: ; 2c
-    push word [bp+0xe]
+    jmp .end ; ↓
+.wm_paint: ; 2c
+.wm_ctlcolor:
+    push word [hwnd]
     push word [bp+0xc]
     push word [bp+0xa]
     push word [bp+0x8]
     push word [bp+0x6]
     call far WEP4UTIL.GRAYDLGPROC ; 3b
-    jmp .label20 ; ↓
+    jmp .end ; ↓
     nop
-.label1: ; 44
-    push word [bp+0xe]
-    push word 0x111
-    push byte +0x2
+.wm_close: ; 44
+    push word [hwnd]
+    push word 0x111 ; WM_COMMAND
+    push byte ID_CANCEL
     push byte +0x0
     push byte +0x0
     call far USER.PostMessage ; 50
-    jmp .label19 ; ↓
-.label2: ; 58
-    push word [bp+0xe]
+    jmp .done ; ↓
+.wm_initdialog: ; 58
+    push word [hwnd]
     call far WEP4UTIL.CENTERHWND ; 5b
-    jmp .label19 ; ↓
+    jmp .done ; ↓
     nop
-.label3: ; 64
-    mov ax,[bp+0xa]
-    dec ax
-    jz .label5 ; ↓
-    dec ax
-    jnz .label4 ; ↓
-    jmp .label17 ; ↓
-.label4: ; 70
-    jmp .label19 ; ↓
+.wm_command: ; 64
+    mov ax,[wParam]
+    dec ax ; 1 ID_OK
+    jz .btn_ok ; ↓
+    dec ax ; 2 ID_CANCEL
+    if z
+        jmp .btn_cancel ; ↓
+    endif ; 70
+    jmp .done ; ↓
     nop
-.label5: ; 74
-    mov si,[bp+0xe]
+.btn_ok: ; 74
+    mov si,[hwnd]
     push si
     push byte +0x64
-    lea ax,[bp-0x6]
+    lea ax,[gotInt]
     push ss
     push ax
     push byte +0x0
     call far USER.GetDlgItemInt ; 81
-    mov [bp-0x4],ax
-    call far FUN_4_0a0e ; 89 4:a0e
+    mov [levelNum],ax
+    call far FUN_4_0a0e ; 89 4:a0e check sig, get level count
     mov di,ax
-    cmp word [bp-0x6],byte +0x0
-    jnz .label6 ; ↓
-    push si
-    push byte +0x64
-    lea ax,[bp-0xa]
-    push ss
-    push ax
-    push byte +0x4
-    call far USER.GetDlgItemText ; a0
-    cmp byte [bp-0xa],0x0
-    jnz .label6 ; ↓
-    mov word [bp-0x6],0x1
-    mov word [bp-0x4],0x0
-.label6: ; b5
-    cmp word [bp-0x6],byte +0x0
-    jnz .label7 ; ↓
-    jmp .label16 ; ↓
-.label7: ; be
-    cmp word [bp-0x4],byte +0x0
-    jnl .label8 ; ↓
-    jmp .label16 ; ↓
-.label8: ; c7
-    cmp di,[bp-0x4]
-    jnl .label9 ; ↓
-    jmp .label16 ; ↓
-.label9: ; cf
+    cmp word [gotInt],byte +0x0
+    if z
+        push si
+        push byte +0x64
+        lea ax,[levelText]
+        push ss
+        push ax
+        push byte +0x4
+        call far USER.GetDlgItemText ; a0
+        cmp byte [levelText],0x0
+        if z
+            mov word [gotInt],0x1
+            mov word [levelNum],0x0
+        endif ; b5
+    endif
+    cmp word [gotInt],byte +0x0
+    if e
+        jmp .invalidLevelNum ; ↓
+    endif ; be
+    cmp word [levelNum],byte +0x0
+    if l
+        jmp .invalidLevelNum ; ↓
+    endif ; c7
+    cmp di,[levelNum] ; compare with level count
+    if l
+        jmp .invalidLevelNum ; ↓
+    endif ; cf
     cmp word [IgnorePasswords],byte +0x0
-    jz .label10 ; ↓
-    cmp word [bp-0x4],FakeLastLevel+1
-    jnz .label14 ; ↓
-.label10: ; dd
+    if ne
+        cmp word [levelNum],FakeLastLevel+1
+        jnz .validPassword ; ↓
+    endif ; dd
+    ; get password input
     push si
     push byte +0x65
-    lea ax,[bp-0x16]
+    lea ax,[passwordText]
     push ss
     push ax
     push byte +0xa
     call far USER.GetDlgItemText ; e7
-    cmp byte [bp-0x16],0x0
-    jnz .label13 ; ↓
-    cmp word [bp-0x4],byte +0x0
-    jnz .label13 ; ↓
+    cmp byte [passwordText],0x0
+    jnz .checkPassword ; ↓
+    cmp word [levelNum],byte +0x0
+    jnz .checkPassword ; ↓
+.missingFields:
     push byte +0x30
     push ds
     push word s_You_must_enter_a_level_andor_password ; "You must enter a level and/or password."
-.label11: ; fe
+.showMessageBox: ; fe
     push si
     call far ShowMessageBox ; ff 2:0
     add sp,byte +0x8
@@ -141,32 +150,32 @@ GOTOLEVELMSGPROC:
     call far USER.GetDlgItem ; 10a
     push ax
     call far USER.SetFocus ; 110
-    push si
-    push byte +0x64
-.label12: ; 118
-    push word 0x401
-    push byte +0x0
-    push byte -0x1
+    push si             ; hWnd
+    push byte +0x64     ; ndlgitem
+.sendDlgItemMessage: ; 118
+    push word 0x401     ; Msg = WM_USER+1
+    push byte +0x0      ; wParam
+    push byte -0x1      ; lParam
     push byte +0x0
     call far USER.SendDlgItemMessage ; 121
-    jmp short .label19 ; ↓
-.label13: ; 128
-    lea ax,[bp-0x16]
+    jmp short .done ; ↓
+.checkPassword: ; 128
+    lea ax,[passwordText]
     push ax
-    lea ax,[bp-0x4]
+    lea ax,[levelNum]
     push ax
     call far FUN_4_0eaa ; 130 4:eaa
     add sp,byte +0x4
     or ax,ax
-    jz .label15 ; ↓
-.label14: ; 13c
-    mov ax,[bp-0x4]
+    jz .invalidPassword ; ↓
+.validPassword: ; 13c
+    mov ax,[levelNum]
     mov bx,[GameStatePtr]
     mov [bx+LevelNumber],ax
     push si
     push byte +0x1
-    jmp short .label18 ; ↓
-.label15: ; 14c
+    jmp short .endDialog ; ↓
+.invalidPassword: ; 14c
     push byte +0x30
     push ds
     push word s_You_must_enter_a_valid_password ; "You must enter a valid password."
@@ -180,27 +189,23 @@ GOTOLEVELMSGPROC:
     call far USER.SetFocus ; 164
     push si
     push byte +0x65
-    jmp short .label12 ; ↑
-.label16: ; 16e
+    jmp short .sendDlgItemMessage ; ↑
+.invalidLevelNum: ; 16e
     push byte +0x30
     push ds
     push word s_That_is_not_a_valid_level_number ; "That is not a valid level number."
-    jmp short .label11 ; ↑
-.label17: ; 176
-    push word [bp+0xe]
+    jmp short .showMessageBox ; ↑
+.btn_cancel: ; 176
+    push word [hwnd]
     push byte +0x0
-.label18: ; 17b
+.endDialog: ; 17b
     call far USER.EndDialog ; 17b
-.label19: ; 180
+.done: ; 180
     mov ax,0x1
-.label20: ; 183
+.end: ; 183
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf 0xa
+endfunc
 
 ; 18e
 

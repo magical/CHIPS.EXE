@@ -69,7 +69,7 @@ crt.obj: variables.asm func.mac
 seg2.obj: constants.asm structs.asm variables.asm func.mac if.mac
 seg4.obj: constants.asm structs.asm variables.asm func.mac if.mac
 seg5.obj: constants.asm variables.asm func.mac
-seg6.obj: constants.asm structs.asm variables.asm
+seg6.obj: constants.asm structs.asm variables.asm func.mac if.mac
 sound.obj: constants.asm variables.asm func.mac
 digits.obj: variables.asm func.mac
 
