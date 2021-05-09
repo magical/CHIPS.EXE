@@ -1787,8 +1787,10 @@ func MonsterLoop
 
         ;;; BLOB ;;;
 .BlobMovement:
+    ; Blobs only move on even turns
     cmp word [isEvenTurn],byte +0x0
     if z
+        ; odd turn, skip
         jmp word .next
     endif
 .blob.loop: ; edb
