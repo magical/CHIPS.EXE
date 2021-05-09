@@ -1909,7 +1909,7 @@ endfunc
 ; 115c
 
 ; Go to level by number, possibly asking for a password
-; Called by GOTOLEVELMSGPROC
+; Called by GOTOLEVELMSGPROC and MenuItemCallback (prev/next level)
 func FUN_4_115c
     %arg hWnd:word, levelNum:word
     sub sp,byte +0x12
