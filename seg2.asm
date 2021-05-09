@@ -7,6 +7,7 @@ SEGMENT CODE ; 2
 %include "structs.asm"
 %include "variables.asm"
 %include "func.mac"
+%include "if.mac"
 
 %include "extern.inc"
 %include "windows.inc"
@@ -36,35 +37,40 @@ func ShowMessageBox
     ; if sound is enabled, play a message beep before
     ; popping the message box open
     cmp word [SoundEnabled],byte +0x0
-    jz .showMessage ; ↓
-    test byte [flags],0x30
-    jz .checkInfo ; ↓
-    mov si,0x30 ; MB_ICONWARNING
-    jmp short .playBeep ; ↓
-    nop
-.checkInfo: ; 26
-    test byte [flags],0x40
-    jz .checkError ; ↓
-    mov si,0x40 ; MB_ICONINFORMATION
-    jmp short .playBeep ; ↓
-    nop
-.checkError: ; 32
-    test byte [flags],0x10
-    jz .checkQuestion ; ↓
-    mov si,0x10 ; MB_ICONERROR
-    jmp short .playBeep ; ↓
-    nop
-.checkQuestion: ; 3e
-    mov al,[flags]
-    and ax,0x20
-    cmp ax,0x1
-    cmc
-    sbb si,si
-    and si,byte +0x20 ; MB_ICONQUESTION
-.playBeep: ; 4d
-    push si
-    call far USER.MessageBeep ; 4e
-.showMessage: ; 53
+    if nz
+        ; Warning
+        test byte [flags],0x30
+        if nz
+            mov si,0x30 ; MB_ICONWARNING
+            jmp short .playBeep ; ↓
+            nop
+        endif ; 26
+        ; Info
+        test byte [flags],0x40
+        if nz
+            mov si,0x40 ; MB_ICONINFORMATION
+            jmp short .playBeep ; ↓
+            nop
+        endif ; 32
+        ; Error
+        test byte [flags],0x10
+        if nz
+            mov si,0x10 ; MB_ICONERROR
+            jmp short .playBeep ; ↓
+            nop
+        endif ; 3e
+        ; Question
+        mov al,[flags]
+        and ax,0x20
+        cmp ax,0x1
+        cmc
+        sbb si,si
+        and si,byte +0x20 ; MB_ICONQUESTION
+    .playBeep: ; 4d
+        push si
+        call far USER.MessageBeep ; 4e
+    endif ; 53
+    ; Show the message box and unpause
     push word [hWnd]
     push word [message+FarPtr.Seg] ; segment
     push word [message+FarPtr.Off]
@@ -119,17 +125,18 @@ endfunc
 func DrawTile
     sub sp,byte +0xa
     cmp byte [bp+0xe],0x0
-    jnz .label0 ; ↓
-    jmp .label3 ; ↓
-.label0: ; da
+    if z
+        jmp .opaque ; ↓
+    endif ; da
     cmp byte [bp+0xc],FirstTransparent
-    jnb .label1 ; ↓
-    jmp .label3 ; ↓
-.label1: ; e3
+    if b
+        jmp .opaque ; ↓
+    endif ; e3
     cmp byte [bp+0xc],LastTransparent
-    jna .label2 ; ↓
-    jmp .label3 ; ↓
-.label2: ; ec
+    if a
+        jmp .opaque ; ↓
+    endif ; ec
+    ; Transparent tile
     push byte +0x20
     call far GetTileImagePos ; ee 3:2a3e
     add sp,byte +0x2
@@ -190,9 +197,10 @@ func DrawTile
     push word [TileDC]
     push word [bp-0xa]
     push word [bp-0x8]
-    jmp short .label4 ; ↓
+    jmp short .blit ; ↓
     nop
-.label3: ; 19a
+.opaque: ; 19a
+    ; Opaque tile
     mov al,[bp+0xc]
     push ax
     call far GetTileImagePos ; 19e 3:2a3e
@@ -205,7 +213,7 @@ func DrawTile
     push word [TileDC]
     push ax
     push dx
-.label4: ; 1b9
+.blit: ; 1b9
     push word 0xcc
     push byte +0x20
     call far GDI.BitBlt ; 1be
@@ -307,7 +315,7 @@ func InvalidateTile
     call far IsCoordOnscreen ; 2c7 2:7a
     add sp,byte +0x4
     or ax,ax
-    jz .label0 ; ↓
+    jz .end ; ↓
     push word [bp+0x8]
     push word [bp+0x6]
     call far GetTileRect ; 2d9 4:0
@@ -326,7 +334,7 @@ func InvalidateTile
     push ax
     push byte +0x0
     call far USER.InvalidateRect ; 2f7
-.label0: ; 2fc
+.end: ; 2fc
     pop si
     pop di
 endfunc
@@ -400,9 +408,9 @@ func ScrollViewport
     mov bx,ax
     ; if vw-0 > rect.width/32+1 then ax = rect.width/32+1
     cmp ax,cx
-    jng .label1 ; ↓
-    mov ax,cx
-.label1: ; 369
+    if g
+        mov ax,cx
+    endif ; 369
     ; stash ax
     mov [local_4],ax
     ; ax = vw-0
@@ -419,26 +427,26 @@ func ScrollViewport
     mov [bp-0x1c],cx
     ; if cx > bx then cx = bx
     cmp cx,bx
-    jng .label2 ; ↓
-    mov cx,bx
-.label2: ; 38d
+    if g
+        mov cx,bx
+    endif ; 38d
     mov [local_e],cx
     ; ax = vw-0-1
     dec ax
     ; if ax > rect.width/32 then ax = dx
     cmp ax,dx
-    jng .label3 ; ↓
-    mov ax,dx
-.label3: ; 397
+    if g
+        mov ax,dx
+    endif ; 397
     mov [local_6],ax
     ; ax = vh-0-1
     ; if ax > rect.height/32 then ax = rect.height/32
     mov ax,[bp-0x1c]
     dec ax
     cmp ax,[bp-0x1a]
-    jng .label4 ; ↓
-    mov ax,[bp-0x1a]
-.label4: ; 3a6
+    if g
+        mov ax,[bp-0x1a]
+    endif ; 3a6
     mov [local_10],ax
     ;; Draw chip in his new position, scroll the window,
     ;; set the new viewport position, and update the tile chip left
@@ -479,23 +487,22 @@ func ScrollViewport
     ;; Now draw any tiles that were
     ;; scrolled into view
 .check_x_delta:
-    ; if x delta is nonzero
+    ; skip if x delta is zero
     or si,si
-    jnz .update_x_tiles ; ↓
-    jmp .check_y_delta ; ↓
-.update_x_tiles: ; 401
+    if z
+        jmp .check_y_delta ; ↓
+    endif ; 401
     or si,si
-    jng .label6 ; ↓
-    mov ax,[local_6]
-    sub ax,di ; ax -= delta x
-    mov [local_a],ax
-    mov bx,[local_4]
-    jmp short .label7 ; ↓
-.label6: ; 412
-    mov word [local_a],0x0
-    mov bx,di
-    neg bx
-.label7: ; 41b
+    if g
+        mov ax,[local_6]
+        sub ax,di ; ax -= delta x
+        mov [local_a],ax
+        mov bx,[local_4]
+    else ; 412
+        mov word [local_a],0x0
+        mov bx,di
+        neg bx
+    endif ; 41b
     mov si,[GameStatePtr]
     mov ax,[si+ViewportY]
     mov [local_4],ax
@@ -503,34 +510,34 @@ func ScrollViewport
     mov cx,ax
     add ax,[si+ViewportHeight]
     cmp ax,cx
-    jng .label11 ; ↓
-.loop1: ; 433
-    mov si,[local_a]
-    cmp si,[local_8]
-    jnl .label10 ; ↓
-    mov di,[bp+0x6]
-.loop2: ; 43e
-    ; UpdateTile(hdc, vx+0+si, local_4)
-    push word [local_4]
-    mov bx,[GameStatePtr]
-    mov ax,[bx+ViewportX]
-    add ax,[bx+UnusedOffsetX]
-    add ax,si
-    push ax
-    push di
-    call far UpdateTile ; 451 2:1ca
-    add sp,byte +0x6
-    inc si
-    cmp si,[local_8]
-    jl .loop2 ; ↑
-.label10: ; 45f
-    mov bx,[GameStatePtr]
-    mov ax,[bx+ViewportY]
-    add ax,[bx+ViewportHeight]
-    inc word [local_4]
-    cmp ax,[local_4]
-    jg .loop1 ; ↑
-.label11: ; 473
+    if g
+    .loop1: ; 433
+        mov si,[local_a]
+        cmp si,[local_8]
+        if l
+            mov di,[bp+0x6]
+        .loop2: ; 43e
+            ; UpdateTile(hdc, vx+0+si, local_4)
+            push word [local_4]
+            mov bx,[GameStatePtr]
+            mov ax,[bx+ViewportX]
+            add ax,[bx+UnusedOffsetX]
+            add ax,si
+            push ax
+            push di
+            call far UpdateTile ; 451 2:1ca
+            add sp,byte +0x6
+            inc si
+            cmp si,[local_8]
+            jl .loop2 ; ↑
+        endif ; 45f
+        mov bx,[GameStatePtr]
+        mov ax,[bx+ViewportY]
+        add ax,[bx+ViewportHeight]
+        inc word [local_4]
+        cmp ax,[local_4]
+        jg .loop1 ; ↑
+    endif ; 473
     ; rect = {local_a*32, -0*32, local_8*32, (vh-0)*32}
     ; ValidateRect(hwndBoard, &rect)
     mov ax,[local_a]
@@ -554,22 +561,20 @@ func ScrollViewport
     push ax
     call far USER.ValidateRect ; 4ac
 .check_y_delta: ; 4b1
-    ; if y delta is nonzero
+    ; skip if y delta is zero
     cmp word [yScrollPixels],byte +0x0
-    jnz .update_y_tiles ; ↓
-    jmp .end ; ↓
-.update_y_tiles: ; 4ba
-    jng .label14 ; ↓
-    mov di,[local_10]
-    sub di,[viewportDeltaY]
-    mov ax,[local_e]
-    jmp short .label15 ; ↓
-    nop
-.label14: ; 4c8
-    xor di,di
-    mov ax,[viewportDeltaY]
-    neg ax
-.label15: ; 4cf
+    if z
+        jmp .end ; ↓
+    endif ; 4ba
+    if g
+        mov di,[local_10]
+        sub di,[viewportDeltaY]
+        mov ax,[local_e]
+    else ; 4c8
+        xor di,di
+        mov ax,[viewportDeltaY]
+        neg ax
+    endif ; 4cf
     mov [local_4],ax
     mov bx,[GameStatePtr]
     mov ax,[bx+ViewportX]
@@ -577,35 +582,35 @@ func ScrollViewport
     mov cx,ax
     add ax,[bx+ViewportWidth]
     cmp ax,cx
-    jng .label19 ; ↓
-    mov [local_8],di
-.loop3: ; 4ea
-    mov si,[local_8]
-    cmp si,[local_4]
-    jnl .label18 ; ↓
-    mov di,[bp+0x6]
-.loop4: ; 4f5
-    mov bx,[GameStatePtr]
-    mov ax,[bx+ViewportY]
-    add ax,[bx+UnusedOffsetY]
-    add ax,si
-    push ax
-    push word [local_6]
-    push di
-    call far UpdateTile ; 508 2:1ca
-    add sp,byte +0x6
-    inc si
-    cmp si,[local_4]
-    jl .loop4 ; ↑
-.label18: ; 516
-    mov bx,[GameStatePtr]
-    mov ax,[bx+ViewportX]
-    add ax,[bx+ViewportWidth]
-    inc word [local_6]
-    cmp ax,[local_6]
-    jg .loop3 ; ↑
-    mov di,[local_8]
-.label19: ; 52d
+    if g
+        mov [local_8],di
+    .loop3: ; 4ea
+        mov si,[local_8]
+        cmp si,[local_4]
+        if l
+            mov di,[bp+0x6]
+        .loop4: ; 4f5
+            mov bx,[GameStatePtr]
+            mov ax,[bx+ViewportY]
+            add ax,[bx+UnusedOffsetY]
+            add ax,si
+            push ax
+            push word [local_6]
+            push di
+            call far UpdateTile ; 508 2:1ca
+            add sp,byte +0x6
+            inc si
+            cmp si,[local_4]
+            jl .loop4 ; ↑
+        endif ; 516
+        mov bx,[GameStatePtr]
+        mov ax,[bx+ViewportX]
+        add ax,[bx+ViewportWidth]
+        inc word [local_6]
+        cmp ax,[local_6]
+        jg .loop3 ; ↑
+        mov di,[local_8]
+    endif ; 52d
     ; rect = {-0*32, di*32, (vw-0)*32, (local_4-0)*32}
     ; ValidateRect(hwndBoard, &rect)
     mov ax,[bx+UnusedOffsetX]
@@ -659,13 +664,13 @@ func UpdateChip
     neg ax
     ; clamp to [0, 32 - vw]
     or ax,ax
-    jnl .label0 ; ↓
-    xor ax,ax
-.label0: ; 5a1
+    if l
+        xor ax,ax
+    endif ; 5a1
     cmp ax,si
-    jng .label1 ; ↓
-    mov ax,si
-.label1: ; 5a7
+    if g
+        mov ax,si
+    endif ; 5a7
     ; cx = difference between new position and old position
     sub ax,[bx+ViewportX]
     mov [bp-0x6],ax
@@ -684,20 +689,20 @@ func UpdateChip
     neg ax
     ; clamp to [0, 32 - vh]
     or ax,ax
-    jnl .label2 ; ↓
-    xor ax,ax
-.label2: ; 5cf
+    if l
+        xor ax,ax
+    endif ; 5cf
     cmp ax,si
-    jng .label3 ; ↓
-    mov ax,si
-.label3: ; 5d5
+    if g
+        mov ax,si
+    endif ; 5d5
     ; ax = difference between new y position and old position
     sub ax,[bx+ViewportY]
     ;; if viewport pos is the same, just update src and dest tiles
     or cx,cx
-    jnz .label4 ; ↓
+    jnz .viewportMoved ; ↓
     cmp ax,cx
-    jnz .label4 ; ↓
+    jnz .viewportMoved ; ↓
     ; UpdateTile(hdc, oldX, oldY)
     mov si,[hdc]
     push word [oldY]
@@ -712,8 +717,8 @@ func UpdateChip
     call far UpdateTile ; 5fa 2:1ca
     add sp,byte +0x6
     jmp short .end ; ↓
+.viewportMoved: ; 604
     ; if viewport has moved, scroll the board
-.label4: ; 604
     push word [oldY] ; old chipy
     push word [oldX] ; old chipx
     push word [newY] ; new chipy
@@ -739,20 +744,20 @@ func WinMain
     push word 0x218
     call far WEP4UTIL.FCHKWEPVERS ; 638
     or ax,ax
-    jnz .label1 ; ↓
-.returnZero: ; 641
-    xor ax,ax
-    jmp short .end ; ↓
-    nop
-.label1: ; 646
+    if z
+    .returnZero: ; 641
+        xor ax,ax
+        jmp short .end ; ↓
+        nop
+    endif ; 646
     cmp word [hPrevInstance],byte +0x0
-    jnz .label2 ; ↓
-    push word [hInstance]
-    call far CreateClasses ; 64f 2:6c8
-    add sp,byte +0x2
-    or ax,ax
-    jz .returnZero
-.label2: ; 65b
+    if z
+        push word [hInstance]
+        call far CreateClasses ; 64f 2:6c8
+        add sp,byte +0x2
+        or ax,ax
+        jz .returnZero
+    endif ; 65b
     push word [nCmdShow]
     push word [hInstance]
     call far CreateWindowsAndInitGame ; 661 2:8e8
@@ -760,7 +765,7 @@ func WinMain
     or ax,ax
     jz .returnZero
     mov word [Var2c],0x1
-.label3: ; 673
+.messageLoop: ; 673
     lea ax,[bp-0x14]
     push ss
     push ax
@@ -771,9 +776,9 @@ func WinMain
     call far USER.PeekMessage ; 680
     or ax,ax
     ; FIXME: call WaitMessage if ax==0
-    jz .label3 ; ↑
+    jz .messageLoop ; ↑
     cmp word [bp-0x12],byte +0x12
-    jz .label4 ; ↓
+    jz .quit ; ↓
     push word [hwndMain]
     push word [hAccel]
     lea ax,[bp-0x14]
@@ -781,7 +786,7 @@ func WinMain
     push ax
     call far USER.TranslateAccelerator ; 69c
     or ax,ax
-    jnz .label3 ; ↑
+    jnz .messageLoop ; ↑
     lea ax,[bp-0x14]
     push ss
     push ax
@@ -790,9 +795,9 @@ func WinMain
     push ss
     push ax
     call far USER.DispatchMessage ; 6b4
-    jmp short .label3 ; ↑
+    jmp short .messageLoop ; ↑
     nop
-.label4: ; 6bc
+.quit: ; 6bc
     mov ax,[bp-0x10]
 .end: ; 6bf
 endfunc
@@ -833,11 +838,11 @@ func CreateClasses
     push ax
     call far USER.RegisterClass ; 72e
     or ax,ax
-    jnz .label1 ; ↓
-.label0: ; 737
-    xor ax,ax
-    jmp .end ; ↓
-.label1: ; 73c
+    if z
+    .label0: ; 737
+        xor ax,ax
+        jmp .end ; ↓
+    endif ; 73c
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],BOARDWNDPROC
     mov word [bp-0x66],SEG BOARDWNDPROC
@@ -891,9 +896,9 @@ func CreateClasses
     push ax
     call far USER.RegisterClass ; 7d7
     or ax,ax
-    jnz .label2 ; ↓
-    jmp .label0 ; ↑
-.label2: ; 7e3
+    if z
+        jmp .label0 ; ↑
+    endif ; 7e3
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],COUNTERWNDPROC
     mov word [bp-0x66],SEG COUNTERWNDPROC
@@ -920,9 +925,9 @@ func CreateClasses
     push ax
     call far USER.RegisterClass ; 830
     or ax,ax
-    jnz .label3 ; ↓
-    jmp .label0 ; ↑
-.label3: ; 83c
+    if z
+        jmp .label0 ; ↑
+    endif ; 83c
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],INVENTORYWNDPROC
     mov word [bp-0x66],SEG INVENTORYWNDPROC
@@ -949,9 +954,9 @@ func CreateClasses
     push ax
     call far USER.RegisterClass ; 885
     or ax,ax
-    jnz .label4 ; ↓
-    jmp .label0 ; ↑
-.label4: ; 891
+    if z
+        jmp .label0 ; ↑
+    endif ; 891
     mov word [bp-0x6a],0x8
     mov word [bp-0x68],HINTWNDPROC
     mov word [bp-0x66],SEG HINTWNDPROC
@@ -1004,11 +1009,11 @@ func CreateWindowsAndInitGame
     mov [GameStatePtrCopy],ax
     mov [GameStatePtr],ax
     or ax,ax
-    jnz .label1 ; ↓
-.label0: ; 929
-    xor ax,ax
-    jmp .label16 ; ↓
-.label1: ; 92e
+    if z
+    .label0: ; 929
+        xor ax,ax
+        jmp .end ; ↓
+    endif ; 92e
     call far USER.GetCurrentTime ; 92e
     push ax
     call far srand ; 934 1:c4
@@ -1061,9 +1066,9 @@ func CreateWindowsAndInitGame
     call far USER.CreateWindow ; 9b5
     mov [hwndMain],ax
     or ax,ax
-    jnz .label2 ; ↓
-    jmp .label0 ; ↑
-.label2: ; 9c4
+    if z
+        jmp .label0 ; ↑
+    endif ; 9c4
     push ds
     push word s_BoardClass
     push byte +0x0
@@ -1086,9 +1091,9 @@ func CreateWindowsAndInitGame
     call far USER.CreateWindow ; 9f0
     mov [hwndBoard],ax
     or ax,ax
-    jnz .label3 ; ↓
-    jmp .label0 ; ↑
-.label3: ; 9ff
+    if z
+        jmp .label0 ; ↑
+    endif ; 9ff
     push ds
     push word s_InfoClass
     push byte +0x0
@@ -1111,9 +1116,9 @@ func CreateWindowsAndInitGame
     call far USER.CreateWindow ; a2b
     mov [hwndInfo],ax
     or ax,ax
-    jnz .label4 ; ↓
-    jmp .label0 ; ↑
-.label4: ; a3a
+    if z
+        jmp .label0 ; ↑
+    endif ; a3a
     push ds
     push word s_CounterClass1
     push byte +0x0
@@ -1153,9 +1158,9 @@ func CreateWindowsAndInitGame
     call far USER.CreateWindow ; a86
     mov [hwndCounter2],ax
     or ax,ax
-    jnz .label6 ; ↓
-    jmp .label0 ; ↑
-.label6: ; a95
+    if z
+        jmp .label0 ; ↑
+    endif ; a95
     push ds
     push word s_CounterClass3
     push byte +0x0
@@ -1174,9 +1179,9 @@ func CreateWindowsAndInitGame
     call far USER.CreateWindow ; ab6
     mov [hwndCounter3],ax
     or ax,ax
-    jnz .label7 ; ↓
-    jmp .label0 ; ↑
-.label7: ; ac5
+    if z
+        jmp .label0 ; ↑
+    endif ; ac5
     push ds
     push word s_InventoryClass
     push byte +0x0
@@ -1195,9 +1200,9 @@ func CreateWindowsAndInitGame
     call far USER.CreateWindow ; ae7
     mov [hwndInventory],ax
     or ax,ax
-    jnz .label8 ; ↓
-    jmp .label0 ; ↑
-.label8: ; af6
+    if z
+        jmp .label0 ; ↑
+    endif ; af6
     mov di,[nCmdShow]
     cmp di,byte +0x6
     jz .label9 ; ↓
@@ -1218,47 +1223,44 @@ func CreateWindowsAndInitGame
     call far GetIniInt ; b27 2:198e
     add sp,byte +0x2
     cmp ax,0x1
-    jnl .label11 ; ↓
-    mov si,0x1
-    jmp short .label12 ; ↓
-    nop
-.label11: ; b3a
-    push word ID_CurrentLevel
-    call far GetIniInt ; b3d 2:198e
-    add sp,byte +0x2
-    mov si,ax
-.label12: ; b47
+    if l
+        mov si,0x1
+    else ; b3a
+        push word ID_CurrentLevel
+        call far GetIniInt ; b3d 2:198e
+        add sp,byte +0x2
+        mov si,ax
+    endif ; b47
     push word ID_CurrentScore
     call far GetIniLong ; b4a 2:1a1c
     add sp,byte +0x2
     or dx,dx
-    jnl .label13 ; ↓
-    xor ax,ax
-    cwd
-    jmp short .label14 ; ↓
-    nop
-.label13: ; b5c
-    push word ID_CurrentScore
-    call far GetIniLong ; b5f 2:1a1c
-    add sp,byte +0x2
-.label14: ; b67
+    if l
+        xor ax,ax
+        cwd
+    else ; b5c
+        push word ID_CurrentScore
+        call far GetIniLong ; b5f 2:1a1c
+        add sp,byte +0x2
+    endif ; b67
     mov [TotalScore+_LoWord],ax
     mov [TotalScore+_HiWord],dx
     cmp si,byte +0x1
-    jng .label15 ; ↓
-    push si
-    call far TryIniPassword ; b74 4:e48
-    add sp,byte +0x2
-    or ax,ax
-    jnz .label15 ; ↓
-    mov si,0x1
-.label15: ; b83
+    if g
+        push si
+        call far TryIniPassword ; b74 4:e48
+        add sp,byte +0x2
+        or ax,ax
+        if z
+            mov si,0x1
+        endif
+    endif ; b83
     push byte +0x0
     push si
     call far FUN_4_0356 ; b86 4:356
     add sp,byte +0x4
     mov ax,0x1
-.label16: ; b91
+.end: ; b91
     pop si
     pop di
 endfunc
@@ -1274,7 +1276,7 @@ func ShowDeathMessage
     mov ax,[bx+Autopsy]
     dec ax
     cmp ax,0x5
-    ja .label0 ; ↓
+    ja .default ; ↓
     shl ax,1
     xchg ax,bx
     jmp [cs:.jumpTable+bx]
@@ -1285,33 +1287,33 @@ func ShowDeathMessage
     dw .label4 ; Squished
     dw .label5 ; Eaten
     dw .label6 ; OutOfTime
-.label0: ; bd4
+.default: ; bd4
     mov ax,s_Ooops
-    jmp short .label7 ; ↓
+    jmp short .showMessage ; ↓
     nop
 .label1: ; bda
     mov ax,FireDeathMessage
-    jmp short .label7 ; ↓
+    jmp short .showMessage ; ↓
     nop
 .label2: ; be0
     mov ax,WaterDeathMessage
-    jmp short .label7 ; ↓
+    jmp short .showMessage ; ↓
     nop
 .label3: ; be6
     mov ax,BombDeathMessage
-    jmp short .label7 ; ↓
+    jmp short .showMessage ; ↓
     nop
 .label4: ; bec
     mov ax,BlockDeathMessage
-    jmp short .label7 ; ↓
+    jmp short .showMessage ; ↓
     nop
 .label5: ; bf2
     mov ax,MonsterDeathMessage
-    jmp short .label7 ; ↓
+    jmp short .showMessage ; ↓
     nop
 .label6: ; bf8
     mov ax,TimeDeathMessage
-.label7: ; bfb
+.showMessage: ; bfb
     mov cx,ax
     push byte +0x0
     push ds
@@ -1378,105 +1380,99 @@ endfunc
 ; cbe
 
 ; refresh timer, chip counter, inventory and hint box
-FUN_2_0cbe:
-    mov ax,ds
-    nop
-    inc bp
-    push bp
-    mov bp,sp
-    push ds
-    mov ds,ax
+func FUN_2_0cbe
     sub sp,byte +0x2
     push di
     push si
     mov si,[bp+0x6]
+    ; Update timer
     test si,0x1
-    jz .label1 ; ↓
-    push word [hwndCounter2]
-    push byte +0x0
-    push word [TimeRemaining]
-    call far USER.SetWindowWord ; ce0
-    push word [hwndCounter2]
-    push byte +0x2
-    call far USER.GetWindowWord ; ceb
-    and al,0xfe
-    mov di,ax
-    cmp word [TimeRemaining],byte +0xf
-    jg .label0 ; ↓
-    or di,byte +0x1
-.label0: ; cfe
-    push word [hwndCounter2]
-    push byte +0x2
-    push di
-    call far USER.SetWindowWord ; d05
-    push word [hwndCounter2]
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far USER.InvalidateRect ; d14
-.label1: ; d19
+    if nz
+        push word [hwndCounter2]
+        push byte +0x0
+        push word [TimeRemaining]
+        call far USER.SetWindowWord ; ce0
+        push word [hwndCounter2]
+        push byte +0x2
+        call far USER.GetWindowWord ; ceb
+        and al,0xfe
+        mov di,ax
+        cmp word [TimeRemaining],byte +0xf
+        if le
+            or di,byte +0x1
+        endif ; cfe
+        push word [hwndCounter2]
+        push byte +0x2
+        push di
+        call far USER.SetWindowWord ; d05
+        push word [hwndCounter2]
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far USER.InvalidateRect ; d14
+    endif ; d19
+    ; Update chips remaining
     test si,0x2
-    jz .label2 ; ↓
-    push word [hwndCounter3]
-    push byte +0x0
-    push word [ChipsRemainingCount]
-    call far USER.SetWindowWord ; d29
-    push word [hwndCounter3]
-    push byte +0x2
-    cmp word [ChipsRemainingCount],byte +0x1
-    sbb ax,ax
-    neg ax
-    push ax
-    call far USER.SetWindowWord ; d3e
-    push word [hwndCounter3]
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far USER.InvalidateRect ; d4d
-.label2: ; d52
+    if nz
+        push word [hwndCounter3]
+        push byte +0x0
+        push word [ChipsRemainingCount]
+        call far USER.SetWindowWord ; d29
+        push word [hwndCounter3]
+        push byte +0x2
+        cmp word [ChipsRemainingCount],byte +0x1
+        sbb ax,ax
+        neg ax
+        push ax
+        call far USER.SetWindowWord ; d3e
+        push word [hwndCounter3]
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far USER.InvalidateRect ; d4d
+    endif ; d52
+    ; Update level number
     test si,0x20
-    jz .label3 ; ↓
-    push word [hwndCounter]
-    push byte +0x0
-    mov bx,[GameStatePtr]
-    push word [bx+LevelNumber]
-    call far USER.SetWindowWord ; d66
-    push word [hwndCounter]
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far USER.InvalidateRect ; d75
-.label3: ; d7a
+    if nz
+        push word [hwndCounter]
+        push byte +0x0
+        mov bx,[GameStatePtr]
+        push word [bx+LevelNumber]
+        call far USER.SetWindowWord ; d66
+        push word [hwndCounter]
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far USER.InvalidateRect ; d75
+    endif ; d7a
+    ; Update inventory
     test si,0x4
-    jz .label4 ; ↓
-    push word [hwndInventory]
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far USER.InvalidateRect ; d8a
-.label4: ; d8f
+    if nz
+        push word [hwndInventory]
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far USER.InvalidateRect ; d8a
+    endif ; d8f
+    ; Update hint
     mov ax,si
     test al,0x8
-    jz .label6 ; ↓
-    mov bx,[GameStatePtr]
-    mov si,[bx+ChipY]
-    shl si,byte 0x5
-    add si,[bx+ChipX]
-    cmp byte [bx+si+Lower],Hint
-    jnz .label5 ; ↓
-    call far ShowHint ; dab 2:c1a
-    jmp short .label6 ; ↓
-.label5: ; db2
-    call far HideHint ; db2 2:c7e
-.label6: ; db7
+    if nz
+        mov bx,[GameStatePtr]
+        mov si,[bx+ChipY]
+        shl si,byte 0x5
+        add si,[bx+ChipX]
+        cmp byte [bx+si+Lower],Hint
+        if e
+            call far ShowHint ; dab 2:c1a
+        else ; db2
+            call far HideHint ; db2 2:c7e
+        endif
+    endif ; db7
     mov word [InventoryDirty],0x0
     pop si
     pop di
-    lea sp,[bp-0x2]
-    pop ds
-    pop bp
-    dec bp
-    retf
+endfunc
 
 ; dc6
 
@@ -1658,9 +1654,9 @@ func Draw3DBorder
     call far GDI.SelectObject ; f3e
     mov [savedObj],ax
     cmp word [borderWidth],byte +0x0
-    jg .loopinit
-    jmp .cleanup ; ↓
-.loopinit: ; f4f
+    if le
+        jmp .cleanup ; ↓
+    endif ; f4f
     mov [topLeftBrush],di
     mov si,[hdc]
     mov di,[borderWidth]
@@ -1727,8 +1723,9 @@ func Draw3DBorder
     push byte +0x21
     call far GDI.PatBlt ; fe6
     dec di
-    jz .cleanup ; ↓
-    jmp .loop ; ↑
+    if nz
+        jmp .loop ; ↑
+    endif
 .cleanup: ; ff1
     ; restore the selected object
     push word [hdc]
@@ -1763,9 +1760,9 @@ func DrawSolidBorder
     mov [savedObj],ax
     ; check a flag
     cmp word [borderWidth],byte +0x0
-    jg .loopinit ; ↓
-    jmp .cleanup ; ↓
-.loopinit: ; 1032
+    if le
+        jmp .cleanup ; ↓
+    endif ; 1032
     mov di,[borderWidth]
 .loop: ; 1035
     lea ax,[rect]
@@ -1824,8 +1821,9 @@ func DrawSolidBorder
     push byte +0x21
     call far GDI.PatBlt ; 10b1
     dec di
-    jz .cleanup ; ↓
-    jmp .loop ; ↑
+    if nz
+        jmp .loop ; ↑
+    endif
 .cleanup: ; 10bc
     push si ; HDC
     push word [savedObj]
@@ -1851,13 +1849,13 @@ FUN_2_10ce:
     push di
     push si
     cmp word [GamePaused],byte +0x0
-    jnz .label0 ; ↓
-    jmp .label7 ; ↓
-.label0: ; 10e8
+    if z
+        jmp .label7 ; ↓
+    endif ; 10e8
     cmp word [DebugModeEnabled],byte +0x0
-    jz .label1 ; ↓
-    jmp .label7 ; ↓
-.label1: ; 10f2
+    if nz
+        jmp .label7 ; ↓
+    endif ; 10f2
     mov si,[bp+0x8]
     push word [bp+0x6]
     lea ax,[bp-0x26]
@@ -1894,12 +1892,11 @@ FUN_2_10ce:
     push ds
     push word LOGFONT.lfFaceName ; Arial
     cmp word [IsWin31],byte +0x0
-    jz .label2 ; ↓
-    mov ax,s_Arial1
-    jmp short .label3 ; ↓
-.label2: ; 1152
-    mov ax,s_Helv1
-.label3: ; 1155
+    if ne
+        mov ax,s_Arial1
+    else ; 1152
+        mov ax,s_Helv1
+    endif ; 1155
     mov [bp-0x6],ax
     mov [bp-0x4],ds
     push ds
@@ -1910,9 +1907,9 @@ FUN_2_10ce:
     call far GDI.CreateFontIndirect ; 1166
     mov di,ax
     or di,di
-    jnz .label4 ; ↓
-    jmp .label43 ; ↓
-.label4: ; 1174
+    if z
+        jmp .end ; ↓
+    endif ; 1174
     push word [si]
     push di
     call far GDI.SelectObject ; 1177
@@ -1931,15 +1928,13 @@ FUN_2_10ce:
     mov [bp-0xc8],si
     mov [bp-0xca],di
     cmp word [ColorMode],byte +0x1
-    jnz .label5 ; ↓
-    mov ax,0xffff
-    mov dx,0xff
-    jmp short .label6 ; ↓
-    nop
-.label5: ; 11b6
-    mov ax,0xff
-    cwd
-.label6: ; 11ba
+    if z
+        mov ax,0xffff
+        mov dx,0xff
+    else ; 11b6
+        mov ax,0xff
+        cwd
+    endif ; 11ba
     push dx
     push ax
     call far GDI.SetTextColor ; 11bc
@@ -1979,29 +1974,29 @@ FUN_2_10ce:
 .label7: ; 1226
     mov bx,[GameStatePtr]
     cmp word [bx+EndingTick],byte +0x0
-    jz .label8 ; ↓
-    push byte +0x1
-    call far EndGame ; 1233 7:a74
-    add sp,byte +0x2
-    jmp .label43 ; ↓
-.label8: ; 123e
+    if nz
+        push byte +0x1
+        call far EndGame ; 1233 7:a74
+        add sp,byte +0x2
+        jmp .end ; ↓
+    endif ; 123e
     cmp word [bx+ViewportWidth],byte +0x0
-    jnz .label9 ; ↓
-    jmp .label43 ; ↓
-.label9: ; 1248
+    if z
+        jmp .end ; ↓
+    endif ; 1248
     cmp word [bx+ViewportHeight],byte +0x0
-    jnz .label10 ; ↓
-    jmp .label43 ; ↓
-.label10: ; 1252
+    if z
+        jmp .end ; ↓
+    endif ; 1252
     mov si,[bp+0x8]
     mov ax,[si+0x4]
     sar ax,byte TileShift
     add ax,[bx+ViewportX]
     add ax,[bx+UnusedOffsetX]
     cmp ax,[bx+ViewportX]
-    jnl .label11 ; ↓
-    mov ax,[bx+ViewportX]
-.label11: ; 126d
+    if l
+        mov ax,[bx+ViewportX]
+    endif ; 126d
     mov [bp-0x8],ax
     mov ax,[bx+ViewportX]
     mov cx,ax
@@ -2013,9 +2008,9 @@ FUN_2_10ce:
     add di,[bx+UnusedOffsetX]
     dec ax
     cmp di,ax
-    jng .label12 ; ↓
-    mov di,ax
-.label12: ; 1290
+    if g
+        mov di,ax
+    endif ; 1290
     mov ax,[bx+ViewportY]
     mov cx,ax
     add ax,[bx+ViewportHeight]
@@ -2029,9 +2024,9 @@ FUN_2_10ce:
     add cx,[bx+UnusedOffsetY]
     dec ax
     cmp cx,ax
-    jng .label13 ; ↓
-    mov cx,ax
-.label13: ; 12b8
+    if g
+        mov cx,ax
+    endif ; 12b8
     mov [bp-0xa],cx
     mov ax,[si+0x6]
     sar ax,byte TileShift
@@ -2041,14 +2036,14 @@ FUN_2_10ce:
     mov bx,[GameStatePtr]
     add dx,[bx+UnusedOffsetY]
     cmp dx,ax
-    jnl .label14 ; ↓
-    mov dx,ax
-.label14: ; 12d5
+    if l
+        mov dx,ax
+    endif ; 12d5
     mov [bp-0x6],dx
     cmp cx,dx
-    jnl .label15 ; ↓
-    jmp .label24 ; ↓
-.label15: ; 12df
+    if l
+        jmp .label24 ; ↓
+    endif ; 12df
     mov [bp-0x4],di
 .label16: ; 12e2
     mov si,[bp-0x8]
@@ -2084,48 +2079,49 @@ FUN_2_10ce:
     inc di
     shl di,byte TileShift
     cmp dx,[si+0x8]
-    jnl .label20 ; ↓
-    push word [si]
-    push dx
-    push word [si+0x6]
-    mov ax,[si+0x8]
-    sub ax,dx
-    push ax
-    mov ax,[si+0xa]
-    sub ax,[si+0x6]
-    push ax
-    push byte +0x0
-    push byte +0x42
-    call far GDI.PatBlt ; 134e
-.label20: ; 1353
+    if l
+        push word [si]
+        push dx
+        push word [si+0x6]
+        mov ax,[si+0x8]
+        sub ax,dx
+        push ax
+        mov ax,[si+0xa]
+        sub ax,[si+0x6]
+        push ax
+        push byte +0x0
+        push byte +0x42
+        call far GDI.PatBlt ; 134e
+    endif ; 1353
     cmp [si+0xa],di
-    jng .label21 ; ↓
-    push word [si]
-    push word [si+0x4]
-    push di
-    mov ax,[si+0x8]
-    sub ax,[si+0x4]
-    push ax
-    sub di,[si+0xa]
-    neg di
-    push di
-    push byte +0x0
-    push byte +0x42
-    call far GDI.PatBlt ; 136f
-.label21: ; 1374
+    if g
+        push word [si]
+        push word [si+0x4]
+        push di
+        mov ax,[si+0x8]
+        sub ax,[si+0x4]
+        push ax
+        sub di,[si+0xa]
+        neg di
+        push di
+        push byte +0x0
+        push byte +0x42
+        call far GDI.PatBlt ; 136f
+    endif ; 1374
     mov bx,[GameStatePtr]
     cmp word [bx+IsLevelPlacardVisible],byte +0x0
-    jnz .label22 ; ↓
-    jmp .label43 ; ↓
-.label22: ; 1382
+    if z
+        jmp .end ; ↓
+    endif ; 1382
     cmp byte [bx+LevelTitle],0x0
-    jnz .label23 ; ↓
-    cmp byte [bx+LevelPassword],0x0
-    jnz .label23 ; ↓
-    jmp .label43 ; ↓
-.label23: ; 1393
+    if z
+        cmp byte [bx+LevelPassword],0x0
+        if z
+            jmp .end ; ↓
+        endif
+    endif ; 1393
     cmp word [ColorMode],byte +0x1
-    jnz .label25 ; ↓
+    jnz .label25
     mov ax,0xffff
     mov dx,0xff
     jmp short .label26 ; ↓
@@ -2173,13 +2169,11 @@ FUN_2_10ce:
     push ds
     push word LOGFONT.lfFaceName
     cmp word [IsWin31],byte +0x0
-    jz .label28 ; ↓
-    mov ax,s_Arial2
-    jmp short .label29 ; ↓
-    nop
-.label28: ; 1426
-    mov ax,s_Helv2
-.label29: ; 1429
+    if nz
+        mov ax,s_Arial2
+    else ; 1426
+        mov ax,s_Helv2
+    endif ; 1429
     mov si,ax
     mov [bp-0x4],ds
     push ds
@@ -2190,13 +2184,13 @@ FUN_2_10ce:
     call far GDI.CreateFontIndirect ; 1439
     mov [bp-0x10],ax
     or ax,ax
-    jz .label30 ; ↓
-    mov bx,[bp+0x8]
-    push word [bx]
-    push ax
-    call far GDI.SelectObject ; 144b
-    mov [bp-0x1a],ax
-.label30: ; 1453
+    if nz
+        mov bx,[bp+0x8]
+        push word [bx]
+        push ax
+        call far GDI.SelectObject ; 144b
+        mov [bp-0x1a],ax
+    endif ; 1453
     mov bx,[bp+0x8]
     push word [bx]
     lea ax,[bp-0x46]
@@ -2217,94 +2211,94 @@ FUN_2_10ce:
     inc cx
     mov di,cx
     cmp cx,ax
-    jz .label32 ; ↓
-    mov [bp-0x26],ax
-    mov [bp-0x24],ax
-    mov cx,1000
-    mov [bp-0x22],cx
-    mov [bp-0x20],cx
-    mov cx,bx
-    add cx,LevelTitle
-    push ds
-    push cx
-    push ds
-    push word s_5b5 ; " %s "
-    lea cx,[bp-0xc6]
-    push ss
-    push cx
-    call far USER._wsprintf ; 14ad
-    add sp,byte +0xc
-    mov si,ax
-    mov bx,[bp+0x8]
-    push word [bx]
-    lea ax,[bp-0xc6]
-    push ss
-    push ax
-    push si
-    lea ax,[bp-0x26]
-    push ss
-    push ax
-    push word 0xd21
-    call far USER.DrawText ; 14cb
-    mov [bp-0x20],ax
-    mov ax,[bp-0x22]
-    sub ax,[bp-0x26]
-    jns .label31 ; ↓
-    xor ax,ax
-.label31: ; 14dd
-    mov [bp-0x6],ax
-    mov ax,[bp-0x20]
-    sub ax,[bp-0x24]
-    mov [bp-0xa],ax
-.label32: ; 14e9
+    if nz
+        mov [bp-0x26],ax
+        mov [bp-0x24],ax
+        mov cx,1000
+        mov [bp-0x22],cx
+        mov [bp-0x20],cx
+        mov cx,bx
+        add cx,LevelTitle
+        push ds
+        push cx
+        push ds
+        push word s_5b5 ; " %s "
+        lea cx,[bp-0xc6]
+        push ss
+        push cx
+        call far USER._wsprintf ; 14ad
+        add sp,byte +0xc
+        mov si,ax
+        mov bx,[bp+0x8]
+        push word [bx]
+        lea ax,[bp-0xc6]
+        push ss
+        push ax
+        push si
+        lea ax,[bp-0x26]
+        push ss
+        push ax
+        push word 0xd21
+        call far USER.DrawText ; 14cb
+        mov [bp-0x20],ax
+        mov ax,[bp-0x22]
+        sub ax,[bp-0x26]
+        if s
+            xor ax,ax
+        endif ; 14dd
+        mov [bp-0x6],ax
+        mov ax,[bp-0x20]
+        sub ax,[bp-0x24]
+        mov [bp-0xa],ax
+    endif ; 14e9
     mov bx,[GameStatePtr]
     cmp byte [bx+LevelPassword],0x1
     sbb ax,ax
     inc ax
     mov si,ax
     or ax,ax
-    jz .label34 ; ↓
-    xor ax,ax
-    mov [bp-0x26],ax
-    mov [bp-0x24],ax
-    mov ax,1000
-    mov [bp-0x22],ax
-    mov [bp-0x20],ax
-    mov ax,bx
-    add ax,LevelPassword
-    push ds
-    push ax
-    push ds
-    push word s_5ba ; " Password: %s "
-    lea ax,[bp-0xc6]
-    push ss
-    push ax
-    call far USER._wsprintf ; 151d
-    add sp,byte +0xc
-    mov [bp-0xc],ax
-    mov bx,[bp+0x8]
-    push word [bx]
-    lea ax,[bp-0xc6]
-    push ss
-    push ax
-    push word [bp-0xc]
-    lea ax,[bp-0x26]
-    push ss
-    push ax
-    push word 0xd21
-    call far USER.DrawText ; 153e
-    mov [bp-0x20],ax
-    mov ax,[bp-0x22]
-    sub ax,[bp-0x26]
-    cmp ax,[bp-0x6]
-    jnl .label33 ; ↓
-    mov ax,[bp-0x6]
-.label33: ; 1554
-    mov [bp-0x6],ax
-    mov ax,[bp-0x20]
-    sub ax,[bp-0x24]
-    add [bp-0xa],ax
-.label34: ; 1560
+    if nz
+        xor ax,ax
+        mov [bp-0x26],ax
+        mov [bp-0x24],ax
+        mov ax,1000
+        mov [bp-0x22],ax
+        mov [bp-0x20],ax
+        mov ax,bx
+        add ax,LevelPassword
+        push ds
+        push ax
+        push ds
+        push word s_5ba ; " Password: %s "
+        lea ax,[bp-0xc6]
+        push ss
+        push ax
+        call far USER._wsprintf ; 151d
+        add sp,byte +0xc
+        mov [bp-0xc],ax
+        mov bx,[bp+0x8]
+        push word [bx]
+        lea ax,[bp-0xc6]
+        push ss
+        push ax
+        push word [bp-0xc]
+        lea ax,[bp-0x26]
+        push ss
+        push ax
+        push word 0xd21
+        call far USER.DrawText ; 153e
+        mov [bp-0x20],ax
+        mov ax,[bp-0x22]
+        sub ax,[bp-0x26]
+        cmp ax,[bp-0x6]
+        if l
+            mov ax,[bp-0x6]
+        endif ; 1554
+        mov [bp-0x6],ax
+        mov ax,[bp-0x20]
+        sub ax,[bp-0x24]
+        add [bp-0xa],ax
+    endif ; 1560
     mov ax,[bp-0x6]
     add ax,0x8
     cmp ax,[bp-0x8]
@@ -2353,63 +2347,63 @@ FUN_2_10ce:
     mov ax,[bp-0x8]
     mov [bp-0x22],ax
     or di,di
-    jz .label38 ; ↓
-    mov ax,[GameStatePtr]
-    add ax,LevelTitle
-    push ds
-    push ax
-    push ds
-    push word s_5c9 ; " %s "
-    lea ax,[bp-0xc6]
-    push ss
-    push ax
-    call far USER._wsprintf ; 15f5
-    add sp,byte +0xc
-    mov di,ax
-    mov bx,[bp+0x8]
-    push word [bx]
-    lea ax,[bp-0xc6]
-    push ss
-    push ax
-    push di
-    lea ax,[bp-0x26]
-    push ss
-    push ax
-    push word 0x821
-    call far USER.DrawText ; 1613
-    mov ax,[bp-0x4]
-    add [bp-0x24],ax
-    add [bp-0x20],ax
-.label38: ; 1621
+    if nz
+        mov ax,[GameStatePtr]
+        add ax,LevelTitle
+        push ds
+        push ax
+        push ds
+        push word s_5c9 ; " %s "
+        lea ax,[bp-0xc6]
+        push ss
+        push ax
+        call far USER._wsprintf ; 15f5
+        add sp,byte +0xc
+        mov di,ax
+        mov bx,[bp+0x8]
+        push word [bx]
+        lea ax,[bp-0xc6]
+        push ss
+        push ax
+        push di
+        lea ax,[bp-0x26]
+        push ss
+        push ax
+        push word 0x821
+        call far USER.DrawText ; 1613
+        mov ax,[bp-0x4]
+        add [bp-0x24],ax
+        add [bp-0x20],ax
+    endif ; 1621
     or si,si
-    jz .label39 ; ↓
-    mov ax,[GameStatePtr]
-    add ax,LevelPassword
-    push ds
-    push ax
-    push ds
-    push word s_5ce ; " Password: %s "
-    lea ax,[bp-0xc6]
-    push ss
-    push ax
-    call far USER._wsprintf ; 1637
-    add sp,byte +0xc
-    mov si,ax
-    mov bx,[bp+0x8]
-    push word [bx]
-    lea ax,[bp-0xc6]
-    push ss
-    push ax
-    push si
-    lea ax,[bp-0x26]
-    push ss
-    push ax
-    push word 0x821
-    call far USER.DrawText ; 1655
-    mov ax,[bp-0x4]
-    add [bp-0x24],ax
-    add [bp-0x20],ax
-.label39: ; 1663
+    if nz
+        mov ax,[GameStatePtr]
+        add ax,LevelPassword
+        push ds
+        push ax
+        push ds
+        push word s_5ce ; " Password: %s "
+        lea ax,[bp-0xc6]
+        push ss
+        push ax
+        call far USER._wsprintf ; 1637
+        add sp,byte +0xc
+        mov si,ax
+        mov bx,[bp+0x8]
+        push word [bx]
+        lea ax,[bp-0xc6]
+        push ss
+        push ax
+        push si
+        lea ax,[bp-0x26]
+        push ss
+        push ax
+        push word 0x821
+        call far USER.DrawText ; 1655
+        mov ax,[bp-0x4]
+        add [bp-0x24],ax
+        add [bp-0x20],ax
+    endif ; 1663
     mov ax,[bp-0xcc]
     mov [bp-0x26],ax
     add ax,[bp-0x6]
@@ -2433,9 +2427,9 @@ FUN_2_10ce:
 .label40: ; 169d
     dec word [bp-0xe]
     cmp word [bp-0x1e],byte +0x0
-    jnz .label41 ; ↓
-    jmp .label27 ; ↑
-.label41: ; 16a9
+    if z
+        jmp .label27 ; ↑
+    endif ; 16a9
     mov di,[bp-0x10]
     mov bx,[bp+0x8]
     push word [bx]
@@ -2452,7 +2446,7 @@ FUN_2_10ce:
     push word [bp-0x18]
     call far GDI.SetBkColor ; 16d4
     or di,di
-    jz .label43 ; ↓
+    jz .end ; ↓
     mov bx,[bp+0x8]
     push word [bx]
     push word [bp-0x1a]
@@ -2460,7 +2454,7 @@ FUN_2_10ce:
     push di
 .label42: ; 16eb
     call far GDI.DeleteObject ; 16eb
-.label43: ; 16f0
+.end: ; 16f0
     pop si
     pop di
     lea sp,[bp-0x2]
@@ -2592,9 +2586,9 @@ func UnpauseTimer
     sub sp,byte +0x2
     mov ax,[Var22]
     dec ax
-    jns .label0 ; ↓
-    xor ax,ax
-.label0: ; 17cf
+    if s
+        xor ax,ax
+    endif ; 17cf
     mov [Var22],ax
 endfunc
 
@@ -2609,12 +2603,11 @@ func PauseGame
     push byte ID_PAUSE
     inc word [GamePaused]
     cmp word [GamePaused],byte +0x0
-    jng .label0 ; ↓
-    mov ax,0x8
-    jmp short .label1 ; ↓
-.label0: ; 1802
-    xor ax,ax
-.label1: ; 1804
+    if g
+        mov ax,0x8
+    else ; 1802
+        xor ax,ax
+    endif ; 1804
     push ax
     call far USER.CheckMenuItem ; 1805
     mov bx,[GameStatePtr]
@@ -2639,18 +2632,16 @@ func UnpauseGame
     push byte ID_PAUSE
     mov ax,[GamePaused]
     dec ax
-    jns .label0 ; ↓
-    xor ax,ax
-.label0: ; 184f
+    if s
+        xor ax,ax
+    endif ; 184f
     mov [GamePaused],ax
     or ax,ax
-    jng .label1 ; ↓
-    mov ax,0x8
-    jmp short .label2 ; ↓
-    nop
-.label1: ; 185c
-    xor ax,ax
-.label2: ; 185e
+    if g
+        mov ax,0x8
+    else ; 185c
+        xor ax,ax
+    endif ; 185e
     push ax
     call far USER.CheckMenuItem ; 185f
     push word [hwndMain]
@@ -2680,11 +2671,11 @@ endfunc
 func UnpauseMusic
     sub sp,byte +0x2
     cmp word [MusicEnabled],byte +0x0
-    jz .end ; ↓
-    mov bx,[GameStatePtr]
-    push word [bx+LevelNumber]
-    call far FUN_8_0308 ; 18d2 8:308
-.end: ; 18d7
+    if nz
+        mov bx,[GameStatePtr]
+        push word [bx+LevelNumber]
+        call far FUN_8_0308 ; 18d2 8:308
+    endif ; 18d7
 endfunc
 
 ; 18de
@@ -2697,25 +2688,25 @@ endfunc
 func GetIniKey
     sub sp,byte +0x2
     mov ax,[bp+0x6]
-    cmp ax,200
+    cmp ax,ID_HighestLevel
     jz .highestLevelKey
-    jg .label0
-    sub ax,117
-    jz .midiKey
-    dec ax ; 118
-    jz .soundsKey
-    sub ax,4 ; 122
-    jz .colorKey
-    jmp .end
-    nop
-    nop
-    nop
-.label0: ; 1908
-    sub ax,201
+    if ng
+        sub ax,117
+        jz .midiKey
+        dec ax ; 118
+        jz .soundsKey
+        sub ax,4 ; 122
+        jz .colorKey
+        jmp .end
+        nop
+        nop
+        nop
+    endif ; 1908
+    sub ax,ID_CurrentLevel
     jz .currentLevelKey
-    dec ax ; 202
+    dec ax ; 202 ID_CurrentScore
     jz .currentScoreKey
-    dec ax ; 203
+    dec ax ; 203 ID_NumMidiFiles
     jz .numMidiFilesKey
     jmp short .end
     nop
@@ -2723,65 +2714,65 @@ func GetIniKey
 .midiKey: ; 1916
     mov bx,[bp+0x8]
     or bx,bx
-    jz .skip_midi_default
-    mov word [bx],MusicEnabledDefault
-.skip_midi_default: ; 1921
+    if nz
+        mov word [bx],MusicEnabledDefault
+    endif ; 1921
     mov ax,MIDIKey
-    jmp short .set_dx_and_return
+    jmp short .returnString
     ;;
 .soundsKey: ; 1926
     mov bx,[bp+0x8]
     or bx,bx
-    jz .skip_sounds_default
-    mov word [bx],SoundEnabledDefault
-.skip_sounds_default: ; 1931
+    if nz
+        mov word [bx],SoundEnabledDefault
+    endif ; 1931
     mov ax,SoundsKey
-    jmp short .set_dx_and_return
+    jmp short .returnString
     ;;
 .colorKey: ; 1936
     mov bx,[bp+0x8]
     or bx,bx
-    jz .skip_color_default
-    mov word [bx],ColorDefault
-.skip_color_default: ; 1941
+    if nz
+        mov word [bx],ColorDefault
+    endif ; 1941
     mov ax,ColorKey
-    jmp short .set_dx_and_return
+    jmp short .returnString
     ;;
 .highestLevelKey: ; 1946
     mov bx,[bp+0x8]
     or bx,bx
-    jz .skip_highestLevel_default
-    mov word [bx],FirstLevel
-.skip_highestLevel_default: ; 1951
+    if nz
+        mov word [bx],FirstLevel
+    endif ; 1951
     mov ax,HighestLevelKey
-    jmp short .set_dx_and_return
+    jmp short .returnString
     ;;
 .currentLevelKey: ; 1956
     mov bx,[bp+0x8]
     or bx,bx
-    jz .skip_currentLevel_default
-    mov word [bx],FirstLevel
-.skip_currentLevel_default: ; 1961
+    if nz
+        mov word [bx],FirstLevel
+    endif ; 1961
     mov ax,CurrentLevelKey
-    jmp short .set_dx_and_return
+    jmp short .returnString
     ;;
 .currentScoreKey: ; 1966
     mov bx,[bp+0x8]
     or bx,bx
-    jz .skip_currentScore_default
-    mov word [bx],0x0
-.skip_currentScore_default:
+    if nz
+        mov word [bx],0x0
+    endif
     mov ax,CurrentScoreKey
-    jmp short .set_dx_and_return
+    jmp short .returnString
     ;;
 .numMidiFilesKey: ; 1976
     mov bx,[bp+0x8]
     or bx,bx
-    jz .skip_numMidiFiles_default
-    mov word [bx],NumMidiFilesDefault
-.skip_numMidiFiles_default: ; 1981
+    if nz
+        mov word [bx],NumMidiFilesDefault
+    endif ; 1981
     mov ax,NumMidiFilesKey ; "Number of Midi Files"
-.set_dx_and_return: ; 1984
+.returnString:
     mov dx,ds
 .end: ; 1986
 endfunc
@@ -3088,37 +3079,35 @@ func SaveLevelProgressToIni
     call far USER._wsprintf ; 1c39
     add sp,byte +0xa
     or si,si
-    jl .label0 ; ↓
-    push word [bp+0xc]
-    push word [bp+0xa]
-    push si
-    mov ax,[GameStatePtr]
-    add ax,LevelPassword
-    push ds
-    push ax
-    push ds
-    push word s_5f8 ; "%s,%d,%li"
-    lea ax,[bp-0x4c]
-    push ss
-    push ax
-    call far USER._wsprintf ; 1c5d
-    add sp,byte +0x12
-    jmp short .label1 ; ↓
-    nop
-.label0: ; 1c68
-    mov ax,[GameStatePtr]
-    add ax,LevelPassword
-    ; TODO: could remove this printf call...
-    push ds
-    push ax
-    push ds
-    push word s_602 ; "%s"
-    lea ax,[bp-0x4c]
-    push ss
-    push ax
-    call far USER._wsprintf ; 1c79
-    add sp,byte +0xc
-.label1: ; 1c81
+    if ge
+        push word [bp+0xc]
+        push word [bp+0xa]
+        push si
+        mov ax,[GameStatePtr]
+        add ax,LevelPassword
+        push ds
+        push ax
+        push ds
+        push word s_5f8 ; "%s,%d,%li"
+        lea ax,[bp-0x4c]
+        push ss
+        push ax
+        call far USER._wsprintf ; 1c5d
+        add sp,byte +0x12
+    else ; 1c68
+        mov ax,[GameStatePtr]
+        add ax,LevelPassword
+        ; TODO: could remove this printf call...
+        push ds
+        push ax
+        push ds
+        push word s_602 ; "%s"
+        lea ax,[bp-0x4c]
+        push ss
+        push ax
+        call far USER._wsprintf ; 1c79
+        add sp,byte +0xc
+    endif ; 1c81
     push ds
     push word IniSectionName
     lea ax,[bp-0xc]
@@ -3145,23 +3134,24 @@ func GetAudioPath
     push di
     push si
     cmp word [isSound],byte +0x0
-    jz .label0 ; ↓
-    mov si,[index]
-    mov bx,si
-    mov di,[SoundKeyArray+(bx+si)]
-    jmp short .label1 ; ↓
-.label0: ; 1cc0
-    mov si,[index]
-    push si
-    push ds
-    push word s_605 ; "MidiFile%d"
-    lea ax,[bp-0x16]
-    push ss
-    push ax
-    call far USER._wsprintf ; 1ccd
-    add sp,byte +0xa
-    lea di,[bp-0x16]
-.label1: ; 1cd8
+    if nz
+        ; Sound effect
+        mov si,[index]
+        mov bx,si
+        mov di,[SoundKeyArray+(bx+si)]
+    else  ; 1cc0
+        ; MIDI
+        mov si,[index]
+        push si
+        push ds
+        push word s_605 ; "MidiFile%d"
+        lea ax,[bp-0x16]
+        push ss
+        push ax
+        call far USER._wsprintf ; 1ccd
+        add sp,byte +0xa
+        lea di,[bp-0x16]
+    endif ; 1cd8
     push ds
     push word IniSectionName
     push ds
@@ -3176,14 +3166,14 @@ func GetAudioPath
     call far KERNEL.GetPrivateProfileString ; 1ced
     mov bx,[buffer]
     cmp byte [bx],'$'
-    jz .label2 ; ↓
-    jmp .label9 ; ↓
-.label2: ; 1cfd
+    if nz
+        jmp .label9 ; ↓
+    endif ; 1cfd
     mov [bp-0x6],di
     cmp byte [bx+0x1],0x0
-    jz .label3 ; ↓
-    jmp .label9 ; ↓
-.label3: ; 1d09
+    if nz
+        jmp .label9 ; ↓
+    endif ; 1d09
     cmp word [isSound],byte +0x0
     jnz .label4 ; ↓
     cmp si,byte +0x3
@@ -3192,51 +3182,53 @@ func GetAudioPath
     jmp .label9 ; ↓
 .label4: ; 1d1a
     cmp word [isSound],byte +0x0
-    jz .label5 ; ↓
-    push ds
-    push bx
-    mov bx,[index]
-    shl bx,1
-    push ds
-    push word [SoundDefaultArray+bx]
-    jmp short .label8 ; ↓
-.label5: ; 1d2e
-    mov ax,bx
-    mov [bp-0x4],ax
-    cmp word [index],byte +0x2
-    jnz .label7 ; ↓
-    push ds
-    push ax
-    mov bx,[index]
-    shl bx,1
-    push ds
-    push word [MidiFileDefaultArray+bx]
-    call far KERNEL.lstrlen ; 1d45
-    sub ax,[bufSize]
-    neg ax
-    dec ax
-    push ax
-    call far KERNEL.GetWindowsDirectory ; 1d51
-    mov si,ax
-    or si,si
-    jz .label7 ; ↓
-    mov bx,[bp-0x4]
-    add bx,si
-    cmp byte [bx-0x1],'\'
-    jz .label6 ; ↓
-    mov bx,[bp-0x4]
-    mov byte [bx+si],'\'
-    inc word [bp-0x4]
-.label6: ; 1d70
-    add [bp-0x4],si
-.label7: ; 1d73
-    push ds
-    push word [bp-0x4]
-    mov bx,[index]
-    shl bx,1
-    push ds
-    push word [bx+MidiFileDefaultArray]
-.label8: ; 1d81
+    if nz
+        ; Sound effect
+        push ds
+        push bx
+        mov bx,[index]
+        shl bx,1
+        push ds
+        push word [SoundDefaultArray+bx]
+    else ; 1d2e
+        ; MIDI
+        mov ax,bx
+        mov [bp-0x4],ax
+        cmp word [index],byte +0x2
+        jnz .label7 ; ↓
+        push ds
+        push ax
+        mov bx,[index]
+        shl bx,1
+        push ds
+        push word [MidiFileDefaultArray+bx]
+        call far KERNEL.lstrlen ; 1d45
+        sub ax,[bufSize]
+        neg ax
+        dec ax
+        push ax
+        call far KERNEL.GetWindowsDirectory ; 1d51
+        mov si,ax
+        or si,si
+        if nz
+            mov bx,[bp-0x4]
+            add bx,si
+            cmp byte [bx-0x1],'\'
+            if nz
+                mov bx,[bp-0x4]
+                mov byte [bx+si],'\'
+                inc word [bp-0x4]
+            endif ; 1d70
+            add [bp-0x4],si
+        endif
+    .label7: ; 1d73
+        push ds
+        push word [bp-0x4]
+        mov bx,[index]
+        shl bx,1
+        push ds
+        push word [bx+MidiFileDefaultArray]
+    endif ; 1d81
     call far KERNEL.lstrcpy ; 1d81
     push ds
     push word IniSectionName
@@ -3434,9 +3426,9 @@ func MenuItemCallback
     call far FUN_4_115c ; 1f2b 4:115c
     add sp,byte +0x4
     or ax,ax
-    jnz .label10 ; ↓
-    jmp .label42 ; ↓
-.label10: ; 1f3a
+    if z
+        jmp .label42 ; ↓
+    endif ; 1f3a
     push byte +0x0
     mov bx,[GameStatePtr]
     mov ax,[bx+LevelNumber]
@@ -3453,23 +3445,23 @@ func MenuItemCallback
 .label14: ; 1f52
     mov bx,[GameStatePtr]
     cmp word [bx+LevelNumber],byte +0x1
-    jg .label15 ; ↓
-    jmp .label42 ; ↓
-.label15: ; 1f60
+    if le
+        jmp .label42 ; ↓
+    endif ; 1f60
     mov ax,[bx+LevelNumber]
     dec ax
     cmp ax,0x1
-    jnl .label16 ; ↓
-    mov ax,0x1
-.label16: ; 1f6d
+    if l
+        mov ax,0x1
+    endif ; 1f6d
     push ax
     push word [bp+0x6]
     call far FUN_4_115c ; 1f71 4:115c
     add sp,byte +0x4
     or ax,ax
-    jnz .label17 ; ↓
-    jmp .label42 ; ↓
-.label17: ; 1f80
+    if z
+        jmp .label42 ; ↓
+    endif ; 1f80
     push byte +0x0
     mov bx,[GameStatePtr]
     mov ax,[bx+LevelNumber]
@@ -3490,17 +3482,18 @@ func MenuItemCallback
     call far GetIniInt ; 1fa1 2:198e
     add sp,byte +0x2
     dec ax
-    jz .label20 ; ↓
-    push byte +0x24
-    push ds
-    push word NewGamePrompt
-    push word [hwndMain]
-    call far ShowMessageBox ; 1fb6 2:0
-    add sp,byte +0x8
-    cmp ax,ID_YES
-    jz .label20 ; ↓
-    jmp .label42 ; ↓
-.label20: ; 1fc6
+    if nz
+        push byte +0x24
+        push ds
+        push word NewGamePrompt
+        push word [hwndMain]
+        call far ShowMessageBox ; 1fb6 2:0
+        add sp,byte +0x8
+        cmp ax,ID_YES
+        if ne
+            jmp .label42 ; ↓
+        endif
+    endif ; 1fc6
     call far FUN_2_1dae ; 1fc6 2:1dae
     sub ax,ax
     mov [TotalScore+_HiWord],ax
@@ -3534,11 +3527,11 @@ func MenuItemCallback
 
 .label22: ; 2014
     cmp word [GamePaused],byte +0x0
-    jz .label23 ; ↓
-    call far UnpauseMusic ; 201b 2:18b6
-    jmp .label2 ; ↑
-    nop
-.label23: ; 2024
+    if nz
+        call far UnpauseMusic ; 201b 2:18b6
+        jmp .label2 ; ↑
+        nop
+    endif ; 2024
     call far PauseMusic ; 2024 2:189c
     call far PauseGame ; 2029 2:17da
     jmp .label42 ; ↓
@@ -3550,16 +3543,14 @@ func MenuItemCallback
     neg ax
     mov [MusicEnabled],ax
     or ax,ax
-    jnz .label25 ; ↓
-    call far StopMIDI ; 2042 8:2d4
-    jmp short .label26 ; ↓
-    nop
-.label25: ; 204a
-    mov bx,[GameStatePtr]
-    push word [bx+LevelNumber]
-    call far FUN_8_0308 ; 2052 8:308
-    add sp,byte +0x2
-.label26: ; 205a
+    if z
+        call far StopMIDI ; 2042 8:2d4
+    else ; 204a
+        mov bx,[GameStatePtr]
+        push word [bx+LevelNumber]
+        call far FUN_8_0308 ; 2052 8:308
+        add sp,byte +0x2
+    endif ; 205a
     push word [MusicEnabled]
     push byte ID_BGM
     call far StoreIniInt ; 2060 2:19ca
@@ -3589,9 +3580,9 @@ func MenuItemCallback
     push word [hwndMain]
     call far USER.DrawMenuBar ; 20a8
     cmp word [SoundEnabled],byte +0x0
-    jnz .label28 ; ↓
-    jmp .label42 ; ↓
-.label28: ; 20b7
+    if z
+        jmp .label42 ; ↓
+    endif ; 20b7
     push byte +0x1
     push byte +0x7
     call far PlaySoundEffect ; 20bb 8:56c
@@ -3627,9 +3618,9 @@ func MenuItemCallback
     mov [bp-0x4],ax
     mov [bx+LevelNumber],di
     cmp di,[bp-0x4]
-    jnz .label30 ; ↓
-    jmp .label42 ; ↓
-.label30: ; 2127
+    if z
+        jmp .label42 ; ↓
+    endif ; 2127
     push byte +0x0
     push word [bp-0x4]
     jmp .label12 ; ↑
@@ -3669,14 +3660,13 @@ func MenuItemCallback
     call far USER.SetCursor ; 217e
     mov di,ax
     cmp word [ColorMode],byte +0x1
-    jz .label34 ; ↓
-    mov word [ColorMode],0x1
-    jmp short .label35 ; ↓
-.label34: ; 2194
-    push byte +0x0
-    call far InitGraphics ; 2196 5:0
-    add sp,byte +0x2
-.label35: ; 219e
+    if ne
+        mov word [ColorMode],0x1
+    else ; 2194
+        push byte +0x0
+        call far InitGraphics ; 2196 5:0
+        add sp,byte +0x2
+    endif ; 219e
     push byte +0x1
     lea ax,[bp-0x6]
     push ax
@@ -3715,12 +3705,11 @@ func MenuItemCallback
     mov [ColorMode],ax
 .label37: ; 2208
     cmp word [ColorMode],byte +0x1
-    jz .label38 ; ↓
-    mov ax,0x1
-    jmp short .label39 ; ↓
-.label38: ; 2214
-    xor ax,ax
-.label39: ; 2216
+    if nz
+        mov ax,0x1
+    else ; 2214
+        xor ax,ax
+    endif ; 2216
     push ax
     push byte ID_COLOR
     call far StoreIniInt ; 2219 2:19ca
@@ -3728,13 +3717,11 @@ func MenuItemCallback
     push word [hMenu]
     push byte ID_COLOR
     cmp word [ColorMode],byte +0x1
-    jz .label40 ; ↓
-    mov ax,0x8
-    jmp short .label41 ; ↓
-    nop
-.label40: ; 2234
-    xor ax,ax
-.label41: ; 2236
+    if nz
+        mov ax,0x8
+    else ; 2234
+        xor ax,ax
+    endif ; 2236
     push ax
     call far USER.CheckMenuItem ; 2237
     push word [hwndMain]
@@ -3763,6 +3750,8 @@ func MAINWNDPROC
     push di
     push si
     mov ax,[uMsg]
+    ; jump table, as a bunch of nested ifs doing a binary search
+    ; i'm so sorry
     cmp ax,0x1c ; WM_SHOWWINDOW
     jnz .label0 ; ↓
     jmp .label27 ; ↓
@@ -4317,23 +4306,23 @@ func BOARDWNDPROC
     nop
 .label1: ; 27b0
     cmp word [Var22],byte +0x0
-    jz .label2 ; ↓
-    jmp .label8 ; ↓
-.label2: ; 27ba
+    if nz
+        jmp .label8 ; ↓
+    endif ; 27ba
     mov ax,[wParam]
     dec ax
-    jz .label3 ; ↓
-    jmp .label8 ; ↓
-.label3: ; 27c3
+    if nz
+        jmp .label8 ; ↓
+    endif ; 27c3
     mov bx,[GameStatePtr]
     cmp word [bx+EndingTick],byte +0x0
-    jz .label5 ; ↓
-    push byte +0x0
-    call far EndGame ; 27d0 7:a74
-.label4: ; 27d5
-    add sp,byte +0x2
-    jmp short .label8 ; ↓
-.label5: ; 27da
+    if nz
+        push byte +0x0
+        call far EndGame ; 27d0 7:a74
+    .label4: ; 27d5
+        add sp,byte +0x2
+        jmp short .label8 ; ↓
+    endif ; 27da
     inc word [CurrentTick]
     push word [CurrentTick]
     call far DoTick ; 27e2 7:0
@@ -4342,17 +4331,17 @@ func BOARDWNDPROC
 .label6: ; 27ea
     mov bx,[GameStatePtr]
     cmp word [bx+IsLevelPlacardVisible],byte +0x0
-    jz .label7 ; ↓
-    mov word [bx+IsLevelPlacardVisible],0x0
-    push word [hwndBoard]
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far USER.InvalidateRect ; 2805
-    push word [hwndBoard]
-    call far USER.UpdateWindow ; 280e
-    call far UnpauseTimer ; 2813 2:17ba
-.label7: ; 2818
+    if nz
+        mov word [bx+IsLevelPlacardVisible],0x0
+        push word [hwndBoard]
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far USER.InvalidateRect ; 2805
+        push word [hwndBoard]
+        call far USER.UpdateWindow ; 280e
+        call far UnpauseTimer ; 2813 2:17ba
+    endif ; 2818
     mov bx,[GameStatePtr]
     mov word [bx+HaveMouseTarget],0x1
     mov ax,[lParam+_LoWord]
@@ -4389,15 +4378,15 @@ func INFOWNDPROC
     push si
     mov ax,[uMsg]
     sub ax,WM_PAINT
-    jz .label0 ; ↓
-    push word [hwnd]
-    push word [uMsg]
-    push word [wParam]
-    push word [lParam+_HiWord]
-    push word [lParam+_LoWord]
-    call far USER.DefWindowProc ; 288c
-    jmp .label6 ; ↓
-.label0: ; 2894
+    if ne
+        push word [hwnd]
+        push word [uMsg]
+        push word [wParam]
+        push word [lParam+_HiWord]
+        push word [lParam+_LoWord]
+        call far USER.DefWindowProc ; 288c
+        jmp .label6 ; ↓
+    endif ; 2894
     push word [hwnd]
     lea ax,[bp-0x24]
     push ss
@@ -4454,15 +4443,13 @@ func INFOWNDPROC
     push ax
     mov [bp-0x26],si
     or si,si
-    jz .label3 ; ↓
-    mov ax,0x21
-    mov dx,0xf0
-    jmp short .label4 ; ↓
-    nop
-.label3: ; 2932
-    mov ax,0x42
-    cwd
-.label4: ; 2936
+    if nz
+        mov ax,0x21
+        mov dx,0xf0
+    else ; 2932
+        mov ax,0x42
+        cwd
+    endif ; 2936
     push dx
     push ax
     call far GDI.PatBlt ; 2938
@@ -4883,12 +4870,11 @@ func HINTWNDPROC
     push ds
     push word LOGFONT.lfFaceName
     cmp word [IsWin31],byte +0x0
-    jz .helv ; ↓
-    mov ax,s_Arial3
-    jmp short .arial ; ↓
-.helv: ; 2cf0
-    mov ax,s_Helv3
-.arial: ; 2cf3
+    if nz
+        mov ax,s_Arial3
+    else ; 2cf0
+        mov ax,s_Helv3
+    endif ; 2cf3
     mov si,ax
     mov [local_a],ds
     push ds
