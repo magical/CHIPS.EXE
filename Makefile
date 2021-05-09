@@ -63,7 +63,7 @@ headers:
 	grep -E -e '(KERNEL|USER|GDI)\.\w+' --only-matching --no-filename $(CODE) | LC_ALL=C sort -u | sed -e 's/^/EXTERN /' >windows.inc
 
 # additional dependencies
-logic.obj: constants.asm structs.asm variables.asm func.mac
+logic.obj: constants.asm structs.asm variables.asm func.mac if.mac
 movement.obj: constants.asm structs.asm variables.asm func.mac
 crt.obj: variables.asm func.mac
 seg2.obj: constants.asm structs.asm variables.asm func.mac if.mac
