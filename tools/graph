@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 import sys
 
+# colors:
+# - unconditional jump: black
+# - conditional jump: blue
+# - jump table: gray
+# - fallthrough: purple
+# - jump inside an if: green
+
 print("digraph code {")
 currentfunc = "top"
 currentlabel = "top"
@@ -24,7 +31,7 @@ for line in sys.stdin:
         if label.startswith('.'):
             # implicit edge from fallthough
             if lastjump != "jmp" and not ifstack:
-                print("  \"{}\" -> \"{}\" [color=blue];".format(currentlabel, currentfunc+label))
+                print("  \"{}\" -> \"{}\" [color=purple];".format(currentlabel, currentfunc+label))
             currentlabel = currentfunc+label
         else:
             currentfunc = label
@@ -38,12 +45,15 @@ for line in sys.stdin:
                 if not ifstack:
                     lastjump = words[0]
                 target = currentfunc+word
-                if words[0] == "jmp" or words[0] == "dw":
+                if words[0] == "jmp":
                     if ifstack:
                         # jumps from inside ifs are psuedo-conditional
-                        print("  \"{}\" -> \"{}\" [color=green];".format(currentlabel, target))
+                        color = "green"
                     else:
-                        print("  \"{}\" -> \"{}\" [color=purple];".format(currentlabel, target))
+                        color = "black"
+                elif words[0] == "dw":
+                    color = "gray"
                 else:
-                    print("  \"{}\" -> \"{}\";".format(currentlabel, target))
+                    color = "blue"
+                print("  \"{}\" -> \"{}\" [color={}];".format(currentlabel, target, color))
 print("}")
