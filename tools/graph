@@ -17,6 +17,8 @@ for line in sys.stdin:
     words = line.strip().split()
     if not words:
         continue
+    if words[0] == "times":
+        words = words[2:]
     if words[0] in {"func", "if", "endif"} or words[0].endswith(":") and "%" not in words[0]:
         if words[0] == "if":
             ifstack.append(currentlabel)
