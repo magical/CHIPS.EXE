@@ -16,6 +16,9 @@ SEGMENT DATA ; 10
     dw 0 ; 0xc lowest stack address used
     dw 0 ; 0xe bottom of stack
 
+; 0x10
+; segment 2 variables
+
 hwndMain     dw 0 ; 0x10 HWND main window
 hwndBoard    dw 0 ; 0x12 HWND board window
 hwndInfo     dw 0 ; 0x14
@@ -59,6 +62,7 @@ LOGFONT:
 
 ; 0x68
 ; segment 2 strings
+
 MessageBoxCaption db "Chip's Challenge", 0, 0
 SystemTimerErrorMsg db "Not enough system timers are available.", 0
 NewGamePrompt db "Starting a new game will begin you back at level 1, reset your score to zero, and forget the passwords to any levels you have visited.", 10, "Is this what you want?", 0
@@ -216,6 +220,7 @@ s_Arial3        db "Arial", 0
 s_Helv3         db "Helv", 0
 
 ; 66c
+; logic.asm data
 
 ; Tile table
 ; Chip/Block/Monsters
@@ -354,9 +359,10 @@ EmptyPasswordMessage    db "You must enter a password.", 0
 s_DLG_PASSWORD db "DLG_PASSWORD", 0, 0
 
 ; a14
+; segment 5 vars & strings
 
-VarA14          dw 0 ; a14 HGDIOBJ tile bitmap handle
-VarA16          dw 0 ; a16 BYTE*   tile bitmap data?
+VarA14          dw 0 ; a14 HGDIOBJ unused - tile bitmap handle?
+VarA16          dw 0 ; a16 BYTE*   unused - tile bitmap data?
 ColorMode       dw 0 ; a18 which bitmap to load: 1, 2, 3, or 4(?)
 HicolorTiles    db "obj32_4", 0
 LocolorTiles    db "obj32_4E", 0
@@ -561,70 +567,48 @@ Var167C dd 0 ; atexit function pointers
 GameStatePtr dw 0 ; 1680
 
 ; Inventory
-BlueKeyCount    dw 0 ; 1682
-RedKeyCount     dw 0 ; 1684
-GreenKeyCount   dw 0 ; 1686
-YellowKeyCount  dw 0 ; 1688
+BlueKeyCount            dw 0 ; 1682
+RedKeyCount             dw 0 ; 1684
+GreenKeyCount           dw 0 ; 1686
+YellowKeyCount          dw 0 ; 1688
 
-FlipperCount    dw 0 ; 168a
-FireBootCount   dw 0 ; 168c
-IceSkateCount   dw 0 ; 168e
-SuctionBootCount dw 0 ; 1690
+FlipperCount            dw 0 ; 168a
+FireBootCount           dw 0 ; 168c
+IceSkateCount           dw 0 ; 168e
+SuctionBootCount        dw 0 ; 1690
 
-ChipsRemainingCount dw 0 ; 1692
-TimeRemaining   dw 0 ; 1694
+ChipsRemainingCount     dw 0 ; 1692
+TimeRemaining           dw 0 ; 1694
 
-TotalScore dd 0 ; 1696
+TotalScore              dd 0 ; 1696
 
 PasswordPromptPassword  dw 0 ; 169a pointer to decoded password (for password prompt)
 PasswordPromptLevel     dw 0 ; 169c level for password prompt
 
-; seg5.asm
-HorizontalPadding       dw 0 ; 169e main window horizontal padding (always 0x20)
-VerticalPadding         dw 0 ; 16a0 main window vertical padding (0x20 or 8, depending on vertical resolution)
-
-; sound.asm
-SoundArray:
-    ; Pointers to sound effect filenames
-    ; Sound indices defined in constants.asm
-    times 15 dw 0 ; 16a2
-.end:
-
-; seg5.asm
-HorizontalResolution    dw 0 ; 16c0 horizontal screen resolution in px
-VerticalResolution      dw 0 ; 16c2 vertical screen resolution in px
-
-DigitBitmapData         dd 0 ; 16c4 far pointer
-
-MIDIArray:
-    ; Pointers to MIDI filenames
-    times 20 dw 0 ; 16c8
-
-; sounds.asm
-;   13c4            whether music is playing?
-;   13dc            number of midi files
-;   16a2-16c0       array of sound effect handles?
-;   16c8            array of midi handles?
-;   1736            some sort of midi playback handle
-
-; Digit image pointers
-DigitPtrArray:
-    times 24 dw 0 ; 16f0
-.end:
-
-DigitResourceHandle dw 0 ; 1720 HGLOBAL
-GameStatePtrCopy    dw 0 ; 1722 copy of GameStatePtr used for deallocation
-SavedObj            dw 0 ; 1724 HGDIOBJ previously selected object; restored on exit
-fpWaveOutGetNumDevs dd 0 ; 1726
-OurHInstance        dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
-TileBitmapObj       dw 0 ; 172c HGDIOBJ current tile bitmap object
+HorizontalPadding       dw 0 ; 169e main window horizontal padding (always 0x20) (seg5.asm)
+VerticalPadding         dw 0 ; 16a0 main window vertical padding (0x20 or 8, depending on vertical resolution) (seg5.asm)
+SoundArray     times 15 dw 0 ; 16a2 Pointers to sound effect filenames (sound.asm)
+                             ;      Sound indices defined in constants.asm
+               .end:
+HorizontalResolution    dw 0 ; 16c0 horizontal screen resolution in px (seg5.asm)
+VerticalResolution      dw 0 ; 16c2 vertical screen resolution in px (seg5.asm)
+DigitBitmapData         dd 0 ; 16c4 Far pointer to digit bitmap (digits.asm)
+MIDIArray      times 20 dw 0 ; 16c8 Pointers to MIDI filenames (sound.asm)
+DigitPtrArray  times 24 dw 0 ; 16f0 Digit image pointers (digits.asm)
+               .end:
+DigitResourceHandle     dw 0 ; 1720 HGLOBAL (digits.asm)
+GameStatePtrCopy        dw 0 ; 1722 copy of GameStatePtr used for deallocation
+SavedObj                dw 0 ; 1724 HGDIOBJ previously selected object; restored on exit
+fpWaveOutGetNumDevs     dd 0 ; 1726
+OurHInstance            dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
+TileBitmapObj           dw 0 ; 172c HGDIOBJ current tile bitmap object
 ; If the game is running on Windows 3.1 or higher,
 ; it uses Arial instead of Helv[etica] as its font
 ; and fiddles with the KeyboardDelay setting.
-IsWin31             dw 0 ; 172e BOOL
-fpMidiOutGetNumDevs dd 0 ; 1730
-TileDC              dw 0 ; 1734 HDC memory dc for tile graphics
-MCIDeviceID         dw 0 ; 1736 MCIDEVICEID
+IsWin31                 dw 0 ; 172e BOOL
+fpMidiOutGetNumDevs     dd 0 ; 1730
+TileDC                  dw 0 ; 1734 HDC memory dc for tile graphics
+MCIDeviceID             dw 0 ; 1736 MCIDEVICEID
 
 ; 1738
 
