@@ -138,9 +138,11 @@ endfunc
 
 ; 112
 
-;load tile bitmap
+; Load tile bitmap and return a handle to it
 func LoadTiles
-    %arg hInstance:word, hBitmapOut:word, loadDigits:word
+    %arg hInstance:word ; +6
+    %arg hBitmapOut:word ; +8 is set to the tile bitmap handle
+    %arg loadDigits:word ; +a if true, call LoadDigits
 
     sub sp,byte +0x2
     push si
@@ -193,7 +195,8 @@ endfunc
 
 ; 17c
 
-; delete tile bitmap
+; Delete tile bitmap
+; doesn't actually do anything because LoadTiles doesn't actually keep a copy around
 func FreeTiles
     sub sp,byte +0x2
 
