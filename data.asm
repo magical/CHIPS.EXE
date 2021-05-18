@@ -607,7 +607,7 @@ TileBitmapObj           dw 0 ; 172c HGDIOBJ current tile bitmap object
 ; and fiddles with the KeyboardDelay setting.
 IsWin31                 dw 0 ; 172e BOOL
 fpMidiOutGetNumDevs     dd 0 ; 1730
-TileDC                  dw 0 ; 1734 HDC memory dc for tile graphics
+MainDC                  dw 0 ; 1734 HDC drawing context for all drawing operations on the main window
 MCIDeviceID             dw 0 ; 1736 MCIDEVICEID
 
 ; 1738

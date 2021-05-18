@@ -284,7 +284,7 @@ MainInstance                        equ 0x172A
 TileBitmapObj                       equ 0x172C
 IsWin31                             equ 0x172E
 fpMidiOutGetNumDevs                 equ 0x1730
-TileDC                              equ 0x1734
+MainDC                              equ 0x1734
 MCIDeviceID                         equ 0x1736
 
 ; vim: syntax=nasm

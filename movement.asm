@@ -1179,12 +1179,12 @@ func DrawStretchedTile
     push ax
     call far GetTileImagePos ; 9a2 3:2a3e
     add sp,byte +0x2
-    push word [TileDC]
+    push word [MainDC]
     push word [tilexpos]
     push word [tileypos]
     push byte TileHeight
     push byte TileWidth
-    push word [TileDC]
+    push word [MainDC]
     push ax
     push dx
     push word 0xcc
@@ -1195,12 +1195,12 @@ func DrawStretchedTile
     push ax
     call far GetTileImagePos ; 9ce 3:2a3e
     add sp,byte +0x2
-    push word [TileDC]
+    push word [MainDC]
     push word [tilexpos]
     push word [tileypos]
     push byte TileWidth
     push byte TileHeight
-    push word [TileDC]
+    push word [MainDC]
     push ax
     push dx
     push word 0xee
@@ -1211,12 +1211,12 @@ func DrawStretchedTile
     push ax
     call far GetTileImagePos ; 9fb 3:2a3e
     add sp,byte +0x2
-    push word [TileDC]
+    push word [MainDC]
     push word [tilexpos]
     push word [tileypos]
     push byte TileWidth
     push byte TileHeight
-    push word [TileDC]
+    push word [MainDC]
     push ax
     push dx
     push word 0x88
@@ -1227,7 +1227,7 @@ func DrawStretchedTile
     push word [ypos]
     push word [width]
     push word [height]
-    push word [TileDC]
+    push word [MainDC]
     push word [tilexpos]
     push word [tileypos]
     jmp short .label4
@@ -1242,7 +1242,7 @@ func DrawStretchedTile
     push word [ypos]
     push word [width]
     push word [height]
-    push word [TileDC]
+    push word [MainDC]
     push ax
     push dx
 .label4: ; a5f
@@ -1406,7 +1406,7 @@ func EndGame
     mov [hBitmap],ax
     or ax,ax
     jz .loadBitmapFailed
-    push word [TileDC]
+    push word [MainDC]
     push ax
     call far GDI.SelectObject ; b9f
     mov si,ax
@@ -1415,13 +1415,13 @@ func EndGame
     push byte +0x0
     push word TileWidth * 9
     push word TileHeight * 9
-    push word [TileDC]
+    push word [MainDC]
     push byte +0x0
     push byte +0x0
     push word 0xcc
     push byte +0x20
     call far GDI.BitBlt ; bc0
-    push word [TileDC]
+    push word [MainDC]
     push si
     call far GDI.SelectObject ; bca
     push word [hBitmap]
@@ -1489,7 +1489,7 @@ func EndGame
     mov si,ax
     or si,si
     jz .else
-    push word [TileDC]
+    push word [MainDC]
     push si
     call far GDI.SelectObject ; c68
     mov di,ax
@@ -1498,13 +1498,13 @@ func EndGame
     push byte +0x0
     push word TileWidth * 9
     push word TileHeight * 9
-    push word [TileDC]
+    push word [MainDC]
     push byte +0x0
     push byte +0x0
     push word 0xcc
     push byte +0x20
     call far GDI.BitBlt ; c89
-    push word [TileDC]
+    push word [MainDC]
     push di
     call far GDI.SelectObject ; c93
     push si
