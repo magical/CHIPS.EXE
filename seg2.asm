@@ -1912,12 +1912,12 @@ func PaintBoardWindow
     push word [si]
     mov [bp-0xc8],si
     mov [bp-0xca],di
-    cmp word [ColorMode],byte +0x1
+    cmp word [ColorMode],byte +0x1 ; monochrome
     if z
-        mov ax,0xffff
+        mov ax,0xffff ; white
         mov dx,0xff
     else ; 11b6
-        mov ax,0xff
+        mov ax,0xff ; yellow
         cwd
     endif ; 11ba
     push dx
@@ -4778,12 +4778,11 @@ func HINTWNDPROC
     ; set text color to white or yellow depending on ColorMode
     push word [hdcPaint]
     cmp word [ColorMode],byte +0x1
-    jnz .label1 ; ↓
-    mov ax,0xffff ; ffffff = white
-    jmp short .label2 ; ↓
-.label1: ; 2c6e
-    mov ax,0xff00 ; ffff00 = yellow
-.label2: ; 2c71
+    if e
+        mov ax,0xffff ; ffffff = white
+    else ; 2c6e
+        mov ax,0xff00 ; ffff00 = yellow
+    endif ; 2c71
     mov dx,0xff
     push dx
     push ax

@@ -6,7 +6,7 @@ SEGMENT CODE ; 5
 ;   26      HMENU
 ;   a14     HGDIOBJ tile object
 ;   a16     LPVOID  bitmap data?
-;   a18             bitmap to use: 1, 2, 3, or 4 (monochrome, locolor, hicolor, hicolor)
+;   a18             bitmap to use: 1, 2, 3, or 4 (monochrome, lowcolor, hicolor, hicolor)
 ;   169e            horizontal padding
 ;   16a0            vertical padding: 0x20 or 8, depending on vertical resolution
 ;   16c0            horizontal screen resolution
@@ -31,19 +31,19 @@ func InitGraphics
     push byte +0x0 ; NULL
     call far USER.GetDC ; 13
     mov [hDC],ax
-
+    ; get horizontal screen size
     push ax
     push byte +0x8 ; HORZRES
     call far GDI.GetDeviceCaps ; 1e
     mov [HorizontalResolution],ax
-
+    ; get vertical screen size
     push word [hDC]
     push byte +0xa ; VERTRES
     call far GDI.GetDeviceCaps ; 2b
     mov [VerticalResolution],ax
-
+    ; set padding
+    ; decrease the vertical padding if the screen is too small
     mov word [HorizontalPadding],0x20
-
     cmp ax,350
     if g
         mov ax,0x20
@@ -51,53 +51,65 @@ func InitGraphics
         mov ax,0x8
     endif ; 47
     mov [VerticalPadding],ax
-    or si,si
+    ; ok now time to figure out the tileset
+    ; first check the user's preferences
+    or si,si ; is color requested?
     jz .label2
-    push byte ID_COLOR
+    push byte ID_COLOR ; check the ini setting too
     call far GetIniInt ; 50 2:198e
     add sp,byte +0x2
     or ax,ax
     jnz .label2
-    xor dx,dx
+    ; both the menu item and the ini allow it, so try using color
+    xor dx,dx ; not monochrome
     jmp short .label3
 .label2: ; 60
-    mov dx,0x1
+    ; no color allowed
+    mov dx,0x1 ; monochrome
 .label3: ; 63
+    ; next check what the device actually supports
+    ; - if color isn't allowed, use monochrome
+    ; - if the device only has 2 colors, monochrome
+    ; - if it can blit and has at least 256 colors, true color
+    ; - otherwise decide based on the screen size
     or dx,dx
-    jz .useMonochrome
+    jz .monochrome
     or si,si
-    jz .checkRastercaps
-    push word [hDC]
-    push byte +0x18 ; NUMCOLORS
-    call far GDI.GetDeviceCaps ; 70
-    cmp ax,0x2
-    jng .useMonochrome
-.checkRastercaps: ; 7a
+    if nz
+        push word [hDC]
+        push byte +0x18 ; NUMCOLORS
+        call far GDI.GetDeviceCaps ; 70
+        cmp ax,0x2
+        jle .monochrome
+    endif ; 7a
     push word [hDC]
     push byte +0x26 ; RASTERCAPS
     call far GDI.GetDeviceCaps ; 7f
     test ah,0x1 ; RC_BITBLT
-    jz .checkVertRes
-    push word [hDC]
-    push byte +0x68 ; SIZEPALETTE
-    call far GDI.GetDeviceCaps ; 8e
-    cmp ax,0x100
-    jl .checkVertRes
-    mov word [ColorMode],0x4
-    jmp short .releaseDC
-.checkVertRes: ; a0
+    if nz
+        push word [hDC]
+        push byte +0x68 ; SIZEPALETTE
+        call far GDI.GetDeviceCaps ; 8e
+        cmp ax,0x100
+        if ge
+            mov word [ColorMode],0x4 ; true color?
+            jmp short .releaseDC
+        endif
+    endif ; a0
     cmp word [VerticalResolution],350
-    jg .useHicolor
-    mov ax,0x2
-    jmp short .setColors
-    nop
-.useHicolor: ; ae
-    mov ax,0x3
-.setColors: ; b1
+    if le
+        ; the lowcolor tileset is only used if we have less than 256 colors
+        ; and a vertical resolution no greater than 350
+        ; which i think rules out everything except EGA.
+        ; (and CGA, but CGA is way too small to play on)
+        mov ax,0x2 ; lowcolor
+    else ; ae
+        mov ax,0x3 ; hicolor
+    endif ; b1
     mov [ColorMode],ax ; bitmap to use
     jmp short .releaseDC
-.useMonochrome: ; b6
-    mov word [ColorMode],0x1
+.monochrome: ; b6
+    mov word [ColorMode],0x1 ; monochrome
 .releaseDC: ; bc
     push byte +0x0
     push word [hDC]
