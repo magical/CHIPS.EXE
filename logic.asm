@@ -4486,7 +4486,7 @@ func PressCloneButton
     jz .end ; ↓
     ; Move the block there immediately
     push byte +0x0
-    push byte +0xa
+    push byte Block
     push word [ydir]
     push word [xdir]
     mov ax,[destY]
