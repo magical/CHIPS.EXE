@@ -3710,49 +3710,49 @@ func MAINWNDPROC
     sub sp,byte +0x26
     push di
     push si
+    ; switch on uMsg
+    ; this is a basically a jump table encoded as a long chain of ifs
     mov ax,[uMsg]
-    ; jump table, as a bunch of nested ifs doing a binary search
-    ; i'm so sorry
     cmp ax,0x1c ; WM_SHOWWINDOW
-    jnz .label0 ; ↓
-    jmp .label27 ; ↓
-.label0: ; 2276
+    if z
+        jmp .label27 ; ↓
+    endif ; 2276
     ja .label5 ; ↓
     cmp ax,0x1a ; WM_WININICHANGE
-    jnz .label1 ; ↓
-    jmp .label23 ; ↓
-.label1: ; 2280
-    jna .label2 ; ↓
-    jmp .label68 ; ↓
-.label2: ; 2285
+    if z
+        jmp .label23 ; ↓
+    endif ; 2280
+    if a
+        jmp .label68 ; ↓
+    endif ; 2285
     dec al ; WM_CREATE
     jz .label10 ; ↓
     dec al ; WM_DESTROY
-    jnz .label3 ; ↓
-    jmp .label18 ; ↓
-.label3: ; 2290
+    if z
+        jmp .label18 ; ↓
+    endif ; 2290
     sub al,0xf-2 ; WM_PAINT
-    jnz .label4 ; ↓
-    jmp .label22 ; ↓
-.label4: ; 2297
+    if z
+        jmp .label22 ; ↓
+    endif ; 2297
     jmp .label68 ; ↓
 .label5: ; 229a
     sub ax,0x100 ; WM_KEYDOWN
-    jnz .label6 ; ↓
-    jmp .label33 ; ↓
-.label6: ; 22a2
+    if z
+        jmp .label33 ; ↓
+    endif ; 22a2
     sub ax,0x111-0x100 ; WM_COMMAND
-    jnz .label7 ; ↓
-    jmp .label62 ; ↓
-.label7: ; 22aa
+    if z
+        jmp .label62 ; ↓
+    endif
     dec ax ; WM_SYSCOMMAND
-    jnz .label8 ; ↓
-    jmp .label63 ; ↓
-.label8: ; 22b0
+    if e
+        jmp .label63 ; ↓
+    endif
     sub ax,0x2a7 ; MM_MCINOTIFY
-    jnz .label9 ; ↓
-    jmp .label66 ; ↓
-.label9: ; 22b8
+    if z
+        jmp .label66 ; ↓
+    endif
     jmp .label68 ; ↓
     nop
 .label10: ; 22bc
@@ -3763,9 +3763,9 @@ func MAINWNDPROC
     call far USER.LoadAccelerators ; 22c4
     mov [hAccel],ax
     or ax,ax
-    jnz .label11 ; ↓
-    jmp .label15 ; ↓
-.label11: ; 22d3
+    if z
+        jmp .label15 ; ↓
+    endif ; 22d3
     mov si,[hwnd]
     push byte +0x0
     push word TileBitmapObj
@@ -3773,17 +3773,17 @@ func MAINWNDPROC
     call far LoadTiles ; 22df 5:112
     add sp,byte +0x6
     or ax,ax
-    jnz .label12 ; ↓
-    jmp .label16 ; ↓
-.label12: ; 22ee
+    if z
+        jmp .label16 ; ↓
+    endif ; 22ee
     mov si,[hwnd]
     push si
     call far USER.GetDC ; 22f2
     mov di,ax
     or di,di
-    jnz .label13 ; ↓
-    jmp .label16 ; ↓
-.label13: ; 2300
+    if z
+        jmp .label16 ; ↓
+    endif ; 2300
     ; create a memory DC that's compatible with our main window
     push di
     call far GDI.CreateCompatibleDC ; 2301
@@ -3792,9 +3792,9 @@ func MAINWNDPROC
     push di
     call far USER.ReleaseDC ; 230b
     cmp word [TileDC],byte +0x0
-    jnz .label14 ; ↓
-    jmp .label16 ; ↓
-.label14: ; 231a
+    if z
+        jmp .label16 ; ↓
+    endif ; 231a
     ; select our tile bitmap into it
     push word [TileDC]
     push word [TileBitmapObj]
@@ -3875,14 +3875,14 @@ func MAINWNDPROC
     add sp,byte +0x4
     call far FreeGameLists ; 23f8 4:240
     cmp word [Var2a],byte +0x0
-    jz .label19 ; ↓
-    push word [OurHInstance]
-    push word [hwnd]
-    push byte +0x2
-    push byte +0x0
-    push byte +0x0
-    call far WEP4UTIL.WEPHELP ; 2411
-.label19: ; 2416
+    if nz
+        push word [OurHInstance]
+        push word [hwnd]
+        push byte +0x2
+        push byte +0x0
+        push byte +0x0
+        call far WEP4UTIL.WEPHELP ; 2411
+    endif ; 2416
     push word [TileDC]
     push word [SavedObj]
     call far GDI.SelectObject ; 241e
@@ -3895,19 +3895,19 @@ func MAINWNDPROC
     call far FreeAudioFiles ; 243f 8:5b8
     call far TeardownSound ; 2444 8:e6
     cmp word [IsWin31],byte +0x0
-    jz .label20 ; ↓
-    push byte +0x17     ; uiAction = SPI_SETKEYBOARDDELAY
-    push word [KeyboardDelay]
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far USER.SystemParametersInfo ; 245c
-.label20: ; 2461
+    if nz
+        push byte +0x17     ; uiAction = SPI_SETKEYBOARDDELAY
+        push word [KeyboardDelay]
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far USER.SystemParametersInfo ; 245c
+    endif ; 2461
     cmp word [GameStatePtrCopy],byte +0x0
-    jz .label21 ; ↓
-    push word [GameStatePtrCopy]
-    call far KERNEL.LocalFree ; 246c
-.label21: ; 2471
+    if nz
+        push word [GameStatePtrCopy]
+        call far KERNEL.LocalFree ; 246c
+    endif ; 2471
     push byte +0x0
     call far USER.PostQuitMessage ; 2473
     jmp .label67 ; ↓
@@ -3964,18 +3964,18 @@ func MAINWNDPROC
     or ax,ax
     jnz .label29 ; ↓
     cmp [wParam],ax
-    jnz .label28 ; ↓
-    call far PauseMusic ; 24f8 2:189c
-    call far PauseGame ; 24fd 2:17da
-    jmp short .label29 ; ↓
-.label28: ; 2504
-    call far UnpauseMusic ; 2504 2:18b6
-    call far UnpauseGame ; 2509 2:1834
+    if e
+        call far PauseMusic ; 24f8 2:189c
+        call far PauseGame ; 24fd 2:17da
+    else ; 2504
+        call far UnpauseMusic ; 2504 2:18b6
+        call far UnpauseGame ; 2509 2:1834
+    endif
 .label29: ; 250e
     cmp word [IsWin31],byte +0x0
-    jnz .label30 ; ↓
-    jmp .label67 ; ↓
-.label30: ; 2518
+    if z
+        jmp .label67 ; ↓
+    endif ; 2518
     cmp word [wParam],byte +0x0
     jnz .label32 ; ↓
     push byte +0x17
@@ -3996,59 +3996,62 @@ func MAINWNDPROC
     jmp short .label31 ; ↑
     nop
 .label33: ; 2540
+    ; WM_KEYDOWN
     mov bx,[GameStatePtr]
     cmp word [bx+IsLevelPlacardVisible],byte +0x0
-    jz .label34 ; ↓
-    mov word [bx+IsLevelPlacardVisible],0x0
-    push word [hwndBoard]
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far USER.InvalidateRect ; 255b
-    push word [hwndBoard]
-    call far USER.UpdateWindow ; 2564
-    call far UnpauseTimer ; 2569 2:17ba
-.label34: ; 256e
+    if nz
+        mov word [bx+IsLevelPlacardVisible],0x0
+        push word [hwndBoard]
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far USER.InvalidateRect ; 255b
+        push word [hwndBoard]
+        call far USER.UpdateWindow ; 2564
+        call far UnpauseTimer ; 2569 2:17ba
+    endif ; 256e
+    ; switch on wparam
+    ; which tells us the pressed key
     mov ax,[wParam]
-    cmp ax,0x74
-    jnz .label35 ; ↓
-    jmp .label54 ; ↓
-.label35: ; 2579
-    jna .label36 ; ↓
-    jmp .label67 ; ↓
-.label36: ; 257e
-    cmp al,0x28
+    cmp ax,0x74 ; 0x74 = VK_F5
+    if e
+        jmp .label54 ; ↓
+    endif ; 2579
+    if a
+        jmp .label67 ; ↓
+    endif ; 257e
+    cmp al,0x28 ; 0x28 = VK_DOWN
     jz .label47 ; ↓
     ja .label37 ; ↓
-    sub al,0x1b
+    sub al,0x1b ; 0x1B = VK_ESC
     jz .label42 ; ↓
-    sub al,0xa
+    sub al,0xa  ; 0x25 = VK_LEFT
     jz .label43 ; ↓
-    dec al
+    dec al      ; 0x26 = VK_UP
     jz .label45 ; ↓
-    dec al
+    dec al      ; 0x27 = VK_RIGHT
     jz .label46 ; ↓
     jmp .label67 ; ↓
     nop
 .label37: ; 2598
-    sub al,0x44
-    jnz .label38 ; ↓
-    jmp .label50 ; ↓
-.label38: ; 259f
-    sub al,0x7
-    jnz .label39 ; ↓
-    jmp .label52 ; ↓
-.label39: ; 25a6
-    sub al,0x9
-    jnz .label40 ; ↓
-    jmp .label54 ; ↓
-.label40: ; 25ad
-    sub al,0x10
+    sub al,'D'  ; 0x44 = VK_D
+    if z
+        jmp .label50 ; ↓
+    endif ; 259f
+    sub al,0x7  ; 0x4B = VK_K
+    if z
+        jmp .label52 ; ↓
+    endif ; 25a6
+    sub al,0x9  ; 0x54 = VK_T
+    if z
+        jmp .label54 ; ↓
+    endif ; 25ad
+    sub al,0x10 ; 0x64 = VK_NUMPAD4
     jz .label50 ; ↓
-    sub al,0x7
-    jnz .label41 ; ↓
-    jmp .label52 ; ↓
-.label41: ; 25b8
+    sub al,0x7  ; 0x6B = VK_ADD
+    if z
+        jmp .label52 ; ↓
+    endif ; 25b8
     jmp .label67 ; ↓
     nop
 
@@ -4083,9 +4086,9 @@ func MAINWNDPROC
     call far USER.GetDC ; 2600
     mov si,ax
     or si,si
-    jnz .label49 ; ↓
-    jmp .label67 ; ↓
-.label49: ; 260e
+    if z
+        jmp .label67 ; ↓
+    endif ; 260e
     push byte +0x1
     push byte +0x1
     push word [bp-0x6]
@@ -4102,9 +4105,9 @@ func MAINWNDPROC
     push byte VK_CONTROL
     call far USER.GetKeyState ; 2630
     or ax,ax
-    jl .label51 ; ↓
-    jmp .label67 ; ↓
-.label51: ; 263c
+    if nl
+        jmp .label67 ; ↓
+    endif ; 263c
     or byte [CheatKeys],0x2
     jmp short .label56 ; ↓
     nop
@@ -4112,9 +4115,9 @@ func MAINWNDPROC
     push byte VK_CONTROL
     call far USER.GetKeyState ; 2646
     or ax,ax
-    jl .label53 ; ↓
-    jmp .label67 ; ↓
-.label53: ; 2652
+    if nl
+        jmp .label67 ; ↓
+    endif ; 2652
     or byte [CheatKeys],0x4
     jmp short .label56 ; ↓
     nop
@@ -4122,35 +4125,33 @@ func MAINWNDPROC
     push byte VK_CONTROL
     call far USER.GetKeyState ; 265c
     or ax,ax
-    jl .label55 ; ↓
-    jmp .label67 ; ↓
-.label55: ; 2668
+    if nl
+        jmp .label67 ; ↓
+    endif ; 2668
     or byte [CheatKeys],0x1
 .label56: ; 266d
     cmp word [CheatKeys],byte +0x1
-    jnz .label57 ; ↓
-    mov ax,0x1
-    jmp short .label58 ; ↓
-    nop
-.label57: ; 267a
-    xor ax,ax
-.label58: ; 267c
+    if e
+        mov ax,0x1
+    else ; 267a
+        xor ax,ax
+    endif ; 267c
     or ax,0x6
-    jnz .label59 ; ↓
-    jmp .label67 ; ↓
-.label59: ; 2684
+    if e
+        jmp .label67 ; ↓
+    endif ; 2684
     cmp word [CheatVisible],byte +0x0
-    jz .label60 ; ↓
-    jmp .label67 ; ↓
-.label60: ; 268e
+    if nz
+        jmp .label67 ; ↓
+    endif ; 268e
     push word [hMenu]
     push byte +0x0
     call far USER.GetSubMenu ; 2694
     mov si,ax
     or si,si
-    jnz .label61 ; ↓
-    jmp .label67 ; ↓
-.label61: ; 26a2
+    if z
+        jmp .label67 ; ↓
+    endif ; 26a2
     push si
     push byte +0x0
     push byte ID_CHEAT
