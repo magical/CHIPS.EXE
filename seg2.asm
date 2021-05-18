@@ -2565,7 +2565,7 @@ func PauseGame
     inc word [GamePaused]
     cmp word [GamePaused],byte +0x0
     if g
-        mov ax,0x8
+        mov ax,0x8 ; MF_CHECKED
     else ; 1802
         xor ax,ax
     endif ; 1804
@@ -2599,7 +2599,7 @@ func UnpauseGame
     mov [GamePaused],ax
     or ax,ax
     if g
-        mov ax,0x8
+        mov ax,0x8 ; MF_CHECKED
     else ; 185c
         xor ax,ax
     endif ; 185e
@@ -3360,7 +3360,7 @@ func MenuItemCallback
 .label7: ; 1eef
     cmc
     sbb ax,ax
-    and ax,0x8
+    and ax,0x8 ; MF_CHECKED
     push ax
     call far USER.CheckMenuItem ; 1ef6
     push word [hwndMain]
@@ -3535,7 +3535,7 @@ func MenuItemCallback
     cmp word [SoundEnabled],byte +0x1
     cmc
     sbb ax,ax
-    and ax,0x8
+    and ax,0x8 ; MF_CHECKED
     push ax
     call far USER.CheckMenuItem ; 209f
     push word [hwndMain]
@@ -3679,7 +3679,7 @@ func MenuItemCallback
     push byte ID_COLOR
     cmp word [ColorMode],byte +0x1
     if nz
-        mov ax,0x8
+        mov ax,0x8 ; MF_CHECKED
     else ; 2234
         xor ax,ax
     endif ; 2236
@@ -3818,7 +3818,7 @@ func MAINWNDPROC
     cmp word [MusicEnabled],byte +0x1
     cmc
     sbb ax,ax
-    and ax,0x8
+    and ax,0x8 ; MF_CHECKED
     push ax
     call far USER.CheckMenuItem ; 236a
     push word [hMenu]
@@ -3826,7 +3826,7 @@ func MAINWNDPROC
     cmp word [SoundEnabled],byte +0x1
     cmc
     sbb ax,ax
-    and ax,0x8
+    and ax,0x8 ; MF_CHECKED
     push ax
     call far USER.CheckMenuItem ; 2381
     push word [hMenu]
