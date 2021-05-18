@@ -248,7 +248,7 @@ BESTTIMESMSGPROC:
 .label2: ; 1d6
     push word [bp+0xe]
     push word 0x111
-    push byte +0x2
+    push byte ID_CANCEL
 .label3: ; 1de
     push byte +0x0
     push byte +0x0
