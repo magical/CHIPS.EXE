@@ -16,6 +16,7 @@ SEGMENT CODE ; 5
 %include "constants.asm"
 %include "variables.asm"
 %include "func.mac"
+%include "if.mac"
 
 %include "extern.inc"
 %include "windows.inc"
@@ -44,13 +45,11 @@ func InitGraphics
     mov word [HorizontalPadding],0x20
 
     cmp ax,350
-    jng .label0
-    mov ax,0x20
-    jmp short .label1
-    nop
-.label0: ; 44
-    mov ax,0x8
-.label1: ; 47
+    if g
+        mov ax,0x20
+    else ; 44
+        mov ax,0x8
+    endif ; 47
     mov [VerticalPadding],ax
     or si,si
     jz .label2
@@ -113,25 +112,22 @@ func InitGraphics
     mov dl,al
     mov dh,cl
     cmp dx,0x30a
-    jl .label10
-    mov ax,0x1
-    jmp short .label11
-.label10: ; e0
-    xor ax,ax
-.label11: ; e2
+    if ge
+        mov ax,0x1
+    else ; e0
+        xor ax,ax
+    endif ; e2
     mov [IsWin31],ax
 
     ; Check or uncheck the 'Color' menu item as appropriate.
     push word [hMenu]        ; hMenu
     push byte ID_COLOR      ; uIDCheckItem
     cmp word [ColorMode],byte +0x1
-    jz .label12
-    mov ax,0x8  ; MF_CHECKED
-    jmp short .label13
-    nop
-.label12: ; f8
-    xor ax,ax   ; MF_UNCHECKED
-.label13: ; fa
+    if ne
+        mov ax,0x8  ; MF_CHECKED
+    else ; f8
+        xor ax,ax   ; MF_UNCHECKED
+    endif ; fa
     push ax                 ; uCheck
     call far USER.CheckMenuItem ; fb
 
@@ -202,18 +198,18 @@ func FreeTiles
     sub sp,byte +0x2
 
     cmp word [VarA14],byte +0x0
-    jz .hObjectIsNull
-    push word [VarA14]
-    call far GDI.DeleteObject ; 194
-    mov word [VarA14],0x0
-.hObjectIsNull: ; 19f
+    if nz
+        push word [VarA14]
+        call far GDI.DeleteObject ; 194
+        mov word [VarA14],0x0
+    endif ; 19f
 
     cmp word [VarA16],byte +0x0
-    jz .pointerIsNull
-    push word [VarA16]
-    call far KERNEL.LocalFree ; 1aa
-    mov word [VarA16],0x0
-.pointerIsNull: ; 1b5
+    if nz
+        push word [VarA16]
+        call far KERNEL.LocalFree ; 1aa
+        mov word [VarA16],0x0
+    endif ; 1b5
 endfunc
 
 ; 1bc
