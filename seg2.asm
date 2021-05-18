@@ -997,7 +997,7 @@ func CreateWindowsAndInitGame
     mov si,[hInstance]
     mov word [bp-0x6],(WS_CLIPCHILDREN | WS_TILEDWINDOW)&0xffff
     mov word [bp-0x4],(WS_CLIPCHILDREN | WS_TILEDWINDOW)>>16
-    mov [OurHInstance],si
+    mov [MainInstance],si
     push si
     push ds
     push word s_ChipsMenu
@@ -1343,7 +1343,7 @@ func ShowHint
     push word 0x92
     push word [hwndInfo]
     push byte +0x6
-    push word [OurHInstance]
+    push word [MainInstance]
     push byte +0x0
     push byte +0x0
     call far USER.CreateWindow ; c54
@@ -1483,7 +1483,7 @@ func PaintBackground
     sub sp,byte +0x20
     push di
     push si
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word s_background
     call far USER.LoadBitmap ; ddd
@@ -3321,7 +3321,7 @@ func MenuItemCallback
 
 .label1: ; 1e90
     call far PauseGame ; 1e90 2:17da
-    push word [OurHInstance]
+    push word [MainInstance]
     push word [bp+0x6]
     call far WEP4UTIL.WEPABOUT2
 .label2: ; 1ea1
@@ -3340,7 +3340,7 @@ func MenuItemCallback
 
 .label4: ; 1ebe
     mov word [Var2a],0x1
-    push word [OurHInstance]
+    push word [MainInstance]
     push word [bp+0x6]
     push word 0x101
     push ds
@@ -3370,7 +3370,7 @@ func MenuItemCallback
 
 .label8: ; 1f08
     mov word [Var2a],0x1
-    push word [OurHInstance]
+    push word [MainInstance]
     push word [bp+0x6]
     push byte +0x4
     push byte +0x0
@@ -3468,11 +3468,11 @@ func MenuItemCallback
     call far PauseGame ; 1fda 2:17da
     push word SEG BESTTIMESMSGPROC ; 1fdd 6:18e BESTTIMESMSGPROC
     push word BESTTIMESMSGPROC
-    push word [OurHInstance]
+    push word [MainInstance]
     call far KERNEL.MakeProcInstance ; 1fe9
     mov si,ax
     mov [bp-0x4],dx
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word s_DLG_BESTTIMES
     push word [hwndMain]
@@ -3554,13 +3554,13 @@ func MenuItemCallback
     call far PauseGame ; 20c4 2:17da
     push word SEG GOTOLEVELMSGPROC ; 20c7 6:0 GOTOLEVELMSGPROC
     push word GOTOLEVELMSGPROC
-    push word [OurHInstance]
+    push word [MainInstance]
     call far KERNEL.MakeProcInstance ; 20d3
     mov si,ax
     mov [bp-0x6],dx
     mov bx,[GameStatePtr]
     mov di,[bx+LevelNumber]
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word s_DLG_GOTO
     push word [hwndMain]
@@ -3589,7 +3589,7 @@ func MenuItemCallback
 
 .label31: ; 2130
     mov word [Var2a],0x1
-    push word [OurHInstance]
+    push word [MainInstance]
     push word [bp+0x6]
     push word 0x101
     push ds
@@ -3599,7 +3599,7 @@ func MenuItemCallback
 
 .label32: ; 2148
     mov word [Var2a],0x1
-    push word [OurHInstance]
+    push word [MainInstance]
     push word [bp+0x6]
     push word 0x101
     push ds
@@ -3631,7 +3631,7 @@ func MenuItemCallback
     push byte +0x1
     lea ax,[bp-0x6]
     push ax
-    push word [OurHInstance]
+    push word [MainInstance]
     call far LoadTiles ; 21a8 5:112
     add sp,byte +0x6
     or ax,ax
@@ -3757,7 +3757,7 @@ func MAINWNDPROC
     nop
 .label10: ; 22bc
     ; WM_CREATE
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word s_ChipsMenu2
     call far USER.LoadAccelerators ; 22c4
@@ -3769,7 +3769,7 @@ func MAINWNDPROC
     mov si,[hwnd]
     push byte +0x0
     push word TileBitmapObj
-    push word [OurHInstance]
+    push word [MainInstance]
     call far LoadTiles ; 22df 5:112
     add sp,byte +0x6
     or ax,ax
@@ -3876,7 +3876,7 @@ func MAINWNDPROC
     call far FreeGameLists ; 23f8 4:240
     cmp word [Var2a],byte +0x0
     if nz
-        push word [OurHInstance]
+        push word [MainInstance]
         push word [hwnd]
         push byte +0x2
         push byte +0x0
@@ -4354,7 +4354,7 @@ func INFOWNDPROC
     push ss
     push ax
     call far USER.BeginPaint ; 289c
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word s_infownd
     call far USER.LoadBitmap ; 28a9

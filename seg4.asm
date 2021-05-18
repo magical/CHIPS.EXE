@@ -1953,11 +1953,11 @@ func FUN_4_115c
     ; . show the prompt
     push word SEG PASSWORDMSGPROC
     push word PASSWORDMSGPROC
-    push word [OurHInstance]
+    push word [MainInstance]
     call far KERNEL.MakeProcInstance ; 11c4
     mov di,ax
     mov [bp-0x4],dx
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word s_DLG_PASSWORD
     push word [hWnd]

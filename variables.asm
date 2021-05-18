@@ -280,7 +280,7 @@ DigitResourceHandle                 equ 0x1720
 GameStatePtrCopy                    equ 0x1722
 SavedObj                            equ 0x1724
 fpWaveOutGetNumDevs                 equ 0x1726
-OurHInstance                        equ 0x172A
+MainInstance                        equ 0x172A
 TileBitmapObj                       equ 0x172C
 IsWin31                             equ 0x172E
 fpMidiOutGetNumDevs                 equ 0x1730

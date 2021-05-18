@@ -600,7 +600,7 @@ DigitResourceHandle     dw 0 ; 1720 HGLOBAL (digits.asm)
 GameStatePtrCopy        dw 0 ; 1722 copy of GameStatePtr used for deallocation
 SavedObj                dw 0 ; 1724 HGDIOBJ previously selected object; restored on exit
 fpWaveOutGetNumDevs     dd 0 ; 1726
-OurHInstance            dw 0 ; 172a HINSTANCE from WinMain. TODO need better name
+MainInstance            dw 0 ; 172a HINSTANCE from WinMain
 TileBitmapObj           dw 0 ; 172c HGDIOBJ current tile bitmap object
 ; If the game is running on Windows 3.1 or higher,
 ; it uses Arial instead of Helv[etica] as its font

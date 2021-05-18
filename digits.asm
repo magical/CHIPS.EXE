@@ -24,7 +24,7 @@ func FindBitmap
     %arg name:word
     sub sp,byte +0x2
 
-    push word [OurHInstance]  ; hModule
+    push word [MainInstance]  ; hModule
     mov ax,[name]       ; lpName
     sub dx,dx
     push dx
@@ -71,7 +71,7 @@ func LoadDigits
     add sp,byte +0x2
     mov si,ax
 
-    push word [OurHInstance]  ; hModule
+    push word [MainInstance]  ; hModule
     push si             ; hResInfo
     call far KERNEL.LoadResource ; 6f
     mov [DigitResourceHandle],ax

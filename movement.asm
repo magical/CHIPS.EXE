@@ -1399,7 +1399,7 @@ func EndGame
     push word [hwndMain]
     call far ShowMessageBox ; b7e 2:0
     add sp,byte +0x8
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word Chipend
     call far USER.LoadBitmap ; b8e
@@ -1482,7 +1482,7 @@ func EndGame
     jz .else
 
 .showEndGraphic:
-    push word [OurHInstance]
+    push word [MainInstance]
     push ds
     push word Chipend2
     call far USER.LoadBitmap ; c58
@@ -1545,10 +1545,10 @@ func EndLevel
     ; Show level completed dialog
     push word SEG COMPLETEMSGPROC
     push word COMPLETEMSGPROC
-    push word [OurHInstance]
+    push word [MainInstance]
     call far KERNEL.MakeProcInstance ; ce8
     mov si,ax
-    push word [OurHInstance]  ; hInstance
+    push word [MainInstance]  ; hInstance
     push ds
     push word s_DLG_COMPLETE
     push word [hWnd]  ; hWndParent
