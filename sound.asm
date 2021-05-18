@@ -7,6 +7,7 @@ SEGMENT CODE ; 8
 ;%include "structs.asm"
 %include "variables.asm"
 %include "func.mac"
+%include "if.mac"
 
 %include "extern.inc"
 %include "windows.inc"
@@ -28,9 +29,9 @@ func InitSound
     call far KERNEL.LoadLibrary ; 1c
     mov [hmoduleMMSystem],ax
     cmp ax,0x20
-    ja .loadedMMSystem ; ↓
-    jmp .failedToLoadLibrary ; ↓
-.loadedMMSystem: ; 2c
+    if na
+        jmp .failedToLoadLibrary ; ↓
+    endif ; 2c
     ; Look up a bunch of functions from the library
     push ax
     push ds
@@ -76,9 +77,9 @@ func InitSound
     mov [SoundMenuItemEnabled],ax
     ; If we can't play midi, turn music off
     cmp word [MusicMenuItemEnabled],byte +0x0
-    jnz .dontDisableMusic ; ↓
-    mov word [MusicEnabled],0x0
-.dontDisableMusic: ; b4
+    if z
+        mov word [MusicEnabled],0x0
+    endif ; b4
     ; if we can't play sounds, turn sound effects off
     or ax,ax
     jnz .done ; ↓
@@ -108,10 +109,10 @@ endfunc
 func TeardownSound
     sub sp,byte +0x2
     cmp word [hmoduleMMSystem],byte +0x0
-    jz .label0 ; ↓
-    push word [hmoduleMMSystem]
-    call far KERNEL.FreeLibrary ; fe
-.label0: ; 103
+    if nz
+        push word [hmoduleMMSystem]
+        call far KERNEL.FreeLibrary ; fe
+    endif ; 103
     mov word [hmoduleMMSystem],0x0
 endfunc
 
@@ -125,9 +126,9 @@ func StartMIDI
     ; return value in dx:ax
     sub sp,byte +0x5e
     cmp word [param_c],byte +0x0
-    jz .label0 ; ↓
-    jmp .label5 ; ↓
-.label0: ; 126
+    if nz
+        jmp .label5 ; ↓
+    endif ; 126
     mov word [bp-0x56], s_sequencer
     mov [bp-0x54],ds
     mov ax,[filename+FarPtr.Off]
@@ -147,12 +148,12 @@ func StartMIDI
     mov [bp-0x6],ax
     mov [bp-0x4],dx
     or dx,ax
-    jz .label2 ; ↓
-.returnSomething: ; 15f
-    mov ax,[bp-0x6]
-    mov dx,[bp-0x4]
-    jmp .return ; ↓
-.label2: ; 168
+    if nz
+    .returnSomething: ; 15f
+        mov ax,[bp-0x6]
+        mov dx,[bp-0x4]
+        jmp .return ; ↓
+    endif ; 168
     mov word [bp-0x42],0x4003
     mov word [bp-0x40],0x0
     mov ax,[bp-0x5a]
@@ -238,12 +239,11 @@ func FUN_8_022a
     call far StartMIDI ; 241 8:110
     add sp,byte +0x8
     or dx,ax
-    jnz .returnZero ; ↓
-    mov ax,0x1
-    jmp short .end ; ↓
-.returnZero: ; 252
-    xor ax,ax
-.end: ; 254
+    if z
+        mov ax,0x1
+    else  ; 252
+        xor ax,ax
+    endif ; 254
 endfunc
 
 ; 25c
@@ -299,15 +299,15 @@ endfunc
 func StopMIDI
     sub sp,byte +0x2
     cmp word [MIDIPlaying],byte +0x0
-    jz .label0 ; ↓
-    push word [MCIDeviceID]
-    push word 0x804     ; MCI_CLOSE
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far [fpMciSendCommand] ; 2f7
-.label0: ; 2fb
+    if nz
+        push word [MCIDeviceID]
+        push word 0x804     ; MCI_CLOSE
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far [fpMciSendCommand] ; 2f7
+    endif ; 2fb
     mov word [MIDIPlaying],0x0
 endfunc
 
@@ -320,18 +320,18 @@ func FUN_8_0308
     push si
     ; some preliminary checks
     cmp word [MusicEnabled],byte +0x0
-    jnz .musicEnabled ; ↓
-    jmp .returnZero ; ↓
-.musicEnabled: ; 321
+    if z
+        jmp .returnZero ; ↓
+    endif ; 321
     mov ax,[fpMciSendCommand+FarPtr.Seg]
     or ax,[fpMciSendCommand+FarPtr.Off]
-    jnz .mciSendCommandExists ; ↓
-    jmp .returnZero ; ↓
-.mciSendCommandExists: ; 32d
+    if z
+        jmp .returnZero ; ↓
+    endif ; 32d
     cmp word [NumMIDIFiles],byte +0x0
-    jnz .haveSomeMIDIFiles ; ↓
-    jmp .returnZero ; ↓
-.haveSomeMIDIFiles: ; 337
+    if z
+        jmp .returnZero ; ↓
+    endif ; 337
     call far StopMIDI ; 337 8:2d4
     mov ax,[bp+0x6] ; level number
     cwd
@@ -346,9 +346,9 @@ func FUN_8_0308
 .label4: ; 351
     mov bx,si
     cmp word [bx+si+MIDIArray],byte +0x0
-    jz .label5 ; ↓
-    jmp .label9 ; ↓
-.label5: ; 35d
+    if nz
+        jmp .label9 ; ↓
+    endif ; 35d
     lea cx,[si+0x1]
     cmp cx,[NumMIDIFiles]
     jnl .label7 ; ↓
@@ -372,9 +372,9 @@ func FUN_8_0308
     mov word [bx],0x0
     dec word [NumMIDIFiles]
     cmp [NumMIDIFiles],si
-    jnz .label8 ; ↓
-    xor si,si
-.label8: ; 39f
+    if e
+        xor si,si
+    endif ; 39f
     cmp word [NumMIDIFiles],byte +0x0
     jnz .label4 ; ↑
     call far StopMIDI ; 3a6 8:2d4
@@ -508,15 +508,13 @@ func InitAudioFiles
     call far GetIniInt ; 4f1 2:198e
     add sp,byte +0x2
     cmp ax,NumMidiFilesMax
-    jl .label2 ; ↓
-    mov ax,NumMidiFilesMax
-    jmp short .label3 ; ↓
-    nop
-.label2: ; 504
-    push word ID_NumMidiFiles
-    call far GetIniInt ; 507 2:198e
-    add sp,byte +0x2
-.label3: ; 50f
+    if ge
+        mov ax,NumMidiFilesMax
+    else ; 504
+        push word ID_NumMidiFiles
+        call far GetIniInt ; 507 2:198e
+        add sp,byte +0x2
+    endif ; 50f
     mov [NumMIDIFiles],ax
     push ax
     push word ID_NumMidiFiles
@@ -562,10 +560,10 @@ endfunc
 func PlaySoundEffect
     sub sp,byte +0x6
     cmp word [SoundEnabled],byte +0x0
-    jz .label0 ; ↓
+    jz .end ; ↓
     mov ax,[fpSndPlaySound+FarPtr.Seg]
     or ax,[fpSndPlaySound+FarPtr.Off]
-    jz .label0 ; ↓
+    jz .end ; ↓
     mov bx,[bp+0x6]
     shl bx,1
     mov ax,[SoundArray+bx]
@@ -573,16 +571,16 @@ func PlaySoundEffect
     mov cx,ax
     mov [bp-0x4],dx
     or dx,ax
-    jz .label0 ; ↓
+    jz .end ; ↓
     push word [bp-0x4]
     push cx
     cmp word [bp+0x8],byte +0x1
     sbb ax,ax
-    and ax,0x10
-    or al,0x3
+    and ax,0x10 ; SND_NOSTOP
+    or al,0x3 ; SND_ASYNC | SND_NODEFAULT
     push ax
     call far [fpSndPlaySound] ; 5ad
-.label0: ; 5b1
+.end: ; 5b1
 endfunc
 
 ; 5b8
@@ -594,38 +592,38 @@ func FreeAudioFiles
     push si
     mov ax,[fpSndPlaySound+FarPtr.Seg]
     or ax,[fpSndPlaySound+FarPtr.Off]
-    jz .label0 ; ↓
-    push byte +0x0
-    push byte +0x0
-    push byte +0x0
-    call far [fpSndPlaySound] ; 5d6
-.label0: ; 5da
+    if nz
+        push byte +0x0
+        push byte +0x0
+        push byte +0x0
+        call far [fpSndPlaySound] ; 5d6
+    endif ; 5da
     mov si,SoundArray
     mov di,[bp-0x4]
-.label1: ; 5e0
+.soundLoop: ; 5e0
     cmp word [si],byte +0x0
-    jz .label2 ; ↓
-    push word [si]
-    call far KERNEL.LocalFree ; 5e7
-.label2: ; 5ec
+    if nz
+        push word [si]
+        call far KERNEL.LocalFree ; 5e7
+    endif ; 5ec
     add si,byte +0x2
     cmp si,SoundArray.end
-    jb .label1 ; ↑
+    jb .soundLoop ; ↑
     xor di,di
     cmp [NumMIDIFiles],di
-    jng .label5 ; ↓
+    jng .end ; ↓
     mov si,MIDIArray
-.label3: ; 600
+.midiLoop: ; 600
     cmp word [si],byte +0x0
-    jz .label4 ; ↓
-    push word [si]
-    call far KERNEL.LocalFree ; 607
-.label4: ; 60c
+    if nz
+        push word [si]
+        call far KERNEL.LocalFree ; 607
+    endif ; 60c
     add si,byte +0x2
     inc di
     cmp di,[NumMIDIFiles]
-    jl .label3 ; ↑
-.label5: ; 616
+    jl .midiLoop ; ↑
+.end: ; 616
     pop si
     pop di
 endfunc
