@@ -1,27 +1,21 @@
 package main
 
-// This tool is (will be) a "half" linker: it takes several
-// .obj files as input, performs symbol resolution and relocation,
-// and writes out a .bin file for each object which can then
-// be copied into the final executable.
+// This tool is a "half" linker: it takes several .obj files
+// as input, performs symbol resolution and relocation, and writes
+// out a .bin file for each object which can then be copied into
+// the final executable.
 //
 // It follows a traditional two-pass model:
 // the first pass loads symbols from object files
 // the second pass performs fixups and writes the patched object files.
 //
-// The second phase actually reads each object file twice:
-// we have to read the fixup locations before patching so that
-// we can order the relocation chains correctly according to the link script.
+// The second pass is somewhat complicated by the fact that we need to
+// accurately recreate the order of the relocation chains chosen by the
+// original linker.
 
-// Linker TODO:
-// - [x] symbol resolution
-// - [x] write out basic patch chains
-// - [~] decide on reloc info representation
-// - [x] write reloc info at end of file
-// - [x] sort reloc info according to linkscript
-// - finish linkscript parsing
-// - [x] implement symfile loading
-// - [x] sort patches according to linkscript
+// TODO:
+// - [ ] support multiple segments in input files
+// - [ ] concatenate data segments
 
 import (
 	"bufio"
@@ -396,9 +390,9 @@ func (ld *Linker) addRelocInternal(segment, toSegment int, spans []RelocSpan) {
 
 // Algorithm for applying relocation info from the script file:
 //
-// 1 read the script file. assign reloc records to a per-segment list
-//   the script may reference segments that don't exist during linking
-//     map[int][]UserRelocInfo
+// 1. read the script file. assign reloc records to a per-segment list
+//    the script may reference segments that don't exist during linking
+//      map[int][]UserRelocInfo
 //
 // fixups are processed in two phases. first is the processing phase,
 // second is the fixup phase (yes, we have to fix the fixups).
