@@ -562,8 +562,10 @@ Var167C dd 0 ; atexit function pointers
 ; end crt.asm data
 
 ; 1680
+; miscellaneous
 
 ; Near pointer to game state structure
+; see structs.asm for field descriptions
 GameStatePtr dw 0 ; 1680
 
 ; Inventory
