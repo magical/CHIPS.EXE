@@ -7,6 +7,7 @@ SEGMENT CODE ; 7
 %include "structs.asm"
 %include "variables.asm"
 %include "func.mac"
+%include "if.mac"
 
 %include "extern.inc"
 %include "windows.inc"
@@ -45,11 +46,11 @@ func DoTick
     mov bx,[GameStatePtr]
     ; if chip is sliding, don't do anything
     cmp word [bx+IsSliding],byte +0x0
-    jz .label2
-    jmp word .monsterloop
+    if nz
+        jmp word .monsterloop
+    endif ; 32
 
     ; If ChipHasMoved is set, just clear it
-.label2: ; 32
     cmp word [bx+ChipHasMoved],byte +0x0
     jz .tryBufferedKeystroke
 .clearAlreadyMovedFlag: ; 39
@@ -60,31 +61,32 @@ func DoTick
 .tryBufferedKeystroke: ; 46
     ; Use a buffered keystroke if we have one (and if chip isn't dead)
     cmp word [bx+IsBuffered],byte +0x0
-    jz .tryMouseMovement
-    cmp word [bx+Autopsy],byte NotDeadYet
-    jnz .label6
-    push byte +0x1
-    push byte +0x1
-    push word [bx+BufferedY]
-    push word [bx+BufferedX]
-    push ax
-    call far MoveChip ; 61 7:1184
-    add sp,byte +0xa
-.label6: ; 69
-    ; ...and clear the keystroke regardless
-    mov bx,[GameStatePtr]
-    mov word [bx+IsBuffered],0x0
-    mov bx,[GameStatePtr]
-    mov word [bx+HaveMouseTarget],0x0
-    jmp word .monsterloop
+    if nz
+        cmp word [bx+Autopsy],byte NotDeadYet
+        if e
+            push byte +0x1
+            push byte +0x1
+            push word [bx+BufferedY]
+            push word [bx+BufferedX]
+            push ax
+            call far MoveChip ; 61 7:1184
+            add sp,byte +0xa
+        endif ; 69
+        ; ...and clear the keystroke regardless
+        mov bx,[GameStatePtr]
+        mov word [bx+IsBuffered],0x0
+        mov bx,[GameStatePtr]
+        mov word [bx+HaveMouseTarget],0x0
+        jmp word .monsterloop
+    endif
 
 .tryMouseMovement: ; 80
     ; we don't have a buffered keystroke
     ; But we might have a mouse target...
     cmp word [bx+HaveMouseTarget],byte +0x0
-    jnz .label7
-    jmp word .standAroundLikeAnIdiot
-.label7: ; 8a
+    if z
+        jmp word .standAroundLikeAnIdiot
+    endif ; 8a
     ; If we've reached the target, clear HaveMouseTarget and ChipHasMoved and get on with it
     ; di = mousex - chipx
     mov ax,[bx+MouseTargetX] ; mouse target x
@@ -117,35 +119,35 @@ func DoTick
     sub ax,dx
     ; if ydistance >= xdistance
     cmp ax,cx
-    jl .chooseEastOrWest1
-.chooseNorthOrSouth1:
-    or si,si
-    jng .chooseSouth1
-.chooseNorth1:
-    mov word [xdir],0
-    mov word [ydir],1
-    jmp short .label13
-.chooseSouth1: ; cc
-    mov word [xdir],0
-    mov word [ydir],-1
-    jmp short .label13
-.chooseEastOrWest1: ; d8
-    or di,di
-    jng .chooseEast1
-.chooseWest1:
-    mov word [xdir],1
-    jmp short .label15
-    nop
-.chooseEast1: ; e4
-    mov word [xdir],-1
-.label15: ; e9
-    mov word [ydir],0
+    if ge
+        or si,si
+        if g
+            ; north
+            mov word [xdir],0
+            mov word [ydir],1
+            jmp short .label13
+        endif ; cc
+        ; south
+        mov word [xdir],0
+        mov word [ydir],-1
+    else ; d8
+        or di,di
+        if g
+            ; east
+            mov word [xdir],1
+        else ; e4
+            ; west
+            mov word [xdir],-1
+        endif ; e9
+        mov word [ydir],0
+    endif ; ee
 
-.label13: ; ee
+.label13:
     ; If chip is dead, forget all that; go do something else
     cmp word [bx+Autopsy],byte +0x0
-    jz .moveChipAttempt1
-    jmp word .dead
+    if nz
+        jmp word .dead
+    endif
 
 .moveChipAttempt1: ; f8
     ; Actually move chip
@@ -169,9 +171,9 @@ func DoTick
     add sp,byte +0xa
     or ax,ax
     ; If we succeeded, or chip died, go deal with it
-    jz .label20
-    jmp word .dead
-.label20: ; 12a
+    if nz
+        jmp word .dead
+    endif ; 12a
     mov bx,[GameStatePtr]
     cmp [bx+HaveMouseTarget],ax ; 0
     jz .dead
@@ -191,26 +193,28 @@ func DoTick
     xor ax,dx
     sub ax,dx
     cmp ax,cx
-    jnl .chooseEastOrWest2
-    jmp word .chooseNorthOrSouth2
-.chooseEastOrWest2: ; 14b2
+    if l
+        jmp word .chooseNorthOrSouth2
+    endif ; 14d
     ; if xdist > 0, dir = (1,0)
     or di,di
-    jng .chooseWestOrNothing2
-.chooseEast2:
-    mov word [xdir],1
-.setYdirToZero2: ; 154
-    mov word [ydir],0
-    jmp short .moveChipAttempt2
-    nop
-.chooseWestOrNothing2: ; 15c
+    if g
+        ; east
+        mov word [xdir],1
+    .setYdirToZero2: ; 154
+        mov word [ydir],0
+        jmp short .moveChipAttempt2
+        nop
+    endif ; 15c
+
     ; if xdist < 0, dir = (-1,0)
     or di,di
-    jnl .chooseNothing2
-.chooseWest2:
-    mov word [xdir],-1
-    jmp short .setYdirToZero2
-    nop
+    if l
+        ; west
+        mov word [xdir],-1
+        jmp short .setYdirToZero2
+        nop
+    endif
 .chooseNothing2: ; 168
     ; if xdist == 0, dir = (0,0)
     xor ax,ax
@@ -218,12 +222,13 @@ func DoTick
     mov [xdir],ax
 
 .moveChipAttempt2: ; 170
+    ; if chip died in the first attempt, go deal with that
     mov bx,[GameStatePtr]
     cmp word [bx+Autopsy],byte +0x0
     jnz .dead
-
+    ; otherwise clear the HasMoved flag and carry on
     mov word [bx+ChipHasMoved],0x0
-
+    ; do we have a direction?
     cmp word [xdir],byte +0x0
     jnz .label27
     cmp word [ydir],byte +0x0
@@ -244,21 +249,22 @@ func DoTick
 .dead: ; 1b0
     mov bx,[GameStatePtr]
     cmp word [bx+Autopsy],byte +0x0
-    jnz .label29
+    jnz .clearMouseTarget
     mov ax,[bx+MouseTargetX]
     cmp [bx+ChipX],ax
-    jz .label30
-    jmp word .clearAlreadyMovedFlag
-    ; mov [bx+ChipHasMoved], 0
-    ; jmp .monsterloop
-.label30: ; 1c8
+    if nz
+        jmp word .clearAlreadyMovedFlag
+        ; mov [bx+ChipHasMoved], 0
+        ; jmp .monsterloop
+    endif ; 1c8
     mov ax,[bx+MouseTargetY]
     cmp [bx+ChipY],ax
-    jz .label29
-    jmp word .clearAlreadyMovedFlag
-    ; mov [bx+ChipHasMoved], 0
-    ; jmp .monsterloop
-.label29: ; 1d5
+    if nz
+        jmp word .clearAlreadyMovedFlag
+        ; mov [bx+ChipHasMoved], 0
+        ; jmp .monsterloop
+    endif
+.clearMouseTarget: ; 1d5
     mov word [bx+HaveMouseTarget],0x0
     jmp word .clearAlreadyMovedFlag
     ; mov [bx+ChipHasMoved], 0
@@ -268,18 +274,19 @@ func DoTick
     ; the x distance was greater than the y distance
     ; if ydist > 0, dir = (0,1)
     or si,si
-    jng .chooseSouthOrNothing2
-.chooseSouth2:
-    mov word [xdir],0
-    mov word [ydir],1
-    jmp short .moveChipAttempt2
-.chooseSouthOrNothing2: ; 1ee
+    if g
+        ; south
+        mov word [xdir],0
+        mov word [ydir],1
+        jmp short .moveChipAttempt2
+    endif ; 1ee
     ; if ydist == 0, dir = (0,0)
     or si,si
-    jl .chooseNorth2
-    jmp word .chooseNothing2
-.chooseNorth2: ; 1f5
+    if ge
+        jmp word .chooseNothing2
+    endif ; 1f5
     ; if ydist < 0, dir = (0,-1)
+    ; north
     mov word [xdir],0
     mov word [ydir],-1
     jmp word .moveChipAttempt2
@@ -304,12 +311,11 @@ func DoTick
     cmp al,SwimS
     jz .monsterloop
     cmp byte [bx+Lower],Water
-    jnz .label33
-    mov al,SwimS
-    jmp short .label34
-.label33: ; 238
-    mov al,ChipS
-.label34: ; 23a
+    if e
+        mov al,SwimS
+    else ; 238
+        mov al,ChipS
+    endif ; 23a
     mov [bx],al
     mov bx,[GameStatePtr]
     push word [bx+ChipY]
@@ -350,16 +356,16 @@ func DoTick
     cmp word [bx+ChipHasMoved],byte +0x0
     jnz .doChipSlideMovement
     cmp word [bx+Autopsy],byte NotDeadYet
-    jnz .label36
-    push byte +0x1
-    push byte +0x1
-    push word [bx+BufferedY]
-    push word [bx+BufferedX]
-    push ax
-    call far MoveChip ; 2a7 7:1184
-    add sp,byte +0xa
-.label36: ; 2af
-    ; ...if chip /is/ dead, clear the keystroke and mouse target instead.
+    if e
+        push byte +0x1
+        push byte +0x1
+        push word [bx+BufferedY]
+        push word [bx+BufferedX]
+        push ax
+        call far MoveChip ; 2a7 7:1184
+        add sp,byte +0xa
+    endif ; 2af
+    ; and whether he moved or not, clear the keystroke and mouse target
     mov bx,[GameStatePtr]
     mov word [bx+IsBuffered],0x0
     mov bx,[GameStatePtr]
@@ -372,9 +378,9 @@ func DoTick
     ; Sliding!
     mov bx,[GameStatePtr]
     cmp word [bx+IsSliding],byte +0x0
-    jnz .label37
-    jmp word .doMonsterSlideMovement
-.label37: ; 2d1
+    if z
+        jmp word .doMonsterSlideMovement
+    endif ; 2d1
     ; First off, clear the idle timer
     mov word [bx+IdleTickCount],0x0
     ; and then move chip in the direction he's sliding
@@ -387,14 +393,14 @@ func DoTick
     call far MoveChip ; 2ea 7:1184
     add sp,byte +0xa
     or ax,ax
-    jz .label39
-    jmp word .moveChipAfterSliding
-.label39: ; 2f9
+    if nz
+        jmp word .moveChipAfterSliding
+    endif ; 2f9
     mov bx,[GameStatePtr]
     cmp [bx+IsSliding],ax ; == 0
-    jnz .label41
-    jmp word .moveChipAfterSliding
-.label41: ; 306
+    if z
+        jmp word .moveChipAfterSliding
+    endif ; 306
     neg word [bx+SlideX]
     mov si,[GameStatePtr]
     neg word [si+SlideY]
@@ -447,11 +453,11 @@ func DoTick
 .moveChipAfterSliding: ; 39d
     mov bx,[GameStatePtr]
     cmp word [bx+ChipHasMoved],byte +0x0
-    jz .tryBufferedMoveAfterSliding
-    mov word [bx+ChipHasMoved],0x0
-    jmp word .doMonsterSlideMovement
-    nop
-
+    if nz
+        mov word [bx+ChipHasMoved],0x0
+        jmp word .doMonsterSlideMovement
+        nop
+    endif
 .tryBufferedMoveAfterSliding: ; 3b2
     cmp word [bx+IsBuffered],byte +0x0
     jz .tryMouseMoveAfterSliding
@@ -482,9 +488,9 @@ func DoTick
 
 .tryMouseMoveAfterSliding: ; 400
     cmp word [bx+HaveMouseTarget],byte +0x0
-    jnz .label47
-    jmp word .doMonsterSlideMovement
-.label47: ; 40a
+    if z
+        jmp word .doMonsterSlideMovement
+    endif ; 40a
     mov ax,[bx+MouseTargetX]
     sub ax,[bx+ChipX]
     mov di,ax
@@ -505,34 +511,34 @@ func DoTick
     xor ax,dx
     sub ax,dx
     cmp ax,cx
-    jl .label49
-    or si,si
-    jng .chooseNorth3
-.chooseSouth3:
-    mov word [xdir],0
-    mov word [ydir],1
-    jmp short .label51
-    nop
-.chooseNorth3: ; 44a
-    mov word [xdir],0
-    mov word [ydir],-1
-    jmp short .label51
-.label49: ; 456
-    or di,di
-    jng .chooseWest3
-.chooseEast3:
-    mov word [xdir],1
-    jmp short .label53
-    nop
-.chooseWest3: ; 462
-    mov word [xdir],-1
-.label53: ; 467
-    mov word [ydir],0
+    if ge
+        or si,si
+        if g
+            ; north
+            mov word [xdir],0
+            mov word [ydir],1
+            jmp short .label51
+            nop
+        endif ; 44a
+        ; south
+        mov word [xdir],0
+        mov word [ydir],-1
+    else ; 456
+        or di,di
+        if g
+            ; east
+            mov word [xdir],1
+        else ; 462
+            ; west
+            mov word [xdir],-1
+        endif ; 467
+        mov word [ydir],0
+    endif
 .label51: ; 46c
     cmp word [bx+Autopsy],byte +0x0
-    jz .label54
-    jmp word .label55
-.label54: ; 476
+    if nz
+        jmp word .label55
+    endif ; 476
     cmp word [bx+IsSliding],byte +0x0
     jz .label56
     mov ax,[xdir]
@@ -561,14 +567,14 @@ func DoTick
     call far MoveChip ; 4b5 7:1184
     add sp,byte +0xa
     or ax,ax
-    jz .label59
-    jmp word .label55
-.label59: ; 4c4
+    if nz
+        jmp word .label55
+    endif ; 4c4
     mov bx,[GameStatePtr]
     cmp [bx+HaveMouseTarget],ax ; == 0
-    jnz .label60
-    jmp word .label55
-.label60: ; 4d1
+    if z
+        jmp word .label55
+    endif ; 4d1
     mov ax,di
     cwd
     xor ax,dx
@@ -579,34 +585,38 @@ func DoTick
     xor ax,dx
     sub ax,dx
     cmp ax,cx
-    jl .label61
-    or di,di
-    jng .chooseWestOrNothing4
-.chooseEast4:
-    mov word [xdir],0x1
-.label65: ; 4ee
-    mov word [ydir],0x0
-    jmp short .label63
-    nop
-.chooseWestOrNothing4: ; 4f6
-    or di,di
-    jnl .chooseNothing4
-    mov word [xdir],-1
-    jmp short .label65
-    nop
-.label61: ; 502
+    if ge
+        or di,di
+        if g
+            ; west
+            mov word [xdir],0x1
+        .label65: ; 4ee
+            mov word [ydir],0x0
+            jmp short .label63
+            nop
+        endif ; 4f6
+        or di,di
+        jnl .chooseNothing4
+        ; east
+        mov word [xdir],-1
+        jmp short .label65
+        nop
+    endif ; 502
     or si,si
-    jng .label66
-    mov word [xdir],0x0
-    mov word [ydir],0x1
-    jmp short .label63
-.label66: ; 512
+    if g
+        ; south
+        mov word [xdir],0x0
+        mov word [ydir],0x1
+        jmp short .label63
+    endif ; 512
     or si,si
-    jnl .chooseNothing4
-    mov word [xdir],0x0
-    mov word [ydir],-1
-    jmp short .label63
-.chooseNothing4: ; 522
+    if l
+        ; north
+        mov word [xdir],0x0
+        mov word [ydir],-1
+        jmp short .label63
+    endif ; 522
+.chooseNothing4:
     xor ax,ax
     mov [ydir],ax
     mov [xdir],ax
@@ -684,12 +694,12 @@ func DoTick
     jnz .end
     dec word [TimeRemaining]
     cmp word [TimeRemaining],byte +0xf
-    jg .label71
-    push byte +0x1
-    push byte TickSound
-    call far PlaySoundEffect ; 5e7 8:56c
-    add sp,byte +0x4
-.label71: ; 5ef
+    if le
+        push byte +0x1
+        push byte TickSound
+        call far PlaySoundEffect ; 5e7 8:56c
+        add sp,byte +0x4
+    endif ; 5ef
     push byte +0x1
     call far FUN_2_0cbe ; 5f1 2:cbe
     add sp,byte +0x2
@@ -804,16 +814,16 @@ func SlideMovement
     mov [slipptr],ax
     mov [slipseg],dx
     or dx,ax
-    jnz .label4
-    call far NewSlipper ; 6b6 3:1250
-    mov [slipptr],ax
-    mov [slipseg],dx
-.label4: ; 6c1
+    if z
+        call far NewSlipper ; 6b6 3:1250
+        mov [slipptr],ax
+        mov [slipseg],dx
+    endif ; 6c1
     mov ax,[slipseg]
     or ax,[slipptr]
-    jnz .label5
-    jmp word .return
-.label5: ; 6cc
+    if z
+        jmp word .return
+    endif ; 6cc
     mov ax,[slipptr]
     mov dx,[slipseg]
     add ax,Slipper.xdir
@@ -878,34 +888,34 @@ func SlideMovement
     sub al,Ice
     jz .ice
     dec al
-    jnz .notForceS
-    jmp word .forceS
-.notForceS: ; 758
+    if z
+        jmp word .forceS
+    endif ; 758
     sub al,ForceN - ForceS
-    jnz .notForceN
-    jmp word .setSlideNorth
-.notForceN: ; 75f
+    if z
+        jmp word .setSlideNorth
+    endif ; 75f
     dec al
-    jnz .notForceE
-    jmp word .forceE
-.notForceE: ; 766
+    if z
+        jmp word .forceE
+    endif ; 766
     dec al
-    jnz .notForceW
-    jmp word .forceW
-.notForceW: ; 76d
+    if z
+        jmp word .forceW
+    endif ; 76d
     jmp word .label15
 
 .label17: ; 770
     sub al,IceWallNE
     jz .iceWallNE
     dec al
-    jnz .notIceWallSE
-    jmp word .iceWallSE
-.notIceWallSE: ; 77b
+    if z
+        jmp word .iceWallSE
+    endif ; 77b
     dec al
-    jnz .notIceWallSW
-    jmp word .iceWallSW
-.notIceWallSW: ; 782
+    if z
+        jmp word .iceWallSW
+    endif ; 782
     sub al,Teleport - IceWallSW
     jz .ice
     sub al,Trap - Teleport
@@ -1060,21 +1070,21 @@ func SlideMovement
     call far RandInt ; 8b0 3:72e
     add sp,byte +0x2
     or ax,ax
-    jnz .label44
-    jmp word .setSlideNorth
-.label44: ; 8bf
+    if z
+        jmp word .setSlideNorth
+    endif ; 8bf
     dec ax
-    jnz .label45
-    jmp word .setSlideSouth
-.label45: ; 8c5
+    if z
+        jmp word .setSlideSouth
+    endif ; 8c5
     dec ax
-    jnz .label46
-    jmp word .setSlideWest
-.label46: ; 8cb
+    if z
+        jmp word .setSlideWest
+    endif ; 8cb
     dec ax
-    jnz .label47
-    jmp word .setSlideEast
-.label47: ; 8d1
+    if z
+        jmp word .setSlideEast
+    endif ; 8d1
     jmp short .label15
     nop
 
@@ -1096,13 +1106,11 @@ func SlideMovement
     ; set isblock to 0 if flag != 2
     ; set isblock to 1 if flag == 2
     cmp word [flag],byte +0x2
-    jnz .label48
-    mov ax,0x1
-    jmp short .label49
-    nop
-.label48: ; 906
-    xor ax,ax
-.label49: ; 908
+    if e
+        mov ax,0x1
+    else ; 906
+        xor ax,ax
+    endif ; 908
     les bx,[slipptr]
     mov [es:bx+Slipper.isblock],ax
 
@@ -1114,17 +1122,17 @@ func SlideMovement
     add sp,byte +0x4
     mov si,ax
     cmp byte [di],0xff
-    jz .label50
-    mov al,[di]
-    mov bx,[GameStatePtr]
-    les bx,[bx+MonsterListPtr]
-    mov di,si
-    shl di,byte 0x2
-    add di,si
-    shl di,1
-    add di,si
-    mov [es:bx+di+Monster.tile],al
-.label50: ; 942
+    if ne
+        mov al,[di]
+        mov bx,[GameStatePtr]
+        les bx,[bx+MonsterListPtr]
+        mov di,si
+        shl di,byte 0x2
+        add di,si
+        shl di,1
+        add di,si
+        mov [es:bx+di+Monster.tile],al
+    endif ; 942
     mov bx,si
     mov ax,bx
     shl bx,byte 0x2
@@ -1159,17 +1167,17 @@ func DrawStretchedTile
     %local tilexpos:word ; -a
 
     cmp byte [lowertile],Floor
-    jnz .label0
-    jmp word .label1
-.label0: ; 97c
+    if z
+        jmp word .label1
+    endif ; 97c
     cmp byte [uppertile],FirstTransparent
-    jnb .label2
-    jmp word .label1
-.label2: ; 985
+    if b
+        jmp word .label1
+    endif ; 985
     cmp byte [uppertile],LastTransparent
-    jna .label3
-    jmp word .label1
-.label3: ; 98e
+    if a
+        jmp word .label1
+    endif ; 98e
     push byte +0x20
     call far GetTileImagePos ; 990 3:2a3e
     add sp,byte +0x2
@@ -1385,13 +1393,15 @@ func EndGame
 
 .atLeast104: ; b5c
     cmp word [bx+EndingTick],byte +0x69
-    jl .equals104
-    jmp word .greaterThan104orFlagIsNonzero
-.equals104: ; b66
+    if ge
+        jmp word .greaterThan104orFlagIsNonzero
+    endif ; b66
     cmp word [flag],byte +0x0
-    jz .equals104andFlagIsZero
-    jmp word .greaterThan104orFlagIsNonzero
-.equals104andFlagIsZero: ; b6f
+    if nz
+        jmp word .greaterThan104orFlagIsNonzero
+    endif ; b6f
+    ; EndingTick is 104 and the flag is nonzero
+    ; Display the ending graphic
     mov word [nLevelsCompleted],0x0
     push byte +0x0
     push ds
@@ -1445,14 +1455,15 @@ func EndGame
     call far GetLevelProgressFromIni ; bf8 2:1adc
     add sp,byte +0x8
     or ax,ax
-    jz .label15
-    cmp word [local_c+_LoWord],byte -0x1
-    jnz .label16
-    cmp word [local_c+_HiWord],byte -0x1
-    jz .label15
-.label16: ; c10
-    inc di
-.label15: ; c11
+    if nz
+        cmp word [local_c+_LoWord],byte -0x1
+        jnz .label16
+        cmp word [local_c+_HiWord],byte -0x1
+        jz .label15
+    .label16: ; c10
+        inc di
+    .label15:
+    endif ; c11
     inc si
     cmp si,LastLevel
     jng .levelLoop
@@ -1518,9 +1529,9 @@ func EndGame
 .done: ; ca6
     mov bx,[GameStatePtr]
     cmp word [bx+EndingTick],byte +0x0
-    jz .label19
-    inc word [bx+EndingTick]
-.label19: ; cb5
+    if nz
+        inc word [bx+EndingTick]
+    endif ; cb5
     push word [hwndBoard]
     push word [hDC]
     call far USER.ReleaseDC ; cbc
@@ -1652,21 +1663,21 @@ func MoveBlock
 
     ; check bounds
     or ax,ax
-    jnl .label0
-    jmp word .blocked
-.label0: ; dd5
+    if l
+        jmp word .blocked
+    endif ; dd5
     cmp word [ydest],byte +0x0
-    jnl .label2
-    jmp word .blocked
-.label2: ; dde
+    if l
+        jmp word .blocked
+    endif ; dde
     cmp ax,0x20
-    jl .label3
-    jmp word .blocked
-.label3: ; de6
+    if ge
+        jmp word .blocked
+    endif ; de6
     cmp word [ydest],byte +0x20
-    jl .label4
-    jmp word .blocked
-.label4: ; def
+    if ge
+        jmp word .blocked
+    endif ; def
 
     ; get floor tile
     mov si,[ysrc]
@@ -1686,9 +1697,9 @@ func MoveBlock
     add sp,byte +0x4
     mov si,ax
     or si,si
-    jnl .label6
-    jmp word .blocked
-.label6: ; e21
+    if l
+        jmp word .blocked
+    endif ; e21
     mov bx,ax
     shl bx,byte 0x2
     add bx,ax
@@ -1696,18 +1707,18 @@ func MoveBlock
     mov si,[GameStatePtr]
     les si,[si+TrapListPtr]
     cmp word [es:bx+si+Connection.flag],byte +0x1
-    jnz .label5
-    jmp word .blocked
-
+    if e
+        jmp word .blocked
+    endif ; e3c
+.label5:
     ; check panel walls
-.label5: ; e3c
     cmp byte [tile],PanelN
     jb .label7
     cmp byte [tile],PanelE
     jna .label8
 .label7: ; e48
     cmp byte [tile],PanelSE
-    jnz .label9
+    jne .label9
 .label8: ; e4e
     push byte +0x0
     push word [ydir]
@@ -1717,8 +1728,9 @@ func MoveBlock
     call far CheckPanelWalls ; e5a 3:1934
     add sp,byte +0x8
     or ax,ax
-    jnz .label9
-    jmp word .blocked
+    if z
+        jmp word .blocked
+    endif
 
     ; call BlockCanEnterTile
 .label9: ; e69
@@ -1737,10 +1749,10 @@ func MoveBlock
     call far BlockCanEnterTile ; e89 3:1ca4
     add sp,byte +0xc
     or ax,ax
-    jnz .label10
-    jmp word .blocked
-
-.label10: ; e98
+    if z
+        jmp word .blocked
+    endif ; e98
+    ; Check the result
     mov ax,[action]
     dec ax
     jz .action1
@@ -1750,17 +1762,17 @@ func MoveBlock
     dec ax
     jz .action4
     dec ax
-    jnz .label14
-    jmp word .action5
-.label14: ; eab
+    if z
+        jmp word .action5
+    endif ; eab
     dec ax
-    jnz .label16
-    jmp word .action6
-.label16: ; eb1
+    if z
+        jmp word .action6
+    endif ; eb1
     dec ax
-    jnz .label18
-    jmp word .action7
-.label18: ; eb7
+    if z
+        jmp word .action7
+    endif ; eb7
     jmp short .endOfSwitch
     nop
 
@@ -1816,9 +1828,9 @@ func MoveBlock
     add sp,byte +0x8
 .label21: ; f34
     cmp byte [blockTile],0xff
-    jnz .label22
-    jmp word .label23
-.label22: ; f3d
+    if z
+        jmp word .label23
+    endif ; f3d
     mov al,[blockTile]
     jmp word .label24
     nop
@@ -1938,9 +1950,9 @@ func MoveBlock
 
 ; handle any button presses
     cmp word [action],byte +0x1
-    jz .label27
-    jmp word .label28
-.label27: ; 106a
+    if nz
+        jmp word .label28
+    endif ; 106a
     mov si,[ydest]
     shl si,byte 0x5
     add si,[xdest]
@@ -1950,8 +1962,8 @@ func MoveBlock
 
     mov si,[ptr]
     or si,si
-    jnz .label29
-
+    jnz .delayedButtonCheck
+.immediateButtonCheck:
     ; not delayed button press
     sub ah,ah
     sub ax,ToggleButton
@@ -1994,9 +2006,8 @@ func MoveBlock
     add sp,byte +0x4
     jmp short .label34
     nop
-
     ; delayed button press
-.label29: ; 10e2
+.delayedButtonCheck: ; 10e2
     or si,si
     jz .label34
     cmp byte [tile],ToggleButton
@@ -2015,12 +2026,13 @@ func MoveBlock
     mov [si+0x4],ax ; Button.y
     jmp short .label34
 
-    ; if ptr != NULL, set it to zero
 .label28: ; 1110
+    ; if ptr != NULL, set it to zero
     mov bx,[ptr]
     or bx,bx
-    jz .label34
-    mov word [bx],0x0
+    if nz
+        mov word [bx],0x0
+    endif
 
     ; check if the block landed on chip!
 .label34: ; 111b
@@ -2033,13 +2045,13 @@ func MoveBlock
     cmp al,ChipN
     jb .label36
     cmp al,ChipE
-    jna .label37
+    jna .welcomeToFlatland
 .label36: ; 1137
     cmp byte [local_e],SwimN
     jb .return1
     cmp byte [local_e],SwimE
     ja .return1
-.label37: ; 1143
+.welcomeToFlatland: ; 1143
     mov word [bx+Autopsy],Squished
 
 .return1: ; 1149
@@ -2162,21 +2174,21 @@ func MoveChip
 
 ; Check board bounds
     cmp word [xdest],byte +0x0
-    jnl .xNotLessThan0
-    jmp word .blocked
-.xNotLessThan0: ; 1217
+    if l
+        jmp word .blocked
+    endif ; 1217
     cmp word [ydest],byte +0x0
-    jnl .yNotLessThan0
-    jmp word .blocked
-.yNotLessThan0: ; 1220
+    if l
+        jmp word .blocked
+    endif ; 1220
     cmp word [xdest],byte +0x20
-    jl .xNotGreaterThan32
-    jmp word .blocked
-.xNotGreaterThan32: ; 1229
+    if ge
+        jmp word .blocked
+    endif ; 1229
     cmp word [ydest],byte +0x20
-    jl .yNotGreaterThan32
-    jmp word .blocked
-.yNotGreaterThan32: ; 1232
+    if ge
+        jmp word .blocked
+    endif ; 1232
 
 ; if chip is sliding and this isn't a forced move then...
     mov bx,[GameStatePtr]
@@ -2192,29 +2204,30 @@ func MoveChip
     jz .notSliding
 ; ... are we standing on ice? if so, just return and don't do anything
     cmp al,Ice
-    jnz .notOnIce
-    jmp word .returnZero
-.notOnIce: ; 125a
+    if e
+        jmp word .returnZero
+    endif ; 125a
     cmp al,IceWallNW
-    jnz .notOnIceNW
-    jmp word .returnZero
-.notOnIceNW: ; 1261
+    if e
+        jmp word .returnZero
+    endif ; 1261
     cmp al,IceWallNE
-    jnz .notOnIceNE
-    jmp word .returnZero
-.notOnIceNE: ; 1268
+    if e
+        jmp word .returnZero
+    endif ; 1268
     cmp al,IceWallSW
-    jnz .notOnIceSW
-    jmp word .returnZero
-.notOnIceSW: ; 126f
+    if e
+        jmp word .returnZero
+    endif ; 126f
     cmp al,IceWallSE
-    jnz .notOnIceSE
-    jmp word .returnZero
-.notOnIceSE: ; 1276
+    if e
+        jmp word .returnZero
+    endif ; 1276
+; ... how about a teleport?
     cmp al,Teleport
-    jnz .notOnTeleport
-    jmp word .returnZero
-.notOnTeleport: ; 127d
+    if e
+        jmp word .returnZero
+    endif ; 127d
 
 ; ... are we on a force floor?
     cmp al,ForceS
@@ -2255,9 +2268,9 @@ func MoveChip
     add sp,byte +0x4
     mov si,ax
     or si,si
-    jnl .label19
-    jmp word .blocked
-.label19: ; 12d5
+    if l
+        jmp word .blocked
+    endif ; 12d5
     mov bx,ax
     shl bx,byte 0x2
     add bx,ax
@@ -2286,8 +2299,9 @@ func MoveChip
     call far CheckPanelWalls ; 130e 3:1934
     add sp,byte +0x8
     or ax,ax
-    jnz .checkBlock
-    jmp word .blocked
+    if z
+        jmp word .blocked
+    endif
 
 ; something about blocks
 .checkBlock: ; 131d
@@ -2300,9 +2314,9 @@ func MoveChip
     add ax,[xdest]
     add bx,ax
     cmp byte [bx+Upper],Block
-    jz .label23
-    jmp word .checkOtherTiles
-.label23: ; 1341
+    if ne
+        jmp word .checkOtherTiles
+    endif ; 1341
     push word [ydest]
     push word [xdest]
     call far FindSlipper ; 1347 3:58
@@ -2372,8 +2386,9 @@ func MoveChip
     add sp,byte +0xe
     mov [canenter],ax
     or ax,ax
-    jnz .canEnterTile
-    jmp word .blocked
+    if z
+        jmp word .blocked
+    endif
 
 .canEnterTile: ; 13ee
     ; pop source tile
@@ -2415,21 +2430,21 @@ func MoveChip
     jz .action2
     dec ax
     dec ax
-    jnz .label33
-    jmp word .action4
-.label33: ; 144b
+    if z
+        jmp word .action4
+    endif ; 144b
     dec ax
-    jnz .label35
-    jmp word .action5
-.label35: ; 1451
+    if z
+        jmp word .action5
+    endif ; 1451
     dec ax
-    jnz .label37
-    jmp word .action6
-.label37: ; 1457
+    if z
+        jmp word .action6
+    endif ; 1457
     dec ax
-    jnz .label39
-    jmp word .action7
-.label39: ; 145d
+    if z
+        jmp word .action7
+    endif ; 145d
     jmp word .label41
 
 .action1: ; 1460
@@ -2496,9 +2511,10 @@ func MoveChip
     mov al,[bx+Lower]
     sub ah,ah
     sub ax,Water
-    jz .label46
+    jz .splash
     dec ax ; Fire
-    jz .label47
+    jz .burned
+    ; other death
     push word [ydir]
     push word [xdir]
     push byte ChipN
@@ -2510,11 +2526,11 @@ func MoveChip
     add bx,[GameStatePtr]
     mov [bx+Upper],al
     jmp short .label48
-.label46: ; 1532
+.splash: ; 1532
     mov byte [bx+Upper],ChipSplash
     jmp short .label48
     nop
-.label47: ; 1538
+.burned: ; 1538
     mov byte [bx+Upper],ChipBurned
 .label48: ; 153b
     push di ; chipy
@@ -2561,18 +2577,18 @@ func MoveChip
     add sp,byte +0x10
     mov bx,[GameStatePtr]
     cmp word [bx+IsBuffered],byte +0x0
-    jnz .label49
-    jmp word .label34
-.label49: ; 15c7
+    if z
+        jmp word .label34
+    endif ; 15c7
     mov al,[tile2]
     mov bx,[ydest]
     shl bx,byte 0x5
     add bx,[xdest]
     add bx,[GameStatePtr]
     cmp [bx+Upper],al
-    jnz .label50
-    jmp word .label34
-.label50: ; 15de
+    if z
+        jmp word .label34
+    endif ; 15de
     mov bx,[GameStatePtr]
     mov ax,[bx+BufferedX]
     add ax,[xdir]
@@ -2654,16 +2670,13 @@ func MoveChip
     add bx,[GameStatePtr]
     mov [tmp],bx
 
-        ; use swimming chip if on water
+    ; use swimming chip if on water
     cmp byte [bx+Lower],Water
-    jnz .notSwimming
-    mov al,SwimN
-    jmp short .callSetTileDir
-    nop
-.notSwimming: ; 16aa
-    mov al,ChipN
-
-.callSetTileDir: ; 16ac
+    if e
+        mov al,SwimN
+    else ; 16aa
+        mov al,ChipN
+    endif ; 16ac
     push ax
     call far SetTileDir ; 16ad 3:486
     add sp,byte +0x6
@@ -2690,9 +2703,9 @@ func MoveChip
 
 ; deal with buttons and hints
     cmp word [action],byte +0x4
-    jz .label53
-    jmp word .label54
-.label53: ; 16f3
+    if ne
+        jmp word .label54
+    endif ; 16f3
     mov bx,[GameStatePtr]
     mov si,[bx+ChipY]
     shl si,byte 0x5
@@ -2752,8 +2765,8 @@ func MoveChip
     add sp,byte +0x2
 
 
-; if we moved a block(?) and it hit (left?) a button(?)
-; do some stuff with uninitialized data
+; if we moved a block and it hit a button
+; then handle that now
 .label54: ; 1774
     cmp word [buttonPressed],byte +0x0
     jz .label61
@@ -2764,22 +2777,22 @@ func MoveChip
     mov al,[bx+si+Lower]
     sub ah,ah
     sub ax,ToggleButton
-    jz .label62
+    jz .delayedToggleButton
     dec ax
-    jz .label63
+    jz .delayedCloneButton
     sub ax,0x3
-    jz .label64
+    jz .delayedTrapButton
     dec ax
-    jz .label65
+    jz .delayedTankButton
     jmp short .label61
     nop
-.label62: ; 17a0
+.delayedToggleButton: ; 17a0
     push word [hDC]
     call far PressToggleButton ; 17a3 3:1fac
     add sp,byte +0x2
     jmp short .label61
     nop
-.label63: ; 17ae
+.delayedCloneButton: ; 17ae
     push byte +0x0
     push word [buttonY]
     push word [buttonX]
@@ -2788,14 +2801,14 @@ func MoveChip
     add sp,byte +0x8
     jmp short .label61
     nop
-.label64: ; 17c4
+.delayedTrapButton: ; 17c4
     push byte +0x0
     push word [buttonY]
     push word [buttonX]
     call far PressTrapButton ; 17cc 3:211a
     add sp,byte +0x6
     jmp short .label61
-.label65: ; 17d6
+.delayedTankButton: ; 17d6
     push byte +0x0
     push word [hDC]
     call far PressTankButton ; 17db 3:1e6a
@@ -2875,13 +2888,11 @@ func MoveChip
     add bx,si
     mov [local_1c],bx
     cmp byte [bx+Lower],Water
-    jnz .label70
-    mov al,SwimN
-    jmp short .label71
-    nop
-.label70: ; 188e
-    mov al,ChipN
-.label71: ; 1890
+    if e
+        mov al,SwimN
+    else ; 188e
+        mov al,ChipN
+    endif ; 1890
     push ax
     call far SetTileDir ; 1891 3:486
     add sp,byte +0x6
@@ -2968,21 +2979,21 @@ func MoveMonster
 
 ; check that xdest and ydest are in [0,32)
     cmp word [xdest],byte +0x0
-    jnl .yNotLessThan0
-    jmp word .deleteSlipperAndReturn
-.yNotLessThan0: ; 1920
+    if l
+        jmp word .deleteSlipperAndReturn
+    endif ; 1920
     or ax,ax
-    jnl .xNotLessThan0
-    jmp word .deleteSlipperAndReturn
-.xNotLessThan0: ; 1927
+    if l
+        jmp word .deleteSlipperAndReturn
+    endif ; 1927
     cmp word [xdest],byte +0x20
-    jl .yLessThan32
-    jmp word .deleteSlipperAndReturn
-.yLessThan32: ; 1930
+    if ge
+        jmp word .deleteSlipperAndReturn
+    endif ; 1930
     cmp ax,0x20
-    jl .xLessThan32
-    jmp word .deleteSlipperAndReturn
-.xLessThan32: ; 1938
+    if ge
+        jmp word .deleteSlipperAndReturn
+    endif ; 1938
 
 ; get tile we're leaving from
     mov bx,si
@@ -3003,9 +3014,9 @@ func MoveMonster
     add sp,byte +0x4
     mov [trap],ax
     or ax,ax
-    jnl .label6
-    jmp word .deleteSlipperAndReturn
-.label6: ; 1965
+    if l
+        jmp word .deleteSlipperAndReturn
+    endif ; 1965
     ; multiply by 10
     mov cx,ax
     shl ax,byte 0x2
@@ -3060,9 +3071,9 @@ func MoveMonster
     call far MonsterCanEnterTile ; 19cf 3:1d4a
     add sp,byte +0xc
     or ax,ax
-    jnz .label10
-    jmp word .deleteSlipperAndReturn
-.label10: ; 19de
+    if z
+        jmp word .deleteSlipperAndReturn
+    endif ; 19de
     mov ax,[action]
     cmp ax,0x7
     ja .jumpDefault
@@ -3346,13 +3357,13 @@ func MoveMonster
     cmp al,ChipN
     jb .label28
     cmp al,ChipE
-    jna .label29
+    jna .yumYumYum
 .label28: ; 1c77
     cmp byte [tmp],SwimN
     jb .label27
     cmp byte [tmp],SwimE
     ja .label27
-.label29: ; 1c83
+.yumYumYum: ; 1c83
     mov word [bx+Autopsy],Eaten
 
 ; assign xdest and ydest to xptr and yptr
