@@ -2886,7 +2886,7 @@ func HaveBootsForTile
     cmp word [FlipperCount],byte +0x0
 .compare: ; 1907
     jz .returnZero ; ↓
-    ; return True and set something mysterious
+    ; return True and mark the inventory as dirty
     mov ax,0x1
     mov [InventoryDirty],ax
     jmp short .end ; ↓
@@ -3328,7 +3328,6 @@ func ChipCanEnterTile
     jmp short .nope ; ↓
     nop
 
-
 .thief: ; 1c24
     cmp word [flag1],byte +0x0
     if z
@@ -3499,7 +3498,7 @@ func MonsterCanEnterTile
     ; if monster is on a clone machine, return
     cmp byte [bx+Lower],CloneMachine
     if e
-        jmp word .clearOutAndReturnZero ; ↓
+        jmp word .blocked ; ↓
     endif ; 1d77
     ; Is the top tile chip or swimming chip? use the bottom tile
     mov al,[bx+Upper]
@@ -3553,7 +3552,7 @@ func MonsterCanEnterTile
     cmp byte [tileTableRow + 4],0x2
     if ne
         ; otherwise return zero
-        jmp word .clearOutAndReturnZero ; ↓
+        jmp word .blocked ; ↓
     endif ; 1dd1
 
     ; other stuff ==>
@@ -3562,57 +3561,61 @@ func MonsterCanEnterTile
     sub ah,ah
     cmp ax,PanelSE
     jz .thinWalls ; ↓
-    ja .clearOutAndReturnZero ; ↓
+    ja .blocked ; ↓
     cmp al,Fire
     jz .fire ; ↓
     jg .checkPanelWallsOrIceWalls ; ↓
     sub al,Water
     jz .water ; ↓
-    jmp short .clearOutAndReturnZero ; ↓
+    jmp short .blocked ; ↓
     nop
     nop
-
-; check if the tile is a panel wall or ice wall
 .checkPanelWallsOrIceWalls: ; 1dee
+    ; check if the tile is a panel wall or ice wall
     sub al,PanelN
-    jl .clearOutAndReturnZero ; ↓
+    jl .blocked ; ↓
     sub al,PanelE - PanelN
     jng .thinWalls ; ↓
     sub al,IceWallNW - PanelE
-    jl .clearOutAndReturnZero ; ↓
+    jl .blocked ; ↓
     sub al,IceWallSW - IceWallNW
     jng .thinWalls ; ↓
-    jmp short .clearOutAndReturnZero ; ↓
+    jmp short .blocked ; ↓
 
 .water: ; 1e00
+    ; gliders survive water
+    ; everything else drowns
     mov al,[monster]
     sub ah,ah
     sub ax,GliderN
     jl .returnTrue ; ↑
     jo .returnTrue ; ↑
-    sub ax,GliderE - GliderN
+    sub ax,3
     jg .returnTrue ; ↑
-.label9: ; 1e11
-    mov word [si],0x1
+.set_action_to_1_and_return: ; 1e11
+    mov word [si],0x1 ; set action to 1
     jmp short .returnTrue ; ↑
     nop
 
 .fire: ; 1e18
+    ; fire blocks bugs and walkers
+    ; fireballs survive it
+    ; everyting else burns
     mov al,[monster]
     sub ah,ah
     sub ax,BugN
     jl .returnTrue ; ↑
     jo .returnTrue ; ↑
-    sub ax,BugE - BugN
-    jng .clearOutAndReturnZero ; ↓
-    dec ax ; Tank
+    sub ax,3
+    jle .blocked ; ↓ bugs are blocked
+    dec ax ; Fireball
     jl .returnTrue ; ↑
-    sub ax,TankE - TankN
-    jng .label9 ; ↑
-    sub ax,ParameciumN - TankE
+    sub ax,3
+    jle .set_action_to_1_and_return ; ↑ fireballs can enter fire
+    sub ax,WalkerN - FireballE
     jl .returnTrue ; ↑
-    sub ax,ParameciumE - ParameciumN
-    jng .clearOutAndReturnZero ; ↓
+    sub ax,3
+    jng .blocked ; ↓ walkers are blocked
     jmp short .returnTrue ; ↑
     nop
 
@@ -3625,9 +3628,10 @@ func MonsterCanEnterTile
     call far CheckPanelWalls ; 1e4a 3:1934
     add sp,byte +0x8
     or ax,ax
-    jz .clearOutAndReturnZero ; ↓
+    jz .blocked ; ↓
     jmp word .returnTrue ; ↑
-.clearOutAndReturnZero: ; 1e59
+.blocked: ; 1e59
+    ; set action to 0 and return false
     xor ax,ax
     mov bx,[outPtr]
     mov [bx],ax
@@ -3643,7 +3647,8 @@ func PressTankButton
     push di
     push si
 
-    %arg hDC:word
+    %arg hDC:word ; +6
+    %arg arg_8:word ; +8
     %define tile (bp-0x3)
     %local local_4:byte
     %local x:word ; -6
@@ -3651,7 +3656,7 @@ func PressTankButton
     %local ydir:word ; -a
     %local xdir:word ; -c
 
-    push word [bp+0x8]
+    push word [arg_8]
     push byte SwitchSound
     call far PlaySoundEffect ; 1e7e 8:56c
     add sp,byte +0x4
@@ -3945,12 +3950,12 @@ endfunc
 ; 211a
 
 func PressTrapButton
-    %arg x:word, y:word, arg:word
+    %arg x:word, y:word, arg_a:word
     %define firstTrap (bp-0x6)
     %define lastTrap (bp-0x4)
     sub sp,byte +0x6
     push si
-    push word [arg]
+    push word [arg_a]
     push byte SwitchSound
     call far PlaySoundEffect ; 212d 8:56c
     add sp,byte +0x4
@@ -4287,7 +4292,10 @@ endfunc
 ; 2442
 
 func PressCloneButton
-    %arg hDC:word, buttonX:word, buttonY:word
+    %arg hDC:word ; +6
+    %arg buttonX:word ; +8
+    %arg buttonY:word ; +a
+    %arg arg_c:word ; +c
     %define cloneTile (bp-0x3)
     %local local_4:byte ; -4
     %local monsterX:word ; -6
@@ -4301,7 +4309,7 @@ func PressCloneButton
     push di
     push si
     ; Play the button sound
-    push word [bp+0xc]
+    push word [arg_c]
     push byte SwitchSound
     call far PlaySoundEffect ; 2456 8:56c
     add sp,byte +0x4
@@ -4685,10 +4693,10 @@ func EnterTeleport
     les bx,[bx+TeleportListPtr]
     mov si,[bp-0xa]
     shl si,byte 0x2
-    mov ax,[es:bx+si]
+    mov ax,[es:bx+si+Point.x]
     mov [bp-0x6],ax
     add bx,si
-    mov cx,[es:bx+0x2]
+    mov cx,[es:bx+Point.y]
     mov [bp-0x4],cx
     mov bx,cx
     shl bx,byte 0x5
@@ -4696,40 +4704,40 @@ func EnterTeleport
     mov si,[GameStatePtr]
     cmp byte [bx+si],Teleport
     if ne
-        jmp .label13 ; ↓
+        jmp .nextTeleport ; ↓
     endif ; 27f7
     mov si,[bp+0xc]
     add [bp-0x4],di
     add [bp-0x6],si
     if s
-        jmp .label13 ; ↓
+        jmp .nextTeleport ; ↓
     endif ; 2805
     cmp word [bp-0x4],byte +0x0
     if l
-        jmp .label13 ; ↓
+        jmp .nextTeleport ; ↓
     endif ; 280e
     cmp word [bp-0x6],byte +0x20
     if ge
-        jmp .label13 ; ↓
+        jmp .nextTeleport ; ↓
     endif ; 2817
     cmp word [bp-0x4],byte +0x20
     if ge
-        jmp .label13 ; ↓
+        jmp .nextTeleport ; ↓
     endif ; 2820
     mov ax,[bp+0x10]
     or ax,ax
-    if nz
-        dec ax
-        jz .label11 ; ↓
-        dec ax
-        jz .label12 ; ↓
-        jmp .label13 ; ↓
-    endif ; 2830
+    jz .chipTeleport ; ↓
+    dec ax
+    jz .blockTeleport ; ↓
+    dec ax
+    jz .monsterTeleport ; ↓
+    jmp .nextTeleport ; ↓
+.chipTeleport: ; 2830
     mov bx,[bp-0x4]
     shl bx,byte 0x5
     add bx,[bp-0x6]
     add bx,[GameStatePtr]
-    cmp byte [bx],0xa
+    cmp byte [bx],Block
     if e
         push byte +0x0
         push word 0xff
@@ -4741,7 +4749,7 @@ func EnterTeleport
         call far MoveBlock ; 2852 7:dae
         add sp,byte +0xe
         or ax,ax
-        jz .label13 ; ↓
+        jz .nextTeleport ; ↓
     endif ; 285e
     push byte +0x1
     push byte +0x0
@@ -4754,9 +4762,9 @@ func EnterTeleport
     call far ChipCanEnterTile ; 286e 3:1a56
     add sp,byte +0xe
     or ax,ax
-    jz .label13 ; ↓
-    jmp short .label16 ; ↓
-.label11: ; 287c
+    jz .nextTeleport ; ↓
+    jmp short .playTeleportSound ; ↓
+.blockTeleport: ; 287c
     lea ax,[bp-0xc]
     push ax
     push di
@@ -4768,9 +4776,9 @@ func EnterTeleport
     call far BlockCanEnterTile ; 288c 3:1ca4
     add sp,byte +0xc
     or ax,ax
-    jz .label13 ; ↓
-    jmp short .label17 ; ↓
-.label12: ; 289a
+    jz .nextTeleport ; ↓
+    jmp short .finishTeleport ; ↓
+.monsterTeleport: ; 289a
     lea ax,[bp-0xc]
     push ax
     push di
@@ -4782,27 +4790,27 @@ func EnterTeleport
     call far MonsterCanEnterTile ; 28aa 3:1d4a
     add sp,byte +0xc
     or ax,ax
-    jnz .label17 ; ↓
-.label13: ; 28b6
+    jnz .finishTeleport ; ↓
+.nextTeleport: ; 28b6
     dec word [bp-0xa]
-    jns .label14 ; ↓
-    mov bx,[GameStatePtr]
-    mov ax,[bx+TeleportListLen]
-    dec ax
-    mov [bp-0xa],ax
-.label14: ; 28c7
+    if s ; result is negative
+        mov bx,[GameStatePtr]
+        mov ax,[bx+TeleportListLen]
+        dec ax
+        mov [bp-0xa],ax
+    endif ; 28c7
     mov ax,[bp-0xe]
     cmp [bp-0xa],ax
     if ne
         jmp .loop ; ↑
     endif ; 28d2
     jmp short .end ; ↓
-.label16: ; 28d4
+.playTeleportSound: ; 28d4
     push byte +0x1
     push byte +0xc
     call far PlaySoundEffect ; 28d8 8:56c
     add sp,byte +0x4
-.label17: ; 28e0
+.finishTeleport: ; 28e0
     mov bx,[GameStatePtr]
     les bx,[bx+TeleportListPtr]
     mov si,[bp-0xa]
