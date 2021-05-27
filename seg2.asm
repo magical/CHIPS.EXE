@@ -379,7 +379,7 @@ func ScrollViewport
     sub ax,[bx+UnusedOffsetX]
     imul ax,byte TileWidth
     mov si,ax
-    ; ax = 32*(dy - 0)
+    ; yScrollPixels = 32*(dy - 0)
     mov ax,[viewportDeltaY]
     sub ax,[bx+UnusedOffsetY]
     imul ax,byte TileHeight
@@ -395,59 +395,41 @@ func ScrollViewport
     push ss
     push ax
     call far USER.GetClientRect ; 347
-    ; vw-0
     mov bx,[GameStatePtr]
-    mov ax,[bx+ViewportWidth]
-    sub ax,[bx+UnusedOffsetX]
-    ; dx = rect.width/32
-    ; cx = rect.width/32 + 1
+    ; cx = rect.width/32
     mov cx,[rect.width]
     sar cx,byte TileShift
-    mov dx,cx
     inc cx
-    ; bx = vw-0
-    mov bx,ax
+    ; ax = vw-0
+    mov ax,[bx+ViewportWidth]
+    sub ax,[bx+UnusedOffsetX]
     ; if vw-0 > rect.width/32+1 then ax = rect.width/32+1
     cmp ax,cx
     if g
         mov ax,cx
     endif ; 369
-    ; stash ax
+    ; local_4 = vw-ow (max rect.width/tw+1)
+    ; local 6 = vw-ow-1 (max rect.width/tw)
     mov [local_4],ax
-    ; ax = vw-0
-    mov ax,bx
-    ; cx = vh-0
-    mov bx,[GameStatePtr]
-    mov cx,[bx+ViewportHeight]
-    sub cx,[bx+UnusedOffsetY]
-    ; bx = rect.height/32+1
-    mov bx,[rect.height]
-    sar bx,byte TileShift
-    mov [bp-0x1a],bx
-    inc bx
-    mov [bp-0x1c],cx
-    ; if cx > bx then cx = bx
-    cmp cx,bx
-    if g
-        mov cx,bx
-    endif ; 38d
-    mov [local_e],cx
-    ; ax = vw-0-1
     dec ax
-    ; if ax > rect.width/32 then ax = dx
-    cmp ax,dx
-    if g
-        mov ax,dx
-    endif ; 397
     mov [local_6],ax
-    ; ax = vh-0-1
-    ; if ax > rect.height/32 then ax = rect.height/32
-    mov ax,[bp-0x1c]
-    dec ax
-    cmp ax,[bp-0x1a]
+    ; okay now do the height
+    mov cx,[GameStatePtr]
+    ; cx = rect.height/32+1
+    mov cx,[rect.height]
+    sar cx,byte TileShift
+    inc cx
+    ; ax = vh-0
+    mov ax,[bx+ViewportHeight]
+    sub ax,[bx+UnusedOffsetY]
+    cmp ax,cx
     if g
-        mov ax,[bp-0x1a]
-    endif ; 3a6
+        mov ax,cx
+    endif ; 38d
+    ; local_e = vh-oh (max rect.height/th+1)
+    ; local_10 = vh-oh (max rect.height/th)
+    mov [local_e],ax
+    dec ax
     mov [local_10],ax
     ;; Draw chip in his new position, scroll the window,
     ;; set the new viewport position, and update the tile chip left
