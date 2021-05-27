@@ -1025,9 +1025,9 @@ func CreateWindowsAndInitGame
     mov [bp-0xe],ax
     mov cx,[VerticalPadding]
     mov [bp-0xc],cx
-    add cx,TileHeight * 13
+    add cx,TileHeight * 9
     mov [bp-0x8],cx
-    add ax,TileWidth * 15
+    add ax,TileWidth * 9
     mov [bp-0xa],ax
     xor dx,dx
     mov [bp-0x14],dx
@@ -1101,7 +1101,7 @@ func CreateWindowsAndInitGame
     push word 0x5200
     push byte +0x0
     mov ax,[HorizontalPadding]
-    add ax,TileWidth * 15 + 0x13
+    add ax,TileWidth * 9 + 0x13
     push ax
     mov ax,[VerticalPadding]
     sub ax,0x6
@@ -1571,9 +1571,9 @@ func PaintBackground
     mov [bp-0x12],ax
     mov cx,[VerticalPadding]
     mov [bp-0x10],cx
-    add cx,TileHeight * 13
+    add cx,TileHeight * 9
     mov [bp-0xc],cx
-    add ax,TileWidth * 15
+    add ax,TileWidth * 9
     mov [bp-0xe],ax
     push byte +0x2
     push cx

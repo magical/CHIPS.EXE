@@ -469,10 +469,9 @@ func FUN_4_0356
     endif ; 4ac
     ; normal mode: 9x9 viewport
     mov bx,[GameStatePtr]
-    mov word [bx+ViewportHeight],13
+    mov word [bx+ViewportHeight],9
     mov bx,[GameStatePtr]
-    mov ax,word 15 ; [bx+ViewportHeight]
-    nop
+    mov ax,[bx+ViewportHeight]
     mov [bx+ViewportWidth],ax
     mov bx,[GameStatePtr]
     mov word [bx+UnusedOffsetY],0x10
