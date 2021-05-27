@@ -2,7 +2,7 @@
 ; vim: syntax=nasm
 _segment_1_size equ 0x00000952
 _segment_2_size equ 0x00002dca
-_segment_3_size equ 0x00002a70
+_segment_3_size equ 0x00002a74
 _segment_4_size equ 0x00001208
 _segment_5_size equ 0x000001bc
 _segment_6_size equ 0x0000075b

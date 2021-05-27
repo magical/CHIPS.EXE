@@ -4968,15 +4968,16 @@ func GetTileImagePos
     %local ypos:word ; -4
     %local xpos:word ; -6
 
-    ; ax = a/16 * 32
-    ; dx = a%16 * 32
+    ; ax = a/16 * TileWidth
+    ; dx = a%16 * TileHeight
+    sub ah,ah
     mov al,[tile]
-    and ax,0xf0
-    shl ax,(TileShift-4)
+    shr ax,4
+    imul ax,TileWidth
     mov [xpos],ax
     mov al,[tile]
     and ax,0xf
-    shl ax,byte TileShift
+    imul ax,TileHeight
     mov [ypos],ax
     mov ax,[xpos]
     mov dx,[ypos]

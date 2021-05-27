@@ -242,12 +242,12 @@ func UpdateTile
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportY]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte TileShift
+    imul ax,byte TileHeight
     push ax
     mov ax,[bp+0x8]
     sub ax,[bx+ViewportX]
     sub ax,[bx+UnusedOffsetX]
-    shl ax,byte TileShift
+    imul ax,byte TileWidth
     push ax
     push word [bp+0x6]
     call far DrawTile ; 221 2:c4
@@ -288,12 +288,12 @@ func InvertTile_Unused
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportX]
     sub ax,[bx+UnusedOffsetX]
-    shl ax,byte TileShift
+    imul ax,byte TileWidth
     push ax
     mov ax,[bp+0xa]
     sub ax,[bx+ViewportY]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte TileShift
+    imul ax,byte TileHeight
     push ax
     push byte TileWidth
     push byte TileHeight
@@ -375,13 +375,14 @@ func ScrollViewport
 .label0: ; 324
     ; si = 32*(dx - 0)
     mov bx,[GameStatePtr]
-    mov si,di
-    sub si,[bx+UnusedOffsetX]
-    shl si,byte TileShift
+    mov ax,di
+    sub ax,[bx+UnusedOffsetX]
+    imul ax,byte TileWidth
+    mov si,ax
     ; ax = 32*(dy - 0)
     mov ax,[viewportDeltaY]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte TileShift
+    imul ax,byte TileHeight
     mov [yScrollPixels],ax
     ; GetClientRectangle(hwndBoard, &rect)
     ; Note: getClientRectangle returns only the width and height of the window,
@@ -541,19 +542,18 @@ func ScrollViewport
     ; rect = {local_a*32, -0*32, local_8*32, (vh-0)*32}
     ; ValidateRect(hwndBoard, &rect)
     mov ax,[local_a]
-    shl ax,byte TileShift
+    imul ax,byte TileWidth
     mov [rect.left],ax
     mov ax,[local_8]
-    shl ax,byte TileShift
+    imul ax,byte TileWidth
     mov [rect.right],ax
     mov bx,[GameStatePtr]
     mov ax,[bx+UnusedOffsetY]
-    shl ax,byte TileShift
-    neg ax
+    imul ax,byte -TileHeight
     mov [rect.top],ax
     mov ax,[bx+ViewportHeight]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte TileShift
+    imul ax,byte TileHeight
     mov [rect.bottom],ax
     push word [hwndBoard]
     lea ax,[rect]
@@ -614,17 +614,17 @@ func ScrollViewport
     ; rect = {-0*32, di*32, (vw-0)*32, (local_4-0)*32}
     ; ValidateRect(hwndBoard, &rect)
     mov ax,[bx+UnusedOffsetX]
-    shl ax,byte TileShift
-    neg ax
+    imul ax,byte -TileWidth
     mov [rect.left],ax
     mov ax,[bx+ViewportWidth]
     sub ax,[bx+UnusedOffsetX]
-    shl ax,byte TileShift
+    imul ax,byte TileWidth
     mov [rect.right],ax
-    shl di,byte TileShift
-    mov [rect.top],di
+    mov ax,di
+    imul ax,byte TileHeight
+    mov [rect.top],ax
     mov ax,[local_4]
-    shl ax,byte TileShift
+    imul ax,byte TileHeight
     mov [rect.bottom],ax
     push word [hwndBoard]
     lea ax,[bp-0x18]
@@ -2056,13 +2056,13 @@ func PaintBoardWindow
     sub dx,[bx+ViewportX]
     sub dx,[bx+UnusedOffsetX]
     inc dx
-    shl dx,byte TileShift
+    imul dx,byte TileWidth
     mov [bp-0x8],dx
     mov di,[bp-0xa]
     sub di,[bx+ViewportY]
     sub di,[bx+UnusedOffsetY]
     inc di
-    shl di,byte TileShift
+    imul di,byte TileHeight
     cmp dx,[si+0x8]
     if l
         push word [si]
@@ -2189,7 +2189,7 @@ func PaintBoardWindow
     mov [bp-0x6],ax
     mov bx,[GameStatePtr]
     mov cx,[bx+ViewportWidth]
-    shl cx,byte TileShift
+    imul cx,byte TileWidth
     mov [bp-0x8],cx
     ; this is a convoluted way of checking if LevelTitle starts with a NUL
     ; we cache the result in di for later reference
@@ -2310,7 +2310,7 @@ func PaintBoardWindow
     imul word [bp-0xc]
     mov bx,[GameStatePtr]
     mov cx,[bx+ViewportHeight]
-    shl cx,byte TileShift
+    imul cx,byte TileHeight
     sub cx,ax
     mov [bp-0x24],cx
     mov ax,[bp-0x8]

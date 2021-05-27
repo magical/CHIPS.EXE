@@ -29,12 +29,12 @@ func GetTileRect
     mov bx,[GameStatePtr]
     sub ax,[bx+ViewportX]
     sub ax,[bx+UnusedOffsetX]
-    shl ax,byte TileShift
+    imul ax,byte TileWidth
     mov [bp-0xa],ax
     mov ax,[y]
     sub ax,[bx+ViewportY]
     sub ax,[bx+UnusedOffsetY]
-    shl ax,byte TileShift
+    imul ax,byte TileHeight
     mov [bp-0x8],ax
     mov ax,[bp-0xa]
     add ax,TileWidth

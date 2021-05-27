@@ -1334,7 +1334,7 @@ func EndGame
     mov cx,[bx+ChipY]
     sub cx,[bx+ViewportY]
     sub cx,[bx+UnusedOffsetY]
-    shl cx,byte TileShift
+    imul cx,byte TileHeight
     sub cx,ax
     jns .label5
     xor cx,cx
@@ -1344,7 +1344,7 @@ func EndGame
     mov cx,[bx+ChipX]
     sub cx,[bx+ViewportX]
     sub cx,[bx+UnusedOffsetX]
-    shl cx,byte TileShift
+    imul cx,byte TileWidth
     sub cx,ax
     jns .label6
     xor cx,cx
