@@ -345,7 +345,8 @@ VERSION:
 
 ; d800
 OBJ32_4:
-    INCBIN "res/OBJ32_4.bmp", 14
+    ;INCBIN "res/nesmasked.bmp", 14
+    INCBIN "res/mscc nes mask_optimized.bmp", 14
     TIMES 0x22 db 0xFF ; ???
     ALIGN SectorSize, db 0
 
@@ -389,7 +390,7 @@ CHIPEND:
 CHIPSMENU:
     dd 0
     POPUP "&Game"
-        MENUITEM `&New Game\tF2`, ID_NEWGAME
+        MENUITEM `&New Game\tF2`, ID_NEWGAME, MF_GRAYED
         MENUITEM `&Pause\tF3`, ID_PAUSE
         MENUITEM "Best &Times...", ID_BESTTIMES
         MENUITEM "", 0

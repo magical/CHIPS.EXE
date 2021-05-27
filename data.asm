@@ -443,8 +443,8 @@ DecadeMessages:
 .level130 db "'I've made it this far,' Chip thinks. 'Totally fair, with my mega-brain.' Then he starts the next maze. 'Totally unfair!' he yelps.", 0
 .level140 db "Groov-u-loids! Chip makes it almost to the end. He's stoked!", 0
 
-Chipend db "chipend", 0
-Chipend2 db "chipend", 0
+s_chipend db "chipend", 0
+s_chipend2 db "chipend", 0
 s_DLG_COMPLETE db "DLG_COMPLETE", 0
 align 2, db 0
 
