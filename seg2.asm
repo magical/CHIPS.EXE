@@ -396,9 +396,12 @@ func ScrollViewport
     push ax
     call far USER.GetClientRect ; 347
     mov bx,[GameStatePtr]
-    ; cx = rect.width/32
-    mov cx,[rect.width]
-    sar cx,byte TileShift
+    ; cx = rect.width/th+1
+    mov ax,[rect.width]
+    mov cx,TileWidth
+    cwd
+    idiv cx
+    mov cx,ax
     inc cx
     ; ax = vw-0
     mov ax,[bx+ViewportWidth]
@@ -414,10 +417,13 @@ func ScrollViewport
     dec ax
     mov [local_6],ax
     ; okay now do the height
-    mov cx,[GameStatePtr]
-    ; cx = rect.height/32+1
-    mov cx,[rect.height]
-    sar cx,byte TileShift
+    mov bx,[GameStatePtr]
+    ; cx = rect.height/th+1
+    mov ax,[rect.height]
+    mov cx,TileHeight
+    cwd
+    idiv cx
+    mov cx,ax
     inc cx
     ; ax = vh-0
     mov ax,[bx+ViewportHeight]
@@ -1957,7 +1963,9 @@ func PaintBoardWindow
     endif ; 1252
     mov si,[bp+0x8]
     mov ax,[si+0x4]
-    sar ax,byte TileShift
+    mov cx,TileWidth
+    cwd
+    idiv cx
     add ax,[bx+ViewportX]
     add ax,[bx+UnusedOffsetX]
     cmp ax,[bx+ViewportX]
@@ -1967,7 +1975,9 @@ func PaintBoardWindow
     mov [bp-0x8],ax
     mov ax,[si+0x8]
     add ax,byte TileWidth-1
-    sar ax,byte TileShift
+    mov cx,TileWidth
+    cwd
+    idiv cx
     mov di,ax
     add di,[bx+ViewportX]
     add di,[bx+UnusedOffsetX]
@@ -1980,7 +1990,9 @@ func PaintBoardWindow
     endif ; 1290
     mov ax,[si+0xa]
     add ax,byte TileHeight-1
-    sar ax,byte TileShift
+    mov cx,TileHeight
+    cwd
+    idiv cx
     add ax,[bx+ViewportY]
     add ax,[bx+UnusedOffsetY]
     mov dx,[bx+ViewportY]
@@ -1992,7 +2004,9 @@ func PaintBoardWindow
     endif ; 12b8
     mov [bp-0xa],ax
     mov ax,[si+0x6]
-    sar ax,byte TileShift
+    mov cx,TileHeight
+    cwd
+    idiv cx
     add ax,[bx+ViewportY]
     add ax,[bx+UnusedOffsetY]
     cmp ax,[bx+ViewportY]

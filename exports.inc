@@ -1,12 +1,12 @@
 ; Generated from chips.map; do not edit
 ; vim: syntax=nasm
-WinMain          equ 0x60c
-MAINWNDPROC      equ 0x223a
-BOARDWNDPROC     equ 0x272c
-INFOWNDPROC      equ 0x2844
-COUNTERWNDPROC   equ 0x2948
-INVENTORYWNDPROC equ 0x2a78
-HINTWNDPROC      equ 0x2b9c
+WinMain          equ 0x616
+MAINWNDPROC      equ 0x2250
+BOARDWNDPROC     equ 0x2742
+INFOWNDPROC      equ 0x285a
+COUNTERWNDPROC   equ 0x295e
+INVENTORYWNDPROC equ 0x2a8e
+HINTWNDPROC      equ 0x2bb2
 PASSWORDMSGPROC  equ 0x1016
 GOTOLEVELMSGPROC equ 0x0
 BESTTIMESMSGPROC equ 0x18e
