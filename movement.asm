@@ -1284,7 +1284,7 @@ func EndGame
     mov [hDC],ax
     mov bx,[GameStatePtr]
 
-    %define framesToGrow 16/16 * 31; TileWidth*(ViewportWidth-1)/8
+    %define framesToGrow TileWidth*(9-1)/8 ; TileWidth*(ViewportWidth-1)/8
     %define framesToCheer 72
     cmp word [bx+EndingTick],byte framesToGrow
     jge .growDone
@@ -1295,7 +1295,7 @@ func EndGame
     mov si,[bx+EndingTick]
     mov ax,si
     mov cx,0x3
-    shl si,byte 0x4
+    shl si,byte 0x3
     cwd
     idiv cx
     mov ax,dx
@@ -1387,8 +1387,8 @@ func EndGame
     mov [exitTile],al
     push ax
 
-    push word TileWidth * 32
-    push word TileHeight * 32
+    push word TileWidth * 9
+    push word TileHeight * 9
     push byte +0x0
     push byte +0x0
     jmp short .callDrawStretchedTile ; draw tile
