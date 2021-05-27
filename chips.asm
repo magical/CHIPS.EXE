@@ -345,7 +345,8 @@ VERSION:
 
 ; d800
 OBJ32_4:
-    INCBIN "res/OBJ32_4.bmp", 14
+    ;INCBIN "res/OBJ32_4.bmp", 14
+    INCBIN "res/cga_masked.bmp", 14
     TIMES 0x22 db 0xFF ; ???
     ALIGN SectorSize, db 0
 
