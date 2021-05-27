@@ -4619,7 +4619,7 @@ func INVENTORYWNDPROC
     and al,0x66
     push ax
     push byte +0x0
-    push byte TileWidth * 3
+    push word TileWidth * 3
     push word [bp-0x22]
     call far DrawInventoryTile ; 2b36 2:232
     add sp,byte +0x8
@@ -4659,7 +4659,7 @@ func INVENTORYWNDPROC
     and al,0x68
     push ax
     push byte TileHeight
-    push byte TileWidth * 3
+    push word TileWidth * 3
     push word [bp-0x22]
     call far DrawInventoryTile ; 2b9e 2:232
     add sp,byte +0x8
