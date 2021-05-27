@@ -1965,49 +1965,43 @@ func PaintBoardWindow
         mov ax,[bx+ViewportX]
     endif ; 126d
     mov [bp-0x8],ax
-    mov ax,[bx+ViewportX]
-    mov cx,ax
-    add ax,[bx+ViewportWidth]
-    mov di,[si+0x8]
-    add di,byte TileWidth-1
-    sar di,byte TileShift
-    add di,cx
+    mov ax,[si+0x8]
+    add ax,byte TileWidth-1
+    sar ax,byte TileShift
+    mov di,ax
+    add di,[bx+ViewportX]
     add di,[bx+UnusedOffsetX]
+    mov ax,[bx+ViewportX]
+    add ax,[bx+ViewportWidth]
     dec ax
     cmp di,ax
     if g
         mov di,ax
     endif ; 1290
-    mov ax,[bx+ViewportY]
-    mov cx,ax
-    add ax,[bx+ViewportHeight]
-    mov dx,[si+0xa]
-    add dx,byte TileHeight-1
-    sar dx,byte TileShift
-    mov bx,cx
-    add cx,dx
-    mov dx,bx
-    mov bx,[GameStatePtr]
-    add cx,[bx+UnusedOffsetY]
-    dec ax
-    cmp cx,ax
+    mov ax,[si+0xa]
+    add ax,byte TileHeight-1
+    sar ax,byte TileShift
+    add ax,[bx+ViewportY]
+    add ax,[bx+UnusedOffsetY]
+    mov dx,[bx+ViewportY]
+    add dx,[bx+ViewportHeight]
+    dec dx
+    cmp ax,dx
     if g
-        mov cx,ax
+        mov ax,dx
     endif ; 12b8
-    mov [bp-0xa],cx
+    mov [bp-0xa],ax
     mov ax,[si+0x6]
     sar ax,byte TileShift
-    mov bx,dx
-    add dx,ax
-    mov ax,bx
-    mov bx,[GameStatePtr]
-    add dx,[bx+UnusedOffsetY]
-    cmp dx,ax
+    add ax,[bx+ViewportY]
+    add ax,[bx+UnusedOffsetY]
+    cmp ax,[bx+ViewportY]
     if l
-        mov dx,ax
+        mov ax,[bx+ViewportY]
     endif ; 12d5
-    mov [bp-0x6],dx
-    cmp cx,dx
+    mov [bp-0x6],ax
+    mov cx,[bp-0xa]
+    cmp cx,ax
     if l
         jmp .label24 ; ↓
     endif ; 12df
