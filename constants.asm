@@ -206,9 +206,9 @@ NumMidiFilesDefault     equ 3
 NumMidiFilesMax         equ 20
 
 ; Tile sizes
-TileWidth       equ 16
-TileHeight      equ 16
-TileShift       equ 4
+TileWidth       equ 32
+TileHeight      equ 32
+TileShift       equ 5
 
 
 ;;; Windows stuff
