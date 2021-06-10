@@ -366,12 +366,12 @@ OBJ32_1:
 
 ; 36a00
 BACKGROUND:
-    INCBIN "res/BACKGROUND.bmp", 14
+    INCBIN "res/cga-background2.bmp", 14
     ALIGN SectorSize, db 0
 
 ; 38400
 DigitsBitmap:
-    INCBIN "res/200.bmp", 14
+    INCBIN "res/cga-digits.bmp", 14
     ALIGN SectorSize, db 0
 
 ; 3a000
