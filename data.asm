@@ -79,7 +79,7 @@ s_Contents      db "Contents", 0, 0
 s_How_To_Play   db "How To Play", 0
 s_Commands      db "Commands", 0, 0
 
-IniFileName     db "entpack.ini", 0
+IniFileName     db ".\cga.ini", 0, 0, 0
 IniSectionName  db "Chip's Challenge", 0, 0
 MIDIKey         db "MIDI", 0, 0
 SoundsKey       db "Sounds", 0, 0
